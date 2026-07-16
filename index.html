@@ -2,13 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Zillow Clone Prototipo Premium</title>
+    <title>Zillow Clone - Mapa Vivo Profesional</title>
+    <!-- 🟢 Conectado a JsDelivr: Servidor ultra-seguro que Google Sites no bloquea -->
+    <link rel="stylesheet" href="https://jsdelivr.net" />
     <style>
-        /* Fuentes nativas para garantizar velocidad de carga instantánea */
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
-        /* 1. Barra de Filtros Superiores Estilo Zillow */
+        /* Barra de Filtros Superiores Estilo Zillow */
         #barra-filtros { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid #e1e4e8; background: #ffffff; z-index: 10; }
         .btn-filtro { padding: 8px 16px; border: 1px solid #e1e4e8; background: #ffffff; color: #2a2a2a; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; transition: background 0.2s; }
         .btn-filtro:hover { background: #f8f9fa; border-color: #006aff; color: #006aff; }
@@ -17,31 +18,29 @@
         /* Contenedor Dividido */
         #contenedor-principal { display: flex; flex: 1; height: calc(100vh - 60px); width: 100vw; }
         
-        /* 2. Simulación de Plano Inmobiliario Elegante (Líneas Finas y Limpias) */
-        #mapa-urbano { width: 60%; height: 100%; background-color: #f4f5f7; position: relative; overflow: hidden; }
-        .calle-fina-v { position: absolute; width: 12px; height: 100%; background: #ffffff; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; left: 35%; }
-        .calle-fina-v2 { position: absolute; width: 12px; height: 100%; background: #ffffff; border-left: 1px solid #e1e4e8; border-right: 1px solid #e1e4e8; left: 75%; }
-        .calle-fina-h { position: absolute; width: 100%; height: 12px; background: #ffffff; border-top: 1px solid #e1e4e8; border-bottom: 1px solid #e1e4e8; top: 45%; }
-        .etiqueta-calle { position: absolute; color: #8e8e93; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .zona-verde { position: absolute; width: 140px; height: 100px; background-color: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 6px; top: 8%; left: 5%; display: flex; align-items: center; justify-content: center; color: #4caf50; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        /* El Mapa Cartográfico Vivo ocupará el 60% izquierdo */
+        #mapa-real { width: 60%; height: 100%; background-color: #cbdbe5; z-index: 1; }
         
-        /* 3. Pines de Precio Flotantes Estilo Zillow (Cajas Ovaladas Nativas) */
-        .pin-precio { position: absolute; background-color: #ff385c; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; border: 2px solid white; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, background-color 0.2s; z-index: 5; }
-        .pin-precio:hover { background-color: #bd1e51; transform: scale(1.1); }
-        
-        /* 4. Panel Lateral de Tarjetas (Lista) */
+        /* Panel Lateral de Tarjetas (Lista) */
         #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #ffffff; box-sizing: border-box; padding: 20px; border-left: 1px solid #e1e4e8; }
         h2 { color: #2a2a2a; margin-top: 0; font-size: 22px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.5px; }
         
-        /* Diseño de Tarjetas Idéntico a Zillow */
+        /* Diseño de Tarjetas Estilo Zillow */
         .tarjeta-casa { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
         .tarjeta-casa:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-color: #006aff; }
         .tarjeta-casa img { width: 100%; height: 160px; object-fit: cover; background-color: #f0f0f0; }
         .info { padding: 15px; }
         .precio { font-size: 24px; font-weight: 800; margin: 0; color: #2a2a2a; letter-spacing: -0.5px; }
-        .detalles { color: #2a2a2a; font-size: 15px; font-weight: 600; margin: 6px 0; }
+        .detalles { color: #2a2a2a; font-size: 15px; font-weight: 600; margin: 4px 0; }
         .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
         .dir { color: #626469; font-size: 14px; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* Pines de Precio Flotantes Estilo Zillow */
+        .pin-precio { background-color: #ff385c; color: white; padding: 5px 9px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); white-space: nowrap; cursor: pointer; }
+        .pin-precio:hover { background-color: #bd1e51; }
+        
+        /* Limpieza de estilos por defecto de Leaflet para los iconos div */
+        .leaflet-div-icon { background: none !important; border: none !important; }
     </style>
 </head>
 <body>
@@ -57,21 +56,8 @@
         </div>
 
         <div id="contenedor-principal">
-            <!-- Mapa Urbano Estilizado con Líneas Finas Elegantes -->
-            <div id="mapa-urbano">
-                <div class="calle-fina-v"></div>
-                <div class="calle-fina-v2"></div>
-                <div class="calle-fina-h"></div>
-                
-                <div class="zona-verde">Parque El Polo</div>
-                <div class="etiqueta-calle" style="top: 48%; left: 45%;">Av. El Polo</div>
-                <div class="etiqueta-calle" style="top: 20%; left: 38%; transform: rotate(90deg);">Av. Primavera</div>
-                
-                <!-- Pines de Precio Flotantes sobre las Calles -->
-                <div class="pin-precio" style="top: 28%; left: 16%;" onclick="alert('Lujoso Departamento Frente a El Polo\nPrecio: $320,000')">$320K</div>
-                <div class="pin-precio" style="top: 55%; left: 45%;" onclick="alert('Penthouse Exclusivo en Chacarilla\nPrecio: $450,000')">$450K</div>
-                <div class="pin-precio" style="top: 72%; left: 68%;" onclick="alert('Moderno Flat con Vista Urbana en Larco\nPrecio: $280,000')">$280K</div>
-            </div>
+            <!-- 🌍 Aquí se cargará la cartografía interactiva viva -->
+            <div id="mapa-real"></div>
 
             <!-- Panel Lateral de Catálogo -->
             <div id="panel-lateral">
@@ -79,31 +65,34 @@
                 <div id="lista-propiedades">
                     
                     <!-- Tarjeta 1 (El Polo) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Departamento El Polo')">
+                    <div class="tarjeta-casa" onclick="centrarEnPropiedad(-12.0984, -76.9692)">
                         <img src="https://unsplash.com" alt="El Polo">
                         <div class="info">
                             <p class="precio">$320,000</p>
                             <p class="detalles">3<span>bd</span> | 3<span>ba</span> | 150<span>m²</span></p>
+                            <p class="titulo-prop">Lujoso Departamento Frente a El Polo</p>
                             <p class="dir">Av. El Polo 456, Urb. El Derby, Surco</p>
                         </div>
                     </div>
 
                     <!-- Tarjeta 2 (Chacarilla) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Penthouse Chacarilla')">
+                    <div class="tarjeta-casa" onclick="centrarEnPropiedad(-12.1125, -76.9781)">
                         <img src="https://unsplash.com" alt="Chacarilla">
                         <div class="info">
                             <p class="precio">$450,000</p>
                             <p class="detalles">4<span>bd</span> | 4<span>ba</span> | 240<span>m²</span></p>
+                            <p class="titulo-prop">Penthouse Exclusivo en Chacarilla</p>
                             <p class="dir">Calle Las Camelias 123, Urb. Chacarilla, Surco</p>
                         </div>
                     </div>
 
                     <!-- Tarjeta 3 (Larco) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Flat Larco')">
+                    <div class="tarjeta-casa" onclick="centrarEnPropiedad(-12.1256, -77.0302)">
                         <img src="https://unsplash.com" alt="Miraflores">
                         <div class="info">
                             <p class="precio">$280,000</p>
                             <p class="detalles">2<span>bd</span> | 2<span>ba</span> | 110<span>m²</span></p>
+                            <p class="titulo-prop">Moderno Flat con Vista Urbana en Larco</p>
                             <p class="dir">Av. Larco 789, Miraflores</p>
                         </div>
                     </div>
@@ -113,5 +102,39 @@
         </div>
     </div>
 
+    <!-- 🟢 Conectado a JsDelivr: Libre de errores de inicialización y de bloqueos MIME -->
+    <script src="https://jsdelivr.net"></script>
+    
+    <script>
+        // 1. Inicializar mapa cartográfico real centrado en Santiago de Surco, Lima
+        const mapa = L.map('mapa-real').setView([-12.1125, -76.9781], 13);
+        
+        // 2. Cargar capa cartográfica con calles, nombres de avenidas y parques reales (Estilo Zillow Light)
+        L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(mapa);
+
+        // Coordenadas fijas de tus tres inmuebles de prueba (Ubicaciones reales de Surco y Miraflores)
+        const propiedadesLocales = [
+            { texto: "$320K", lat: -12.0984, lng: -76.9692, titulo: "Lujoso Departamento Frente a El Polo" },
+            { texto: "$450K", lat: -12.1125, lng: -76.9781, titulo: "Penthouse Exclusivo en Chacarilla" },
+            { texto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Moderno Flat en Larco" }
+        ];
+
+        // 3. Pintar las etiquetas de precio flotantes sobre las avenidas verdaderas de Lima
+        propiedadesLocales.forEach(casa => {
+            const miIcono = L.divIcon({
+                html: `<div class="pin-precio">${casa.texto}</div>`
+            });
+            
+            L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa)
+             .bindPopup(`<b>${casa.titulo}</b>`);
+        });
+
+        // Función interactiva para centrar el mapa cuando se hace clic en una tarjeta derecha
+        function centrarEnPropiedad(lat, lng) {
+            mapa.setView([lat, lng], 16, { animate: true });
+        }
+    </script>
 </body>
 </html>
