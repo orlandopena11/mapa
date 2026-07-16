@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Zillow Clone - Mapa Cartográfico Vivo</title>
-    <!-- Servidores de alta seguridad de MapLibre (Libres de bloqueos en Google Sites) -->
-    <link rel="stylesheet" href="https://unpkg.com" />
+    <!-- 🟢 Cambiado a CDNJS: Servidor de alta confianza que Google Sites aprueba sin bloqueos MIME -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: Arial, sans-serif; overflow: hidden; background-color: #fff; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
@@ -49,7 +49,6 @@
         </div>
 
         <div id="contenedor-principal">
-            <!-- 🌍 Aquí se cargará la cartografía interactiva viva -->
             <div id="mapa-real"></div>
 
             <div id="panel-lateral">
@@ -91,11 +90,11 @@
         </div>
     </div>
 
-    <!-- Script Oficial de MapLibre (Libre de errores de inicialización L) -->
-    <script src="https://unpkg.com"></script>
+    <!-- 🟢 Cambiado a CDNJS: Se descarga de forma nativa e inmediata en Google Sites -->
+    <script src="https://cloudflare.com"></script>
     
     <script>
-        // 1. Inicializar mapa cartográfico real centrado en Surco, Lima
+        // Inicializar mapa cartográfico real centrado en Surco, Lima
         const mapa = new maplibregl.Map({
             container: 'mapa-real',
             style: 'https://cartocdn.com',
@@ -103,23 +102,19 @@
             zoom: 13
         });
 
-        // Coordenadas de tus tres inmuebles de prueba
         const propiedadesLocales = [
             { texto: "$320K", lng: -76.9692, lat: -12.0984, titulo: "Departamento El Polo" },
             { texto: "$450K", lng: -76.9781, lat: -12.1125, titulo: "Penthouse Chacarilla" },
             { texto: "$280K", lng: -77.0302, lat: -12.1256, titulo: "Flat Larco" }
         ];
 
-        // 2. Pintar las etiquetas de precio flotantes sobre las avenidas verdaderas
         mapa.on('load', () => {
             propiedadesLocales.forEach(casa => {
-                // Crear el elemento visual de la caja de precio
                 const el = document.createElement('div');
                 el.className = 'pin-precio';
                 el.innerText = casa.texto;
                 el.onclick = () => { alert('Inmueble: ' + casa.titulo); };
 
-                // Posicionar el PIN en las coordenadas GPS reales de Lima
                 new maplibregl.Marker({ element: el })
                     .setLngLat([casa.lng, casa.lat])
                     .addTo(mapa);
