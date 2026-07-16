@@ -2,11 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Zillow Clone - Mapa Vivo Profesional</title>
-    <!-- Conectado a los servidores CDN oficiales y certificados de Leaflet -->
+    <title>Zillow Clone - Catálogo Inmobiliario Lima</title>
+    <!-- Servidor CDNJS aprobado por el navegador -->
     <link rel="stylesheet" href="https://cloudflare.com" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; }
+        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; box-sizing: border-box; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         
         /* Barra de Filtros Superiores Estilo Zillow */
@@ -15,11 +15,11 @@
         .btn-filtro:hover { background: #f8f9fa; border-color: #006aff; color: #006aff; }
         .btn-buscar { background: #006aff; color: #ffffff; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; font-size: 13px; cursor: pointer; margin-left: auto; }
         
-        /* Contenedor Dividido */
-        #contenedor-principal { display: flex; height: calc(100vh - 55px); width: 100vw; overflow: hidden; }
+        /* Contenedor Dividido Ajustado */
+        #contenedor-principal { display: flex; height: calc(100vh - 55px); width: 100vw; overflow: hidden; box-sizing: border-box; }
         
-        /* 🌍 El Mapa Cartográfico Vivo ocupará el 60% izquierdo */
-        #mapa-real { width: 60%; height: 100%; background-color: #cbdbe5; z-index: 1; }
+        /* 🟢 CORRECCIÓN CRÍTICA: Dimensiones explícitas de visualización para forzar la carga de Leaflet */
+        #mapa-real { width: 60%; height: 100%; display: block; background-color: #cbdbe5; z-index: 1; position: relative; }
         
         /* Panel Lateral de Tarjetas (Lista) */
         #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #ffffff; box-sizing: border-box; padding: 15px; border-left: 1px solid #e1e4e8; z-index: 2; }
@@ -35,12 +35,11 @@
         .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
         .dir { color: #626469; font-size: 14px; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* Pines de Precio Flotantes Estilo Zillow sobre el Mapa Real */
+        /* Pines de Precio Flotantes Estilo Zillow */
         .pin-precio { background-color: #ff385c; color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); white-space: nowrap; cursor: pointer; }
         .pin-precio:hover { background-color: #bd1e51; }
         .pin-activo { background-color: #006aff !important; }
         
-        /* Limpieza de estilos de Leaflet */
         .leaflet-div-icon { background: none !important; border: none !important; }
     </style>
 </head>
@@ -48,11 +47,11 @@
 
     <div id="wrapper">
         <div id="barra-filtros">
-            <button class="btn-filtro" onclick="alert('Filtro: Propiedades en Venta')">En Venta</button>
+            <button class="btn-filtro">En Venta</button>
             <button class="btn-filtro" id="filtro-precio">Precio</button>
             <button class="btn-filtro" id="filtro-hab">Hab y Baños</button>
-            <button class="btn-filtro" onclick="alert('Filtro: Tipo de Vivienda')">Tipo de Propiedad</button>
-            <button class="btn-buscar" onclick="alert('Búsqueda guardada')">Guardar Búsqueda</button>
+            <button class="btn-filtro">Tipo de Propiedad</button>
+            <button class="btn-buscar">Guardar Búsqueda</button>
         </div>
 
         <div id="contenedor-principal">
@@ -91,14 +90,14 @@
         </div>
     </div>
 
-    <!-- Motores JavaScript oficiales de Leaflet cargados de forma segura -->
+    <!-- Script Oficial de Leaflet -->
     <script src="https://cloudflare.com"></script>
     
     <script>
-        // 1. Inicializar mapa cartográfico real centrado en Santiago de Surco, Lima
+        // Inicializar mapa dinámico real centrado en Surco
         const mapa = L.map('mapa-real').setView([-12.1125, -76.9781], 13);
         
-        // 2. Cargar capa cartográfica oficial libre con calles y nombres de avenidas reales de Lima
+        // Cargar cartografía real de todo el Perú y el mundo sin restricciones
         L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap'
         }).addTo(mapa);
@@ -109,36 +108,27 @@
             { id: 3, texto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Flat Larco" }
         ];
 
-        // 3. Pintar los pines con precios flotantes sobre las avenidas verdaderas
+        // Pintar pines interactivos estilo Zillow
         propiedadesLocales.forEach(casa => {
             const miIcono = L.divIcon({
                 html: `<div class="pin-precio" id="pin-${casa.id}" onclick="seleccionarPropiedad(${casa.id})">${casa.texto}</div>`
             });
-            
             L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa);
         });
 
-        // Lógica interactiva
-        function seleccionarPropiedad(id) {
-            destacarElemento(id);
-        }
+        // 🟢 Corrección del redimensionamiento: Fuerza a Leaflet a recalcular su tamaño en el iframe
+        setTimeout(() => { mapa.invalidateSize(); }, 500);
 
-        function seleccionarDesdeLista(id, lat, lng) {
-            destacarElemento(id);
-            mapa.setView([lat, lng], 16, { animate: true });
-        }
+        function seleccionarPropiedad(id) { destacarElemento(id); }
+        function seleccionarDesdeLista(id, lat, lng) { destacarElemento(id); mapa.setView([lat, lng], 16, { animate: true }); }
 
         function destacarElemento(id) {
             document.querySelectorAll('.pin-precio').forEach(p => p.classList.remove('pin-activo'));
             document.querySelectorAll('.tarjeta-casa').forEach(t => t.classList.remove('tarjeta-activa'));
-            
             const tarjeta = document.getElementById('tarjeta-' + id);
             const pin = document.getElementById('pin-' + id);
             if(pin) pin.classList.add('pin-activo');
-            if(tarjeta) {
-                tarjeta.classList.add('tarjeta-activa');
-                tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+            if(tarjeta) { tarjeta.classList.add('tarjeta-activa'); tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
         }
 
         // Filtro de Dormitorios
@@ -146,19 +136,15 @@
             const habRequeridas = prompt("Introduce el número mínimo de dormitorios (2, 3 o 4):", "3");
             if (habRequeridas === null) return;
             const num = parseInt(habRequeridas);
-            filtrarElemento(1, 3 >= num);
-            filtrarElemento(2, 4 >= num);
-            filtrarElemento(3, 2 >= num);
+            filtrarElemento(1, 3 >= num); filtrarElemento(2, 4 >= num); filtrarElemento(3, 2 >= num);
         };
 
-        // Filtro de Precios Máximos
+        // Filtro de Precios
         document.getElementById('filtro-precio').onclick = function() {
             const precioMaximo = prompt("Introduce tu presupuesto máximo en dólares:", "350000");
             if (precioMaximo === null) return;
             const max = parseInt(precioMaximo);
-            filtrarElemento(1, 320000 <= max);
-            filtrarElemento(2, 450000 <= max);
-            filtrarElemento(3, 280000 <= max);
+            filtrarElemento(1, 320000 <= max); filtrarElemento(2, 450000 <= max); filtrarElemento(3, 280000 <= max);
         };
 
         function filtrarElemento(id, condicion) {
