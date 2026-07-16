@@ -17,8 +17,6 @@
         
         /* Contenedor Dividido */
         #contenedor-principal { display: flex; flex: 1; height: calc(100vh - 60px); width: 100vw; }
-        
-        /* El Mapa Cartográfico Real ocupará el 60% izquierdo */
         #mapa-real { width: 60%; height: 100%; background-color: #cbdbe5; }
         
         /* Panel Lateral de Tarjetas (Lista) */
@@ -35,10 +33,10 @@
         .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
         .dir { color: #626469; font-size: 14px; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* Pines de Precio Flotantes Estilo Zillow (Cajas de Notificación sobre el Mapa Real) */
+        /* Pines de Precio Flotantes Estilo Zillow */
         .pin-precio { background-color: #ff385c; color: white; padding: 5px 9px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); white-space: nowrap; }
         .pin-precio:hover { background-color: #bd1e51; }
-        .leaflet-div-icon { background: none; border: none; } /* Limpiar recuadro por defecto de Leaflet */
+        .leaflet-div-icon { background: none; border: none; }
     </style>
 </head>
 <body>
@@ -54,16 +52,13 @@
         </div>
 
         <div id="contenedor-principal">
-            <!-- Contenedor del Mapa Geográfico Vivo -->
             <div id="mapa-real"></div>
 
-            <!-- Panel Lateral de Catálogo -->
             <div id="panel-lateral">
                 <h2>Venta de Inmuebles</h2>
                 <div id="lista-propiedades">
                     
-                    <!-- Tarjeta 1 (El Polo) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Departamento El Polo')">
+                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Departamento El Polo')">
                         <img src="https://unsplash.com" alt="El Polo">
                         <div class="info">
                             <p class="precio">$320,000</p>
@@ -73,8 +68,7 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 2 (Chacarilla) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Penthouse Chacarilla')">
+                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Penthouse Chacarilla')">
                         <img src="https://unsplash.com" alt="Chacarilla">
                         <div class="info">
                             <p class="precio">$450,000</p>
@@ -84,8 +78,7 @@
                         </div>
                     </div>
 
-                    <!-- Tarjeta 3 (Larco) -->
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D de Kuula para Flat Larco')">
+                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Flat Larco')">
                         <img src="https://unsplash.com" alt="Miraflores">
                         <div class="info">
                             <p class="precio">$280,000</p>
@@ -100,31 +93,27 @@
         </div>
     </div>
 
-    <!-- Cargar Motor de Mapas Seguro desde CDNJS (Aprobado por GitHub Pages) -->
+    <!-- Cargar Motor de Mapas Seguro -->
     <script src="https://cloudflare.com"></script>
     
     <script>
-        // 1. Inicializar mapa centrado geográficamente en Santiago de Surco, Lima
+        // Inicializar mapa centrado geográficamente en Santiago de Surco, Lima
         const mapa = L.map('mapa-real').setView([-12.1125, -76.9781], 13);
         
-        // 2. Cargar capa cartográfica con calles, nombres de avenidas, parques y distritos etiquetados en español
         L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap'
         }).addTo(mapa);
 
-        // Datos del catálogo inmobiliario
         const propiedadesLocales = [
-            { precio: 320000, textoCorto: "$320K", lat: -12.0984, lng: -76.9692, titulo: "Lujoso Departamento Frente a El Polo", dir: "Av. El Polo 456, Surco" },
-            { precio: 450000, textoCorto: "$450K", lat: -12.1125, lng: -76.9781, titulo: "Penthouse Exclusivo en Chacarilla", dir: "Calle Las Camelias 123, Surco" },
-            { precio: 280000, textoCorto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Moderno Flat con Vista Urbana en Larco", dir: "Av. Larco 789, Miraflores" }
+            { textoCorto: "$320K", lat: -12.0984, lng: -76.9692, titulo: "Lujoso Departamento Frente a El Polo", dir: "Av. El Polo 456, Surco" },
+            { textoCorto: "$450K", lat: -12.1125, lng: -76.9781, titulo: "Penthouse Exclusivo en Chacarilla", dir: "Calle Las Camelias 123, Surco" },
+            { textoCorto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Moderno Flat con Vista Urbana en Larco", dir: "Av. Larco 789, Miraflores" }
         ];
 
-        // 3. Pintar los pines con precios flotantes exactamente sobre las coordenadas reales de Lima
         propiedadesLocales.forEach(casa => {
+            // 🟢 ERROR SINTAXIS RESUELTO: Se removieron los parámetros vacíos que causaban el 'expected expression, got ,'
             const miIcono = L.divIcon({
-                html: `<div class="pin-precio">${casa.textoCorto}</div>`,
-                iconSize:,
-                iconAnchor: [30, 15]
+                html: `<div class="pin-precio">${casa.textoCorto}</div>`
             });
             
             L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa)
