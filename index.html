@@ -2,64 +2,48 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Zillow Clone - Mapa Cartográfico Real</title>
-    <!-- Librería de Mapas Oficial y Certificada -->
-    <link rel="stylesheet" href="https://cloudflare.com" />
+    <title>Zillow Clone - Servidor Seguro</title>
+    <!-- 🟢 Cambiado a JsDelivr: Servidor de alta confianza que Google Sites jamás bloquea -->
+    <link rel="stylesheet" href="https://jsdelivr.net" />
     <style>
         body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: Arial, sans-serif; overflow: hidden; background-color: #fff; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
-        
-        /* Barra de Filtros Superiores Estilo Zillow */
         #barra-filtros { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-bottom: 1px solid #e1e4e8; background: #fff; z-index: 10; }
         .btn-filtro { padding: 8px 16px; border: 1px solid #006aff; background: #fff; color: #006aff; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; }
         .btn-filtro:hover { background: #f0f6ff; }
         .btn-buscar { background: #006aff; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; margin-left: auto; }
-        
-        /* Contenedor Dividido */
         #contenedor-principal { display: flex; flex: 1; height: calc(100vh - 60px); width: 100vw; }
         #mapa-real { width: 60%; height: 100%; background-color: #cbdbe5; }
-        
-        /* Panel Lateral de Tarjetas (Lista) */
         #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #fff; box-sizing: border-box; padding: 20px; border-left: 1px solid #e1e4e8; }
         h2 { color: #2a2a2a; margin-top: 0; font-size: 22px; font-weight: 700; margin-bottom: 15px; }
-        
-        /* Diseño de Tarjetas Idéntico a Zillow */
-        .tarjeta-casa { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
-        .tarjeta-casa:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); border-color: #006aff; }
-        .tarjeta-casa img { width: 100%; height: 160px; object-fit: cover; background-color: #f0f0f0; }
+        .tarjeta-casa { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; }
         .info { padding: 12px 15px; }
         .precio { font-size: 24px; font-weight: 800; margin: 0; color: #2a2a2a; }
         .detalles { color: #2a2a2a; font-size: 15px; font-weight: 600; margin: 4px 0; }
         .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
         .dir { color: #626469; font-size: 14px; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Pines de Precio Flotantes Estilo Zillow */
         .pin-precio { background-color: #ff385c; color: white; padding: 5px 9px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.3); white-space: nowrap; }
-        .pin-precio:hover { background-color: #bd1e51; }
         .leaflet-div-icon { background: none; border: none; }
     </style>
 </head>
 <body>
 
     <div id="wrapper">
-        <!-- Barra de Filtros Superiores -->
         <div id="barra-filtros">
-            <button class="btn-filtro" onclick="alert('Filtro: Propiedades en Venta')">En Venta</button>
-            <button class="btn-filtro" onclick="alert('Filtro: Rango de Precios')">Precio</button>
-            <button class="btn-filtro" onclick="alert('Filtro: Dormitorios y Baños')">Hab y Baños</button>
-            <button class="btn-filtro" onclick="alert('Filtro: Tipo de Vivienda')">Tipo de Propiedad</button>
-            <button class="btn-buscar" onclick="alert('Búsqueda guardada')">Guardar Búsqueda</button>
+            <button class="btn-filtro">En Venta</button>
+            <button class="btn-filtro">Precio</button>
+            <button class="btn-filtro">Hab y Baños</button>
+            <button class="btn-filtro">Tipo de Propiedad</button>
+            <button class="btn-buscar">Guardar Búsqueda</button>
         </div>
 
         <div id="contenedor-principal">
             <div id="mapa-real"></div>
-
             <div id="panel-lateral">
                 <h2>Venta de Inmuebles</h2>
                 <div id="lista-propiedades">
                     
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Departamento El Polo')">
-                        <img src="https://unsplash.com" alt="El Polo">
+                    <div class="tarjeta-casa">
                         <div class="info">
                             <p class="precio">$320,000</p>
                             <p class="detalles">3<span>bd</span> | 3<span>ba</span> | 150<span>m²</span></p>
@@ -68,8 +52,7 @@
                         </div>
                     </div>
 
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Penthouse Chacarilla')">
-                        <img src="https://unsplash.com" alt="Chacarilla">
+                    <div class="tarjeta-casa">
                         <div class="info">
                             <p class="precio">$450,000</p>
                             <p class="detalles">4<span>bd</span> | 4<span>ba</span> | 240<span>m²</span></p>
@@ -78,8 +61,7 @@
                         </div>
                     </div>
 
-                    <div class="tarjeta-casa" onclick="alert('Abriendo visor interactivo 3D para Flat Larco')">
-                        <img src="https://unsplash.com" alt="Miraflores">
+                    <div class="tarjeta-casa">
                         <div class="info">
                             <p class="precio">$280,000</p>
                             <p class="detalles">2<span>bd</span> | 2<span>ba</span> | 110<span>m²</span></p>
@@ -93,11 +75,11 @@
         </div>
     </div>
 
-    <!-- Cargar Motor de Mapas Seguro -->
-    <script src="https://cloudflare.com"></script>
+    <!-- 🟢 Cambiado a JsDelivr: Se descarga de forma nativa e inmediata en Google Sites -->
+    <script src="https://jsdelivr.net"></script>
     
     <script>
-        // Inicializar mapa centrado geográficamente en Santiago de Surco, Lima
+        // Inicializar mapa centrado en Santiago de Surco, Lima
         const mapa = L.map('mapa-real').setView([-12.1125, -76.9781], 13);
         
         L.tileLayer('https://{s}://{z}/{x}/{y}{r}.png', {
@@ -105,19 +87,16 @@
         }).addTo(mapa);
 
         const propiedadesLocales = [
-            { textoCorto: "$320K", lat: -12.0984, lng: -76.9692, titulo: "Lujoso Departamento Frente a El Polo", dir: "Av. El Polo 456, Surco" },
-            { textoCorto: "$450K", lat: -12.1125, lng: -76.9781, titulo: "Penthouse Exclusivo en Chacarilla", dir: "Calle Las Camelias 123, Surco" },
-            { textoCorto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Moderno Flat con Vista Urbana en Larco", dir: "Av. Larco 789, Miraflores" }
+            { textoCorto: "$320K", lat: -12.0984, lng: -76.9692 },
+            { textoCorto: "$450K", lat: -12.1125, lng: -76.9781 },
+            { textoCorto: "$280K", lat: -12.1256, lng: -77.0302 }
         ];
 
         propiedadesLocales.forEach(casa => {
-            // 🟢 ERROR SINTAXIS RESUELTO: Se removieron los parámetros vacíos que causaban el 'expected expression, got ,'
             const miIcono = L.divIcon({
                 html: `<div class="pin-precio">${casa.textoCorto}</div>`
             });
-            
-            L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa)
-             .bindPopup(`<b>${casa.titulo}</b><br><small>${casa.dir}</small>`);
+            L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa);
         });
     </script>
 </body>
