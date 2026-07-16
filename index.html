@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Buscador Inmobiliario - Estilo Zillow</title>
-    <!-- Servidores CDN oficiales de Leaflet (Aprobados por Netlify) -->
-    <link rel="stylesheet" href="https://cloudflare.com" />
+    <!-- 🟢 CONECTADO A JSDELIVR: Servidor oficial de alta confianza que el navegador acepta sin bloqueos MIME -->
+    <link rel="stylesheet" href="https://jsdelivr.net" />
     <style>
         body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
@@ -82,15 +82,15 @@
         </div>
     </div>
 
-    <!-- Script Oficial de Leaflet de Alta Velocidad -->
-    <script src="https://cloudflare.com"></script>
+    <!-- 🟢 CONECTADO A JSDELIVR: Se descarga instantáneamente sin pasar jamás por Cloudflare -->
+    <script src="https://jsdelivr.net"></script>
     
     <script>
         // Inicializar mapa dinámico real centrado en Surco
         const mapa = L.map('mapa-real', { zoomControl: false }).setView([-12.1125, -76.9781], 13);
         L.control.zoom({ position: 'bottomright' }).addTo(mapa);
         
-        // 🟢 PROVEEDOR CORREGIDO: Servidor universal de OpenStreetMap libre de restricciones SSL/HTTPS
+        // Proveedor universal de OpenStreetMap estándar
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(mapa);
@@ -104,15 +104,15 @@
         // Pintar las etiquetas de precios
         propiedadesLocales.forEach(casa => {
             const miIcono = L.divIcon({
-                html: `<div class="pin-precio" id="pin-${casa.id}" onclick="seleccionarPropiedad(${casa.id})">${casa.texto}</div>`
+                html: `<div class="pin-precio" id="pin-${casa.id}" onclick="seleccionarProperty(${casa.id})">${casa.texto}</div>`
             });
             L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa);
         });
 
-        // Forzar redimensionamiento inmediato
-        setTimeout(() => { mapa.invalidateSize(); }, 300);
+        // Asegurar tamaño del lienzo
+        setTimeout(() => { mapa.invalidateSize(); }, 400);
 
-        function seleccionarPropiedad(id) { destacarElemento(id); }
+        function seleccionarProperty(id) { destacarElemento(id); }
         function seleccionarDesdeLista(id, lat, lng) { destacarElemento(id); mapa.setView([lat, lng], 15, { animate: true }); }
 
         function destacarElemento(id) {
