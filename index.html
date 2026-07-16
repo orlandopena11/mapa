@@ -3,37 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Buscador Inmobiliario - Estilo Zillow</title>
-    <!-- 🟢 CONECTADO A JSDELIVR: Servidor oficial de alta confianza que el navegador acepta sin bloqueos MIME -->
-    <link rel="stylesheet" href="https://jsdelivr.net" />
     <style>
         body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; }
         #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
         #barra-filtros { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid #e1e4e8; background: #ffffff; height: 64px; box-sizing: border-box; z-index: 1000; }
         .logo-simulado { font-size: 22px; font-weight: 800; color: #006aff; letter-spacing: -1px; margin-right: 20px; }
-        .btn-filtro { padding: 8px 16px; border: 1px solid #b2b4b7; background: #ffffff; color: #2a2a2a; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; transition: border-color 0.2s; }
+        .btn-filtro { padding: 8px 16px; border: 1px solid #b2b4b7; background: #ffffff; color: #2a2a2a; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; }
         .btn-filtro:hover { border-color: #006aff; color: #006aff; }
         .btn-buscar { background: #006aff; color: #ffffff; border: none; padding: 10px 24px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; margin-left: auto; }
         #contenedor-principal { display: flex; height: calc(100vh - 64px); width: 100vw; overflow: hidden; }
         
-        /* Contenedor del mapa real con dimensiones explícitas */
-        #mapa-real { width: 60%; height: 100%; display: block; background-color: #cbdbe5; z-index: 1; position: relative; }
+        /* Contenedor del mapa de Google */
+        #mapa-real { width: 60%; height: 100%; display: block; background-color: #cbdbe5; position: relative; }
         
-        #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #ffffff; box-sizing: border-box; padding: 20px; border-left: 1px solid #e1e4e8; z-index: 2; }
+        #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #ffffff; box-sizing: border-box; padding: 20px; border-left: 1px solid #e1e4e8; }
         .grid-propiedades { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .tarjeta-casa { background: white; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; position: relative; }
+        .tarjeta-casa { background: white; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
         .tarjeta-casa:hover { border-color: #006aff; transform: translateY(-2px); }
-        .tarjeta-activa { border-color: #006aff !important; background-color: #f0f6ff; box-shadow: 0 4px 12px rgba(0,106,255,0.15); }
+        .tarjeta-activa { border-color: #006aff !important; background-color: #f0f6ff; }
         .info { padding: 16px; }
         .precio { font-size: 24px; font-weight: 800; margin: 0; color: #2a2a2a; }
         .detalles { color: #2a2a2a; font-size: 14px; font-weight: 700; margin: 6px 0; }
         .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
-        .dir { color: #626469; font-size: 13px; margin: 6px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dir { color: #626469; font-size: 13px; margin: 6px 0 0 0; }
         
-        /* Pines de Precios estilo Zillow */
-        .pin-precio { background-color: #ff385c; color: white; padding: 5px 11px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); white-space: nowrap; cursor: pointer; transition: background-color 0.2s, transform 0.2s; }
-        .pin-precio:hover { background-color: #006aff; transform: scale(1.1); }
-        .pin-activo { background-color: #006aff !important; z-index: 9999 !important; }
-        .leaflet-div-icon { background: none !important; border: none !important; }
+        /* Pines flotantes ovalados estilo Zillow sobre Google Maps */
+        .pin-precio { background-color: #ff385c; color: white; padding: 5px 11px; border-radius: 20px; font-weight: bold; font-size: 12px; border: 2px solid white; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.3); white-space: nowrap; cursor: pointer; }
+        .pin-precio:hover { background-color: #006aff; }
     </style>
 </head>
 <body>
@@ -82,72 +78,87 @@
         </div>
     </div>
 
-    <!-- 🟢 CONECTADO A JSDELIVR: Se descarga instantáneamente sin pasar jamás por Cloudflare -->
-    <script src="https://jsdelivr.net"></script>
+    <!-- 🟢 SERVIDOR DE GOOGLE MAPS OFICIAL: Jamás bloqueado por antivirus ni reglas de red -->
+    <script src="https://googleapis.com" async defer></script>
     
     <script>
-        // Inicializar mapa dinámico real centrado en Surco
-        const mapa = L.map('mapa-real', { zoomControl: false }).setView([-12.1125, -76.9781], 13);
-        L.control.zoom({ position: 'bottomright' }).addTo(mapa);
-        
-        // Proveedor universal de OpenStreetMap estándar
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(mapa);
+        let mapa;
+        const pines = [];
+        const tarjetas = [];
 
         const propiedadesLocales = [
-            { id: 1, texto: "$320K", lat: -12.0984, lng: -76.9692, titulo: "Departamento El Polo" },
-            { id: 2, texto: "$450K", lat: -12.1125, lng: -76.9781, titulo: "Penthouse Chacarilla" },
-            { id: 3, texto: "$280K", lat: -12.1256, lng: -77.0302, titulo: "Flat Larco" }
+            { id: 1, texto: "$320K", lat: -12.0984, lng: -76.9692 },
+            { id: 2, texto: "$450K", lat: -12.1125, lng: -76.9781 },
+            { id: 3, texto: "$280K", lat: -12.1256, lng: -77.0302 }
         ];
 
-        // Pintar las etiquetas de precios
-        propiedadesLocales.forEach(casa => {
-            const miIcono = L.divIcon({
-                html: `<div class="pin-precio" id="pin-${casa.id}" onclick="seleccionarProperty(${casa.id})">${casa.texto}</div>`
+        // Función que ejecuta Google Maps automáticamente al cargar
+        function initMap() {
+            mapa = new google.maps.Map(document.getElementById('mapa-real'), {
+                center: { lat: -12.1125, lng: -76.9781 }, // Santiago de Surco
+                zoom: 13,
+                disableDefaultUI: true,
+                zoomControl: true
             });
-            L.marker([casa.lat, casa.lng], { icon: miIcono }).addTo(mapa);
-        });
 
-        // Asegurar tamaño del lienzo
-        setTimeout(() => { mapa.invalidateSize(); }, 400);
+            // Dibujar marcadores personalizados estilo Zillow
+            propiedadesLocales.forEach(casa => {
+                const contenedorPin = document.createElement('div');
+                contenedorPin.className = 'pin-precio';
+                contenedorPin.innerText = casa.texto;
+                contenedorPin.onclick = () => { destacarElemento(casa.id); };
 
-        function seleccionarProperty(id) { destacarElemento(id); }
-        function seleccionarDesdeLista(id, lat, lng) { destacarElemento(id); mapa.setView([lat, lng], 15, { animate: true }); }
+                const marker = new google.maps.Marker({
+                    position: { lat: casa.lat, lng: casa.lng },
+                    map: mapa,
+                    icon: { url: 'data:image/svg+xml;utf8,<svg xmlns="http://w3.org" width="1" height="1"></svg>' } // Oculta el pin estándar
+                });
+
+                // Crear overlay para la etiqueta flotante personalizada
+                const infowindow = new google.maps.InfoWindow({
+                    content: contenedorPin,
+                    disableAutoPan: true
+                });
+                infowindow.open(mapa, marker);
+                
+                pines.push({ id: casa.id, marker: marker, window: infowindow });
+            });
+        }
+
+        function seleccionarDesdeLista(id, lat, lng) {
+            destacearElemento(id);
+            if (mapa) mapa.setCenter({ lat: lat, lng: lng });
+        }
 
         function destacarElemento(id) {
-            document.querySelectorAll('.pin-precio').forEach(p => p.classList.remove('pin-activo'));
             document.querySelectorAll('.tarjeta-casa').forEach(t => t.classList.remove('tarjeta-activa'));
             const tarjeta = document.getElementById('tarjeta-' + id);
-            const pin = document.getElementById('pin-' + id);
-            if(pin) pin.classList.add('pin-activo');
-            if(tarjeta) { 
-                tarjeta.classList.add('tarjeta-activa'); 
-                tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+            if (tarjeta) {
+                tarjeta.classList.add('tarjeta-activa');
+                tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
         }
 
         // Filtros
         document.getElementById('filtro-hab').onclick = function() {
-            const habRequeridas = prompt("Beds & Baths - Introduce el número mínimo de dormitorios:", "3");
-            if (!habRequeridas) return;
-            const num = parseInt(habRequeridas);
+            const hab = prompt("Beds & Baths - Dormitorios mínimos:", "3");
+            if (!hab) return;
+            const num = parseInt(hab);
             filtrarElemento(1, 3 >= num); filtrarElemento(2, 4 >= num); filtrarElemento(3, 2 >= num);
         };
 
         document.getElementById('filtro-precio').onclick = function() {
-            const precioMaximo = prompt("Price - Introduce tu presupuesto máximo en dólares:", "400000");
-            if (!precioMaximo) return;
-            const max = parseInt(precioMaximo);
+            const precio = prompt("Price - Presupuesto máximo:", "400000");
+            if (!precio) return;
+            const max = parseInt(precio);
             filtrarElemento(1, 320000 <= max); filtrarElemento(2, 450000 <= max); filtrarElemento(3, 280000 <= max);
         };
 
         function filtrarElemento(id, condicion) {
             const tarjeta = document.getElementById('tarjeta-' + id);
-            const pin = document.getElementById('pin-' + id);
-            const style = condicion ? "block" : "none";
-            if (tarjeta) tarjeta.style.display = style;
-            if (pin) pin.parentElement.style.display = style;
+            if (tarjeta) tarjeta.style.display = condicion ? "block" : "none";
+            const pinObj = pines.find(p => p.id === id);
+            if (pinObj) pinObj.marker.setMap(condicion ? mapa : null);
         }
     </script>
 </body>
