@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador Inmobiliario - Estilo Zillow</title>
     
-    <!-- Librerías del Mapa (Leaflet - Versión Oficial Estable) -->
-    <link rel="stylesheet" href="https://cloudflare.com" />
-    <script src="https://cloudflare.com"></script>
+    <!-- Hojas de estilo del mapa (Leaflet Oficial) -->
+    <link rel="stylesheet" href="https://unpkg.com" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
-        <!-- Librería para leer CSVs de Google Sheets -->
+    <!-- Código JavaScript del mapa (Leaflet Oficial) -->
+    <script src="https://unpkg.com" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Librería para leer CSVs de Google Sheets -->
     <script src="https://cloudflare.com"></script>
 
     <style>
@@ -33,7 +35,6 @@
         .tarjeta-casa:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #006aff; }
         
         .badge { position: absolute; top: 10px; left: 10px; background: #006aff; color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-transform: uppercase; z-index: 3; }
-        .badge.segundo-uso { background: #2e7d32; }
 
         .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; }
         .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
@@ -47,6 +48,7 @@
         .btn-ver-contacto:hover { background: #f0f6ff; }
     </style>
 </head>
+
 <body>
 
 <div class="pantalla-zillow">
