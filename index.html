@@ -2,178 +2,185 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Buscador Inmobiliario - Estilo Zillow Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador Inmobiliario - Estilo Zillow</title>
+    
+    <!-- Librerías del Mapa (Leaflet) -->
+    <link rel="stylesheet" href="https://unpkg.com" />
+    <script src="https://unpkg.com"></script>
+    
+    <!-- Librería para leer CSVs de Google Sheets -->
+    <script src="https://cloudflare.com"></script>
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100vh; width: 100vw; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; overflow: hidden; background-color: #ffffff; }
-        #wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f6f6f9; overflow: hidden; }
+        .pantalla-zillow { display: flex; height: 100vh; width: 100vw; }
         
-        /* Barra de Filtros Superiores Estilo Zillow */
-        #barra-filtros { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-bottom: 1px solid #e1e4e8; background: #ffffff; height: 64px; box-sizing: border-box; z-index: 1000; }
-        .logo-simulado { font-size: 22px; font-weight: 800; color: #006aff; letter-spacing: -1px; margin-right: 20px; }
-        .btn-filtro { padding: 8px 16px; border: 1px solid #b2b4b7; background: #ffffff; color: #2a2a2a; border-radius: 4px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-        .btn-filtro:hover { border-color: #006aff; color: #006aff; }
-        .btn-buscar { background: #006aff; color: #ffffff; border: none; padding: 10px 24px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; margin-left: auto; }
+        /* Mapa Izquierda */
+        #mapa { width: 55%; height: 100%; z-index: 1; }
         
-        /* Contenedor Dividido de Pantalla */
-        #contenedor-principal { display: flex; height: calc(100vh - 64px); width: 100vw; overflow: hidden; }
+        /* Lista Derecha */
+        #panel-propiedades { width: 45%; height: 100%; overflow-y: auto; background: #ffffff; display: flex; flex-direction: column; z-index: 2; border-left: 1px solid #e0e0e0; }
+        .barra-superior { padding: 20px; border-bottom: 1px solid #eeeeee; background: #ffffff; }
+        .barra-superior h2 { margin: 0; font-size: 22px; color: #2a2a2a; }
+        .barra-superior p { margin: 5px 0 0 0; color: #666; font-size: 14px; }
         
-        /* MAPA URBANO INTERACTIVO PREMIUM: Red vial vectorial nativa para evitar bloqueos de red */
-        #mapa-real { width: 60%; height: 100%; background-color: #f4f5f7; position: relative; overflow: hidden; display: block; }
+        /* Grid de Tarjetas */
+        .grid-tarjetas { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         
-        /* Dibujo del Plano de Santiago de Surco y Miraflores */
-        .red-vial { position: absolute; width: 100%; height: 100%; z-index: 1; }
-        .autopista { position: absolute; background: #ffe0b2; border: 1px solid #ffa726; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .avenida { position: absolute; background: #ffffff; border: 1px solid #e1e4e8; }
-        .area-verde { position: absolute; background: #e8f5e9; border: 1px solid #c8e6c9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #2e7d32; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .rotulo-via { position: absolute; color: #8e8e93; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; z-index: 2; pointer-events: none; }
+        /* Tarjeta */
+        .tarjeta-casa { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
+        .tarjeta-casa:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #006aff; }
         
-        /* Pines de Precio Flotantes Estilo Zillow */
-        .pin-precio { position: absolute; background-color: #ff385c; color: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px; border: 2px solid white; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.2s; z-index: 10; }
-        .pin-precio:hover { background-color: #bd1e51; transform: scale(1.1); }
-        .pin-activo { background-color: #006aff !important; box-shadow: 0 0 12px rgba(0,106,255,0.5); transform: scale(1.05); }
+        .badge { position: absolute; top: 10px; left: 10px; background: #006aff; color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-transform: uppercase; z-index: 3; }
+        .badge.segundo-uso { background: #2e7d32; }
+
+        .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; }
+        .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Panel Lateral de Tarjetas (Lista) */
-        #panel-lateral { width: 40%; height: 100%; overflow-y: auto; background-color: #ffffff; box-sizing: border-box; padding: 20px; border-left: 1px solid #e1e4e8; z-index: 20; }
-        .grid-propiedades { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .datos-casa { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .precio { font-size: 20px; font-weight: 800; color: #2a2a2a; margin: 0 0 5px 0; }
+        .caracteristicas { font-size: 13px; color: #555; margin: 0 0 8px 0; }
+        .titulo-propiedad { font-size: 14px; font-weight: 600; color: #333; margin: 0 0 5px 0; }
         
-        /* Tarjetas Maquetadas idénticas a tu captura */
-        .tarjeta-casa { background: white; border-radius: 4px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); border: 1px solid #e1e4e8; overflow: hidden; cursor: pointer; transition: all 0.2s; }
-        .tarjeta-casa:hover { border-color: #006aff; transform: translateY(-2px); }
-        .tarjeta-activa { border-color: #006aff !important; background-color: #f0f6ff; box-shadow: 0 4px 12px rgba(0,106,255,0.1); }
-        .tarjeta-casa img { width: 100%; height: 160px; object-fit: cover; background-color: #f0f0f0; }
-        .info { padding: 16px; }
-        .precio { font-size: 24px; font-weight: 800; margin: 0; color: #2a2a2a; letter-spacing: -0.5px; }
-        .detalles { color: #2a2a2a; font-size: 14px; font-weight: 700; margin: 6px 0; }
-        .detalles span { color: #626469; font-weight: 400; padding: 0 4px; }
-        .dir { color: #626469; font-size: 13px; margin: 4px 0 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .btn-ver-contacto { width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 10px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
+        .btn-ver-contacto:hover { background: #f0f6ff; }
     </style>
 </head>
 <body>
 
-    <div id="wrapper">
-        <!-- Barra de Filtros Superiores Modelada de Zillow -->
-        <div id="barra-filtros">
-            <div class="logo-simulado">SurcoPro</div>
-            <button class="btn-filtro">For sale</button>
-            <button class="btn-filtro" id="filtro-precio">Price</button>
-            <button class="btn-filtro" id="filtro-hab">Beds & baths</button>
-            <button class="btn-filtro">Property type</button>
-            <button class="btn-buscar">Save search</button>
+<div class="pantalla-zillow">
+    <div id="mapa"></div>
+    <div id="panel-propiedades">
+        <div class="barra-superior">
+            <h2>Propiedades Disponibles</h2>
+            <p id="contador-propiedades">Sincronizando con Google Sheets...</p>
         </div>
-
-        <div id="contenedor-principal">
-            <!-- Plano Cartográfico Urbano Dinámico Real de Fondo -->
-            <div id="mapa-real">
-                <div class="red-vial">
-                    <!-- Áreas Verdes Reales -->
-                    <div class="area-verde" style="width: 180px; height: 120px; top: 5%; left: 5%;">Club El Polo</div>
-                    <div class="area-verde" style="width: 130px; height: 90px; top: 60%; left: 45%;">Parque Chacarilla</div>
-                    
-                    <!-- Autopista Panamericana Sur -->
-                    <div class="autopista" style="width: 35px; height: 100%; left: 38%; top: 0;"></div>
-                    <div class="rotulo-via" style="top: 40%; left: 39%; transform: rotate(90deg); color: #e65100;">Panamericana Sur</div>
-                    
-                    <!-- Avenidas Principales de Santiago de Surco y Miraflores -->
-                    <div class="avenida" style="width: 100%; height: 18px; top: 25%; left: 0;"></div>
-                    <div class="rotulo-via" style="top: 25.5%; left: 10%;">Av. Primavera</div>
-                    
-                    <div class="avenida" style="width: 18px; height: 100%; left: 22%; top: 0;"></div>
-                    <div class="rotulo-via" style="top: 75%; left: 17%; transform: rotate(90deg);">Av. El Polo</div>
-                    
-                    <div class="avenida" style="width: 100%; height: 18px; top: 75%; left: 0;"></div>
-                    <div class="rotulo-via" style="top: 75.5%; left: 65%;">Av. Benavides</div>
-                    
-                    <div class="avenida" style="width: 18px; height: 100%; left: 78%; top: 0;"></div>
-                    <div class="rotulo-via" style="top: 15%; left: 79%; transform: rotate(90deg);">Av. Paseo de la República</div>
-                    
-                    <div class="avenida" style="width: 100%; height: 16px; top: 50%; left: 0;"></div>
-                    <div class="rotulo-via" style="top: 50.5%; left: 5%;">Av. Larco (Miraflores)</div>
-                </div>
-                
-                <!-- Pines de Precio Flotantes Estilo Zillow Vinculados a las Ubicaciones -->
-                <div class="pin-precio" id="pin-1" style="top: 20%; left: 26%;" onclick="seleccionarPropiedad(1)">$320K</div>
-                <div class="pin-precio" id="pin-2" style="top: 58%; left: 52%;" onclick="seleccionarPropiedad(2)">$450K</div>
-                <div class="pin-precio" id="pin-3" style="top: 44%; left: 12%;" onclick="seleccionarPropiedad(3)">$280K</div>
-            </div>
-
-            <!-- Panel Lateral de Catálogo Derecha -->
-            <div id="panel-lateral">
-                <div class="grid-propiedades" id="lista-propiedades">
-                    
-                    <!-- Tarjeta 1 (El Polo) -->
-                    <div class="tarjeta-casa" id="tarjeta-1" onclick="seleccionarDesdeLista(1)">
-                        <img src="https://unsplash.com" alt="Casa 1">
-                        <div class="info">
-                            <p class="precio">$320,000</p>
-                            <p class="detalles">3<span>bds</span> | 3<span>ba</span> | 150<span>m²</span> | House for sale</p>
-                            <p class="dir">Av. El Polo 456, Urb. El Derby, Surco</p>
-                        </div>
-                    </div>
-
-                    <!-- Tarjeta 2 (Chacarilla) -->
-                    <div class="tarjeta-casa" id="tarjeta-2" onclick="seleccionarDesdeLista(2)">
-                        <img src="https://unsplash.com" alt="Casa 2">
-                        <div class="info">
-                            <p class="precio">$450,000</p>
-                            <p class="detalles">4<span>bds</span> | 4<span>ba</span> | 240<span>m²</span> | House for sale</p>
-                            <p class="dir">Calle Las Camelias 123, Urb. Chacarilla, Surco</p>
-                        </div>
-                    </div>
-
-                    <!-- Tarjeta 3 (Larco) -->
-                    <div class="tarjeta-casa" id="tarjeta-3" onclick="seleccionarDesdeLista(3)">
-                        <img src="https://unsplash.com" alt="Casa 3">
-                        <div class="info">
-                            <p class="precio">$280,000</p>
-                            <p class="detalles">2<span>bds</span> | 2<span>ba</span> | 110<span>m²</span> | Apartment for sale</p>
-                            <p class="dir">Av. Larco 789, Miraflores, Lima</p>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
+        <div id="contenedor-tarjetas" class="grid-tarjetas"></div>
     </div>
-    <script>
-        // Lógica de interacción mutua e instantánea sin librerías externas
-        function seleccionarPropiedad(id) { destacarElemento(id); }
-        function seleccionarDesdeLista(id) { destacarElemento(id); }
+</div>
 
-        function destacarElemento(id) {
-            document.querySelectorAll('.pin-precio').forEach(p => p.classList.remove('pin-activo'));
-            document.querySelectorAll('.tarjeta-casa').forEach(t => t.classList.remove('tarjeta-activa'));
-            
-            const tarjeta = document.getElementById('tarjeta-' + id);
-            const pin = document.getElementById('pin-' + id);
-            if(pin) pin.classList.add('pin-activo');
-            if(tarjeta) { 
-                tarjeta.classList.add('tarjeta-activa'); 
-                tarjeta.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); 
+<script>
+    // Inicializar mapa centrado en Lima (Miraflores)
+    const map = L.map('mapa').setView([-12.122, -77.028], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+    }).addTo(map);
+
+    // 1. PEGA AQUÍ TUS DOS ENLACES DE GOOGLE SHEETS
+    const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
+    const urlUbicaciones = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1567579303&single=true&output=csv";
+
+    let datosPropiedades = [];
+    let datosUbicaciones = [];
+    let propiedadesCombinadas = [];
+    let marcadoresEnPantalla = [];
+
+    // 2. Descarga simultánea de ambas tablas
+    function cargarTodo() {
+        Papa.parse(urlPropiedades, {
+            download: true,
+            header: true,
+            complete: function(resProp) {
+                datosPropiedades = resProp.data;
+                
+                Papa.parse(urlUbicaciones, {
+                    download: true,
+                    header: true,
+                    complete: function(resUbic) {
+                        datosUbicaciones = resUbic.data;
+                        relacionarTablas();
+                    }
+                });
             }
-        }
+        });
+    }
 
-        // Filtros funcionales e interactivos del Camino B estilo Zillow
-        document.getElementById('filtro-hab').onclick = function() {
-            const habRequeridas = prompt("Beds & Baths - Introduce el número mínimo de dormitorios que deseas (2, 3 o 4):", "3");
-            if (!habRequeridas) return;
-            const num = parseInt(habRequeridas);
-            filtrarElemento(1, 3 >= num); filtrarElemento(2, 4 >= num); filtrarElemento(3, 2 >= num);
-        };
+    // 3. El "JOIN": Unir propiedad con su latitud y longitud correspondiente
+    function relacionarTablas() {
+        propiedadesCombinadas = [];
 
-        document.getElementById('filtro-precio').onclick = function() {
-            const precioMaximo = prompt("Price - Introduce tu presupuesto máximo en dólares americanos:", "400000");
-            if (!precioMaximo) return;
-            const max = parseInt(precioMaximo);
-            filtrarElemento(1, 320000 <= max); filtrarElemento(2, 450000 <= max); filtrarElemento(3, 280000 <= max);
-        };
+        datosPropiedades.forEach(prop => {
+            // Buscar la fila de ubicación que coincida con el id de la propiedad
+            const ubicacionMatch = datosUbicaciones.find(u => u.ubicacion_id === prop.ubicacion_id_fk);
 
-        function filtrarElemento(id, condicion) {
-            const tarjeta = document.getElementById('tarjeta-' + id);
-            const pin = document.getElementById('pin-' + id);
-            const style = condicion ? "block" : "none";
-            if (tarjeta) tarjeta.style.display = style;
-            if (pin) pin.style.display = style;
-        }
-    </script>
+            if (ubicacionMatch && ubicacionMatch.latitud && ubicacionMatch.longitud) {
+                propiedadesCombinadas.push({
+                    id: prop.propiedad_id,
+                    titulo: prop.tipo_propiedad || "Departamento",
+                    precio: "Consulte Precio", // Si tienes columna precio en tu excel, la cambiaremos luego
+                    habitaciones: prop.habitaciones || "0",
+                    banos: prop.banos || "0",
+                    lat: parseFloat(ubicacionMatch.latitud),
+                    lng: parseFloat(ubicacionMatch.longitud),
+                    distrito: ubicacionMatch.distrito || "Lima", // Asumiendo que guardas el distrito en ubicación
+                    tipo: prop.tipo_propiedad
+                });
+            }
+        });
+
+        // Dibujar el mapa por primera vez
+        renderizarMapaZillow();
+    }
+
+    // 4. Renderizar pines según la vista del usuario
+    function renderizarMapaZillow() {
+        const contenedor = document.getElementById('contenedor-tarjetas');
+        const txtContador = document.getElementById('contador-propiedades');
+        contenedor.innerHTML = ''; 
+
+        marcadoresEnPantalla.forEach(m => map.removeLayer(m));
+        marcadoresEnPantalla = [];
+
+        const limitesVisuales = map.getBounds();
+        let contadorVisual = 0;
+
+        propiedadesCombinadas.forEach(casa => {
+            const coordenada = L.latLng(casa.lat, casa.lng);
+
+            if (limitesVisuales.contains(coordenada)) {
+                contadorVisual++;
+
+                // Crear pin interactivo
+                const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
+                    .bindPopup(`<b>${casa.id}</b><br>${casa.titulo}`);
+                marcadoresEnPantalla.push(marcador);
+
+                // Tarjeta visual a la derecha
+                const tarjeta = document.createElement('div');
+                tarjeta.className = 'tarjeta-casa';
+                tarjeta.innerHTML = `
+                    <div class="badge">${casa.tipo}</div>
+                    <div class="contenedor-foto">
+                        <img src="https://unsplash.com" alt="Foto">
+                    </div>
+                    <div class="datos-casa">
+                        <div>
+                            <p class="precio">${casa.precio}</p>
+                            <p class="caracteristicas"><b>${casa.habitaciones}</b> dorm | <b>${casa.banos}</b> baños</p>
+                            <p class="titulo-propiedad">${casa.id}: ${casa.titulo}</p>
+                        </div>
+                        <button class="btn-ver-contacto" onclick="mensajeBloqueo()">Ver datos de contacto</button>
+                    </div>
+                `;
+                contenedor.appendChild(tarjeta);
+            }
+        });
+
+        txtContador.innerText = `${contadorVisual} propiedades encontradas en este cuadrante`;
+    }
+
+    function mensajeBloqueo() {
+        alert("Para visualizar los datos de contacto directos, es necesario iniciar sesión en el portal.");
+    }
+
+    // Escuchador de zoom y movimiento
+    map.on('moveend', renderizarMapaZillow);
+
+    // Iniciar carga
+    window.onload = cargarTodo;
+</script>
+
 </body>
 </html>
