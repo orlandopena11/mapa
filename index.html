@@ -117,6 +117,15 @@
     let datosUbicaciones = [];
     let propiedadesCombinadas = [];
     let marcadoresEnPantalla = [];
+    
+    // 1. Configuración de credenciales de Supabase
+    // Reemplaza los textos entre comillas por tus llaves reales del bloc de notas
+    const supabaseUrl = "https://aohizylvnnrjhgplsods.supabase.co/rest/v1/";
+    const supabaseKey = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
+    
+    // Encender el cliente oficial de Supabase
+    const supabase = supabase._supabase.createClient(supabaseUrl, supabaseKey);
+
 
     // TUS ENLACES DE GOOGLE SHEETS
     const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
