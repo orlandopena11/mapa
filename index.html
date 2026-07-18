@@ -95,7 +95,7 @@
     }).addTo(map);
 
     // Mudar los botones + y - a la esquina superior derecha
-    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.zoom({ position: 'botommright' }).addTo(map);
 
     // 2. TUS DOS ENLACES DE GOOGLE SHEETS (Pon aquí tus CSV de propiedad y ubicacion)
     const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
@@ -208,10 +208,11 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    // 6. Funciones interactivas para la ventana flotante (Modal Sign In)
+    // Nueva función directa para abrir el login estilo Zillow
     function abrirVentanaLogin() {
-        document.getElementById('mi-modal-login').style.setProperty('display', 'flex', 'important');
+        document.getElementById('mi-modal-login').style.display = 'flex';
     }
+
 
     function cerrarVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'none';
