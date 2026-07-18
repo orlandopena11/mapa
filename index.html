@@ -114,12 +114,14 @@
                     id: prop.propiedad_id,
                     titulo: prop.tipo_propiedad || "Inmueble",
                     precio: prop.precio_base || "Consulte Precio", 
+                    foto: prop.foto_principal || "",
                     habitaciones: prop.habitaciones || "0",
                     banos: prop.banos || "0",
                     lat: parseFloat(uMatch.latitud),
                     lng: parseFloat(uMatch.longitud),
                     distrito: uMatch.distrito || "Lima",
                     tipo: prop.tipo_propiedad || "Venta"
+                    
                 });
             }
         });
@@ -154,7 +156,8 @@
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
                     <div class="contenedor-foto">
-                        <img src="https://unsplash.com" alt="Foto">
+                        <img src="${imagenFinal}" alt="Foto">
+                        
                     </div>
                     <div class="datos-casa">
                         <div>
