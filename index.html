@@ -126,7 +126,8 @@
     const supabaseKey = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
     
     // Encender el cliente oficial de Supabase
-    const supabase = supabase._supabase.createClient(supabaseUrl, supabaseKey);
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 
 
     // TUS ENLACES DE GOOGLE SHEETS
