@@ -113,7 +113,7 @@
                 propiedadesCombinadas.push({
                     id: prop.propiedad_id,
                     titulo: prop.tipo_propiedad || "Inmueble",
-                    precio: "Consulte Precio", 
+                    precio: prop.precio_base || "Consulte Precio", 
                     habitaciones: prop.habitaciones || "0",
                     banos: prop.banos || "0",
                     lat: parseFloat(uMatch.latitud),
