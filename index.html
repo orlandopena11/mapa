@@ -67,6 +67,7 @@
 <script>
     // Inicializar mapa centrado en Lima (Miraflores)
     const map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
