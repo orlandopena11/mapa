@@ -72,7 +72,7 @@
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    // 1. COLOCA AQUÍ TUS ENLACES REALES DE GOOGLE SHEETS
+    // 1. REEMPLAZA ESTOS DOS ENLACES CON TUS CSV DE GOOGLE
     const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
     const urlUbicaciones = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1567579303&single=true&output=csv";
 
@@ -81,7 +81,6 @@
     let propiedadesCombinadas = [];
     let marcadoresEnPantalla = [];
 
-    // 2. Descarga simultánea de ambas tablas
     function cargarTodo() {
         Papa.parse(urlPropiedades, {
             download: true,
@@ -101,19 +100,19 @@
         });
     }
 
-    // 3. Cruzar datos (JOIN relacional)
+    // PASO 3: Aquí es donde se arma el "Paquete de Datos" uniendo las tablas
     function relacionarTablas() {
         propiedadesCombinadas = [];
 
         datosPropiedades.forEach(prop => {
-            // Unir usando la llave foránea que vimos en tu captura
+            // El JOIN perfecto usando tus llaves exactas de tu Excel
             const uMatch = datosUbicaciones.find(u => u.ubicacion_id === prop.ubicacion_id_fk);
 
             if (uMatch && uMatch.latitud && uMatch.longitud) {
                 propiedadesCombinadas.push({
                     id: prop.propiedad_id,
                     titulo: prop.tipo_propiedad || "Inmueble",
-                    precio: prop.precio_base || "Consulte Precio", 
+                    precio: prop.precio_base || "Consulte", 
                     foto: prop.foto_principal || "",
                     habitaciones: prop.habitaciones || "0",
                     banos: prop.banos || "0",
@@ -121,7 +120,6 @@
                     lng: parseFloat(uMatch.longitud),
                     distrito: uMatch.distrito || "Lima",
                     tipo: prop.tipo_propiedad || "Venta"
-                    
                 });
             }
         });
@@ -129,7 +127,7 @@
         renderizarMapaZillow();
     }
 
-    // 4. Pintar pines dinámicos
+    // PASO 4: Aquí es donde se recorre el paquete para pintar la pantalla de Zillow
     function renderizarMapaZillow() {
         const contenedor = document.getElementById('contenedor-tarjetas');
         const txtContador = document.getElementById('contador-propiedades');
@@ -147,23 +145,29 @@
             if (limitesVisuales.contains(coordenada)) {
                 contadorVisual++;
 
+                // Pin interactivo con el ID de la propiedad
                 const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
-                    .bindPopup(`<b>${casa.id}</b><br>${casa.titulo}`);
+                    .bindPopup(`<b>Propiedad: ${casa.id}</b><br><b style="color:#006aff;">${casa.precio}</b>`);
                 marcadoresEnPantalla.push(marcador);
 
+                // Tarjeta con tu foto principal y precio base de Google Sheets
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
+                
+                // Si la celda de tu foto está vacía, pone una casa elegante por defecto
+                const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
+
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
                     <div class="contenedor-foto">
-                        <img src="${imagenFinal}" alt="Foto">
-                        
+                        <img src="${imagenFinal}" alt="Foto Propiedad">
                     </div>
                     <div class="datos-casa">
                         <div>
                             <p class="precio">${casa.precio}</p>
                             <p class="caracteristicas"><b>${casa.habitaciones}</b> dorm | <b>${casa.banos}</b> baños</p>
-                            <p class="titulo-propiedad">${casa.id}: ${casa.titulo}</p>
+                            <p class="titulo-propiedad">Código: ${casa.id}</p>
+                            <p style="margin:0; font-size:12px; color:#777;">${casa.distrito}</p>
                         </div>
                         <button class="btn-ver-contacto" onclick="mensajeBloqueo()">Ver datos de contacto</button>
                     </div>
@@ -182,7 +186,5 @@
     map.on('moveend', renderizarMapaZillow);
     window.onload = cargarTodo;
 </script>
-
 </body>
 </html>
-
