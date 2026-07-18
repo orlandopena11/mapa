@@ -183,7 +183,7 @@
         renderizarMapaZillow();
     }
 
-    // Renderizar la pantalla (Pines + Tarjetas comerciales impecables)
+    // 5. Renderizar la pantalla estilo Zillow (Pines + Tarjetas comerciales inteligentes)
     function renderizarMapaZillow() {
         const contenedor = document.getElementById('contenedor-tarjetas');
         const txtContador = document.getElementById('contador-propiedades');
@@ -191,7 +191,6 @@
         if (!contenedor || !txtContador) return;
         contenedor.innerHTML = ''; 
 
-        // Limpiar marcadores anteriores
         marcadoresEnPantalla.forEach(m => map.removeLayer(m));
         marcadoresEnPantalla = [];
 
@@ -204,23 +203,25 @@
             if (limitesVisuales.contains(coordenada)) {
                 contadorVisual++;
 
-                // Formatear precio comercial ($ 320,000)
                 const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
 
-                // Dibujar Pin interactivo en el mapa
                 const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
                     .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
                 marcadoresEnPantalla.push(marcador);
 
-                // Dibujar Tarjeta Comercial sin la palabra "Foto"
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
                 
                 const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
 
+                // Lógica de candado de seguridad: si está autenticado, muestra los datos comerciales reales
+                const estiloCorazon = usuarioAutenticado ? "color: #ff3b30;" : "color: white;";
+                const textoBotonContacto = usuarioAutenticado ? "📞 Contactar: 999-999-999" : "Ver datos de contacto";
+                const iconoCorazon = usuarioAutenticado ? "♥" : "♡";
+
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
-                    <button class="corazon-favorito" onclick="abrirVentanaLogin()">♡</button>
+                    <button class="corazon-favorito" style="${estiloCorazon}" onclick="abrirVentanaLogin()">${iconoCorazon}</button>
                     <div class="contenedor-foto">
                         <img src="${imagenFinal}" alt="">
                     </div>
@@ -231,7 +232,7 @@
                             <p class="direccion-texto">${casa.direccion}, ${casa.distrito}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
                         </div>
-                        <button class="btn-ver-contacto" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
+                        <button class="btn-ver-contacto" onclick="abrirVentanaLogin()">${textoBotonContacto}</button>
                     </div>
                 `;
                 contenedor.appendChild(tarjeta);
@@ -241,7 +242,7 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    // Funciones interactivas para controlar la ventana flotante (Modal Sign In)
+    // 6. Funciones interactivas para controlar la ventana flotante (Modal Sign In)
     function abrirVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'flex';
     }
@@ -250,7 +251,10 @@
         document.getElementById('mi-modal-login').style.display = 'none';
     }
 
-    // Arrancar la inicialización del mapa cuando toda la ventana web cargue por completo
+    // Escuchar el movimiento del mapa
+    map.on('moveend', renderizarMapaZillow);
+    
+    // Arrancar toda la aplicación al cargar la página
     window.onload = inicializarMapa;
 </script>
 </body>
