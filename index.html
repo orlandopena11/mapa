@@ -74,22 +74,38 @@
     </div>
 </div>
 
-<!-- VENTANA FLOTANTE DE INICIO DE SESIÓN -->
+<!-- VENTANA FLOTANTE DE INICIO DE SESIÓN PERSONALIZADA -->
 <div id="mi-modal-login" class="pantalla-bloqueo">
     <div class="caja-login">
         <button class="btn-cerrar" onclick="cerrarVentanaLogin()">✕</button>
-        <div class="logo-zillow-falso">z Zillow</div>
-        <h3>Sign in</h3>
-        <label>Email Address *</label>
-        <input type="email" placeholder="Introduce tu correo electrónico">
-        <button class="btn-continuar">Continue</button>
-        <p style="font-size: 13px; color: #006aff; margin: 15px 0;">New to Zillow? <span style="text-decoration:underline; cursor:pointer;">Create account</span></p>
-        <div style="font-size:12px; color:#666; margin-bottom:15px;">OR</div>
-        <button class="btn-redes">🌐 Continue with Google</button>
-        <button class="btn-redes">🍏 Continue with Apple</button>
-        <button class="btn-redes">📘 Continue with Facebook</button>
+        
+        <!-- Tu Identidad Corporativa -->
+        <div style="font-size: 20px; font-weight: 800; color: #002d62; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
+            Inmobiliaria
+        </div>
+        <div style="font-size: 16px; font-weight: 700; color: #002d62; margin-bottom: 20px; border-bottom: 2px solid #f2b705; padding-bottom: 10px;">
+            Orlando Peña
+        </div>
+        
+        <h3 style="margin: 0 0 15px 0; font-size: 20px; color: #2a2a2a; text-align: left;">Iniciar Sesión</h3>
+        
+        <label>Correo Electrónico *</label>
+        <input type="email" id="input-usuario-email" placeholder="Introduce tu correo electrónico">
+        
+        <label style="margin-top: 10px;">Contraseña *</label>
+        <input type="password" id="input-usuario-pass" placeholder="Introduce tu contraseña" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; margin-bottom: 15px;">
+        
+        <button class="btn-continuar" id="btn-autenticar" onclick="procesarAccesoUsuario()">Ingresar / Registrarse</button>
+        
+        <p style="font-size: 12px; color: #666; margin: 15px 0;">* Si el correo no existe, se creará una cuenta automáticamente.</p>
+        
+        <div style="font-size:12px; color:#666; margin-bottom:15px;">Ó</div>
+        
+        <button class="btn-redes">🌐 Continuar con Google</button>
+        <button class="btn-redes">🍏 Continuar con Apple</button>
     </div>
 </div>
+
 <script>
     // Variables globales
     let map;
