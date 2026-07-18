@@ -116,8 +116,8 @@
                     foto: prop.foto_principal || "",
                     habitaciones: prop.habitaciones || "0",
                     banos: prop.banos || "0",
-                    lat: parseFloat(uMatch.latitud),
-                    lng: parseFloat(uMatch.longitud),
+                    lat: parseFloat(uMatch.latitud.toString().replace(',', '.')),
+                    lng: parseFloat(uMatch.longitud.toString().replace(',', '.')),
                     distrito: uMatch.distrito || "Lima",
                     tipo: prop.tipo_propiedad || "Venta"
                 });
