@@ -247,13 +247,49 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    // 6. Funciones interactivas para controlar la ventana flotante (Modal Sign In)
+
+    // Abrir y cerrar la ventana flotante
     function abrirVentanaLogin() {
+        if (usuarioAutenticado) {
+            alert("Ya iniciaste sesión como: " + correoUsuarioLogueado);
+            return;
+        }
         document.getElementById('mi-modal-login').style.display = 'flex';
     }
 
     function cerrarVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'none';
+    }
+
+    // EL CEREBRO DEL BOTÓN: Procesar el Ingreso o Registro simulado del usuario
+    function procesarAccesoUsuario() {
+        const email = document.getElementById('input-usuario-email').value.trim();
+        const pass = document.getElementById('input-usuario-pass').value.trim();
+
+        if (email === "" || pass === "") {
+            alert("Por favor, completa todos los campos obligatorios (*)");
+            return;
+        }
+
+        if (!email.includes("@") || !email.includes(".")) {
+            alert("Por favor, introduce un correo electrónico válido.");
+            return;
+        }
+
+        if (pass.length < 4) {
+            alert("La contraseña debe tener al menos 4 caracteres.");
+            return;
+        }
+
+        // Marcar al usuario como conectado con éxito
+        usuarioAutenticado = true;
+        correoUsuarioLogueado = email;
+        
+        alert("¡Acceso exitoso! Bienvenido a Inmobiliaria Orlando Peña.");
+        cerrarVentanaLogin();
+
+        // Actualizar la pantalla de inmediato para desbloquear los datos de contacto
+        renderizarMapaZillow();
     }
 
     
