@@ -5,56 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador Inmobiliario - Estilo Zillow</title>
     
-    <!-- MAPA: Estilos CSS Oficiales de Leaflet (Ruta Completa) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- MAPA: Estilos y Motor Oficiales de Leaflet -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
+    <script src="https://cloudflare.com"></script>
     
-    <!-- MAPA: Motor JavaScript Oficial de Leaflet (Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    
-    <!-- BASE DE DATOS: Lector de Google Sheets (PapaParse Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- BASE DE DATOS: Lector de Google Sheets -->
+    <script src="https://cloudflare.com"></script>
 
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f6f6f9; overflow: hidden; }
-        .pantalla-zillow { display: flex; height: 100vh; width: 100vw; }
+        .pantalla-zillow { display: flex; height: 100vh; width: 100vw; position: relative; }
         
-        /* Mapa Izquierda */
         #mapa { width: 55%; height: 100%; z-index: 1; }
         
-        /* Lista Derecha */
         #panel-propiedades { width: 45%; height: 100%; overflow-y: auto; background: #ffffff; display: flex; flex-direction: column; z-index: 2; border-left: 1px solid #e0e0e0; }
         .barra-superior { padding: 20px; border-bottom: 1px solid #eeeeee; background: #ffffff; }
         .barra-superior h2 { margin: 0; font-size: 22px; color: #2a2a2a; }
         .barra-superior p { margin: 5px 0 0 0; color: #666; font-size: 14px; }
         
-        /* Grid de Tarjetas */
         .grid-tarjetas { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
         
-        /* Tarjeta */
         .tarjeta-casa { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
         .tarjeta-casa:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #006aff; }
         
         .badge { position: absolute; top: 10px; left: 10px; background: #006aff; color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-transform: uppercase; z-index: 3; }
 
+        .corazon-favorito { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 4; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.7)); transition: transform 0.2s; }
+        .corazon-favorito:hover { transform: scale(1.2); color: #ff3b30; }
+
         .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; }
         .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
         
         .datos-casa { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
-        .precio { font-size: 20px; font-weight: 800; color: #2a2a2a; margin: 0 0 5px 0; }
-        .caracteristicas { font-size: 13px; color: #555; margin: 0 0 8px 0; }
-        .titulo-propiedad { font-size: 14px; font-weight: 600; color: #333; margin: 0 0 5px 0; }
+        .precio { font-size: 22px; font-weight: 800; color: #2a2a2a; margin: 0 0 5px 0; }
+        .caracteristicas { font-size: 13px; color: #4a4a4a; margin: 0 0 5px 0; }
+        .direccion-texto { font-size: 13px; color: #666; margin: 0 0 12px 0; line-height: 1.3; }
+        .titulo-propiedad { font-size: 12px; font-weight: 600; color: #006aff; margin: 0 0 5px 0; text-transform: uppercase; }
         
         .btn-ver-contacto { width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 10px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
         .btn-ver-contacto:hover { background: #f0f6ff; }
+
+        .pantalla-bloqueo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
+        .caja-login { background: white; padding: 30px; width: 90%; max-width: 380px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; text-align: center; }
+        .btn-cerrar { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
+        .logo-zillow-falso { font-size: 28px; font-weight: 800; color: #006aff; margin-bottom: 5px; letter-spacing: -1px; }
+        .caja-login h3 { margin: 0 0 20px 0; font-size: 22px; color: #2a2a2a; }
+        .caja-login label { display: block; text-align: left; font-size: 12px; font-weight: 700; color: #2a2a2a; margin-bottom: 5px; }
+        .caja-login input[type="email"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; margin-bottom: 15px; }
+        .btn-continuar { width: 100%; background: #8bb2f9; color: white; border: none; padding: 12px 0; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
+        .btn-redes { width: 100%; background: white; border: 1px solid #ccc; padding: 10px 0; font-size: 14px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
 <div class="pantalla-zillow">
-    <!-- MAPA -->
     <div id="mapa"></div>
-    
-    <!-- PANEL INMUEBLES -->
     <div id="panel-propiedades">
         <div class="barra-superior">
             <h2>Propiedades Disponibles</h2>
@@ -64,24 +69,42 @@
     </div>
 </div>
 
+<div id="mi-modal-login" class="pantalla-bloqueo">
+    <div class="caja-login">
+        <button class="btn-cerrar" onclick="cerrarVentanaLogin()">✕</button>
+        <div class="logo-zillow-falso">z Zillow</div>
+        <h3>Sign in</h3>
+        <label>Email Address *</label>
+        <input type="email" placeholder="Introduce tu correo electrónico">
+        <button class="btn-continuar">Continue</button>
+        <p style="font-size: 13px; color: #006aff; margin: 15px 0;">New to Zillow? <span style="text-decoration:underline; cursor:pointer;">Create account</span></p>
+        <div style="font-size:12px; color:#666; margin-bottom:15px;">OR</div>
+        <button class="btn-redes">🌐 Continue with Google</button>
+        <button class="btn-redes">🍏 Continue with Apple</button>
+        <button class="btn-redes">📘 Continue with Facebook</button>
+    </div>
+</div>
 <script>
-    // Inicializar mapa centrado en Lima (Miraflores)
+    // 1. Configurar el lienzo del mapa centrado en Lima
     const map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
-    L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    // 1. REEMPLAZA ESTOS DOS ENLACES CON TUS CSV DE GOOGLE
-    const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
-    const urlUbicaciones = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1567579303&single=true&output=csv";
+    // Mudar los botones + y - a la esquina superior derecha
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // 2. TUS DOS ENLACES DE GOOGLE SHEETS (Pon aquí tus CSV de propiedad y ubicacion)
+    const urlPropiedades = "AQUÍ_PEGA_EL_LINK_DE_PROPIEDAD";
+    const urlUbicaciones = "AQUÍ_PEGA_EL_LINK_DE_UBICACION";
 
     let datosPropiedades = [];
     let datosUbicaciones = [];
     let propiedadesCombinadas = [];
     let marcadoresEnPantalla = [];
 
+    // 3. Descarga paralela de ambas hojas de cálculo
     function cargarTodo() {
         Papa.parse(urlPropiedades, {
             download: true,
@@ -100,23 +123,23 @@
             }
         });
     }
-
-    // PASO 3: Aquí es donde se arma el "Paquete de Datos" uniendo las tablas
+    // 4. El "JOIN": Cruzar tus tablas usando tus llaves exactas y corrigiendo las comas por puntos
     function relacionarTablas() {
         propiedadesCombinadas = [];
 
         datosPropiedades.forEach(prop => {
-            // El JOIN perfecto usando tus llaves exactas de tu Excel
             const uMatch = datosUbicaciones.find(u => u.ubicacion_id === prop.ubicacion_id_fk);
 
             if (uMatch && uMatch.latitud && uMatch.longitud) {
                 propiedadesCombinadas.push({
                     id: prop.propiedad_id,
                     titulo: prop.tipo_propiedad || "Inmueble",
-                    precio: prop.precio_base || "Consulte", 
+                    precio: prop.precio_base ? parseFloat(prop.precio_base.toString().replace(',', '.')) : 0, 
                     foto: prop.foto_principal || "",
                     habitaciones: prop.habitaciones || "0",
                     banos: prop.banos || "0",
+                    area: prop.area_construida || "0",
+                    direccion: prop.direccion || "Dirección no disponible",
                     lat: parseFloat(uMatch.latitud.toString().replace(',', '.')),
                     lng: parseFloat(uMatch.longitud.toString().replace(',', '.')),
                     distrito: uMatch.distrito || "Lima",
@@ -128,7 +151,7 @@
         renderizarMapaZillow();
     }
 
-    // PASO 4: Aquí es donde se recorre el paquete para pintar la pantalla de Zillow
+    // 5. Renderizar la pantalla estilo Zillow (Pines + Tarjetas comerciales)
     function renderizarMapaZillow() {
         const contenedor = document.getElementById('contenedor-tarjetas');
         const txtContador = document.getElementById('contador-propiedades');
@@ -146,31 +169,34 @@
             if (limitesVisuales.contains(coordenada)) {
                 contadorVisual++;
 
-                // Pin interactivo con el ID de la propiedad
+                // Formatear precio con formato americano ($ 320,000)
+                const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
+
+                // Pin en el mapa
                 const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
-                    .bindPopup(`<b>Propiedad: ${casa.id}</b><br><b style="color:#006aff;">${casa.precio}</b>`);
+                    .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
                 marcadoresEnPantalla.push(marcador);
 
-                // Tarjeta con tu foto principal y precio base de Google Sheets
+                // Tarjeta de la derecha
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
                 
-                // Si la celda de tu foto está vacía, pone una casa elegante por defecto
                 const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
 
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
+                    <button class="corazon-favorito" onclick="abrirVentanaLogin()">♡</button>
                     <div class="contenedor-foto">
-                        <img src="${imagenFinal}" alt="Foto Propiedad">
+                        <img src="${imagenFinal}" alt="Foto">
                     </div>
                     <div class="datos-casa">
                         <div>
-                            <p class="precio">$ ${Number(casa.precio).toLocaleString('en-US')}</p
-                            <p class="caracteristicas"><b>${casa.habitaciones}</b> dorm | <b>${casa.banos}</b> baños</p>
+                            <p class="precio">${precioFormateado}</p>
+                            <p class="caracteristicas"><b>${casa.habitaciones}</b> bds | <b>${casa.banos}</b> ba | <b>${casa.area}</b> m²</p>
+                            <p class="direccion-texto">${casa.direccion}, ${casa.distrito}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
-                            <p style="margin:0; font-size:12px; color:#777;">${casa.distrito}</p>
                         </div>
-                        <button class="btn-ver-contacto" onclick="mensajeBloqueo()">Ver datos de contacto</button>
+                        <button class="btn-ver-contacto" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
                     </div>
                 `;
                 contenedor.appendChild(tarjeta);
@@ -180,11 +206,19 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    function mensajeBloqueo() {
-        alert("Para visualizar los datos de contacto directos, es necesario iniciar sesión en el portal.");
+    // 6. Funciones interactivas para la ventana flotante (Modal Sign In)
+    function abrirVentanaLogin() {
+        document.getElementById('mi-modal-login').style.style.setProperty('display', 'flex', 'important');
     }
 
+    function cerrarVentanaLogin() {
+        document.getElementById('mi-modal-login').style.display = 'none';
+    }
+
+    // Escuchar el movimiento del mapa
     map.on('moveend', renderizarMapaZillow);
+    
+    // Arrancar toda la aplicación al cargar la página
     window.onload = cargarTodo;
 </script>
 </body>
