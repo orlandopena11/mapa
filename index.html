@@ -80,14 +80,14 @@
         <button class="btn-cerrar" onclick="cerrarVentanaLogin()">✕</button>
         
         <!-- Tu Identidad Corporativa -->
-        <div style="font-size: 20px; font-weight: 800; color: #002d62; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">
+        <div style="font-size: 20px; font-weight: 800; color: #002d62; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 1px;">
             Inmobiliaria
         </div>
-        <div style="font-size: 16px; font-weight: 700; color: #002d62; margin-bottom: 20px; border-bottom: 2px solid #f2b705; padding-bottom: 10px;">
+        <div style="font-size: 16px; font-weight: 700; color: #002d62; margin-bottom: 20px; border-bottom: 2px solid #f2b705; padding-bottom: 10px; text-transform: uppercase;">
             Orlando Peña
         </div>
         
-        <h3 style="margin: 0 0 15px 0; font-size: 20px; color: #2a2a2a; text-align: left;">Iniciar Sesión</h3>
+        <h3 style="margin: 0 0 15px 0; font-size: 20px; color: #2a2a2a; text-align: left;">Iniciar sesión</h3>
         
         <label>Correo Electrónico *</label>
         <input type="email" id="input-usuario-email" placeholder="Introduce tu correo electrónico">
@@ -95,14 +95,17 @@
         <label style="margin-top: 10px;">Contraseña *</label>
         <input type="password" id="input-usuario-pass" placeholder="Introduce tu contraseña" style="width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; margin-bottom: 15px;">
         
-        <button class="btn-continuar" id="btn-autenticar" onclick="procesarAccesoUsuario()">Ingresar / Registrarse</button>
+        <button class="btn-continuar" id="btn-autenticar" onclick="procesarAccesoUsuario()">Continuar</button>
         
-        <p style="font-size: 12px; color: #666; margin: 15px 0;">* Si el correo no existe, se creará una cuenta automáticamente.</p>
+        <div style="font-size:12px; color:#666; margin: 15px 0;">Ó</div>
         
-        <div style="font-size:12px; color:#666; margin-bottom:15px;">Ó</div>
-        
+        <!-- Botón único de Google optimizado -->
         <button class="btn-redes">🌐 Continuar con Google</button>
-        <button class="btn-redes">🍏 Continuar con Apple</button>
+        
+        <!-- Enlace Legal en Español al fondo del Modal -->
+        <p style="font-size: 11px; color: #666; margin: 20px 0 0 0; line-height: 1.4; text-align: center;">
+            Al continuar, acepto los <span style="color: #006aff; text-decoration: underline; cursor: pointer;">términos de uso</span> y la <span style="color: #006aff; text-decoration: underline; cursor: pointer;">política de privacidad</span> de Inmobiliaria Orlando Peña.
+        </p>
     </div>
 </div>
 
