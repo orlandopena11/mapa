@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador Inmobiliario - Estilo Zillow</title>
     
-    <!-- MAPA: Estilos CSS Oficiales de Leaflet (Ruta Completa) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <!-- MAPA: Estilos CSS Oficiales de Leaflet (Ruta Completa Blindada) -->
+    <link rel="stylesheet" href="https://cloudflare.com" />
     
-    <!-- MAPA: Motor JavaScript Oficial de Leaflet (Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <!-- MAPA: Motor JavaScript Oficial de Leaflet (Ruta Completa Blindada) -->
+    <script src="https://cloudflare.com"></script>
     
     <!-- BASE DE DATOS: Lector de Google Sheets (PapaParse Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cloudflare.com"></script>
 
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f6f6f9; overflow: hidden; }
@@ -61,7 +61,10 @@
 <body>
 
 <div class="pantalla-zillow">
+    <!-- LIENZO DEL MAPA -->
     <div id="mapa"></div>
+    
+    <!-- PANEL DE PROPIEDADES -->
     <div id="panel-propiedades">
         <div class="barra-superior">
             <h2>Propiedades Disponibles</h2>
@@ -71,6 +74,7 @@
     </div>
 </div>
 
+<!-- VENTANA FLOTANTE DE INICIO DE SESIÓN -->
 <div id="mi-modal-login" class="pantalla-bloqueo">
     <div class="caja-login">
         <button class="btn-cerrar" onclick="cerrarVentanaLogin()">✕</button>
@@ -87,26 +91,36 @@
     </div>
 </div>
 <script>
-    // 1. Configurar el lienzo del mapa centrado en Lima
-    const map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
-
-    // Mudar los botones + y - a la esquina superior derecha
-    L.control.zoom({ position: 'botommright' }).addTo(map);
-
-    // 2. TUS DOS ENLACES DE GOOGLE SHEETS (Pon aquí tus CSV de propiedad y ubicacion)
-    const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
-    const urlUbicaciones = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1567579303&single=true&output=csv";
-
+    // Variables globales
+    let map;
     let datosPropiedades = [];
     let datosUbicaciones = [];
     let propiedadesCombinadas = [];
     let marcadoresEnPantalla = [];
 
-    // 3. Descarga paralela de ambas hojas de cálculo
+    // TUS ENLACES DE GOOGLE SHEETS
+    const urlPropiedades = "AQUÍ_PEGA_EL_LINK_DE_PROPIEDAD";
+    const urlUbicaciones = "AQUÍ_PEGA_EL_LINK_DE_UBICACION";
+
+    // Inicializar el mapa asegurando que el DOM esté listo
+    function inicializarMapa() {
+        map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // Mudar los controles del zoom a la esquina superior derecha de forma segura
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        // Escuchar el zoom y arrastre del usuario
+        map.on('moveend', renderizarMapaZillow);
+
+        // Disparar la descarga de datos
+        cargarTodo();
+    }
+
+    // Descarga de datos
     function cargarTodo() {
         Papa.parse(urlPropiedades, {
             download: true,
@@ -125,7 +139,7 @@
             }
         });
     }
-    // 4. El "JOIN": Cruzar tus tablas usando tus llaves exactas y corrigiendo las comas por puntos
+    // El "JOIN": Cruzar tus tablas corrigiendo las comas por puntos en las coordenadas
     function relacionarTablas() {
         propiedadesCombinadas = [];
 
@@ -153,12 +167,15 @@
         renderizarMapaZillow();
     }
 
-    // 5. Renderizar la pantalla estilo Zillow (Pines + Tarjetas comerciales)
+    // Renderizar la pantalla (Pines + Tarjetas comerciales impecables)
     function renderizarMapaZillow() {
         const contenedor = document.getElementById('contenedor-tarjetas');
         const txtContador = document.getElementById('contador-propiedades');
+        
+        if (!contenedor || !txtContador) return;
         contenedor.innerHTML = ''; 
 
+        // Limpiar marcadores anteriores
         marcadoresEnPantalla.forEach(m => map.removeLayer(m));
         marcadoresEnPantalla = [];
 
@@ -171,15 +188,15 @@
             if (limitesVisuales.contains(coordenada)) {
                 contadorVisual++;
 
-                // Formatear precio con formato americano ($ 320,000)
+                // Formatear precio comercial ($ 320,000)
                 const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
 
-                // Pin en el mapa
+                // Dibujar Pin interactivo en el mapa
                 const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
                     .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
                 marcadoresEnPantalla.push(marcador);
 
-                // Tarjeta de la derecha
+                // Dibujar Tarjeta Comercial sin la palabra "Foto"
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
                 
@@ -189,7 +206,7 @@
                     <div class="badge">${casa.tipo}</div>
                     <button class="corazon-favorito" onclick="abrirVentanaLogin()">♡</button>
                     <div class="contenedor-foto">
-                        <img src="${imagenFinal}" alt="Foto">
+                        <img src="${imagenFinal}" alt="">
                     </div>
                     <div class="datos-casa">
                         <div>
@@ -208,21 +225,17 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    // Nueva función directa para abrir el login estilo Zillow
+    // Funciones interactivas para controlar la ventana flotante (Modal Sign In)
     function abrirVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'flex';
     }
-
 
     function cerrarVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'none';
     }
 
-    // Escuchar el movimiento del mapa
-    map.on('moveend', renderizarMapaZillow);
-    
-    // Arrancar toda la aplicación al cargar la página
-    window.onload = cargarTodo;
+    // Arrancar la inicialización del mapa cuando toda la ventana web cargue por completo
+    window.onload = inicializarMapa;
 </script>
 </body>
 </html>
