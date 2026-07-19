@@ -168,7 +168,7 @@ window.supabase.auth.onAuthStateChange((event, session) => {
 // Función encargada de conectar e inyectar los datos en tus pestañas de Google
 function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
   // ATENCIÓN: Aquí pegaremos la URL del Web App de Google Apps Script en el siguiente paso
-  const urlMiScriptGoogle = "AQUÍ_IRA_TU_URL_DE_APPS_SCRIPT"; 
+  const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbziILkGcvNjXV1AylRRh2o6yR_9OGiaAyHUKelV--nc75WR14yNOIb2PSzJO6cAHVtTbQ/exec"; 
 
   const datosAEnviar = {
     accion: "registrar_usuario",
