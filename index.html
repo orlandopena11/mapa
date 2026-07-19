@@ -265,6 +265,28 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
+    // Arreglo para guardar los códigos de las propiedades favoritas del usuario de forma independiente
+    let favoritosUsuario = [];
+
+    // Función inteligente para controlar los corazones individuales
+    function alternarFavorito(idPropiedad) {
+        if (!usuarioAutenticado) {
+            abrirVentanaLogin();
+            return;
+        }
+
+        const index = favoritosUsuario.indexOf(idPropiedad);
+        if (index === -1) {
+            favoritosUsuario.push(idPropiedad); // Añade a favoritos si no estaba
+            alert("Propiedad " + idPropiedad + " añadida a tus favoritos.");
+        } else {
+            favoritosUsuario.splice(index, 1); // Quita de favoritos si ya estaba
+            alert("Propiedad " + idPropiedad + " eliminada de tus favoritos.");
+        }
+
+        // Refrescar los corazones en la pantalla de inmediato
+        renderizarMapaZillow();
+    }
 
     // Abrir y cerrar la ventana flotante
     function abrirVentanaLogin() {
@@ -278,6 +300,33 @@
     function cerrarVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'none';
     }
+
+    // Escuchador automático: Detecta si el usuario viene regresando de confirmar su correo electrónico
+    async function comprobarSesionAlCargar() {
+        // Inicializar el mapa de Lima primero
+        inicializarMapa();
+
+        // Revisar si Supabase tiene una sesión activa (porque hizo clic en su correo)
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session && session.user) {
+            usuarioAutenticado = true;
+            correoUsuarioLogueado = session.user.email;
+            
+            // Actualizar el estado verificado en tu tabla relacional de forma automática
+            await supabase
+                .from('usuario_autenticado')
+                .update({ verificado: true })
+                .eq('correo', session.user.email);
+
+            alert("¡Tu correo ha sido confirmado con éxito! Bienvenido a Inmobiliaria Orlando Peña.");
+            renderizarMapaZillow();
+        }
+    }
+
+    // Modificamos el arranque oficial de la página para que use el comprobador de correo
+    window.onload = comprobarSesionAlCargar;
+
 
     // EL CEREBRO DEL BOTÓN: Procesar el Ingreso o Registro simulado del usuario
     async function procesarAccesoUsuario() {
