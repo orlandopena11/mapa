@@ -131,8 +131,10 @@
     const supabaseUrl = "https://aohizylvnnrjhgplsods.supabase.co";
     const supabaseKey = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
     
-    // Encender el cliente oficial de Supabase
+    // Línea 135: Encender el cliente oficial de Supabase
     supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    
+    // Línea 137: Aquí pegas el nuevo código del botón
     document.getElementById('btn-google').addEventListener('click', async () => {
     await supabase.auth.signInWithOAuth({
         provider: 'google',
