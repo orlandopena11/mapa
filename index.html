@@ -145,6 +145,53 @@
     });
 });
 
+// =========================================================================
+// CONTROL DE AUTENTICACIÓN (SUPABASE) Y ENVIÓ A GOOGLE SHEETS
+// =========================================================================
+
+// Escuchador de Supabase para activar tu lógica cuando inicien sesión con Google
+window.supabase.auth.onAuthStateChange((event, session) => {
+  if (session && session.user) {
+    console.log("¡Usuario validado por Google!", session.user.email);
+    
+    // 1. Activamos la variable que tu función 'alternarFavorito' necesita
+    usuarioAutenticado = true; 
+    
+    // 2. Enviamos el correo a Google Sheets para asignarle el rol 'visitante'
+    guardarUsuarioEnGoogleSheets(session.user.email, "visitante");
+    
+  } else {
+    usuarioAutenticado = false;
+  }
+});
+
+// Función encargada de conectar e inyectar los datos en tus pestañas de Google
+function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
+  // ATENCIÓN: Aquí pegaremos la URL del Web App de Google Apps Script en el siguiente paso
+  const urlMiScriptGoogle = "AQUÍ_IRA_TU_URL_DE_APPS_SCRIPT"; 
+
+  const datosAEnviar = {
+    accion: "registrar_usuario",
+    email: emailUsuario,
+    rol: rolAsignado
+  };
+
+  // Usamos fetch para enviar los datos de manera asíncrona sin recargar la página
+  fetch(urlMiScriptGoogle, {
+    method: "POST",
+    mode: "no-cors", // Evita problemas de seguridad entre GitHub y Google
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(datosAEnviar)
+  })
+  .then(() => {
+    console.log("Datos de usuario enviados correctamente a la hoja de Google Sheets.");
+  })
+  .catch(error => {
+    console.error("Error al reportar el usuario a Google Sheets:", error);
+  });
+}
 
 
     // TUS ENLACES DE GOOGLE SHEETS
