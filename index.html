@@ -289,18 +289,8 @@
         return;
     }
 
-    if (!email.includes("@") || !email.includes(".")) {
-        alert("Por favor, introduce un correo electrónico válido.");
-        return;
-    }
-
-    if (pass.length < 4) {
-        alert("La contraseña debe tener al menos 4 caracteres.");
-        return;
-    }
-
     try {
-        // 1. Consultar de forma segura si el correo ya existe en tu tabla de Supabase
+        // 1. Consultar si el correo existe en tu tabla relacional de Supabase
         const { data: usuarioExistente, error: errorBusqueda } = await supabase
             .from('usuario_autenticado')
             .select('*')
@@ -310,8 +300,15 @@
         if (errorBusqueda) throw errorBusqueda;
 
         if (usuarioExistente) {
-            // 2. Si el usuario existe, validamos su contraseña
+            // 2. Si existe, validamos su contraseña
             if (usuarioExistente.password_hash === pass) {
+                
+                // CANDADO DE SEGURIDAD REAL: Validamos si el administrador (tú) lo marcó como verificado
+                if (usuarioExistente.verificado === false) {
+                    alert("Tu cuenta aún no está verificada. Por favor, solicita al administrador la activación de tu acceso.");
+                    return;
+                }
+
                 usuarioAutenticado = true;
                 correoUsuarioLogueado = email;
                 alert("¡Acceso exitoso! Bienvenido de vuelta a Inmobiliaria Orlando Peña.");
@@ -321,31 +318,28 @@
                 alert("La contraseña ingresada es incorrecta. Por favor, verifica tus datos.");
             }
         } else {
-            // 3. Si NO existe, lo registramos automáticamente respetando tu Diagrama ER
+            // 3. Si NO existe, lo registramos automáticamente con verificado = false
             const { error: errorRegistro } = await supabase
                 .from('usuario_autenticado')
                 .insert([{
                     correo: email,
-                    password_hash: pass, // Nota: Se guarda plano temporalmente para la prueba
+                    password_hash: pass,
                     nombre: "Usuario",
                     apellido: "Nuevo",
                     estado_cuenta: "activo",
-                    verificado: false,
+                    verificado: false, // Inicia bloqueado por seguridad
                     fecha_registro: new Date().toISOString(),
                     ultimo_acceso: new Date().toISOString()
                 }]);
 
             if (errorRegistro) throw errorRegistro;
 
-            usuarioAutenticado = true;
-            correoUsuarioLogueado = email;
-            alert("¡Cuenta creada con éxito! Bienvenido a Inmobiliaria Orlando Peña.");
+            alert("¡Registro recibido con éxito! Tu cuenta ha sido creada en estado pendiente. Para proteger la plataforma, los datos se liberarán en cuanto el administrador valide tu correo electrónico.");
             cerrarVentanaLogin();
-            renderizarMapaZillow();
         }
     } catch (error) {
-        console.error("Error en el servidor:", error);
-        alert("Hubo un inconveniente al conectar con el servidor de Supabase: " + error.message);
+        console.error("Error:", error);
+        alert("Hubo un inconveniente al conectar con el servidor: " + error.message);
     }
         // Actualizar la pantalla de inmediato para desbloquear los datos de contacto
         renderizarMapaZillow();
