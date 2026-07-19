@@ -290,56 +290,51 @@
     }
 
     try {
-        // 1. Consultar si el correo existe en tu tabla relacional de Supabase
-        const { data: usuarioExistente, error: errorBusqueda } = await supabase
-            .from('usuario_autenticado')
-            .select('*')
-            .eq('correo', email)
-            .maybeSingle();
+        // 1. Intentar iniciar sesión primero (Si ya existe y ya confirmó su correo)
+        const { data: dataLogin, error: errorLogin } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: pass,
+        });
 
-        if (errorBusqueda) throw errorBusqueda;
+        // Caso A: El usuario ya existe y sus credenciales son correctas
+        if (!errorLogin && dataLogin.user) {
+            usuarioAutenticado = true;
+            correoUsuarioLogueado = email;
+            alert("¡Acceso exitoso! Bienvenido de vuelta a Inmobiliaria Orlando Peña.");
+            cerrarVentanaLogin();
+            renderizarMapaZillow();
+            return;
+        }
 
-        if (usuarioExistente) {
-            // 2. Si existe, validamos su contraseña
-            if (usuarioExistente.password_hash === pass) {
-                
-                // CANDADO DE SEGURIDAD REAL: Validamos si el administrador (tú) lo marcó como verificado
-                if (usuarioExistente.verificado === false) {
-                    alert("Tu cuenta aún no está verificada. Por favor, solicita al administrador la activación de tu acceso.");
-                    return;
-                }
+        // Si el error es que debe confirmar el correo, detenemos el proceso con el aviso
+        if (errorLogin && errorLogin.message.includes("Email not confirmed")) {
+            alert("Tu correo aún no ha sido verificado. Por favor, revisa tu bandeja de entrada y haz clic en el enlace de confirmación enviado por Inmobiliaria Orlando Peña.");
+            return;
+        }
 
-                usuarioAutenticado = true;
-                correoUsuarioLogueado = email;
-                alert("¡Acceso exitoso! Bienvenido de vuelta a Inmobiliaria Orlando Peña.");
-                cerrarVentanaLogin();
-                renderizarMapaZillow();
-            } else {
-                alert("La contraseña ingresada es incorrecta. Por favor, verifica tus datos.");
-            }
-        } else {
-            // 3. Si NO existe, lo registramos automáticamente con verificado = false
-            const { error: errorRegistro } = await supabase
-                .from('usuario_autenticado')
-                .insert([{
-                    correo: email,
-                    password_hash: pass,
-                    nombre: "Usuario",
-                    apellido: "Nuevo",
-                    estado_cuenta: "activo",
-                    verificado: false, // Inicia bloqueado por seguridad
-                    fecha_registro: new Date().toISOString(),
-                    ultimo_acceso: new Date().toISOString()
-                }]);
+        // Caso B: Si las credenciales están mal pero el usuario existe, avisamos
+        if (errorLogin && errorLogin.status === 400 && !errorLogin.message.includes("Invalid login credentials")) {
+            alert("Error: " + errorLogin.message);
+            return;
+        }
 
-            if (errorRegistro) throw errorRegistro;
+        // 2. Si no pudo loguearse porque NO existe, lo registramos y Supabase le manda el correo real en el acto
+        const { data: dataRegistro, error: errorRegistro } = await supabase.auth.signUp({
+            email: email,
+            password: pass,
+        });
 
-            alert("¡Registro recibido con éxito! Tu cuenta ha sido creada en estado pendiente. Para proteger la plataforma, los datos se liberarán en cuanto el administrador valide tu correo electrónico.");
+        if (errorRegistro) throw errorRegistro;
+
+        // Si se creó con éxito y está esperando confirmación
+        if (dataRegistro.user && dataRegistro.session === null) {
+            alert("¡Registro recibido! Inmobiliaria Orlando Peña ha enviado un enlace de confirmación a: " + email + ". Por favor, revisa tu bandeja de entrada (o carpeta de Spam) para activar tu cuenta.");
             cerrarVentanaLogin();
         }
+
     } catch (error) {
-        console.error("Error:", error);
-        alert("Hubo un inconveniente al conectar con el servidor: " + error.message);
+        console.error("Error del sistema:", error);
+        alert("Contraseña incorrecta o inconveniente con el servidor: " + error.message);
     }
         // Actualizar la pantalla de inmediato para desbloquear los datos de contacto
         renderizarMapaZillow();
