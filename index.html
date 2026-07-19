@@ -372,9 +372,13 @@
         }
 
         // 2. Si no pudo loguearse porque NO existe, lo registramos y Supabase le manda el correo real en el acto
+        // 2. Si no existe, lo registramos obligando al correo a regresar a la carpeta correcta
         const { data: dataRegistro, error: errorRegistro } = await supabase.auth.signUp({
             email: email,
             password: pass,
+            options: {
+                emailRedirectTo: 'https://orlandopena11.github.io/mapa/'
+            }
         });
 
         if (errorRegistro) throw errorRegistro;
