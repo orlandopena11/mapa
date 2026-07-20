@@ -37,6 +37,17 @@
         .corazon-favorito { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 4; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.7)); transition: transform 0.2s; }
         .corazon-favorito:hover { transform: scale(1.2); color: #ff3b30; }
 
+        /* Color plomo para estado inicial (Invitado o No seleccionado) */
+        .corazon-plomo {
+          fill: #a0a0a0 !important;
+        }
+
+        /* Color rojo intenso solicitado para cuando le den "Me Gusta" */
+        .corazon-rojo {
+          fill: #d92323 !important;
+        }
+
+
         .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; }
         .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
         
@@ -345,13 +356,16 @@ function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
 
                 // Lógica de candado de seguridad independiente para cada propiedad
                 const esFavorito = favoritosUsuario.includes(casa.id);
-                const estiloCorazon = esFavorito ? "color: #ff3b30;" : "color: white;";
-                const iconoCorazon = esFavorito ? "♥" : "♡";
+                const claseCorazon = esFavorito ? "corazon-rojo" : "corazon-plomo";
                 const textoBotonContacto = usuarioAutenticado ? "📞 Contactar: 999-999-999" : "Ver datos de contacto";
 
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
-                    <button class="corazon-favorito" style="${estiloCorazon}" onclick="alternarFavorito('${casa.id}')">${iconoCorazon}</button>
+                    <button class="corazon-favorito" onclick="alternarFavorito('${casa.id}')">
+                      <svg class="icono-corazon ${claseCorazon}" viewBox="0 0 512 512" xmlns="http://w3.org" style="width: 22px; height: 22px; transition: fill 0.2s ease;">
+                        <path d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z"/>
+                      </svg>
+                    </button>
                     <div class="contenedor-foto">
                         <img src="${imagenFinal}" alt="">
                     </div>
