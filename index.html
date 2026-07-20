@@ -360,7 +360,8 @@ function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
                       
-                      <button class="corazon-favorito" onclick="alternarFavorito('${casa.id}')" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 24px; z-index: 999; color: ${esFavorito ? '#d92323' : '#a0a0a0'}; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">♥</button>
+                   <button class="corazon-favorito" onclick="alternarFavorito('${casa.id}')" style="position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; color: ${esFavorito ? '#d92323' : '#a0a0a0'}; text-shadow: 0 1px 3px rgba(0,0,0,0.4); line-height: 1;">♥</button>
+
 
                     <div class="contenedor-foto">
                         <img src="${imagenFinal}" alt="">
