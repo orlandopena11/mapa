@@ -447,7 +447,7 @@ function forzarCierreDeInterfazPorSeguridad() {
                             <p class="direccion-texto">${casa.direccion}, ${casa.distrito}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
                         </div>
-                        <button class="btn-ver-contacto" id="btn-contacto-${casa.id}" data-telefono="${casa.telefono || 'No disponible'}" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
+                        <button class="btn-ver-contacto" id="btn-contacto-${casa.id}" data-telefono="${casa.telefono}" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
 
                     </div>
                 `;
