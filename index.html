@@ -6,15 +6,13 @@
     <title>Buscador Inmobiliario - Estilo Zillow</title>
     
     <!-- MAPA: Estilos CSS Oficiales de Leaflet (Ruta Completa) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <link rel="stylesheet" href="https://cloudflare.com" />
     
     <!-- MAPA: Motor JavaScript Oficial de Leaflet (Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    
-    <!-- BASE DE DATOS: Lector de Google Sheets (PapaParse Ruta Completa) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cloudflare.com"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Autenticación Oficial con Supabase JS V2 -->
+    <script src="https://jsdelivr.net"></script>
 
     <style>
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f6f6f9; overflow: hidden; }
@@ -34,19 +32,10 @@
         
         .badge { position: absolute; top: 10px; left: 10px; background: #006aff; color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-transform: uppercase; z-index: 3; }
 
-        .corazon-favorito { position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; z-index: 4; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.7)); transition: transform 0.2s; }
-        .corazon-favorito:hover { transform: scale(1.2); color: #ff3b30; }
+        .corazon-favorito { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; z-index: 4; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.7)); transition: transform 0.2s; }
+        .corazon-favorito:hover { transform: scale(1.2); }
 
-        .corazon-plomo {
-          fill: #a0a0a0 !important;
-        }
-
-        .corazon-rojo {
-          fill: #d92323 !important;
-        }
-
-
-        .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; }
+        .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; cursor: pointer; }
         .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
         
         .datos-casa { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
@@ -61,55 +50,19 @@
         .pantalla-bloqueo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
         .caja-login { background: white; padding: 30px; width: 90%; max-width: 340px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; text-align: center; }
         .btn-cerrar { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
-        .logo-zillow-falso { font-size: 28px; font-weight: 800; color: #006aff; margin-bottom: 5px; letter-spacing: -1px; }
+        
         .caja-login h3 { margin: 0 0 20px 0; font-size: 22px; color: #2a2a2a; }
         .caja-login label { display: block; text-align: left; font-size: 12px; font-weight: 700; color: #2a2a2a; margin-bottom: 5px; }
         .caja-login input[type="email"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; margin-bottom: 15px; }
-        .btn-continuar { width: 100%; background: #8bb2f9; color: white; border: none; padding: 12px 0; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
-       .btn-redes { width: 100%; max-width: 290px; background: white; border: 1px solid #ccc; padding: 10px 0; font-size: 14px; margin: 10px auto; display: flex; align-items: center; justify-content: center; }
-    
-        .btn-zillow-oauth {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          width: 100% !important;
-          max-width: 320px !important;
-          padding: 12px !important;
-          margin: 12px auto !important;
-          background-color: #ffffff !important;
-          border: 1px solid #bcbcbc !important;
-          border-radius: 8px !important;
-          font-family: 'Open Sans', sans-serif !important;
-          font-size: 14px !important;
-          font-weight: 600 !important;
-          color: #2a2a2a !important;
-          cursor: pointer !important;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
-          transition: background-color 0.2s !important;
-            }
-
-        .btn-zillow-oauth:hover {
-          background-color: #f7f7f7 !important;
-            }
-
-        .btn-zillow-oauth img {
-          width: 20px !important;
-          height: 20px !important;
-          margin-right: 12px !important;
-          display: block !important;
-            
-            }
-
-        
+        .btn-continuar { width: 100%; background: #006aff; color: white; border: none; padding: 12px 0; font-size: 15px; font-weight: 600; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
+        .btn-redes { width: 100%; max-width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #ccc; border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 600; color: #2a2a2a; margin: 12px 0; cursor: pointer; }
+        .btn-redes:hover { background-color: #f7f7f7; }
     </style>
 </head>
 <body>
 
 <div class="pantalla-zillow">
-    <!-- LIENZO DEL MAPA -->
     <div id="mapa"></div>
-    
-    <!-- PANEL DE PROPIEDADES -->
     <div id="panel-propiedades">
         <div class="barra-superior">
             <h2>Propiedades Disponibles</h2>
@@ -119,13 +72,11 @@
     </div>
 </div>
 
-<!-- VENTANA FLOTANTE DE INICIO DE SESIÓN PERSONALIZADA -->
+<!-- VENTANA FLOTANTE DE INICIO DE SESIÓN -->
 <div id="mi-modal-login" class="pantalla-bloqueo">
     <div class="caja-login">
         <button class="btn-cerrar" onclick="cerrarVentanaLogin()">✕</button>
         
-        
-        <!-- Logo y Texto Unificados en Tamaño y Color Azul Acero -->
         <div style="width: 100%; display: flex; align-items: flex-end; justify-content: flex-start; padding-left: 15px; margin-bottom: 25px; gap: 14px;">
             <img src="logo.jpg" alt="Inmobiliaria Orlando Peña" style="width: 55px; height: 55px; object-fit: contain; border-radius: 6px; display: block;">
             <div style="display: flex; flex-direction: column; font-family: 'Open Sans', sans-serif; line-height: 1.1; padding-bottom: 2px;">
@@ -134,8 +85,6 @@
             </div>
         </div>
 
-
-        
         <h3 style="margin: 0 0 15px 0; font-size: 20px; color: #2a2a2a; text-align: left; font-weight: 700;">Iniciar sesión</h3>
         
         <label>Correo Electrónico *</label>
@@ -148,260 +97,124 @@
         
         <div style="font-size:12px; color:#666; margin: 15px 0;">Ó</div>
         
+        <button class="btn-redes" id="btn-google">
+            <svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 12px;" xmlns="http://w3.org"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>Continuar con Google
+        </button>
 
-        <!-- Botones con Ancho Armónico e Iconos SVG Reales Integrados -->
-        <button class="btn-redes" id="btn-google" style="width: 100%; max-width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #ccc; border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 600; color: #2a2a2a; margin: 12px 0; cursor: pointer;"><svg viewBox="0 0 24 24" style="width: 18px; height: 18px; margin-right: 12px;" xmlns="http://w3.org"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>Continuar con Google</button>
-
-        <button class="btn-redes" id="btn-facebook" style="width: 100%; max-width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #ccc; border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 600; color: #2a2a2a; margin: 12px 0; cursor: pointer;"><svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 12px;" xmlns="http://w3.org"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>Continuar con Facebook</button>
+        <button class="btn-redes" id="btn-facebook">
+            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 12px;" xmlns="http://w3.org"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>Continuar con Facebook
+        </button>
                
-        <!-- Un solo enlace legal unificado solicitado -->
         <div style="width: 100%; text-align: center; margin-top: 25px; border-top: 1px solid #e6e6e6; padding-top: 15px;">
             <p style="font-family: 'Open Sans', sans-serif; font-size: 11px; color: #666666; line-height: 1.4; margin: 0 10px;">
-                Al continuar, yo acepto los 
-                <a href="https://github.io" target="_blank" style="color: #006aff; text-decoration: underline; font-weight: 600;">Términos de uso</a> 
-                de Inmobiliaria en Surco.
+                Al continuar, yo acepto los <a href="https://github.io" target="_blank" style="color: #006aff; text-decoration: underline; font-weight: 600;">Términos de uso</a> de Inmobiliaria en Surco.
             </p>
         </div>
-
     </div>
 </div>
 
-<script>
-    // Declaramos las variables de sesión que el navegador no encuentra
+    <script>
+    // Variables globales de sesión y estado comercial
     let usuarioAutenticado = false;
     let correoUsuarioLogueado = "";
-
-    // Variables globales
+    let favoritosUsuario = []; // Guardará los códigos guardados en Google Sheets
+    
     let map;
-    let datosPropiedades = [];
-    let datosUbicaciones = [];
     let propiedadesCombinadas = [];
     let marcadoresEnPantalla = [];
     
-    // 1. Configuración de credenciales de Supabase
-    // Reemplaza los textos entre comillas por tus llaves reales del bloc de notas
+    // ⚠️ REEMPLAZA ESTO POR TU URL /exec GENERADA EN GOOGLE APPS SCRIPT
+    const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbzM8WDtQkytj7SNVCQ1JMbBTuIeepVUwFs3f0CQ-dJrfm2vOd5BeSKQ9H1YKRrwfpaJjQ/exec";
+    
+    // Credenciales de Supabase Auth
     const supabaseUrl = "https://aohizylvnnrjhgplsods.supabase.co";
     const supabaseKey = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
     
-    // Línea 135: Encender el cliente oficial de Supabase
-    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    
-    // Línea 137: Aquí pegas el nuevo código del botón
     document.getElementById('btn-google').addEventListener('click', async () => {
-    await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            redirectTo: 'https://orlandopena11.github.io/mapa/'
+        await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: 'https://github.io' }
+        });
+    });
+
+    // =========================================================================
+    // CONTROLADOR INTEGRADO DE SESIÓN AL CARGAR LA WEB
+    // =========================================================================
+    async function comprobarSesionAlCargar() {
+        inicializarMapa();
+
+        // Verificamos si Supabase tiene sesión guardada en caché local
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (session && session.user) {
+            verificarEstadoYRolUsuario(session.user.email);
+        } else {
+            forzarCierreDeInterfazPorSeguridad();
+        }
+    }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+            if (!usuarioAutenticado) verificarEstadoYRolUsuario(session.user.email);
+        } else {
+            forzarCierreDeInterfazPorSeguridad();
         }
     });
-});
 
-// =========================================================================
-// CONTROL DE AUTENTICACIÓN (SUPABASE) Y ENVIÓ A GOOGLE SHEETS
-// =========================================================================
+    window.onload = comprobarSesionAlCargar;
 
-// Escuchador de Supabase para activar tu lógica cuando inicien sesión con Google
-window.supabase.auth.onAuthStateChange((event, session) => {
-  if (session && session.user) {
-    console.log("¡Usuario validado por Google!", session.user.email);
-    
-      // Consultamos en tiempo real el estado y rol en Google Sheets antes de dar acceso
-      verificarEstadoYRolUsuario(session.user.email);
-    
-  } else {
-          forzarCierreDeInterfazPorSeguridad();
-
-  }
-});
-
-// Función encargada de conectar e inyectar los datos en tus pestañas de Google
-function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
-  // ATENCIÓN: Aquí pegaremos la URL del Web App de Google Apps Script en el siguiente paso
-  const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbzM8WDtQkytj7SNVCQ1JMbBTuIeepVUwFs3f0CQ-dJrfm2vOd5BeSKQ9H1YKRrwfpaJjQ/exec"; 
-
-  const datosAEnviar = {
-    accion: "registrar_usuario",
-    email: emailUsuario,
-    rol: rolAsignado
-  };
-
-  // Usamos fetch para enviar los datos de manera asíncrona sin recargar la página
-  fetch(urlMiScriptGoogle, {
-    method: "POST",
-    mode: "no-cors", // Evita problemas de seguridad entre GitHub y Google
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(datosAEnviar)
-  })
-  .then(() => {
-    console.log("Datos de usuario enviados correctamente a la hoja de Google Sheets.");
-  })
-  .catch(error => {
-    console.error("Error al reportar el usuario a Google Sheets:", error);
-  });
-}
-
-// Función para verificar el estado de cuenta y rol real en Google Sheets
-function verificarEstadoYRolUsuario(emailUsuario) {
-  const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbziILkGcvNjXV1AylRRh2o6yR_9OGiaAyHUKelV--nc75WR14yNOIb2PSzJO6cAHVtTbQ/exec"; // Asegúrate de que coincida con tu URL actual
-  
-  const datosAEnviar = {
-    accion: "verificar_estado_usuario",
-    email: emailUsuario
-  };
-
-  // Hacemos el fetch sin 'no-cors' para poder leer la respuesta JSON que retorna Apps Script
-  fetch(urlMiScriptGoogle, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8" // Usamos text/plain para evitar bloqueos CORS preflight con Apps Script
-    },
-    body: JSON.stringify(datosAEnviar)
-  })
-  .then(response => response.json())
-  .then(data => {
-    console.log("Respuesta de verificación de base de datos:", data);
-    
-
-    if (data.success && data.estado_cuenta === "activo") {
-      console.log("Usuario verificado y activo. Rol ID:", data.rol_id);
-      usuarioAutenticado = true;
-      
-      // 🔓 Revelamos los teléfonos dinámicos de cada anuncio y removemos la redirección al login
-      document.querySelectorAll('.btn-ver-contacto').forEach(boton => {
-        const telefonoReal = boton.getAttribute('data-telefono');
-        boton.innerText = `📞 Contactar: ${telefonoReal}`;
-        
-        // Cambiamos la acción para que ya no abra el modal de login, sino que haga la llamada o lo deje libre
-        boton.onclick = null; 
-      });
-      
-      // 🌟 Pintamos los corazones de favorito en su color por defecto para que dejen de estar grises
-      document.querySelectorAll('.corazon-favorito').forEach(corazon => {
-        corazon.style.color = '#ff4081'; // Color rosa/rojo de activo
-      });
-      
-
-    
-      // 🌟 Aquí ejecutaremos la lógica según su Rol en el futuro:
-      // Si data.rol_id === 1 (visitante/comprador) -> Habilitar contactos y favoritos
-      // Si data.rol_id === 4 (agente) -> Habilitar panel de carga de inmuebles
-      
-    } else {
-      console.warn("Acceso denegado. Estado de cuenta:", data.estado_cuenta);
-      forzarCierreDeInterfazPorSeguridad();
-    }
-  })
-  .catch(error => {
-    console.error("Error al verificar el estado del usuario en Google Sheets:", error);
-    forzarCierreDeInterfazPorSeguridad();
-  });
-}
-
-// Función auxiliar para limpiar la interfaz si el usuario fue borrado o suspendido
-
-function forzarCierreDeInterfazPorSeguridad() {
-  usuarioAutenticado = false;
-  
-  // Forzar corazones en gris
-  document.querySelectorAll('.corazon-favorito').forEach(corazon => {
-    corazon.style.color = '#b0bec5'; 
-  });
-  
-  // Restablecer botones al estado de bloqueo
-  document.querySelectorAll('.btn-ver-contacto').forEach(boton => {
-    boton.innerText = 'Ver datos de contacto';
-    boton.onclick = abrirVentanaLogin;
-  });
-}
-
-    
-  
-  // Opcional: Si el usuario está suspendido en Sheets pero logueado en Supabase, puedes forzar su deslogueo:
-  // window.supabase.auth.signOut();
-
-    
-
-    // TUS ENLACES DE GOOGLE SHEETS
-    const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
-    const urlUbicaciones = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1567579303&single=true&output=csv";
-
-    // Inicializar el mapa asegurando que el DOM esté listo
     function inicializarMapa() {
         map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
-
-        // Mudar los controles del zoom a la esquina superior derecha de forma segura
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
         L.control.zoom({ position: 'topright' }).addTo(map);
-
-        // Escuchar el zoom y arrastre del usuario
+        
         map.on('moveend', renderizarMapaZillow);
-
-
-        // Disparar la descarga de datos
-        cargarTodo();
+        cargarDatosDesdeAppsScript();
     }
 
-    // Descarga de datos
-    function cargarTodo() {
-        Papa.parse(urlPropiedades, {
-            download: true,
-            header: true,
-            complete: function(resProp) {
-                datosPropiedades = resProp.data;
-                
-                Papa.parse(urlUbicaciones, {
-                    download: true,
-                    header: true,
-                    complete: function(resUbic) {
-                        datosUbicaciones = resUbic.data;
-                        relacionarTablas();
-                    }
-                });
-            }
-        });
+    // =========================================================================
+    // LECTURA DE DATOS MEDIANTE LA API RELACIONAL (doGet JSONP)
+    // =========================================================================
+    function cargarDatosDesdeAppsScript() {
+        const script = document.createElement('script');
+        script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`;
+        document.body.appendChild(script);
     }
-    // El "JOIN": Cruzar tus tablas corrigiendo las comas por puntos en las coordenadas
-    function relacionarTablas() {
-        propiedadesCombinadas = [];
 
-        datosPropiedades.forEach(prop => {
-            const uMatch = datosUbicaciones.find(u => u.ubicacion_id === prop.ubicacion_id_fk);
-
-            if (uMatch && uMatch.latitud && uMatch.longitud) {
-                propiedadesCombinadas.push({
-                    id: prop.propiedad_id,
-                    titulo: prop.tipo_propiedad || "Inmueble",
-                    precio: prop.precio_base ? parseFloat(prop.precio_base.toString().replace(',', '.')) : 0, 
-                    foto: prop.foto_principal || "",
-                    habitaciones: prop.habitaciones || "0",
-                    banos: prop.banos || "0",
-                    area: prop.area_construida || "0",
-                    direccion: prop.direccion || "Dirección no disponible",
-                    lat: parseFloat(uMatch.latitud.toString().replace(',', '.')),
-                    lng: parseFloat(uMatch.longitud.toString().replace(',', '.')),
-                    distrito: uMatch.distrito || "Lima",
-                    tipo: prop.tipo_propiedad || "Venta"
-                });
-            }
-        });
+    window.procesarDatosDelMotor = function(data) {
+        if (data.error) {
+            console.error("Error del motor:", data.error);
+            return;
+        }
+        
+        propiedadesCombinadas = data.propiedades.map(prop => ({
+            id: prop.id,
+            titulo: prop.titulo,
+            precio: prop.precio_base,
+            foto: prop.foto_principal,
+            habitaciones: prop.habitaciones,
+            banos: prop.banos,
+            area: prop.area_construida,
+            direccion: prop.geo.direccion + ", " + prop.geo.distrito,
+            lat: prop.geo.latitud,
+            lng: prop.geo.longitud,
+            telefono: prop.telefono, // 🌟 Teléfono real traído de forma segura
+            tipo: prop.tipo_anuncio
+        }));
 
         renderizarMapaZillow();
-    }
+    };
 
-    // 5. Renderizar la pantalla estilo Zillow (Pines + Tarjetas comerciales inteligentes)
+            // =========================================================================
+    // RENDERIZADOR COMERCIAL DINÁMICO
+    // =========================================================================
     function renderizarMapaZillow() {
         const contenedor = document.getElementById('contenedor-tarjetas');
         const txtContador = document.getElementById('contador-propiedades');
-        
         if (!contenedor || !txtContador) return;
         contenedor.innerHTML = ''; 
 
-        // Limpiar marcadores anteriores
         marcadoresEnPantalla.forEach(m => map.removeLayer(m));
         marcadoresEnPantalla = [];
 
@@ -413,30 +226,31 @@ function forzarCierreDeInterfazPorSeguridad() {
 
             if (limitesVisuales.contains(coordenada)) {
                 contadorVisual++;
-
                 const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
 
-                // Dibujar Pin interactivo en el mapa
                 const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
                     .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
                 marcadoresEnPantalla.push(marcador);
 
-                // Dibujar Tarjeta Comercial con lógica de corazón independiente
+                // Evaluar si es favorito y color de corazón
+                const esFavorito = favoritosUsuario.includes(casa.id.toString());
+                const colorCorazon = usuarioAutenticado ? (esFavorito ? '#d92323' : '#757575') : '#b0bec5';
+
+                let textoBotonContacto = "Ver datos de contacto";
+                let accionClickBoton = "abrirVentanaLogin()";
+
+                if (usuarioAutenticado) {
+                    textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
+                    accionClickBoton = `alert('Llamando al anunciante: ${casa.telefono}')`;
+                }
+
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
-                
                 const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
-
-                // Lógica de candado de seguridad independiente para cada propiedad
-                const esFavorito = favoritosUsuario.includes(casa.id);
-                const claseCorazon = esFavorito ? "corazon-rojo" : "corazon-plomo";
-                const textoBotonContacto = usuarioAutenticado ? "📞 Contactar: 999-999-999" : "Ver datos de contacto";
 
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
-                      
-                    <button class="corazon-favorito" onclick="alternarFavorito('${casa.id}')" style="position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; color: ${esFavorito ? '#d92323' : '#757575'}; filter: drop-shadow(1px 0px 0px #ffffff) drop-shadow(-1px 0px 0px #ffffff) drop-shadow(0px 1px 0px #ffffff) drop-shadow(0px -1px 0px #ffffff) drop-shadow(0px 2px 3px rgba(0,0,0,0.3)); line-height: 1; transform: scaleX(1.15); transition: transform 0.1s ease;">&#10084;</button>
-
+                    <button class="corazon-favorito" onclick="alternarFavoritoReal('${casa.id}')" style="color: ${colorCorazon}; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; filter: drop-shadow(1px 0px 0px #fff) drop-shadow(-1px 0px 0px #fff); line-height: 1;">❤</button>
                     <div class="contenedor-foto">
                         <img src="${imagenFinal}" alt="">
                     </div>
@@ -444,151 +258,147 @@ function forzarCierreDeInterfazPorSeguridad() {
                         <div>
                             <p class="precio">${precioFormateado}</p>
                             <p class="caracteristicas"><b>${casa.habitaciones}</b> bds | <b>${casa.banos}</b> ba | <b>${casa.area}</b> m²</p>
-                            <p class="direccion-texto">${casa.direccion}, ${casa.distrito}</p>
+                            <p class="direccion-texto">${casa.direccion}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
                         </div>
-                        <button class="btn-ver-contacto" id="btn-contacto-${casa.id}" data-telefono="${casa.telefono}" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
-
+                        <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
                     </div>
                 `;
                 contenedor.appendChild(tarjeta);
             }
         });
-
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
-    // Arreglo para guardar los códigos de las propiedades favoritas del usuario de forma independiente
-    let favoritosUsuario = [];
+    // =========================================================================
+    // COMUNICACIÓN ASÍNCRONA CON EL BACKEND DE GOOGLE SHEETS (doPost)
+    // =========================================================================
+    function verificarEstadoYRolUsuario(emailUsuario) {
+        fetch(urlMiScriptGoogle, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ accion: "verificar_estado_usuario", email: emailUsuario })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.estado_cuenta === "activo") {
+                usuarioAutenticado = true;
+                correoUsuarioLogueado = emailUsuario;
+                favoritosUsuario = data.favoritos.map(id => id.toString()); // Sincroniza corazones desde la DB 🌟
 
-    // Función inteligente para controlar los corazones individuales
-    function alternarFavorito(idPropiedad) {
+                if(data.rol_id === null || data.estado_cuenta === "inexistente") {
+                    guardarUsuarioEnGoogleSheets(emailUsuario);
+                }
+                cerrarVentanaLogin();
+                renderizarMapaZillow();
+            } else if (data.estado_cuenta === "suspendido") {
+                alert("Tu cuenta se encuentra suspendida por infracción de términos.");
+                forzarCierreDeInterfazPorSeguridad();
+            } else {
+                forzarCierreDeInterfazPorSeguridad();
+            }
+        })
+        .catch(() => forzarCierreDeInterfazPorSeguridad());
+    }
+
+    function guardarUsuarioEnGoogleSheets(emailUsuario) {
+        fetch(urlMiScriptGoogle, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accion: "registrar_usuario", email: emailUsuario })
+        });
+    }
+
+    // 🌟 PERSISTENCIA EN TIEMPO REAL: Guarda y borra me gustas directamente de tu Google Sheets
+    function alternarFavoritoReal(idPropiedad) {
         if (!usuarioAutenticado) {
             abrirVentanaLogin();
             return;
         }
 
-        const index = favoritosUsuario.indexOf(idPropiedad);
-        if (index === -1) {
-            favoritosUsuario.push(idPropiedad); // Añade a favoritos si no estaba
-            alert("Propiedad " + idPropiedad + " añadida a tus favoritos.");
+        const propIdStr = idPropiedad.toString();
+        
+        // Optimistic UI: Cambiamos el color de inmediato en la pantalla para una experiencia veloz
+        const idx = favoritosUsuario.indexOf(propIdStr);
+        if (idx === -1) {
+            favoritosUsuario.push(propIdStr);
         } else {
-            favoritosUsuario.splice(index, 1); // Quita de favoritos si ya estaba
-            alert("Propiedad " + idPropiedad + " eliminada de tus favoritos.");
+            favoritosUsuario.splice(idx, 1);
+        }
+        renderizarMapaZillow();
+
+        // Mandamos la orden de escritura a la tabla 'favorito' de Sheets de manera silenciosa
+        fetch(urlMiScriptGoogle, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({
+                accion: "alternar_favorito",
+                email: correoUsuarioLogueado,
+                propiedad_id: propIdStr
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            console.log("Sincronización de favorito exitosa:", data.resultado);
+        })
+        .catch(err => console.error("Error al guardar favorito:", err));
+    }
+
+    async function procesarAccesoUsuario() {
+        const email = document.getElementById('input-usuario-email').value.trim();
+        const pass = document.getElementById('input-usuario-pass').value.trim();
+
+        if (!email || !pass) {
+            alert("Completa todos los campos obligatorios (*)");
+            return;
         }
 
-        // Refrescar los corazones en la pantalla de inmediato
+        try {
+            const { data: dataLogin, error: errorLogin } = await supabase.auth.signInWithPassword({ email: email, password: pass });
+
+            if (!errorLogin && dataLogin.user) {
+                verificarEstadoYRolUsuario(email);
+                return;
+            }
+
+            if (errorLogin && errorLogin.message.includes("Email not confirmed")) {
+                alert("Revisa tu bandeja de entrada y confirma tu correo antes de entrar.");
+                return;
+            }
+
+            const { data: dataRegistro, error: errorRegistro } = await supabase.auth.signUp({
+                email: email,
+                password: pass,
+                options: { redirectTo: 'https://github.io' }
+            });
+
+            if (errorRegistro) throw errorRegistro;
+
+            if (dataRegistro.user && dataRegistro.session === null) {
+                alert("¡Enlace enviado! Revisa tu bandeja para confirmar la cuenta.");
+                cerrarVentanaLogin();
+            }
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    }
+
+    function forzarCierreDeInterfazPorSeguridad() {
+        usuarioAutenticado = false;
+        correoUsuarioLogueado = "";
+        favoritosUsuario = [];
         renderizarMapaZillow();
     }
 
-    // Abrir y cerrar la ventana flotante
     function abrirVentanaLogin() {
-        if (usuarioAutenticado) {
-            alert("Ya iniciaste sesión como: " + correoUsuarioLogueado);
-            return;
-        }
+        if (usuarioAutenticado) return;
         document.getElementById('mi-modal-login').style.display = 'flex';
     }
 
     function cerrarVentanaLogin() {
         document.getElementById('mi-modal-login').style.display = 'none';
     }
-
-    // Escuchador automático: Detecta si el usuario viene regresando de confirmar su correo electrónico
-    async function comprobarSesionAlCargar() {
-        // Inicializar el mapa de Lima primero
-        inicializarMapa();
-
-        // Revisar si Supabase tiene una sesión activa (porque hizo clic en su correo)
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session && session.user) {
-            usuarioAutenticado = true;
-            correoUsuarioLogueado = session.user.email;
-            
-            // Actualizar el estado verificado en tu tabla relacional de forma automática
-            await supabase
-                .from('usuario_autenticado')
-                .update({ verificado: true })
-                .eq('correo', session.user.email);
-
-            alert("¡Tu correo ha sido confirmado con éxito! Bienvenido a Inmobiliaria Orlando Peña.");
-            renderizarMapaZillow();
-        }
-    }
-
-    // Modificamos el arranque oficial de la página para que use el comprobador de correo
-    window.onload = comprobarSesionAlCargar;
-
-
-    // EL CEREBRO DEL BOTÓN: Procesar el Ingreso o Registro simulado del usuario
-    async function procesarAccesoUsuario() {
-    const email = document.getElementById('input-usuario-email').value.trim();
-    const pass = document.getElementById('input-usuario-pass').value.trim();
-
-    if (email === "" || pass === "") {
-        alert("Por favor, completa todos los campos obligatorios (*)");
-        return;
-    }
-
-    try {
-        // 1. Intentar iniciar sesión primero (Si ya existe y ya confirmó su correo)
-        const { data: dataLogin, error: errorLogin } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: pass,
-        });
-
-        // Caso A: El usuario ya existe y sus credenciales son correctas
-        if (!errorLogin && dataLogin.user) {
-            usuarioAutenticado = true;
-            correoUsuarioLogueado = email;
-            alert("¡Acceso exitoso! Bienvenido de vuelta a Inmobiliaria Orlando Peña.");
-            cerrarVentanaLogin();
-            renderizarMapaZillow();
-            return;
-        }
-
-        // Si el error es que debe confirmar el correo, detenemos el proceso con el aviso
-        if (errorLogin && errorLogin.message.includes("Email not confirmed")) {
-            alert("Tu correo aún no ha sido verificado. Por favor, revisa tu bandeja de entrada y haz clic en el enlace de confirmación enviado por Inmobiliaria Orlando Peña.");
-            return;
-        }
-
-        // Caso B: Si las credenciales están mal pero el usuario existe, avisamos
-        if (errorLogin && errorLogin.status === 400 && !errorLogin.message.includes("Invalid login credentials")) {
-            alert("Error: " + errorLogin.message);
-            return;
-        }
-
-        // 2. Si no pudo loguearse porque NO existe, lo registramos y Supabase le manda el correo real en el acto
-        // 2. Si no existe, lo registramos obligando al correo a regresar a la carpeta correcta
-        const { data: dataRegistro, error: errorRegistro } = await supabase.auth.signUp({
-            email: email,
-            password: pass,
-            options: {
-                emailRedirectTo: 'https://orlandopena11.github.io/mapa/'
-            }
-        });
-
-        if (errorRegistro) throw errorRegistro;
-
-        // Si se creó con éxito y está esperando confirmación
-        if (dataRegistro.user && dataRegistro.session === null) {
-            alert("¡Registro recibido! Inmobiliaria Orlando Peña ha enviado un enlace de confirmación a: " + email + ". Por favor, revisa tu bandeja de entrada (o carpeta de Spam) para activar tu cuenta.");
-            cerrarVentanaLogin();
-        }
-
-    } catch (error) {
-        console.error("Error del sistema:", error);
-        alert("Contraseña incorrecta o inconveniente con el servidor: " + error.message);
-    }
-        // Actualizar la pantalla de inmediato para desbloquear los datos de contacto
-        renderizarMapaZillow();
-    }
-
-    
-    // Arrancar toda la aplicación al cargar la página
-    window.onload = inicializarMapa;
 </script>
 </body>
 </html>
