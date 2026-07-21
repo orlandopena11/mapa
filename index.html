@@ -205,14 +205,12 @@ window.supabase.auth.onAuthStateChange((event, session) => {
   if (session && session.user) {
     console.log("¡Usuario validado por Google!", session.user.email);
     
-    // 1. Activamos la variable que tu función 'alternarFavorito' necesita
-    usuarioAutenticado = true; 
-    
-    // 2. Enviamos el correo a Google Sheets para asignarle el rol 'visitante'
-    guardarUsuarioEnGoogleSheets(session.user.email, "visitante");
+      // Consultamos en tiempo real el estado y rol en Google Sheets antes de dar acceso
+      verificarEstadoYRolUsuario(session.user.email);
     
   } else {
-    usuarioAutenticado = false;
+          forzarCierreDeInterfazPorSeguridad();
+
   }
 });
 
@@ -244,6 +242,64 @@ function guardarUsuarioEnGoogleSheets(emailUsuario, rolAsignado) {
   });
 }
 
+// Función para verificar el estado de cuenta y rol real en Google Sheets
+function verificarEstadoYRolUsuario(emailUsuario) {
+  const urlMiScriptGoogle = "https://google.com"; // Asegúrate de que coincida con tu URL actual
+  
+  const datosAEnviar = {
+    accion: "verificar_estado_usuario",
+    email: emailUsuario
+  };
+
+  // Hacemos el fetch sin 'no-cors' para poder leer la respuesta JSON que retorna Apps Script
+  fetch(urlMiScriptGoogle, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8" // Usamos text/plain para evitar bloqueos CORS preflight con Apps Script
+    },
+    body: JSON.stringify(datosAEnviar)
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log("Respuesta de verificación de base de datos:", data);
+    
+    if (data.success && data.estado_cuenta === "activo") {
+      console.log("Usuario verificado y activo. Rol ID:", data.rol_id);
+      usuarioAutenticado = true;
+      
+      // 🌟 Aquí ejecutaremos la lógica según su Rol en el futuro:
+      // Si data.rol_id === 1 (visitante/comprador) -> Habilitar contactos y favoritos
+      // Si data.rol_id === 4 (agente) -> Habilitar panel de carga de inmuebles
+      
+    } else {
+      console.warn("Acceso denegado. Estado de cuenta:", data.estado_cuenta);
+      forzarCierreDeInterfazPorSeguridad();
+    }
+  })
+  .catch(error => {
+    console.error("Error al verificar el estado del usuario en Google Sheets:", error);
+    forzarCierreDeInterfazPorSeguridad();
+  });
+}
+
+// Función auxiliar para limpiar la interfaz si el usuario fue borrado o suspendido
+function forzarCierreDeInterfazPorSeguridad() {
+  usuarioAutenticado = false;
+  
+  // 1. Pintar corazones de plomo (gris)
+  document.querySelectorAll('.fa-heart').forEach(corazon => {
+    corazon.style.color = '#b0bec5'; 
+  });
+  
+  // 2. Modificar botones de contacto para exigir logueo/activación
+  document.querySelectorAll('.btn-contacto').forEach(boton => {
+    boton.innerText = 'Iniciar sesión / Cuenta inactiva';
+  });
+  
+  // Opcional: Si el usuario está suspendido en Sheets pero logueado en Supabase, puedes forzar su deslogueo:
+  // window.supabase.auth.signOut();
+}
+    
 
     // TUS ENLACES DE GOOGLE SHEETS
     const urlPropiedades = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQOM28CiE-vtQQSFatI6Q0e_Gdoptt9GebaI6e7Ji4gi5bIVSobS9lUZwaOiVDxsTFv1Gm2oeJqQqze/pub?gid=1894444823&single=true&output=csv";
