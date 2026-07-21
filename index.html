@@ -175,14 +175,13 @@
 
     // =========================================================================
     // LECTURA DE DATOS MEDIANTE LA API RELACIONAL (doGet JSONP)
-    // =========================================================================
-        
+    // =========================================================================       
     function cargarDatosDesdeAppsScript() {
-        const script = document.createElement('script');
-        script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`;
-        document.body.appendChild(script);
-    }
-        
+    var script = document.createElement('script');
+    script.src = urlMiScriptGoogle + "?callback=procesarDatosDelMotor";
+    document.body.appendChild(script);
+}
+    
     window.procesarDatosDelMotor = function(data) {
         if (data.error) {
             console.error("Error del motor:", data.error);
