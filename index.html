@@ -263,10 +263,27 @@ function verificarEstadoYRolUsuario(emailUsuario) {
   .then(data => {
     console.log("Respuesta de verificación de base de datos:", data);
     
+
     if (data.success && data.estado_cuenta === "activo") {
       console.log("Usuario verificado y activo. Rol ID:", data.rol_id);
       usuarioAutenticado = true;
       
+      // 🔓 Revelamos los teléfonos dinámicos de cada anuncio y removemos la redirección al login
+      document.querySelectorAll('.btn-ver-contacto').forEach(boton => {
+        const telefonoReal = boton.getAttribute('data-telefono');
+        boton.innerText = `📞 Contactar: ${telefonoReal}`;
+        
+        // Cambiamos la acción para que ya no abra el modal de login, sino que haga la llamada o lo deje libre
+        boton.onclick = null; 
+      });
+      
+      // 🌟 Pintamos los corazones de favorito en su color por defecto para que dejen de estar grises
+      document.querySelectorAll('.corazon-favorito').forEach(corazon => {
+        corazon.style.color = '#ff4081'; // Color rosa/rojo de activo
+      });
+      
+    }
+    
       // 🌟 Aquí ejecutaremos la lógica según su Rol en el futuro:
       // Si data.rol_id === 1 (visitante/comprador) -> Habilitar contactos y favoritos
       // Si data.rol_id === 4 (agente) -> Habilitar panel de carga de inmuebles
@@ -283,18 +300,23 @@ function verificarEstadoYRolUsuario(emailUsuario) {
 }
 
 // Función auxiliar para limpiar la interfaz si el usuario fue borrado o suspendido
+
 function forzarCierreDeInterfazPorSeguridad() {
   usuarioAutenticado = false;
   
-  // 1. Pintar corazones de plomo (gris)
-  document.querySelectorAll('.fa-heart').forEach(corazon => {
+  // Forzar corazones en gris
+  document.querySelectorAll('.corazon-favorito').forEach(corazon => {
     corazon.style.color = '#b0bec5'; 
   });
   
-  // 2. Modificar botones de contacto para exigir logueo/activación
-  document.querySelectorAll('.btn-contacto').forEach(boton => {
-    boton.innerText = 'Iniciar sesión / Cuenta inactiva';
+  // Restablecer botones al estado de bloqueo
+  document.querySelectorAll('.btn-ver-contacto').forEach(boton => {
+    boton.innerText = 'Ver datos de contacto';
+    boton.onclick = abrirVentanaLogin;
   });
+}
+
+    
   
   // Opcional: Si el usuario está suspendido en Sheets pero logueado en Supabase, puedes forzar su deslogueo:
   // window.supabase.auth.signOut();
@@ -425,7 +447,8 @@ function forzarCierreDeInterfazPorSeguridad() {
                             <p class="direccion-texto">${casa.direccion}, ${casa.distrito}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
                         </div>
-                        <button class="btn-ver-contacto" onclick="abrirVentanaLogin()">${textoBotonContacto}</button>
+                        <button class="btn-ver-contacto" id="btn-contacto-${casa.id}" data-telefono="${casa.telefono || 'No disponible'}" onclick="abrirVentanaLogin()">Ver datos de contacto</button>
+
                     </div>
                 `;
                 contenedor.appendChild(tarjeta);
