@@ -130,10 +130,10 @@
     // Credenciales de Supabase Auth
     const supabaseUrl = "https://aohizylvnnrjhgplsods.supabase.co";
     const supabaseKey = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
     
     document.getElementById('btn-google').addEventListener('click', async () => {
-        await supabase.auth.signInWithOAuth({
+        await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: { redirectTo: 'https://github.io' }
         });
@@ -146,7 +146,7 @@
         inicializarMapa();
 
         // Verificamos si Supabase tiene sesión guardada en caché local
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
 
         if (session && session.user) {
             verificarEstadoYRolUsuario(session.user.email);
@@ -155,7 +155,7 @@
         }
     }
 
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
             if (!usuarioAutenticado) verificarEstadoYRolUsuario(session.user.email);
         } else {
@@ -356,7 +356,7 @@
         }
 
         try {
-            const { data: dataLogin, error: errorLogin } = await supabase.auth.signInWithPassword({ email: email, password: pass });
+            const { data: dataLogin, error: errorLogin } = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
 
             if (!errorLogin && dataLogin.user) {
                 verificarEstadoYRolUsuario(email);
@@ -368,7 +368,7 @@
                 return;
             }
 
-            const { data: dataRegistro, error: errorRegistro } = await supabase.auth.signUp({
+            const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
                 email: email,
                 password: pass,
                 options: { redirectTo: 'https://github.io' }
