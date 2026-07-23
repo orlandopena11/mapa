@@ -258,12 +258,13 @@
                 const esFavorito = favoritosUsuario.includes(casa.id.toString());
                 const colorCorazon = usuarioAutenticado ? (esFavorito ? '#d92323' : '#757575') : '#b0bec5';
 
+                // 🌟 CORRECCIÓN CRÍTICA: Control de visualización dinámica del contacto del anunciante/propietario
                 let textoBotonContacto = "Ver datos de contacto";
                 let accionClickBoton = "abrirVentanaLogin()";
 
-                if (usuarioAutenticado) {
+                if (usuarioAutenticado && casa.telefono) {
                     textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
-                    accionClickBoton = `alert('Llamando al anunciante: ${casa.telefono}')`;
+                    accionClickBoton = `alert('Llamando al propietario/agente de la propiedad ${casa.id}: ${casa.telefono}')`;
                 }
 
                 const tarjeta = document.createElement('div');
@@ -291,6 +292,7 @@
         });
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
+
 
 
     // =========================================================================
