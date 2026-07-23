@@ -282,14 +282,13 @@
                         tipoContacto = "Propietario Directo";
                     }
 
-                    if (telefonoFinal !== "") {
-                        textoBotonContacto = `📞 Contactar: ${telefonoFinal}`;
-                        accionClickBoton = `alert('Conectando con el ${tipoContacto} de la propiedad ${casa.id}: ${telefonoFinal}')`;
-                    } else {
+                  if (casa.telefono && casa.telefono !== "Ver datos de contacto" && casa.telefono !== "Sin teléfono") {
+                    textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
+                    accionClickBoton = `alert('Número de contacto: ${casa.telefono}')`;
+                      } else {
                         textoBotonContacto = "📞 Solicitar Teléfono";
                         accionClickBoton = `alert('Esta propiedad no registra teléfonos activos. Un asesor se comunicará contigo.')`;
-                    }
-                }
+                      }
 
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
