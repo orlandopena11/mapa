@@ -522,6 +522,12 @@
 
     function abrirVentanaDetalle(idPropiedad) {
         document.getElementById('mi-modal-detalle').style.display = 'flex';
+    const casaSeleccionada = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
+    if (!casaSeleccionada) return;
+
+    const precioModal = casaSeleccionada.precio > 0 ? "$ " + casaSeleccionada.precio.toLocaleString('en-US') : "Consulte";
+    const divDetalle = document.getElementById('contenedor-detalle-zillow');
+
         // Aquí programaremos en el siguiente paso la carga de fotos y pestañas
     }
 
