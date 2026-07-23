@@ -356,46 +356,37 @@
         })
         .catch(err => console.error("Error al guardar favorito:", err));
     }
+   
+                    // 🌟 REGISTRO INMEDIATO EN GOOGLE SHEETS (ESTADO PENDIENTE)
+                // Disparamos la inserción antes de que Supabase pueda retrasar el flujo por sus límites de red
+                guardarUsuarioEnGoogleSheets(email);
+                
+                // Alerta informativa inmediata para el interesado en Surco
+                alert("¡Datos registrados en el sistema!\nHemos guardado tus datos en estado 'pendiente'. Ahora procederemos a solicitar el envío del enlace de confirmación a tu correo electrónico.");
 
-    async function procesarAccesoUsuario() {
-        const email = document.getElementById('input-usuario-email').value.trim();
-        const pass = document.getElementById('input-usuario-pass').value.trim();
+                // Ahora sí, llamamos a Supabase de forma segura para despachar el link oficial
+                const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: pass,
+                    options: { redirectTo: 'https://github.io' }
+                });
 
-        if (!email || !pass) {
-            alert("Completa todos los campos obligatorios (*)");
-            return;
-        }
+                if (errorRegistro) {
+                    console.error("Aviso de Supabase Auth:", errorRegistro.message);
+                    // Si Supabase falla por límites de envío (Rate Limit), el usuario ya quedó guardado en la Sheet como pendiente
+                    alert("Nota: El servidor de correos está saturado en este momento. Tu cuenta ya figura como 'pendiente' en el sistema, un administrador la revisará o puedes reintentar confirmar más tarde.");
+                }
 
-        try {
-            const { data: dataLogin, error: errorLogin } = await supabaseClient.auth.signInWithPassword({ email: email, password: pass });
-
-            if (!errorLogin && dataLogin.user) {
-                verificarEstadoYRolUsuario(email);
-                return;
-            }
-
-            if (errorLogin && errorLogin.message.includes("Email not confirmed")) {
-                alert("Revisa tu bandeja de entrada y confirma tu correo antes de entrar.");
-                return;
-            }
-
-            const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
-                email: email,
-                password: pass,
-                options: { redirectTo: 'https://github.io' }
-            });
-
-            if (errorRegistro) throw errorRegistro;
-
-            if (dataRegistro.user && dataRegistro.session === null) {
-                alert("¡Enlace enviado! Revisa tu bandeja para confirmar la cuenta.");
                 cerrarVentanaLogin();
+            } else {
+                throw errorLogin;
             }
-        } catch (error) {
-            alert("Error: " + error.message);
-        }
-    }
 
+        } catch (error) {
+            alert("Error en el sistema de accesos: " + error.message);
+        }
+
+        
     async function forzarCierreDeInterfazPorSeguridad() {
         usuarioAutenticado = false;
         correoUsuarioLogueado = "";
