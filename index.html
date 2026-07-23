@@ -317,12 +317,25 @@
                 alert("Tu cuenta se encuentra suspendida por el administrador. No tienes acceso a los datos de contacto.");
                 await forzarCierreDeInterfazPorSeguridad();
             } 
-            // 🌐 REGLA 3: SI NO EXISTE LA FILA (ELIMINADO/VACÍO) O ESTÁ PENDIENTE
-            // Permitimos la libre navegación por el mapa y las propiedades, pero en modo básico de visitante 
-            // (Sin alertas molestas, sin registros automáticos, corazones plomos y teléfonos ocultos)
+            // 🔒 REGLA 3: SI LA CUENTA NO EXISTE EN LA SHEET -> Validamos si viene de Red Social para activarlo de inmediato
+            else if (data.estado_cuenta === "inexistente") {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                
+                if (session && session.user && (session.user.app_metadata.provider === 'google' || session.user.app_metadata.provider === 'facebook')) {
+                    console.log("Interesado validado por Red Social (" + session.user.app_metadata.provider + "). Registrando en Sheets como 'activo' de forma automatizada...");
+                    const nombreOAuth = session.user.user_metadata.full_name || "Usuario Red Social";
+                    
+                    // Alta inmediata automática con estado 'activo' para Google o Facebook
+                    guardarUsuarioEnGoogleSheets(emailUsuario, "activo", nombreOAuth);
+                } else {
+                    // Si no es red social (es decir, limpió la caché o es un correo eliminado), se le mantiene en modo visitante básico
+                    console.log("Visitante libre navegando sin credenciales comerciales activas.");
+                    await forzarCierreDeInterfazPorSeguridad();
+                }
+            }
+            // SI ESTÁ PENDIENTE U OTRO ESTADO
             else {
-                console.log("Usuario navegando en modo visitante básico (No registrado o pendiente).");
-                await forzarCierreDeInterfazPorSeguridad(); // Limpia la sesión de Supabase en caché para que pueda volver a validarse después
+                await forzarCierreDeInterfazPorSeguridad();
             }
         })
         .catch(async () => {
@@ -330,6 +343,8 @@
         });
     }
 
+
+        
         function guardarUsuarioEnGoogleSheets(emailUsuario, estadoInicial = "pendiente", nombreCompleto = "") {
         // Enviamos el correo, el estado ("activo" para redes, "pendiente" para email) y el nombre capturado de Google/Facebook
         fetch(urlMiScriptGoogle, {
