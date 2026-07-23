@@ -386,8 +386,68 @@
             alert("Error en el sistema de accesos: " + error.message);
         }
 
-        
-    async function forzarCierreDeInterfazPorSeguridad() {
+
+            async function procesarAccesoUsuario() {
+        const email = document.getElementById('input-usuario-email').value.trim();
+        const pass = document.getElementById('input-usuario-pass').value.trim();
+
+        if (!email || !pass) {
+            alert("Completa todos los campos obligatorios (*)");
+            return;
+        }
+
+        try {
+            // 1. Intentamos iniciar sesión de forma directa en Supabase
+            const { data: dataLogin, error: errorLogin } = await supabaseClient.auth.signInWithPassword({ 
+                email: email, 
+                password: pass 
+            });
+
+            if (!errorLogin && dataLogin.user) {
+                // Éxito: Sincronizamos y activamos automáticamente si estaba pendiente
+                verificarEstadoYRolUsuario(email);
+                return;
+            }
+
+            // 2. Evaluamos si es un usuario que ya existe pero no ha confirmado su correo
+            if (errorLogin && errorLogin.message.includes("Email not confirmed")) {
+                alert("Tu registro está pendiente. Por favor, revisa tu bandeja de entrada y confirma tu correo electrónico para ingresar.");
+                return;
+            }
+
+            // 3. FLUJO DE AUTORREGISTRO EN PARALELO
+            if (errorLogin && (errorLogin.message.includes("Invalid login credentials") || errorLogin.status === 400)) {
+                
+                // Disparamos la inserción antes de que Supabase pueda retrasar el flujo por sus límites de red
+                guardarUsuarioEnGoogleSheets(email);
+                
+                alert("¡Datos registrados en el sistema!\nHemos guardado tus datos en estado 'pendiente'. Ahora procederemos a solicitar el envío del enlace de confirmación a tu correo electrónico.");
+
+                // Ahora sí, llamamos a Supabase para despachar el link oficial
+                const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: pass,
+                    options: { redirectTo: 'https://github.io' }
+                });
+
+                if (errorRegistro) {
+                    console.error("Aviso de Supabase Auth:", errorRegistro.message);
+                    alert("Nota: El servidor de correos está saturado en este momento. Tu cuenta ya figura como 'pendiente' en el sistema, un administrador la revisará o puedes reintentar confirmar más tarde.");
+                }
+
+                cerrarVentanaLogin();
+            } else {
+                throw errorLogin;
+            }
+
+        } catch (error) {
+            alert("Error en el sistema de accesos: " + error.message);
+        }
+    }
+
+
+    
+        async function forzarCierreDeInterfazPorSeguridad() {
         usuarioAutenticado = false;
         correoUsuarioLogueado = "";
         favoritosUsuario = [];
