@@ -276,6 +276,7 @@
         txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
     }
 
+
     // =========================================================================
     // COMUNICACIÓN ASÍNCRONA CON EL BACKEND DE GOOGLE SHEETS (doPost)
     // =========================================================================
@@ -298,28 +299,29 @@
             // 🔒 SI EL ADMINISTRADOR LO ELIMINÓ DE LA SHEET: Expulsión y cierre de sesión inmediato
             else if (data.estado_cuenta === "inexistente") {
                 console.warn("Cuenta inexistente en base de datos. Revocando credenciales locales...");
-                forzarCierreDeInterfazPorSeguridad(); // Llama al signOut y limpia la pantalla
+                forzarCierreDeInterfazPorSeguridad(); 
             } 
             // 🔒 SI ESTÁ SUSPENDIDO O EN ESTADO PENDIENTE
             else if (data.estado_cuenta === "suspendido") {
                 alert("Tu cuenta se encuentra suspendida por el administrador.");
                 forzarCierreDeInterfazPorSeguridad();
             } else {
-                // Si está pendiente (registrado pero aún no confirma el correo)
                 forzarCierreDeInterfazPorSeguridad();
             }
         })
         .catch(() => forzarCierreDeInterfazPorSeguridad());
     }
 
-
     function guardarUsuarioEnGoogleSheets(emailUsuario) {
+        // Modificado a text/plain para una comunicación bidireccional limpia sin bloqueos de CORS
         fetch(urlMiScriptGoogle, {
             method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
             body: JSON.stringify({ accion: "registrar_usuario", email: emailUsuario })
-        });
+        })
+        .then(res => res.json())
+        .then(data => console.log("Usuario registrado en Sheets en estado pendiente:", data))
+        .catch(err => console.error("Error al registrar en Sheets:", err));
     }
 
     // 🌟 PERSISTENCIA EN TIEMPO REAL: Guarda y borra me gustas directamente de tu Google Sheets
@@ -356,36 +358,10 @@
         })
         .catch(err => console.error("Error al guardar favorito:", err));
     }
-   
-                    // 🌟 REGISTRO INMEDIATO EN GOOGLE SHEETS (ESTADO PENDIENTE)
-                // Disparamos la inserción antes de que Supabase pueda retrasar el flujo por sus límites de red
-                guardarUsuarioEnGoogleSheets(email);
-                
-                // Alerta informativa inmediata para el interesado en Surco
-                alert("¡Datos registrados en el sistema!\nHemos guardado tus datos en estado 'pendiente'. Ahora procederemos a solicitar el envío del enlace de confirmación a tu correo electrónico.");
 
-                // Ahora sí, llamamos a Supabase de forma segura para despachar el link oficial
-                const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
-                    email: email,
-                    password: pass,
-                    options: { redirectTo: 'https://github.io' }
-                });
-
-                if (errorRegistro) {
-                    console.error("Aviso de Supabase Auth:", errorRegistro.message);
-                    // Si Supabase falla por límites de envío (Rate Limit), el usuario ya quedó guardado en la Sheet como pendiente
-                    alert("Nota: El servidor de correos está saturado en este momento. Tu cuenta ya figura como 'pendiente' en el sistema, un administrador la revisará o puedes reintentar confirmar más tarde.");
-                }
-
-                cerrarVentanaLogin();
-            } else {
-                throw errorLogin;
-            }
-
-        } catch (error) {
-            alert("Error en el sistema de accesos: " + error.message);
-        }
-
+    // =========================================================================
+    // CONTROLADOR DE ACCESO INTELIGENTE (EMAIL / CONTRASEÑA)
+    // =========================================================================
     async function procesarAccesoUsuario() {
         const email = document.getElementById('input-usuario-email').value.trim();
         const pass = document.getElementById('input-usuario-pass').value.trim();
@@ -414,15 +390,15 @@
                 return;
             }
 
-            // 3. FLUJO DE AUTORREGISTRO EN PARALELO
+            // 3. FLUJO DE AUTORREGISTRO EN PARALELO ANTES DE SUPABASE
             if (errorLogin && (errorLogin.message.includes("Invalid login credentials") || errorLogin.status === 400)) {
                 
-                // Disparamos la inserción antes de que Supabase pueda retrasar el flujo por sus límites de red
+                // 🌟 REGISTRO INMEDIATO EN GOOGLE SHEETS (ESTADO PENDIENTE)
                 guardarUsuarioEnGoogleSheets(email);
                 
                 alert("¡Datos registrados en el sistema!\nHemos guardado tus datos en estado 'pendiente'. Ahora procederemos a solicitar el envío del enlace de confirmación a tu correo electrónico.");
 
-                // Ahora sí, llamamos a Supabase para despachar el link oficial
+                // Ahora sí, llamamos a Supabase de forma segura para despachar el link oficial
                 const { data: dataRegistro, error: errorRegistro } = await supabaseClient.auth.signUp({
                     email: email,
                     password: pass,
@@ -444,21 +420,18 @@
         }
     }
 
-    
-        async function forzarCierreDeInterfazPorSeguridad() {
+    async function forzarCierreDeInterfazPorSeguridad() {
         usuarioAutenticado = false;
         correoUsuarioLogueado = "";
         favoritosUsuario = [];
         renderizarMapaZillow();
         
-        // 🌟 CORRECCIÓN CRÍTICA: Destruimos la sesión en la caché del navegador para frenar el bucle infinito
         try {
             await supabaseClient.auth.signOut();
         } catch (e) {
             console.log("Sesión de Supabase ya limpia o inexistente.");
         }
     }
-
 
     function abrirVentanaLogin() {
         if (usuarioAutenticado) return;
