@@ -302,7 +302,8 @@
                 tarjeta.innerHTML = `
                     <div class="badge">${casa.tipo}</div>
                     <button class="corazon-favorito" onclick="alternarFavoritoReal('${casa.id}')" style="color: ${colorCorazon}; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; filter: drop-shadow(1px 0px 0px #fff) drop-shadow(-1px 0px 0px #fff); line-height: 1;">❤</button>
-                    <div class="contenedor-foto">
+                    <div class="contenedor-foto" onclick="abrirVentanaDetalle('${casa.id}')">
+
                         <img src="${imagenFinal}" alt="">
                     </div>
                     <div class="datos-casa">
