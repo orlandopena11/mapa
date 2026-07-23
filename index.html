@@ -391,12 +391,20 @@
         }
     }
 
-    function forzarCierreDeInterfazPorSeguridad() {
+    async function forzarCierreDeInterfazPorSeguridad() {
         usuarioAutenticado = false;
         correoUsuarioLogueado = "";
         favoritosUsuario = [];
         renderizarMapaZillow();
+        
+        // 🌟 CORRECCIÓN CRÍTICA: Destruimos la sesión en la caché del navegador para frenar el bucle infinito
+        try {
+            await supabaseClient.auth.signOut();
+        } catch (e) {
+            console.log("Sesión de Supabase ya limpia o inexistente.");
+        }
     }
+
 
     function abrirVentanaLogin() {
         if (usuarioAutenticado) return;
