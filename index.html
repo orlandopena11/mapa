@@ -330,16 +330,26 @@
         });
     }
 
-        
-        function guardarUsuarioEnGoogleSheets(emailUsuario) {
-        // Modificado a text/plain para una comunicación bidireccional limpia sin bloqueos de CORS
+        function guardarUsuarioEnGoogleSheets(emailUsuario, estadoInicial = "pendiente", nombreCompleto = "") {
+        // Enviamos el correo, el estado ("activo" para redes, "pendiente" para email) y el nombre capturado de Google/Facebook
         fetch(urlMiScriptGoogle, {
             method: "POST",
             headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ accion: "registrar_usuario", email: emailUsuario })
+            body: JSON.stringify({ 
+                accion: "registrar_usuario", 
+                email: emailUsuario,
+                estado: estadoInicial,
+                nombre: nombreCompleto
+            })
         })
         .then(res => res.json())
-        .then(data => console.log("Usuario registrado en Sheets en estado pendiente:", data))
+        .then(data => {
+            console.log("Sincronización con Sheets completada de forma segura:", data);
+            // Si acabamos de registrar a alguien activo por Google/Facebook, refrescamos los datos comerciales en pantalla
+            if (estadoInicial === "activo") {
+                verificarEstadoYRolUsuario(emailUsuario);
+            }
+        })
         .catch(err => console.error("Error al registrar en Sheets:", err));
     }
 
@@ -409,11 +419,11 @@
                 return;
             }
 
-            // 3. FLUJO DE AUTORREGISTRO EN PARALELO ANTES DE SUPABASE
+            // 3. FLUJO DE AUTORREGISTRO EN PARALELO ANTES DE SUPABASE (POR EMAIL VA A PENDIENDE)
             if (errorLogin && (errorLogin.message.includes("Invalid login credentials") || errorLogin.status === 400)) {
                 
-                // 🌟 REGISTRO INMEDIATO EN GOOGLE SHEETS (ESTADO PENDIENTE)
-                guardarUsuarioEnGoogleSheets(email);
+                // Registro inicial manual entra como 'pendiente' de validación de enlace
+                guardarUsuarioEnGoogleSheets(email, "pendiente", "");
                 
                 alert("¡Datos registrados en el sistema!\nHemos guardado tus datos en estado 'pendiente'. Ahora procederemos a solicitar el envío del enlace de confirmación a tu correo electrónico.");
 
@@ -445,18 +455,12 @@
         favoritosUsuario = [];
         renderizarMapaZillow();
         
-        // 🔒 BLINDAJE DE SEGURIDAD ABSOLUTO: Limpieza total de caché local y de cookies de terceros (Google/Facebook)
         try {
-            // Cerramos sesión local en Supabase
             await supabaseClient.auth.signOut();
-            
-            // Limpiamos manualmente el almacenamiento local del navegador para que no queden rastros del token
             localStorage.clear();
             sessionStorage.clear();
-            
-            console.log("Ecosistema de autenticación completamente purgado por seguridad.");
         } catch (e) {
-            console.error("Aviso al limpiar credenciales locales:", e);
+            console.log("Sesión de Supabase ya limpia o inexistente.");
         }
     }
 
@@ -471,3 +475,4 @@
 </script>
 </body>
 </html>
+    
