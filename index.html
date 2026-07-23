@@ -132,7 +132,22 @@
     document.getElementById('btn-google').addEventListener('click', async () => {
         await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: 'https://orlandopena11.github.io/mapa/' }
+            options: { 
+                redirectTo: 'https://orlandopena11.github.io/mapa/',
+                // 🌟 REGLA DE ORO: Fuerza a Google a mostrar la pantalla oficial de selección de cuentas siempre
+                queryParams: { prompt: 'select_account' } 
+            }
+        });
+    });
+
+    document.getElementById('btn-facebook').addEventListener('click', async () => {
+        await supabaseClient.auth.signInWithOAuth({
+            provider: 'facebook',
+            options: { 
+                redirectTo: 'https://orlandopena11.github.io/mapa/',
+                // 🌟 REGLA DE ORO: Fuerza a Facebook a exigir la reautenticación manual del interesado siempre
+                queryParams: { auth_type: 'reauthenticate' } 
+            }
         });
     });
 
