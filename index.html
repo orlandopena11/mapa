@@ -155,8 +155,16 @@
     supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
             if (!usuarioAutenticado) verificarEstadoYRolUsuario(session.user.email);
-        } else {
-            forzarCierreDeInterfazPorSeguridad();
+        } 
+        else if (event === 'SIGNED_OUT') {
+            usuarioAutenticado = false;
+            correoUsuarioLogueado = "";
+            favoritosUsuario = [];
+            renderizarMapaZillow();
+        } 
+        else {
+            usuarioAutenticado = false;
+            renderizarMapaZillow();
         }
     });
 
