@@ -203,13 +203,11 @@
     script.src = urlMiScriptGoogle + "?callback=procesarDatosDelMotor";
     document.body.appendChild(script);
 }
-    
-    window.procesarDatosDelMotor = function(data) {
+        window.procesarDatosDelMotor = function(data) {
         if (data.error) {
             console.error("Error del motor:", data.error);
             return;
         }
-        
         propiedadesCombinadas = data.propiedades.map(prop => ({
             id: prop.id,
             titulo: prop.titulo,
@@ -221,12 +219,15 @@
             direccion: prop.geo.direccion + ", " + prop.geo.distrito,
             lat: prop.geo.latitud,
             lng: prop.geo.longitud,
-            telefono: prop.telefono, // 🌟 Teléfono real traído de forma segura
-            tipo: prop.tipo_anuncio
+            tipo: prop.tipo_anuncio,
+            // 🌟 CAPTURA INTEGRADA DE TELÉFONOS (JERARQUÍA COMERCIAL)
+            telefonoAgente: prop.telefono_agente,    // Número del Agente Inmobiliario
+            telefonoPropietario: prop.telefono_dueno // Número del Propietario Directo
         }));
 
         renderizarMapaZillow();
     };
+
 
             // =========================================================================
     // RENDERIZADOR COMERCIAL DINÁMICO
