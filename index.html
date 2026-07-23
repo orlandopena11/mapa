@@ -288,7 +288,7 @@
             body: JSON.stringify({ accion: "verificar_estado_usuario", email: emailUsuario })
         })
         .then(res => res.json())
-        .then(data => {
+        .then(async (data) => {
             // 🌟 ACCESO PERMITIDO: Solo si el administrador lo tiene en estado 'activo'
             if (data.success && data.estado_cuenta.toString().toLowerCase().trim() === "activo") {
                 usuarioAutenticado = true;
@@ -297,20 +297,30 @@
                 cerrarVentanaLogin();
                 renderizarMapaZillow();
             } 
-            // 🔒 SI EL ADMINISTRADOR LO ELIMINÓ DE LA SHEET: Expulsión y cierre de sesión inmediato
+            // 🔒 SI EL ADMINISTRADOR LO ELIMINÓ O ES NUEVO POR GOOGLE/FACEBOOK/EMAIL
             else if (data.estado_cuenta === "inexistente") {
-                console.warn("Cuenta inexistente en base de datos. Revocando credenciales locales...");
-                forzarCierreDeInterfazPorSeguridad(); 
+                console.warn("Cuenta inexistente en base de datos. Registrando primero como pendiente...");
+                
+                // 1. Registramos inmediatamente en la Google Sheet en estado 'pendiente'
+                guardarUsuarioEnGoogleSheets(emailUsuario);
+                
+                // Alerta amigable adaptada para redes sociales y accesos directos
+                alert("¡Bienvenido!\nHemos registrado tus datos en estado 'pendiente'. Un administrador de Inmobiliaria en Surco revisará tu cuenta y activará tu acceso como visitante a la brevedad.");
+                
+                // 2. Ahora sí, limpiamos de forma segura la interfaz y destruimos la caché local
+                await forzarCierreDeInterfazPorSeguridad(); 
             } 
-            // 🔒 SI ESTÁ SUSPENDIDO O EN ESTADO PENDIENTE
+            // 🔒 SI ESTÁ SUSPENDIDO EN LA SHEET
             else if (data.estado_cuenta === "suspendido") {
                 alert("Tu cuenta se encuentra suspendida por el administrador.");
-                forzarCierreDeInterfazPorSeguridad();
+                await forzarCierreDeInterfazPorSeguridad();
             } else {
-                forzarCierreDeInterfazPorSeguridad();
+                await forzarCierreDeInterfazPorSeguridad();
             }
         })
-        .catch(() => forzarCierreDeInterfazPorSeguridad());
+        .catch(async () => {
+            await forzarCierreDeInterfazPorSeguridad();
+        });
     }
 
     function guardarUsuarioEnGoogleSheets(emailUsuario) {
