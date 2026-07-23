@@ -306,15 +306,16 @@
                             <p class="direccion-texto">${casa.direccion}</p>
                             <p class="titulo-propiedad">Código: ${casa.id}</p>
                         </div>
-                        <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
-                    </div>
-                `;
-                contenedor.appendChild(tarjeta);
-            }
-        });
-        txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
-    }
+              <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
+          </div>
+      `;
 
+      contenedor.appendChild(tarjeta);
+    }
+  });
+
+  txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
+}
 
 
     // =========================================================================
