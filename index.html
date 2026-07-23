@@ -279,17 +279,16 @@
                     // REGLA B: Si NO tiene agente, se muestra directamente el número del propietario/dueño auténtico
                     else if (casa.telefonoPropietario && casa.telefonoPropietario.toString().trim() !== "") {
                         telefonoFinal = casa.telefonoPropietario.toString().trim();
-                        tipoContacto = "Propietario Directo";
-                    }
 
-                  if (casa.telefono && casa.telefono !== "Ver datos de contacto" && casa.telefono !== "Sin teléfono") {
-                    textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
-                    accionClickBoton = `alert('Número de contacto: ${casa.telefono}')`;
-                      } else {
-                        textoBotonContacto = "📞 Solicitar Teléfono";
-                        accionClickBoton = `alert('Esta propiedad no registra teléfonos activos. Un asesor se comunicará contigo.')`;
-                      }
+      if (casa.telefono && casa.telefono !== "Ver datos de contacto" && casa.telefono !== "Sin teléfono") {
+        textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
+        accionClickBoton = `alert('Número de contacto: ${casa.telefono}')`;
+      } else {
+        textoBotonContacto = "📞 Solicitar Teléfono";
+        accionClickBoton = `alert('Esta propiedad no registra teléfonos activos. Un asesor se comunicará contigo.')`;
+      }
 
+                        
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
                 const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
