@@ -282,7 +282,7 @@
         })
         .then(res => res.json())
         .then(data => {
-            // 🌟 PRIVILEGIOS DE ORO: Solo si existe y está estrictamente 'activo' ve datos comerciales
+            // 🌟 ACCESO PERMITIDO: Solo si el administrador lo tiene en estado 'activo'
             if (data.success && data.estado_cuenta.toString().toLowerCase().trim() === "activo") {
                 usuarioAutenticado = true;
                 correoUsuarioLogueado = emailUsuario;
@@ -290,17 +290,17 @@
                 cerrarVentanaLogin();
                 renderizarMapaZillow();
             } 
-            // 🔒 PROTECCIÓN CONTRA ELIMINACIÓN: Si no existe en la Sheet, se limpia la interfaz y pasa a pendiente
+            // 🔒 SI EL ADMINISTRADOR LO ELIMINÓ DE LA SHEET: Expulsión y cierre de sesión inmediato
             else if (data.estado_cuenta === "inexistente") {
-                console.warn("Usuario eliminado de la Sheet. Revocando accesos y re-registrando como pendiente...");
-                guardarUsuarioEnGoogleSheets(emailUsuario); // Lo vuelve a insertar en la Sheet como 'pendiente'
-                forzarCierreDeInterfazPorSeguridad();     // Limpia variables globales, pone corazones plomos y oculta contactos
+                console.warn("Cuenta inexistente en base de datos. Revocando credenciales locales...");
+                forzarCierreDeInterfazPorSeguridad(); // Llama al signOut y limpia la pantalla
             } 
-            // 🔒 SI ESTÁ SUSPENDIDO O EN OTRO ESTADO NO ACTIVO
+            // 🔒 SI ESTÁ SUSPENDIDO O EN ESTADO PENDIENTE
             else if (data.estado_cuenta === "suspendido") {
                 alert("Tu cuenta se encuentra suspendida por el administrador.");
                 forzarCierreDeInterfazPorSeguridad();
             } else {
+                // Si está pendiente (registrado pero aún no confirma el correo)
                 forzarCierreDeInterfazPorSeguridad();
             }
         })
