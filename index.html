@@ -553,6 +553,35 @@
         </div>
     `;
 
+            // 🌟 RENDERIZADO DINÁMICO DE IMÁGENES Y RECORRIDO 3D
+    let htmlMedia = '<div style="padding: 0 20px 20px 20px;">';
+    
+    // 1. Agregamos la Foto Principal
+    if (casaSeleccionada.foto_principal) {
+      htmlMedia += `<img src="${casaSeleccionada.foto_principal}" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; margin-bottom:15px;" alt="Portada">`;
+    }
+    
+    // 2. Agregamos la Galería Secundaria si cuenta con fotos
+    if (casaSeleccionada.imagenes_secundarias && casaSeleccionada.imagenes_secundarias.length > 0) {
+      htmlMedia += '<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; margin-bottom:15px;">';
+      casaSeleccionada.imagenes_secundarias.forEach(imgUrl => {
+        htmlMedia += `<img src="${imgUrl}" style="width:120px; height:80px; object-fit:cover; border-radius:4px; flex-shrink:0;" alt="Galería">`;
+      });
+      htmlMedia += '</div>';
+    }
+    
+    // 3. Incrustamos el Recorrido 3D interactivo en pantalla si existe
+    if (casaSeleccionada.recorrido_3d && casaSeleccionada.recorrido_3d.url) {
+      htmlMedia += '<div style="margin-top:15px;">';
+      htmlMedia += `<h4 style="margin: 0 0 10px 0; color:#2a2a2a;">Recorrido Virtual 3D (${casaSeleccionada.recorrido_3d.proveedor || 'Interactivo'})</h4>`;
+      htmlMedia += `<iframe src="${casaSeleccionada.recorrido_3d.url}" width="100%" height="350" style="border:none; border-radius:8px;" allowfullscreen></iframe>`;
+      htmlMedia += '</div>';
+    }
+    
+    htmlMedia += '</div>';
+    divDetalle.innerHTML += htmlMedia;
+
+
 
         // Aquí programaremos en el siguiente paso la carga de fotos y pestañas
     }
