@@ -528,6 +528,16 @@
     const precioModal = casaSeleccionada.precio > 0 ? "$ " + casaSeleccionada.precio.toLocaleString('en-US') : "Consulte";
     const divDetalle = document.getElementById('contenedor-detalle-zillow');
 
+            divDetalle.innerHTML = `
+        <div style="padding: 20px; position: relative; border-bottom: 1px solid #e6e6e6;">
+            <button onclick="cerrarVentanaDetalle()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #333;">✕ Volver</button>
+            <h2 style="margin: 0 0 10px 0; font-size: 24px; color: #006aff;">${precioModal}</h2>
+            <h3 style="margin: 0; font-size: 18px; color: #2a2a2a;">${casaSeleccionada.titulo}</h3>
+            <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">📍 ${casaSeleccionada.direccion}</p>
+        </div>
+    `;
+
+
         // Aquí programaremos en el siguiente paso la carga de fotos y pestañas
     }
 
