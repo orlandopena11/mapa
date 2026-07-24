@@ -538,7 +538,9 @@
             <p style="font-size: 16px; color: #4a4a4a; margin: 0 0 15px 0;">
                 🛌 <b>${casaSeleccionada.habitaciones}</b> hab | 🚽 <b>${casaSeleccionada.banos}</b> baños | 📐 <b>${casaSeleccionada.area}</b> m²
             </p>
-            <button class="btn-ver-contacto" style="width: 100%; max-width: 300px; padding: 12px 0; font-size: 15px;" onclick="${accionClickBoton}">
+      
+            <button class="btn-ver-contacto" style="width: 100%; max-width: 300px; padding: 12px 0; font-size: 15px;" onclick="if(usuarioAutenticado){ alert('Número de contacto: ' + '${casaSeleccionada.telefono}'); }else{ abrirVentanaLogin(); }">
+
                 📞 Ver datos del contacto
             </button>
         </div>
