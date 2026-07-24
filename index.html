@@ -534,6 +534,15 @@
             <h2 style="margin: 0 0 10px 0; font-size: 24px; color: #006aff;">${precioModal}</h2>
             <h3 style="margin: 0; font-size: 18px; color: #2a2a2a;">${casaSeleccionada.titulo}</h3>
             <p style="margin: 5px 0 0 0; color: #666; font-size: 14px;">📍 ${casaSeleccionada.direccion}</p>
+                    <div style="padding: 20px;">
+            <p style="font-size: 16px; color: #4a4a4a; margin: 0 0 15px 0;">
+                🛌 <b>${casaSeleccionada.habitaciones}</b> hab | 🚽 <b>${casaSeleccionada.banos}</b> baños | 📐 <b>${casaSeleccionada.area}</b> m²
+            </p>
+            <button class="btn-ver-contacto" style="width: 100%; max-width: 300px; padding: 12px 0; font-size: 15px;" onclick="if('${casaSeleccionada.telefono}' !== 'Ver datos de contacto' && '${casaSeleccionada.telefono}' !== 'Sin teléfono') { alert('Número de contacto: ' + '${casaSeleccionada.telefono}'); } else { abrirVentanaLogin(); }">
+                📞 Ver datos del contacto
+            </button>
+        </div>
+
         </div>
     `;
 
