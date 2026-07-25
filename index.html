@@ -784,6 +784,39 @@
     function cerrarVentanaDetalle() {
          document.getElementById('mi-modal-detalle').style.display = 'none';
     }
+            // 🌟 MOTOR CONTROLADOR DEL CARRUSEL DE IMÁGENES ESTILO ZILLOW
+    window.cambiarFotoCarrusel = function(event, boton, direccion) {
+        // Evitamos que el clic abra la ventana flotante de detalle por error
+        event.stopPropagation();
+        
+        const contenedorPadre = boton.parentElement;
+        const carrusel = contenedorPadre.querySelector('.carrusel-imagenes');
+        const puntos = contenedorPadre.querySelectorAll('.punto-indicador');
+        
+        let actual = parseInt(carrusel.getAttribute('data-actual')) || 0;
+        const total = parseInt(carrusel.getAttribute('data-total')) || 1;
+        
+        // Calculamos la nueva posición cíclica
+        actual += direccion;
+        if (actual >= total) actual = 0;
+        if (actual < 0) actual = total - 1;
+        
+        // Guardamos el nuevo estado en el elemento HTML
+        carrusel.setAttribute('data-actual', actual);
+        
+        // Movemos físicamente las fotos desplazando el eje X
+        carrusel.style.transform = `translateX(-${actual * 100}%)`;
+        
+        // Actualizamos las bolitas indicadoras en tiempo real
+        puntos.forEach((punto, idx) => {
+            if (idx === actual) {
+                punto.classList.add('activo');
+            } else {
+                punto.classList.remove('activo');
+            }
+        });
+    };
+
 
         
 </script>
