@@ -463,9 +463,8 @@
             if (espacioDisponible > 0) {
                 const secundariasCortadas = casa.imagenes_secundarias.slice(0, espacioDisponible);
                 secundariasCortadas.forEach(urlCorta => {
-                    misFotosCarrusel.push(`https://cloudinary.com{urlCorta}`);
-                });
-            }
+                misFotosCarrusel.push(urlCorta);
+            });
         }
 
                 
