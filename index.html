@@ -69,24 +69,26 @@
         <div class="barra-superior">
 
         <!-- CABECERA CORPORATIVA CON LOGO OFICIAL -->
-        <!--<div style="width: 100%; display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; gap: 14px; font-family: 'Open Sans', sans-serif;">-->
-        <div style="width: 100%; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; font-family: 'Open Sans', sans-serif;">
-    
-            <!-- BLOQUE IZQUIERDO: PROPIEDADES EN VENTA -->
-            <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+        <div style="width: 100%; box-sizing: border-box; padding: 0 10px; display: flex; align-items: center; margin-bottom: 15px; font-family: 'Open Sans', sans-serif;">
+            <!-- BLOQUE IZQUIERDO: PROPIEDADES EN VENTA (Márgenes automáticos lo fijan a la izquierda) -->
+            <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left; margin-right: auto;">
                 <span style="font-size: 19px; font-weight: 700; color: #002E50;">Propiedades</span>
                 <span style="font-size: 19px; font-weight: 700; color: #002E50;">en Venta</span>
             </div>
 
-            <!-- BLOQUE CENTRAL: LOGOTIPO OFICIAL -->
-            <img src="logo.jpg" alt="Inmobiliaria Orlando Peña" style="width: 55px; height: 55px; object-fit: contain; border-radius: 6px; display: block;">
+            <!-- BLOQUE CENTRAL Y DERECHO AGRUPADOS (Márgenes automáticos centran el Logo) -->
+            <div style="display: flex; align-items: center; gap: 14px; margin-right: auto;">
+                <!-- LOGOTIPO OFICIAL -->
+                <img src="logo.jpg" alt="Inmobiliaria Orlando Peña" style="width: 55px; height: 55px; object-fit: contain; border-radius: 6px; display: block;">
 
-            <!-- BLOQUE DERECHO: INMOBILIARIA EN SURCO -->
-            <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
-                <span style="font-size: 19px; font-weight: 700; color: #022952;">Inmobiliaria</span>
-                <span style="font-size: 19px; font-weight: 700; color: #022952;">en Surco</span>
+                <!-- TEXTO PEgado AL LOGO -->
+                <div style="display: flex; flex-direction: column; line-height: 1.1; text-align: left;">
+                    <span style="font-size: 19px; font-weight: 700; color: #022952;">Inmobiliaria</span>
+                    <span style="font-size: 19px; font-weight: 700; color: #022952;">en Surco</span>
+                </div>
             </div>
         </div>
+
         
         <!-- BARRA DE FILTROS SEGUROS -->
         <div class="contenedor-filtros-zillow" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 15px 0 10px 0;">
