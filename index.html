@@ -755,8 +755,7 @@
     
     // 1. Agregamos la Foto Principal
     if (casaSeleccionada.foto_principal) {      
-      htmlMedia += `<img src="https://cloudinary.com{casaSeleccionada.foto_principal}" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px;">`;
-
+      htmlMedia += `<img src="https://cloudinary.com/${casaSeleccionada.foto_principal}" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px;">`;
     }
     
     // 2. Agregamos la Galería Secundaria si cuenta con fotos
