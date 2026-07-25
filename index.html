@@ -455,12 +455,14 @@
                 tarjeta.className = 'tarjeta-casa';
             // 🌟 CONSTRUCCIÓN DEL ARREGLO DE IMÁGENES PARA EL CARRUSEL (Límite 6 fotos totales)
             let misFotosCarrusel = [];
-            if (casa.foto) misFotosCarrusel.push(casa.foto);
+            if (casa.foto) misFotosCarrusel.push(`https://res.cloudinary.com/orlandopena11/image/upload/${casa.foto}`);
+            
             if (casa.imagenes_secundarias && casa.imagenes_secundarias.length > 0) {
                 // Tomamos solo las primeras fotos para no sobrecargar hasta completar un total de 6
                 const espacioDisponible = 6 - misFotosCarrusel.length;
                 if (espacioDisponible > 0) {
-                    misFotosCarrusel = misFotosCarrusel.concat(casa.imagenes_secundarias.slice(0, espacioDisponible));
+                    misFotosCarrusel = misFotosCarrusel.concat(casa.imagenes_secundarias.slice(0, espacioDisponible)).map(urlCorta => \https://res.cloudinary.com/orlandopena11/image/upload/${urlCorta}`)`;  
+                   
                 }
             }
             // Si por alguna razón está vacío, ponemos la de respaldo por seguridad
