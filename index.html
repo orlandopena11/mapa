@@ -68,8 +68,16 @@
     <div id="panel-propiedades">
         <div class="barra-superior">
 
-                <h2>Inmobiliaria Y Casas En Venta</h2>
+        <!-- CABECERA CORPORATIVA CON LOGO OFICIAL -->
+        <div style="width: 100%; display: flex; align-items: flex-end; justify-content: flex-start; margin-bottom: 15px; gap: 14px;">
+            <img src="logo.jpg" alt="Inmobiliaria Orlando Peña" style="width: 55px; height: 55px; object-fit: contain; border-radius: 6px; display: block;">
+            <div style="display: flex; flex-direction: column; font-family: 'Open Sans', sans-serif; line-height: 1.1; padding-bottom: 2px;">
+                <span style="font-size: 19px; font-weight: 700; color: #002E50;">Propiedades en Venta</span>
+                <span style="font-size: 19px; font-weight: 700; color: #002E50;">Inmobiliaria en Surco</span>
+            </div>
+        </div>
         
+        <!-- BARRA DE FILTROS SEGUROS -->
         <div class="contenedor-filtros-zillow" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 15px 0 10px 0;">
             <select id="filtro-tipo-anuncio" onchange="renderizarMapaZillow()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; font-weight: 600; color: #2a2a2a; cursor: pointer;">
                 <option value="Todos">Todos</option>
