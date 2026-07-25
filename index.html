@@ -255,27 +255,28 @@
             return;
         }
         propiedadesCombinadas = data.propiedades.map(prop => ({
-            id: prop.id,
-            titulo: prop.titulo,
-            precio: prop.precio_base,
-            foto: prop.foto_principal,
-            habitaciones: prop.habitaciones,
-            banos: prop.banos,
-            area: prop.area_construida,
-            direccion: prop.geo.direccion + ", " + prop.geo.distrito,
-            lat: prop.geo.latitud,
-            lng: prop.geo.longitud,
-            tipo: prop.tipo_anuncio,
+            id: prop.id || "",
+            titulo: prop.titulo || "",
+            precio: parseFloat(prop.precio_base) || 0,
+            foto: prop.foto_principal || "",
+            habitaciones: parseInt(prop.habitaciones) || 0,
+            banos: parseInt(prop.banos) || 0,
+            estacionamiento: parseInt(prop.estacionamientos) || 0,
+            area_terreno: parseFloat(prop.area_terreno) || 0,
+            area: parseFloat(prop.area_construida) || 0,
+            direccion: (prop.geo?.direccion || "") + ", " + (prop.geo?.distrito || "Surco"),
+            lat: parseFloat(prop.geo?.latitud) || 0,
+            lng: parseFloat(prop.geo?.longitud) || 0,
+            tipo: prop.tipo_anuncio || "Venta",
             tipo_propiedad: prop.tipo_propiedad || "Departamento",
-            telefono: prop.telefono,
+            telefono: prop.telefono || "Ver datos de contacto",
             imagenes_secundarias: prop.imagenes_secundarias || [],
             recorrido_3d: prop.recorrido_3d || null
         }));
 
         renderizarMapaZillow();
     };
-
-
+    
             // =========================================================================
     // RENDERIZADOR COMERCIAL DINÁMICO
     // =========================================================================
