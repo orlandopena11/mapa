@@ -754,15 +754,17 @@
     let htmlMedia = '<div style="padding: 0 20px 20px 20px;">';
     
     // 1. Agregamos la Foto Principal
-    if (casaSeleccionada.foto_principal) {
-      htmlMedia += `<img src="${casaSeleccionada.foto_principal}" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; margin-bottom:15px;" alt="Portada">`;
+    if (casaSeleccionada.foto_principal) {      
+      htmlMedia += `<img src="https://cloudinary.com{casaSeleccionada.foto_principal}" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px;">`;
+
     }
     
     // 2. Agregamos la Galería Secundaria si cuenta con fotos
     if (casaSeleccionada.imagenes_secundarias && casaSeleccionada.imagenes_secundarias.length > 0) {
       htmlMedia += '<div style="display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; margin-bottom:15px;">';
       casaSeleccionada.imagenes_secundarias.forEach(imgUrl => {
-        htmlMedia += `<img src="${imgUrl}" style="width:120px; height:80px; object-fit:cover; border-radius:4px; flex-shrink:0;" alt="Galería">`;
+      htmlMedia += `<img src="https://cloudinary.com{imgUrl}" style="width:120px; height:80px; object-fit:cover; border-radius:4px;">`;
+
       });
       htmlMedia += '</div>';
     }
