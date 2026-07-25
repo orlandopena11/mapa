@@ -517,6 +517,20 @@
                             <b>${casa.area_terreno}</b> m² Terr | 
                             <b>${casa.area}</b> m² Const
                         </p>
+                        <p style="margin: 0 0 5px 0; font-size: 14px; font-weight: 700; color: #2a2a2a;">${casa.titulo}</p>
+                        <p class="direccion-texto" style="margin-bottom: 8px;">${casa.direccion}</p>
+                        <p class="titulo-propiedad">Código: ${casa.id}</p>
+                    </div>
+                    <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
+                </div>
+            `;
+
+            contenedor.appendChild(tarjeta);
+        }
+    });
+
+    txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
+}
 
 
 
