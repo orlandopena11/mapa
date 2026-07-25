@@ -500,22 +500,24 @@
                     ${htmlPuntosIndicadores}
                     ${casa.recorrido_3d ? '<div class="badge-3d" style="position:absolute; top:10px; right:10px; background:#006aff; color:white; padding:4px 8px; font-size:12px; font-weight:bold; border-radius:4px; z-index:10;">Tour 3D</div>' : ''}
                 </div>
-            
-        <div class="datos-casa">
-                        <div>
-                            <p class="precio">${precioFormateado}</p>
-                            <p class="caracteristicas">
-                                <b>${casa.habitaciones}</b> hab | 
-                                <b>${casa.banos}</b> bañ | 
-                                <b>${casa.estacionamiento}</b> estac | 
-                                <b>${casa.area_terreno}</b> m² Terr | 
-                                <b>${casa.area}</b> m² Const
-                            </p>
-                            <p style="margin: 0 0 5px 0; font-size: 14px; font-weight: 700; color: #2a2a2a; text-transform: capitalize;">${casa.titulo}</p>
-                            <p class="direccion-texto" style="margin-bottom: 8px;">${casa.direccion}</p>
-                            <p class="titulo-propiedad">Código: ${casa.id}</p>
-                        </div>
-                        <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
+                       <div class="datos-casa">
+                    <div>
+                        <p class="precio">${precioFormateado}</p>
+                        <p class="caracteristicas">
+                            <b>${casa.habitaciones}</b> hab | 
+                            <b>${casa.banos}</b> bañ | 
+                            <b>${casa.estacionamiento}</b> estac | 
+                            <b>${casa.area_terreno}</b> m² Terr | 
+                            <b>${casa.area}</b> m² Const
+                        </p>
+                        <!-- TÍTULO LIMPIO: Muestra el texto exacto tal cual viene de tu Google Sheets -->
+                        <p style="margin: 0 0 5px 0; font-size: 14px; font-weight: 700; color: #2a2a2a;">${casa.titulo}</p>
+                        <p class="direccion-texto" style="margin-bottom: 8px;">${casa.direccion}</p>
+                        <p class="titulo-propiedad">Código: ${casa.id}</p>
+                    </div>
+                    <button class="btn-ver-contacto" onclick="${accionClickBoton}">${textoBotonContacto}</button>
+                </div>
+     
                     </div>
 
       `;
