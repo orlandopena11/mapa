@@ -459,12 +459,16 @@
             
             if (casa.imagenes_secundarias && casa.imagenes_secundarias.length > 0) {
                 // Tomamos solo las primeras fotos para no sobrecargar hasta completar un total de 6
-                const espacioDisponible = 6 - misFotosCarrusel.length;
-                if (espacioDisponible > 0) {
-                    misFotosCarrusel = misFotosCarrusel.concat(casa.imagenes_secundarias.slice(0, espacioDisponible)).map(urlCorta => \https://res.cloudinary.com/orlandopena11/image/upload/${urlCorta}`)`;  
-                   
-                }
+            const espacioDisponible = 6 - misFotosCarrusel.length;
+            if (espacioDisponible > 0) {
+                const secundariasCortadas = casa.imagenes_secundarias.slice(0, espacioDisponible);
+                secundariasCortadas.forEach(urlCorta => {
+                    misFotosCarrusel.push(`https://cloudinary.com{urlCorta}`);
+                });
             }
+        }
+
+                
             // Si por alguna razón está vacío, ponemos la de respaldo por seguridad
             if (misFotosCarrusel.length === 0) misFotosCarrusel.push("https://unsplash.com");
 
