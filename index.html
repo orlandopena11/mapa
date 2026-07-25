@@ -37,8 +37,87 @@
         .corazon-favorito { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 24px; cursor: pointer; z-index: 4; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.7)); transition: transform 0.2s; }
         .corazon-favorito:hover { transform: scale(1.2); }
 
-        .contenedor-foto { width: 100%; height: 140px; background: #e2e8f0; cursor: pointer; }
-        .contenedor-foto img { width: 100%; height: 100%; object-fit: cover; }
+        /* CONTENEDOR MULTI-FOTO DINÁMICO */
+        .contenedor-foto { 
+            width: 100%; 
+            height: 140px; 
+            background: #e2e8f0; 
+            cursor: pointer; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        /* CONTENEDOR INTERNO DESLIZANTE */
+        .carrusel-imagenes {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .carrusel-imagenes img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            flex-shrink: 0; 
+        }
+        
+        /* FLECHAS DE NAVEGACIÓN ESTILO ZILLOW */
+        .flecha-carrusel {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2a2a2a;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.2s ease, background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .flecha-carrusel:hover { background: #ffffff; color: #006aff; }
+        
+        /* Mostrar las flechas solo cuando el mouse entra a la tarjeta de la casa */
+        .tarjeta-casa:hover .flecha-carrusel { opacity: 1; }
+        
+        .flecha-izq { left: 8px; }
+        .flecha-der { right: 8px; }
+        
+        /* BOLITAS DE NAVEGACIÓN INFERIORES */
+        .indicadores-carrusel {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 6px;
+            border-radius: 10px;
+        }
+        
+        .punto-indicador {
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transition: background 0.2s, transform 0.2s;
+        }
+        
+        .punto-indicador.activo {
+            background: #ffffff;
+            transform: scale(1.2);
+        }
         
         .datos-casa { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .precio { font-size: 22px; font-weight: 800; color: #2a2a2a; margin: 0 0 5px 0; }
