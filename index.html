@@ -249,7 +249,7 @@
     script.src = urlMiScriptGoogle + "?callback=procesarDatosDelMotor";
     document.body.appendChild(script);
 }
-        window.procesarDatosDelMotor = function(data) {
+    window.procesarDatosDelMotor = function(data) {
         if (data.error) {
             console.error("Error del motor:", data.error);
             return;
@@ -266,11 +266,10 @@
             lat: prop.geo.latitud,
             lng: prop.geo.longitud,
             tipo: prop.tipo_anuncio,
+            tipo_propiedad: prop.tipo_propiedad || "Departamento",
             telefono: prop.telefono,
             imagenes_secundarias: prop.imagenes_secundarias || [],
             recorrido_3d: prop.recorrido_3d || null
-
-
         }));
 
         renderizarMapaZillow();
