@@ -450,17 +450,56 @@
                     
                 const tarjeta = document.createElement('div');
                 tarjeta.className = 'tarjeta-casa';
-                const imagenFinal = casa.foto ? casa.foto : "https://unsplash.com";
+            // 🌟 CONSTRUCCIÓN DEL ARREGLO DE IMÁGENES PARA EL CARRUSEL (Límite 6 fotos totales)
+            let misFotosCarrusel = [];
+            if (casa.foto) misFotosCarrusel.push(casa.foto);
+            if (casa.imagenes_secundarias && casa.imagenes_secundarias.length > 0) {
+                // Tomamos solo las primeras fotos para no sobrecargar hasta completar un total de 6
+                const espacioDisponible = 6 - misFotosCarrusel.length;
+                if (spaceDisponible > 0) {
+                    misFotosCarrusel = misFotosCarrusel.concat(casa.imagenes_secundarias.slice(0, espacioDisponible));
+                }
+            }
+            // Si por alguna razón está vacío, ponemos la de respaldo por seguridad
+            if (misFotosCarrusel.length === 0) misFotosCarrusel.push("https://unsplash.com");
 
-                tarjeta.innerHTML = `
-                    <div class="badge">${casa.tipo}</div>
-                    <button class="corazon-favorito" onclick="alternarFavoritoReal('${casa.id}')" style="color: ${colorCorazon}; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; filter: drop-shadow(1px 0px 0px #fff) drop-shadow(-1px 0px 0px #fff); line-height: 1;">❤</button>
+            // Generamos las imágenes HTML del carrusel interno
+            let htmlFotosInternas = '';
+            misFotosCarrusel.forEach(imgUrl => {
+                htmlFotosInternas += `<img src="${imgUrl}" alt="Propiedad" onclick="abrirVentanaDetalle('${casa.id}')">`;
+            });
 
-                      <div class="contenedor-foto" onclick="abrirVentanaDetalle('${casa.id}')">
-                        <img src="${imagenFinal}" alt="">
-                        ${casa.recorrido_3d ? '<div class="badge-3d" style="position:absolute; top:10px; right:10px; background:#006aff; color:white; padding:4px 8px; font-size:12px; font-weight:bold; border-radius:4px; z-index:10;">Tour 3D</div>' : ''}
-                      </div>
-                    <div class="datos-casa">
+            // Generamos las bolitas indicadoras inferiores (solo si hay más de 1 foto)
+            let htmlPuntosIndicadores = '';
+            if (misFotosCarrusel.length > 1) {
+                htmlPuntosIndicadores += '<div class="indicadores-carrusel">';
+                misFotosCarrusel.forEach((_, idx) => {
+                    htmlPuntosIndicadores += `<div class="punto-indicador ${idx === 0 ? 'activo' : ''}" data-idx="${idx}"></div>`;
+                });
+                htmlPuntosIndicadores += '</div>';
+            }
+
+            // Generamos los botones flotantes de las flechas (solo si hay más de 1 foto)
+            let htmlFlechasFlotantes = '';
+            if (misFotosCarrusel.length > 1) {
+                htmlFlechasFlotantes += `<button class="flecha-carrusel flecha-izq" onclick="cambiarFotoCarrusel(event, this, -1)">‹</button>`;
+                htmlFlechasFlotantes += `<button class="flecha-carrusel flecha-der" onclick="cambiarFotoCarrusel(event, this, 1)">›</button>`;
+            }
+
+            tarjeta.innerHTML = `
+                <div class="badge">${casa.tipo}</div>
+                <button class="corazon-favorito" onclick="alternarFavoritoReal('${casa.id}')" style="color: ${colorCorazon}; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; font-size: 26px; z-index: 999; filter: drop-shadow(1px 0px 0px #fff) drop-shadow(-1px 0px 0px #fff); line-height: 1;">❤</button>
+
+                <div class="contenedor-foto">
+                    ${htmlFlechasFlotantes}
+                    <div class="carrusel-imagenes" style="transform: translateX(0%);" data-actual="0" data-total="${misFotosCarrusel.length}">
+                        ${htmlFotosInternas}
+                    </div>
+                    ${htmlPuntosIndicadores}
+                    ${casa.recorrido_3d ? '<div class="badge-3d" style="position:absolute; top:10px; right:10px; background:#006aff; color:white; padding:4px 8px; font-size:12px; font-weight:bold; border-radius:4px; z-index:10;">Tour 3D</div>' : ''}
+                </div>
+            
+        <div class="datos-casa">
                         <div>
                             <p class="precio">${precioFormateado}</p>
                             <p class="caracteristicas">
