@@ -67,8 +67,43 @@
     <div id="mapa"></div>
     <div id="panel-propiedades">
         <div class="barra-superior">
-            <h2>Propiedades Disponibles</h2>
-            <p id="contador-propiedades">Sincronizando con Google Sheets...</p>
+
+                <h2>Inmobiliaria Y Casas En Venta</h2>
+        
+        <div class="contenedor-filtros-zillow" style="display: flex; gap: 8px; flex-wrap: wrap; margin: 15px 0 10px 0;">
+            <select id="filtro-tipo-anuncio" onchange="renderizarMapaZillow()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; font-weight: 600; color: #2a2a2a; cursor: pointer;">
+                <option value="Todos">Todos</option>
+                <option value="Venta">En venta</option>
+                <option value="Alquiler">En alquiler</option>
+            </select>
+
+            <select id="filtro-precio-max" onchange="renderizarMapaZillow()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; font-weight: 600; color: #2a2a2a; cursor: pointer;">
+                <option value="Todos">Precio Máx (Todos)</option>
+                <option value="150000">Hasta $150,000</option>
+                <option value="300000">Hasta $300,000</option>
+                <option value="500000">Hasta $500,000</option>
+                <option value="1000000">Hasta $1,000,000</option>
+            </select>
+
+            <select id="filtro-habitaciones" onchange="renderizarMapaZillow()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; font-weight: 600; color: #2a2a2a; cursor: pointer;">
+                <option value="Todos">Camas (Todas)</option>
+                <option value="1">1+ hab</option>
+                <option value="2">2+ hab</option>
+                <option value="3">3+ hab</option>
+                <option value="4">4+ hab</option>
+            </select>
+
+            <select id="filtro-tipo-propiedad" onchange="renderizarMapaZillow()" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; font-weight: 600; color: #2a2a2a; cursor: pointer;">
+                <option value="Todos">Tipo de propiedad</option>
+                <option value="Casa">Casa</option>
+                <option value="Departamento">Departamento</option>
+                <option value="Local">Local Comercial</option>
+            </select>
+        </div>
+
+        <p id="contador-propiedades">Sincronizando con Google Sheets...</p>
+
+            
         </div>
         <div id="contenedor-tarjetas" class="grid-tarjetas"></div>
     </div>
