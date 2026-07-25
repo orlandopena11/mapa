@@ -280,28 +280,43 @@
     // RENDERIZADOR COMERCIAL DINÁMICO
     // =========================================================================
     function renderizarMapaZillow() {
-        const contenedor = document.getElementById('contenedor-tarjetas');
-        const txtContador = document.getElementById('contador-propiedades');
-        if (!contenedor || !txtContador) return;
-        contenedor.innerHTML = ''; 
+    const contenedor = document.getElementById('contenedor-tarjetas');
+    const txtContador = document.getElementById('contador-propiedades');
+    if (!contenedor || !txtContador) return;
+    contenedor.innerHTML = ''; 
 
-        marcadoresEnPantalla.forEach(m => map.removeLayer(m));
-        marcadoresEnPantalla = [];
+    marcadoresEnPantalla.forEach(m => map.removeLayer(m));
+    marcadoresEnPantalla = [];
 
-        const limitesVisuales = map.getBounds();
-        let contadorVisual = 0;
+    // 🌟 CAPTURA EN VIVO DE LOS FILTROS SELECCIONADOS
+    const filtroAnuncio = document.getElementById('filtro-tipo-anuncio').value;
+    const filtroPrecioMax = document.getElementById('filtro-precio-max').value;
+    const filtroHabitaciones = document.getElementById('filtro-habitaciones').value;
+    const filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
 
-        propiedadesCombinadas.forEach(casa => {
-            const coordenada = L.latLng(casa.lat, casa.lng);
+    const limitesVisuales = map.getBounds();
+    let contadorVisual = 0;
 
-            if (limitesVisuales.contains(coordenada)) {
-                contadorVisual++;
-                const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
+    propiedadesCombinadas.forEach(casa => {
+        const coordenada = L.latLng(casa.lat, casa.lng);
 
-                const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
-                    .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
-                marcadoresEnPantalla.push(marcador);
+        // 1. Validamos límites geográficos del mapa Leaflet
+        if (limitesVisuales.contains(coordenada)) {
+            
+            // 🌟 COMPUERTAS LÓGICAS DE FILTRADO EN TIEMPO REAL
+            if (filtroAnuncio !== "Todos" && casa.tipo !== filtroAnuncio) return;
+            if (filtroPrecioMax !== "Todos" && casa.precio > parseFloat(filtroPrecioMax)) return;
+            if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) return;
+            if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
 
+            contadorVisual++;
+            const precioFormateado = casa.precio > 0 ? "$ " + casa.precio.toLocaleString('en-US') : "Consulte";
+
+            const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
+                .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
+            marcadoresEnPantalla.push(marcador);
+      
+        
                 // Evaluar si es favorito y color de corazón
                 const esFavorito = favoritosUsuario.includes(casa.id.toString());
                 const colorCorazon = usuarioAutenticado ? (esFavorito ? '#d92323' : '#757575') : '#b0bec5';
