@@ -395,6 +395,9 @@
     const filtroHabitaciones = document.getElementById('filtro-habitaciones').value;
     const filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
 
+    // 🌟 COMPUERTA DE SEGURIDAD: Si Leaflet aún no se inicializa, abortamos el renderizado preventivo
+    if (!map || typeof map.getBounds !== 'function') return;
+    
     const limitesVisuales = map.getBounds();
     let contadorVisual = 0;
 
