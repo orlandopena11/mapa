@@ -573,20 +573,16 @@
                     guardarUsuarioEnGoogleSheets(emailUsuario, "activo", nombreOAuth);
                 } else {
                     // Si no es red social (es decir, limpió la caché o es un correo eliminado), se le mantiene en modo visitante básico
+
                     console.log("Visitante libre navegando sin credenciales comerciales activas.");
                     await forzarCierreDeInterfazPorSeguridad();
                 }
-            }
-            // SI ESTÁ PENDIENTE U OTRO ESTADO
-            else {
+            } else {
                 await forzarCierreDeInterfazPorSeguridad();
             }
-        })
-        .catch(async () => {
+        } else {
             await forzarCierreDeInterfazPorSeguridad();
-        });
-    }
-
+        }
 
         
         function guardarUsuarioEnGoogleSheets(emailUsuario, estadoInicial = "pendiente", nombreCompleto = "") {
