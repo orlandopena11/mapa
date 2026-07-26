@@ -546,6 +546,8 @@
         })
         .then(res => res.json())
         .then(async (data) => {
+
+            
             // 🌟 REGLA 1: SI ESTÁ ACTIVO EN LA SHEET -> Conceder todos los privilegios comerciales
             if (data.success && data.estado_cuenta.toString().toLowerCase().trim() === "activo") {
                 usuarioAutenticado = true;
