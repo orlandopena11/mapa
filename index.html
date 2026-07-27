@@ -358,10 +358,10 @@
             id: prop.id || "",
             titulo: prop.titulo || "",
             precio: parseFloat(prop.precio_base) || 0,
-            foto: prop.foto_principal || "",
+            foto_principal: prop.foto_principal || "",
             habitaciones: parseInt(prop.habitaciones) || 0,
             banos: parseInt(prop.banos) || 0,
-            estacionamiento: parseInt(prop.estacionamientos) || 0,
+            estacionamientos: parseInt(prop.estacionamientos) || 0,
             area_terreno: parseFloat(prop.area_terreno) || 0,
             area: parseFloat(prop.area_construida) || 0,
             direccion: (prop.geo?.direccion || "") + ", " + (prop.geo?.distrito || "Surco"),
@@ -430,23 +430,12 @@
 
                 // 🌟 LÓGICA COMERCIAL INTELIGENTE DE CONTACTO EN SURCO
                 if (usuarioAutenticado) {
-                    let telefonoFinal = "";
-                    let tipoContacto = "";
-
-                    // REGLA A: Si la propiedad tiene un Agente Inmobiliario asignado, él tiene la prioridad absoluta
-                    if (casa.telefonoAgente && casa.telefonoAgente.toString().trim() !== "") {
-                        telefonoFinal = casa.telefonoAgente.toString().trim();
-                        tipoContacto = "Agente Inmobiliario";
-                    } 
-                    // REGLA B: Si NO tiene agente, se usa el teléfono unificado enviado por el motor
-                    else {
-                        if (casa.telefono && casa.telefono !== "Ver datos de contacto" && casa.telefono !== "Sin teléfono") {
-                            textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
-                            accionClickBoton = `alert('Número de contacto: ${casa.telefono}')`;
-                        } else {
-                            textoBotonContacto = "📞 Solicitar Teléfono";
-                            accionClickBoton = `alert('Esta propiedad no registra teléfonos activos. Un asesor se comunicará contigo.')`;
-                        }
+                    if (casa.telefono && casa.telefono !== "Ver datos de contacto" && casa.telefono !== "Sin teléfono") {
+                        textoBotonContacto = `📞 Contactar: ${casa.telefono}`;
+                        accionClickBoton = `alert('Número de contacto: ${casa.telefono}')`;
+                    } else {
+                        textoBotonContacto = "📞 Solicitar Teléfono";
+                        accionClickBoton = `alert('Esta propiedad no registra teléfonos activos. Un asesor se comunicará contigo.')`;
                     }
                 }
 
@@ -455,7 +444,7 @@
                 tarjeta.className = 'tarjeta-casa';
             // 🌟 CONSTRUCCIÓN DEL ARREGLO DE IMÁGENES PARA EL CARRUSEL (Límite 6 fotos totales)
             let misFotosCarrusel = [];
-            if (casa.foto) misFotosCarrusel.push(`https://res.cloudinary.com/orlandopena11/image/upload/${casa.foto}`);
+            if (casa.foto_principal) misFotosCarrusel.push(`https://res.cloudinary.com/orlandopena11/image/upload/${casa.foto_principal}`);
             
             if (casa.imagenes_secundarias && casa.imagenes_secundarias.length > 0) {
                 // Tomamos solo las primeras fotos para no sobrecargar hasta completar un total de 6
@@ -513,7 +502,7 @@
                         <p class="caracteristicas">
                             <b>${casa.habitaciones}</b> hab | 
                             <b>${casa.banos}</b> bañ | 
-                            <b>${casa.estacionamiento}</b> estac | 
+                            <b>${casa.estacionamientos}</b> estac | 
                             <b>${casa.area_terreno}</b> m² Terr | 
                             <b>${casa.area}</b> m² Const
                         </p>
