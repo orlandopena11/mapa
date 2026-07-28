@@ -339,7 +339,31 @@
     <div id="contenedor-detalle-zillow" class="caja-login" style="max-width: 900px; width: 95%; height: 90vh; overflow-y: auto; text-align: left; padding: 0;">
         <!-- Contenido inyectado dinámicamente por abrirVentanaDetalle() -->
     </div>
-</div>
+    <!-- SECCIÓN VISUAL DEL ACM VOLÁTIL INYECTADA -->
+    <div class="seccion-acm" style="margin: 0 20px 20px 20px; padding: 15px; border-top: 2px solid #eee; background-color: #fafafa; border-radius: 4px;">
+      <h4 style="margin-top: 0; color: #333; font-family: sans-serif;">📊 Análisis Comparativo de Mercado (ACM Volátil)</h4>
+      <p style="font-size: 12px; color: #666; margin-bottom: 10px; font-family: sans-serif;">Filtros automáticos: Mismo Ubigeo, Mismo Tipo de Inmueble y Margen de Área Construida de +/- 30%.</p>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-family: sans-serif;">
+          <thead>
+            <tr style="background-color: #eaeaea; border-bottom: 2px solid #ccc; color: #222;">
+              <th style="padding: 8px;">ID</th>
+              <th style="padding: 8px;">Propiedad Comparable</th>
+              <th style="padding: 8px;">Precio Ref.</th>
+              <th style="padding: 8px;">Área</th>
+              <th style="padding: 8px;">Dif. Precio</th>
+              <th style="padding: 8px;">Dif. Área</th>
+              <th style="padding: 8px;">Distancia</th>
+              <th style="padding: 8px; text-align: center;">Mapa</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-comparables-body">
+            <!-- Cargado dinámicamente en tiempo real -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 <!-- VENTANA FLOTANTE DE GALERÍA COMPLETA (3ra pantalla) -->
 <div id="mi-modal-galeria" class="pantalla-bloqueo">
