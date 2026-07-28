@@ -1137,6 +1137,7 @@ function abrirVentanaDetalle(idPropiedad) {
     if (!casa) return;
       mostrarAnalisisComparativo(casa);
       mostrarPropiedadesCercanas(casa);
+      mostrarDatosYCaracteristicasFicha(casa);
 
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
