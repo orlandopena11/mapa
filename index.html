@@ -642,7 +642,66 @@ function mostrarPropiedadesCercanas(propiedadSeleccionada) {
     contenedorCarrusel.insertAdjacentHTML("beforeend", tarjetaHTML);
   });
 }
-    
+
+    // =========================================================================
+// RENDERIZADO DE DATOS Y CARACTERÍSTICAS MAESTRAS (ESTILO ZILLOW)
+// =========================================================================
+function mostrarDatosYCaracteristicasFicha(propiedadSeleccionada) {
+  const contenedorBloques = document.getElementById("bloques-caracteristicas-dinamicas");
+  if (!contenedorBloques) return;
+  
+  contenedorBloques.innerHTML = "";
+
+  // 1. Construimos el primer bloque base: Habitaciones, Baños y Áreas
+  let htmlHabitaciones = `
+    <div class="bloque-carac-grupo" style="background: #fafafa; padding: 15px; border-radius: 6px; border-left: 4px solid #1a73e8;">
+      <h4 style="margin: 0 0 10px 0; color: #333; font-size: 15px;">🛏️ Habitaciones y baños</h4>
+      <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6; list-style-type: disc;">
+        <li><strong>Habitaciones:</strong> ${propiedadSeleccionada.habitaciones || 0}</li>
+        <li><strong>Baños completos:</strong> ${propiedadSeleccionada.banos || 0}</li>
+        <li><strong>Estacionamientos:</strong> ${propiedadSeleccionada.estacionamientos || 0}</li>
+        <li><strong>Año de construcción:</strong> ${propiedadSeleccionada.ano_construccion || 'N/A'}</li>
+        <li><strong>Área Construida:</strong> ${propiedadSeleccionada.area_construida || 0} m²</li>
+        <li><strong>Área Terreno:</strong> ${propiedadSeleccionada.area_terreno || 0} m²</li>
+      </ul>
+    </div>
+  `;
+  contenedorBloques.insertAdjacentHTML("beforeend", htmlHabitaciones);
+
+  // 2. Procesamos el arreglo dinámico "caracteristicas_extras" que viene mapeado de Google Sheets
+  const extras = propiedadSeleccionada.caracteristicas_extras || [];
+  
+  if (extras.length > 0) {
+    const grupos = {};
+    extras.forEach(item => {
+      const categoria = item.tipo_data || "Detalles adicionales";
+      if (!grupos[categoria]) grupos[categoria] = [];
+      grupos[categoria].push(item);
+    });
+
+    Object.keys(grupos).forEach(nombreGrupo => {
+      let listaItemsHTML = "";
+      grupos[nombreGrupo].forEach(inf => {
+        const valorMostrar = (inf.valor_caracteristica.toString().toLowerCase() === "si" || inf.valor_caracteristica.toString().toLowerCase() === "true") 
+          ? "✓ Disponible" 
+          : `${inf.valor_caracteristica} ${inf.unidad || ""}`;
+
+        listaItemsHTML += `<li><strong>${inf.nombre_caracteristica}:</strong> ${valorMostrar}</li>`;
+      });
+
+      let htmlGrupoDinamico = `
+        <div class="bloque-carac-grupo" style="background: #fafafa; padding: 15px; border-radius: 6px; border-left: 4px solid #555;">
+          <h4 style="margin: 0 0 10px 0; color: #333; font-size: 15px; text-transform: capitalize;">📋 ${nombreGrupo}</h4>
+          <ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #555; line-height: 1.6; list-style-type: disc;">
+            ${listaItemsHTML}
+          </ul>
+        </div>
+      `;
+      contenedorBloques.insertAdjacentHTML("beforeend", htmlGrupoDinamico);
+    });
+  }
+}
+
     
 function formatearPrecio(precio, moneda) {
     const simbolo = (moneda === 'USD' || !moneda) ? '$ ' : moneda + ' ';
