@@ -169,13 +169,35 @@
         .cabecera-detalle h3 { margin: 0; font-size: 18px; color: #2a2a2a; }
         .cabecera-detalle p { margin: 6px 0 0 0; color: #666; font-size: 14px; }
 
-        /* GALERÍA ASIMÉTRICA: 1 grande, 2 medianas, 1 grande, 2 medianas... */
-        .galeria-asimetrica { padding: 0 20px; }
+        /* COLLAGE INICIAL (2da pantalla): 1 grande a la izquierda + grid 2x2 a la derecha */
+        .collage-detalle { display: flex; gap: 8px; height: 340px; padding: 0 20px; }
+        .collage-principal { flex: 1.3; border-radius: 10px; overflow: hidden; cursor: pointer; }
+        .collage-principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+        .collage-mini { position: relative; border-radius: 8px; overflow: hidden; cursor: pointer; }
+        .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .overlay-ver-todas {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.55); color: #fff;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+            font-size: 13px; font-weight: 700; padding: 8px;
+        }
+
+        /* GALERÍA ASIMÉTRICA (3ra pantalla): 1 grande, 2 medianas, 1 grande, 2 medianas... */
+        .galeria-asimetrica { padding: 0; }
         .foto-grande { margin-bottom: 10px; }
         .foto-grande img { width: 100%; height: 320px; object-fit: cover; border-radius: 10px; display: block; }
         .fila-medianas { display: flex; gap: 10px; margin-bottom: 10px; }
         .foto-mediana { flex: 1; min-width: 0; }
         .foto-mediana img { width: 100%; height: 190px; object-fit: cover; border-radius: 10px; display: block; }
+
+        /* PANTALLA DE GALERÍA COMPLETA con sidebar fijo (sticky), estilo Zillow */
+        .btn-volver-lista { background: none; border: none; font-weight: 700; color: var(--azul-zillow); cursor: pointer; font-size: 14px; padding: 16px 20px 0 20px; }
+        .pantalla-galeria { display: flex; height: calc(100% - 44px); }
+        .galeria-columna-fotos { flex: 1; overflow-y: auto; padding: 16px 20px 20px 20px; }
+        .galeria-sidebar { width: 300px; flex-shrink: 0; border-left: 1px solid #eee; padding: 20px; position: sticky; top: 0; align-self: flex-start; height: 100%; overflow-y: auto; box-sizing: border-box; }
+        .galeria-sidebar h2 { margin: 0 0 8px 0; color: var(--azul-zillow); font-size: 22px; }
+        .galeria-sidebar h3 { margin: 0 0 6px 0; font-size: 15px; color: #2a2a2a; }
+        .galeria-sidebar p { margin: 0 0 14px 0; color: #666; font-size: 13px; }
 
         .bloque-seccion { padding: 18px 20px; border-top: 1px solid #eee; }
         .bloque-seccion h4 { margin: 0 0 10px 0; font-size: 16px; color: #2a2a2a; }
@@ -312,10 +334,17 @@
     </div>
 </div>
 
-<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD -->
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (2da pantalla) -->
 <div id="mi-modal-detalle" class="pantalla-bloqueo">
     <div id="contenedor-detalle-zillow" class="caja-login" style="max-width: 900px; width: 95%; height: 90vh; overflow-y: auto; text-align: left; padding: 0;">
         <!-- Contenido inyectado dinámicamente por abrirVentanaDetalle() -->
+    </div>
+</div>
+
+<!-- VENTANA FLOTANTE DE GALERÍA COMPLETA (3ra pantalla) -->
+<div id="mi-modal-galeria" class="pantalla-bloqueo">
+    <div id="contenedor-galeria-completa" class="caja-login" style="max-width: 1100px; width: 96%; height: 92vh; padding: 0; text-align: left; overflow: hidden;">
+        <!-- Contenido inyectado dinámicamente por abrirGaleriaCompleta() -->
     </div>
 </div>
 
@@ -803,18 +832,48 @@ function cerrarVentanaLogin() {
 }
 
 // =========================================================================
-// VISTA DE DETALLE (Punto 7): galería asimétrica + secciones enriquecidas
+// VISTA DE DETALLE
+// Punto 3 (2da pantalla): collage 1 grande + grid 2x2, con "Ver todas las
+//   fotos" superpuesto en la última miniatura visible.
+// Punto 4 (3ra pantalla): galería completa con el patrón vertical infinito
+//   1 grande -> 2 medianas -> 1 grande -> 2 medianas..., usando TODAS las
+//   fotos de imagen_propiedad, junto a un sidebar fijo (sticky).
 // =========================================================================
+
+// Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
+function construirCollageInicial(fotos, idPropiedad) {
+    if (!fotos.length) return '';
+    const total = fotos.length;
+    const secundarias = fotos.slice(1, 5); // hasta 4 miniaturas a la derecha
+
+    let html = '<div class="collage-detalle">';
+    html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+        <img src="${fotos[0]}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
+
+    if (secundarias.length) {
+        html += '<div class="collage-secundario">';
+        secundarias.forEach((url, idx) => {
+            const esUltimaMini = idx === secundarias.length - 1;
+            html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+                <img src="${url}" alt="Foto de la propiedad" loading="lazy">
+                ${esUltimaMini ? `<div class="overlay-ver-todas">Ver todas las ${total} fotos</div>` : ''}
+            </div>`;
+        });
+        html += '</div>';
+    }
+    html += '</div>';
+    return html;
+}
+
+// Galería vertical infinita de la 3ra pantalla (todas las fotos)
 function construirGaleriaAsimetrica(fotos) {
     if (!fotos.length) return '';
     let html = '';
     let i = 0;
     while (i < fotos.length) {
-        // 1 imagen grande
         html += `<div class="foto-grande"><img src="${fotos[i]}" alt="Foto de la propiedad" loading="lazy"></div>`;
         i++;
         if (i >= fotos.length) break;
-        // hasta 2 imágenes medianas en paralelo
         html += '<div class="fila-medianas">';
         for (let j = 0; j < 2 && i < fotos.length; j++, i++) {
             html += `<div class="foto-mediana"><img src="${fotos[i]}" alt="Foto de la propiedad" loading="lazy"></div>`;
@@ -824,6 +883,29 @@ function construirGaleriaAsimetrica(fotos) {
     return html;
 }
 
+// Punto 2b: caracteristicas_extras ahora llega como objetos completos
+// {nombre_caracteristica, valor_caracteristica, unidad, tipo_data}
+function formatearCaracteristica(c) {
+    const tipo = (c.tipo_data || '').toString().toLowerCase().trim();
+    const nombre = c.nombre_caracteristica || '';
+    const valor = (c.valor_caracteristica || '').toString().trim();
+
+    if (tipo === 'logico') {
+        return valor.toLowerCase() === 'si' ? nombre : '';
+    }
+    if (tipo === 'numerico') {
+        return nombre + ': ' + valor + (c.unidad ? ' ' + c.unidad : '');
+    }
+    return valor ? (nombre + ': ' + valor) : nombre;
+}
+
+function obtenerTodasLasFotos(casa) {
+    const fotos = [];
+    if (casa.foto_principal) fotos.push(casa.foto_principal);
+    (casa.imagenes_secundarias || []).forEach(url => fotos.push(url));
+    return fotos;
+}
+
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
@@ -831,23 +913,27 @@ function abrirVentanaDetalle(idPropiedad) {
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const divDetalle = document.getElementById('contenedor-detalle-zillow');
-
-    // Todas las fotos ya vienen homologadas por el backend (foto_principal + secundarias)
-    const todasLasFotos = [];
-    if (casa.foto_principal) todasLasFotos.push(casa.foto_principal);
-    (casa.imagenes_secundarias || []).forEach(url => todasLasFotos.push(url));
+    const todasLasFotos = obtenerTodasLasFotos(casa);
 
     let htmlCaracteristicas = '';
     if (casa.caracteristicas_extras && casa.caracteristicas_extras.length) {
-        htmlCaracteristicas = `<div class="bloque-seccion"><h4>Características</h4><div class="chips-caracteristicas">` +
-            casa.caracteristicas_extras.map(c => `<span class="chip">${c}</span>`).join('') +
-            `</div></div>`;
+        const chips = casa.caracteristicas_extras.map(formatearCaracteristica).filter(Boolean);
+        if (chips.length) {
+            htmlCaracteristicas = `<div class="bloque-seccion"><h4>Características</h4><div class="chips-caracteristicas">` +
+                chips.map(txt => `<span class="chip">${txt}</span>`).join('') +
+                `</div></div>`;
+        }
     }
 
+    // Punto real de "promocion": tipo_promocion, fecha_inicio, fecha_fin, costo
     let htmlPromocion = '';
     if (casa.promocion) {
-        const textoPromo = casa.promocion.descripcion || casa.promocion.titulo || 'Oferta vigente en esta propiedad';
-        htmlPromocion = `<div class="bloque-seccion bloque-promocion"><h4>🏷️ Promoción vigente</h4><p>${textoPromo}</p></div>`;
+        const p = casa.promocion;
+        const etiqueta = p.tipo_promocion || 'Promoción vigente';
+        const vigencia = (p.fecha_inicio || p.fecha_fin)
+            ? `Vigente ${p.fecha_inicio || '—'} a ${p.fecha_fin || '—'}`
+            : 'Oferta activa en este anuncio';
+        htmlPromocion = `<div class="bloque-seccion bloque-promocion"><h4>🏷️ ${etiqueta}</h4><p>${vigencia}</p></div>`;
     }
 
     let htmlTour3d = '';
@@ -856,10 +942,11 @@ function abrirVentanaDetalle(idPropiedad) {
             <iframe src="${casa.recorrido_3d.url}" width="100%" height="360" style="border:none;border-radius:10px;" allowfullscreen></iframe></div>`;
     }
 
+    // Punto real de "historial_precio": precio_anterior, precio_nuevo, fecha_cambio, motivo_cambio
     let htmlHistorial = '';
     if (casa.historial_precio && casa.historial_precio.length) {
         htmlHistorial = `<div class="bloque-seccion"><h4>Historial de precio</h4><ul class="lista-historial">` +
-            casa.historial_precio.map(h => `<li><span>${h.fecha || ''}</span><span>${h.precio || ''}</span></li>`).join('') +
+            casa.historial_precio.map(h => `<li><span>${h.fecha_cambio || ''}</span><span>${h.precio_anterior || ''} → ${h.precio_nuevo || ''}</span></li>`).join('') +
             `</ul></div>`;
     }
 
@@ -871,7 +958,7 @@ function abrirVentanaDetalle(idPropiedad) {
             <p>📍 ${casa.direccion}</p>
         </div>
 
-        <div class="galeria-asimetrica">${construirGaleriaAsimetrica(todasLasFotos)}</div>
+        ${construirCollageInicial(todasLasFotos, casa.id)}
 
         <div class="bloque-seccion">
             <p class="datos-rapidos">
@@ -893,17 +980,16 @@ function abrirVentanaDetalle(idPropiedad) {
         </div>
 
         <div class="bloque-seccion bloque-visita">
-            <h4>Agendar una visita presencial</h4>
-            <div class="fila-formulario">
-                <input type="text" id="visita-nombre" placeholder="Tu nombre">
-                <input type="tel" id="visita-telefono" placeholder="Tu teléfono">
-            </div>
+            <h4>Agendar una visita</h4>
             <div class="fila-formulario">
                 <input type="date" id="visita-fecha">
                 <input type="time" id="visita-hora">
             </div>
-            <textarea id="visita-mensaje" placeholder="Mensaje (opcional)"></textarea>
-            <button class="btn-continuar" onclick="agendarVisita('${casa.id}')">Solicitar visita</button>
+            <select id="visita-tipo" class="select-filtro" style="width:100%; margin-bottom:10px; border-radius:8px;">
+                <option value="presencial">Visita presencial</option>
+                <option value="virtual">Visita virtual</option>
+            </select>
+            <button class="btn-continuar" onclick="agendarVisita('${casa.id}', '${casa.anuncio_id}')">Solicitar visita</button>
             <p id="visita-estado" style="font-size:12px; color:#666;"></p>
         </div>
     `;
@@ -913,17 +999,57 @@ function cerrarVentanaDetalle() {
     document.getElementById('mi-modal-detalle').style.display = 'none';
 }
 
-// Punto 8: formulario de cita con calendario -> tabla "visita"
-async function agendarVisita(idPropiedad) {
-    const nombre = document.getElementById('visita-nombre').value.trim();
-    const telefono = document.getElementById('visita-telefono').value.trim();
+// Punto 4 (3ra pantalla): galería completa con sidebar fijo estilo Zillow
+function abrirGaleriaCompleta(idPropiedad) {
+    const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
+    if (!casa) return;
+
+    const todasLasFotos = obtenerTodasLasFotos(casa);
+    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
+    const contenedor = document.getElementById('contenedor-galeria-completa');
+
+    contenedor.innerHTML = `
+        <button class="btn-volver-lista" onclick="cerrarGaleriaCompleta()">← Volver a la ficha</button>
+        <div class="pantalla-galeria">
+            <div class="galeria-columna-fotos">
+                <div class="galeria-asimetrica">${construirGaleriaAsimetrica(todasLasFotos)}</div>
+            </div>
+            <div class="galeria-sidebar">
+                <h2>${precioFormateado}</h2>
+                <h3>${casa.titulo}</h3>
+                <p>📍 ${casa.direccion}<br>
+                   🛏️ ${casa.habitaciones} hab &nbsp;|&nbsp; 🛁 ${casa.banos} baños &nbsp;|&nbsp; 📐 ${casa.area} m²</p>
+                <button class="btn-ver-contacto" onclick="verContactoDesdeDetalle('${casa.telefono}')">📞 Agente de contacto</button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('mi-modal-detalle').style.display = 'none';
+    document.getElementById('mi-modal-galeria').style.display = 'flex';
+}
+
+function cerrarGaleriaCompleta() {
+    document.getElementById('mi-modal-galeria').style.display = 'none';
+    document.getElementById('mi-modal-detalle').style.display = 'flex';
+}
+
+// Punto 8: formulario de visita -> tabla "visita"
+// Esquema real: usuario_id_fk, propiedad_id_fk, anuncio_id_fk, fecha_visita,
+// tipo_visita, estado_visita (sin nombre/teléfono/mensaje sueltos), por lo
+// que requiere sesión activa.
+async function agendarVisita(idPropiedad, idAnuncio) {
+    if (!usuarioAutenticado) { abrirVentanaLogin(); return; }
+
+    const accesoValido = await verificarAccesoEnVivo();
+    if (!accesoValido) return;
+
     const fecha = document.getElementById('visita-fecha').value;
     const hora = document.getElementById('visita-hora').value;
-    const mensaje = document.getElementById('visita-mensaje').value.trim();
+    const tipoVisita = document.getElementById('visita-tipo').value;
     const estadoTexto = document.getElementById('visita-estado');
 
-    if (!nombre || !telefono || !fecha) {
-        estadoTexto.textContent = 'Completa nombre, teléfono y fecha para continuar.';
+    if (!fecha) {
+        estadoTexto.textContent = 'Elige una fecha para continuar.';
         estadoTexto.style.color = '#d92323';
         return;
     }
@@ -937,17 +1063,20 @@ async function agendarVisita(idPropiedad) {
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
             body: JSON.stringify({
                 accion: 'agendar_visita',
-                email: correoUsuarioLogueado || '',
+                email: correoUsuarioLogueado,
                 propiedad_id: idPropiedad,
-                nombre, telefono, fecha_visita: fecha, hora_visita: hora, mensaje
+                anuncio_id: idAnuncio,
+                fecha_visita: fecha,
+                hora_visita: hora,
+                tipo_visita: tipoVisita
             })
         });
         const data = await resp.json();
         if (data.success) {
-            estadoTexto.textContent = '¡Visita solicitada! Nos pondremos en contacto para confirmar.';
+            estadoTexto.textContent = '¡Visita agendada! Te contactaremos para confirmar.';
             estadoTexto.style.color = '#1a8a3c';
         } else {
-            estadoTexto.textContent = 'No se pudo registrar la visita. Intenta nuevamente.';
+            estadoTexto.textContent = data.message || 'No se pudo agendar la visita.';
             estadoTexto.style.color = '#d92323';
         }
     } catch (err) {
