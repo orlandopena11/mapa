@@ -575,6 +575,54 @@ function mostrarAnalisisComparativo(propiedadSeleccionada) {
     contenedorTabla.insertAdjacentHTML("beforeend", filaHTML);
   });
 }
+
+// =========================================================================
+// RENDERIZADO VOLÁTIL DE PROPIEDADES CERCANAS (RADIO DE 1.5 KM)
+// =========================================================================
+function mostrarPropiedadesCercanas(propiedadSeleccionada) {
+  const contenedorCarrusel = document.getElementById("contenedor-propiedades-cercanas");
+  if (!contenedorCarrusel) return;
+  
+  // Limpiamos el carrusel de consultas previas
+  contenedorCarrusel.innerHTML = "";
+  
+  // Extraemos todos los comparables calculados por el backend (que contienen la distancia en KM)
+  const todasLasPropiedadesValidadas = propiedadSeleccionada.comparables || [];
+  
+  // Filtramos bajo nuestra regla geográfica estercita: Menor o igual a 1.5 KM
+  const cercanas = todasLasPropiedadesValidadas.filter(comp => comp.distancia_km <= 1.50);
+
+  if (cercanas.length === 0) {
+    contenedorCarrusel.innerHTML = `<p style="color: #888; font-family: sans-serif; padding: 10px; width: 100%;">No se encontraron otras propiedades activas a menos de 1.5 km a la redonda.</p>`;
+    return;
+  }
+
+  // Dibujamos las tarjetas en formato horizontal deslisable como Zillow
+  cercanas.forEach(propCercana => {
+    // Intentamos extraer la foto principal directa desde el backend
+    const urlFoto = propCercana.foto_principal || (propCercana.imagenes_secundarias && propCercana.imagenes_secundarias[0]) || "https://unsplash.com";
+    
+    const tarjetaHTML = `
+      <div class="tarjeta-cercana" style="min-width: 220px; max-width: 220px; border: 1px solid #ddd; border-radius: 8px; background: white; margin-right: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: sans-serif; display: inline-block; vertical-align: top;">
+        <div style="position: relative; height: 120px; background: #eee;">
+          <img src="${urlFoto}" style="width: 100%; height: 100%; object-fit: cover;" alt="Propiedad Cercana">
+          <span style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">
+            📍 ${propCercana.distancia_km} km
+          </span>
+        </div>
+        <div style="padding: 10px; white-space: normal;">
+          <h5 style="margin: 0 0 5px 0; font-size: 16px; color: #222;">$${propCercana.precio_base.toLocaleString()}</h5>
+          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; font-weight: bold;">${propCercana.area_construida} m² | ${propCercana.subtipo_propiedad || 'Inmueble'}</p>
+          <p style="margin: 0; font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${propCercana.titulo}">${propCercana.titulo}</p>
+          <button onclick="abrirVentanaDetalle('${propCercana.comparable_id}')" style="margin-top: 8px; width: 100%; background: #1a73e8; color: white; border: none; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;">
+            Ver Propiedad
+          </button>
+        </div>
+      </div>
+    `;
+    contenedorCarrusel.insertAdjacentHTML("beforeend", tarjetaHTML);
+  });
+}
     
     
 function formatearPrecio(precio, moneda) {
