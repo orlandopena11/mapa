@@ -447,18 +447,23 @@ function cargarDatosDesdeAppsScript() {
 // CONSTRUCTOR GLOBAL DE URLS DE CLOUDINARY (ESTRATEGIA NOMBRE CORTO)
 // =========================================================================
 function construirUrlImagen(publicId) {
+  // 1. Si la celda está vacía o usa unsplash, manda una foto de repuesto
   if (!publicId || publicId.trim() === "" || publicId.includes("unsplash.com")) {
-    return "https://unsplash.com";
+    return "https://unsplash.com"; 
   }
-  // Si por error se guardó la URL completa con http en el Excel, la retorna limpia
+    // 2. EL ESCUDO: Si la celda ya tiene una URL larga con http/https, la usa directamente y no hace nada más
   if (publicId.startsWith("http")) return publicId;
-  
-  // Quitamos la extensión fija .jpg del final y dejamos que f_auto resuelva de forma inteligente
-  // tanto para tus archivos .webp como para tus archivos .jpg
-  const CLOUDINARY_BASE = "https://res.cloudinary.com";
-  return CLOUDINARY_BASE + publicId.trim();
+    // 3. Tu identificador único de cuenta
+  const CLOUDINARY_CLOUD_NAME = "obw6ciov"; 
+  // 4. La base que arma la URL automáticamente (f_auto reemplaza la necesidad de escribir .webp)
+  const CLOUDINARY_BASE = `https://cloudinary.com{CLOUDINARY_CLOUD_NAME}/image/upload/f_auto/`;  
+  // 5. Limpia espacios o barras extras que puedan venir del Excel
+  const cleanPublicId = publicId.trim().replace(/^\/+/, '');
+  // 6. Junta la base con la ruta del Excel (Ej: Base + propiedades/PROP-003/Foto_1_ovqn97)
+  return CLOUDINARY_BASE + cleanPublicId;
 }
 
+    
 window.procesarDatosDelMotor = function(data) {
   if (data.error) {
     console.error("Error del motor:", data.error);
