@@ -1058,6 +1058,7 @@ function abrirVentanaDetalle(idPropiedad) {
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
     if (!casa) return;
       mostrarAnalisisComparativo(casa);
+      mostrarPropiedadesCercanas(casa);
 
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
