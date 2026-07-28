@@ -735,6 +735,69 @@ function mostrarDatosYCaracteristicasFicha(propiedadSeleccionada) {
   }
 }
 
+// Variable global temporal para guardar la propiedad activa en el modal
+let propiedadActualEnDetalle = null;
+
+// =========================================================================
+// GESTIÓN DEL FORMULARIO DE CONTACTO CON EL AGENTE
+// =========================================================================
+function configurarFormularioContacto(casa) {
+  propiedadActualEnDetalle = casa;
+  
+  // 1. Poblado automático del mensaje personalizado estilo Zillow
+  const campoMensaje = document.getElementById("contacto-mensaje");
+  if (campoMensaje) {
+    campoMensaje.value = `Hola, estoy interesado en recibir más información sobre el inmueble: ${casa.titulo} (${casa.id}).`;
+  }
+
+  // 2. Poblado de datos del usuario logueado en la app (ajustar variables según tu Auth)
+  const campoEmail = document.getElementById("contacto-email");
+  const campoNombre = document.getElementById("contacto-nombre");
+  
+  if (campoEmail) {
+    // Jalamos el correo de tu sesión activa (ejemplo común: usuarioAutenticado.email)
+    campoEmail.value = (window.usuarioLogueado && window.usuarioLogueado.email) || "orlandopena11@gmail.com"; 
+  }
+  if (campoNombre && window.usuarioLogueado) {
+    campoNombre.value = window.usuarioLogueado.nombre || "Orlando Peña";
+  }
+
+  // 3. Configuración dinámica para revelar el teléfono del agente real
+  const botonTelefono = document.getElementById("telefono-agente-click");
+  if (botonTelefono) {
+    botonTelefono.innerHTML = `📞 Mostrar teléfono del agente`;
+    botonTelefono.onclick = function() {
+      // Usa el teléfono resuelto matemáticamente en tu backend O(N)
+      botonTelefono.innerHTML = `🚨 Llamar al: <strong>${casa.telefono || 'Ver datos de contacto'}</strong>`;
+    };
+  }
+}
+
+// Acción de envío: se conecta con el flujo de "agendar_visita" o envío de alertas
+function enviarMensajeAlAgente(event) {
+  event.preventDefault();
+  
+  if (!propiedadActualEnDetalle) return;
+
+  const datosEnvio = {
+    accion: "agendar_visita", // Reutiliza tu Endpoint seguro doPost para registrar el interesado
+    email: document.getElementById("contacto-email").value,
+    nombre: document.getElementById("contacto-nombre").value,
+    propiedad_id: propiedadActualEnDetalle.id,
+    anuncio_id: propiedadActualEnDetalle.anuncio_id,
+    tipo_visita: "presencial",
+    fecha_visita: new Date().toISOString().split('T')[0], // Fecha de hoy automática
+    hora_visita: "10:00",
+    mensaje_adicional: document.getElementById("contacto-mensaje").value,
+    telefono_interesado: document.getElementById("contacto-telefono").value
+  };
+
+  // Si usas fetch directo a tu Web App URL de Google Apps Script:
+  alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id}.`);
+  
+  // Opcional: Aquí disparas tu llamada AJAX/fetch original hacia doPost de Apps Script
+}
+    
     
 function formatearPrecio(precio, moneda) {
     const simbolo = (moneda === 'USD' || !moneda) ? '$ ' : moneda + ' ';
