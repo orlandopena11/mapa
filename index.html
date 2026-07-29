@@ -1085,6 +1085,37 @@ function recalcularHipotecaVolatil() {
   elTodoRiesgo.innerHTML = `$${Math.round(seguroTodoRiesgoMensual).toLocaleString()}`;
 }
 
+// =========================================================================
+// RENDERIZADO DEL MAPA DINÁMICO DEL BARRIO
+// =========================================================================
+function mostrarMapaBarrioVolatil(propiedadSeleccionada) {
+  const elIframe = document.getElementById("iframe-mapa-barrio");
+  const elTexto = document.getElementById("barrio-texto-direccion");
+  
+  if (!elIframe) return;
+
+  const lat = propiedadSeleccionada.geo ? propiedadSeleccionada.geo.latitud : 0;
+  const lon = propiedadSeleccionada.geo ? propiedadSeleccionada.geo.longitud : 0;
+  const direccion = propiedadSeleccionada.geo ? propiedadSeleccionada.geo.direccion : "Dirección disponible en ficha";
+  const distrito = propiedadSeleccionada.geo ? propiedadSeleccionada.geo.distrito : "";
+
+  if (elTexto) {
+    elTexto.innerHTML = `📍 <strong>Entorno de la propiedad:</strong> ${direccion} ${distrito ? `- ${distrito}` : ""}.`;
+  }
+
+  if (lat === 0 || lon === 0) {
+    elIframe.src = "";
+    return;
+  }
+
+  // Generamos una URL de incrustación de mapa interactivo seguro basada en OpenStreetMap (el punto .replace cambia la coma interna si existiera)
+  const latC = lat.toString().replace(",", ".");
+  const lonC = lon.toString().replace(",", ".");
+  
+  // Usamos el visor universal de OpenStreetMap centrado en la coordenada con zoom 16
+  elIframe.src = `https://google.com{latC},${lonC}&z=16&output=embed`;
+}
+    
     
 // Variable global temporal para guardar la propiedad activa en el modal
 let propiedadActualEnDetalle = null;
