@@ -702,12 +702,14 @@ function construirUrlImagen(publicId) {
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
-// =========================================================================
+// =========================================================================   
 function procesarDatosDelMotor(data) {
-
-// Pasamos la data de comparables del backend a nuestra estructura combinada del frontend
-//if (data && data.propiedades && Array.isArray(data.propiedades)) {
-if (propiedadesCombinadas && Array.isArray(propiedadesCombinadas)) {
+    // 1. Validamos que la data que viene de Google Apps Script sea correcta y contenga las propiedades
+    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) return;
+    
+    // 2. Extraemos y asignamos la lista original del backend a tu variable del bucle
+    let propiedadesCombinadas = data.propiedades;
+    
 
   propiedadesCombinadas.forEach((prop, index) => {
     const original = data.propiedades[index];
