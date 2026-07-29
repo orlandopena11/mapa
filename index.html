@@ -466,6 +466,37 @@
         </div>
       </div>
 
+      <!-- SECCIÓN DE CONECTIVIDAD URBANA Y LUGARES CERCANOS (ESTILO ZILLOW) -->
+      <div class="conectividad-entorno-zillow" style="margin: 20px; padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-family: sans-serif;">
+        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px; font-family: sans-serif;">🚶 Conectividad y Entorno Urbano</h4>
+        
+        <!-- Puntuaciones de Movilidad estilo Walk Score -->
+        <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 180px; display: flex; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee;">
+            <div style="font-size: 24px; margin-right: 12px;">🚶</div>
+            <div>
+              <p style="margin: 0; font-size: 11px; color: #666; font-weight: bold;">Puntuación de Caminata</p>
+              <h5 style="margin: 3px 0 0 0; font-size: 15px; color: #333;" id="barrio-walk-score">Calculando...</h5>
+            </div>
+          </div>
+          <div style="flex: 1; min-width: 180px; display: flex; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee;">
+            <div style="font-size: 24px; margin-right: 12px;">🚲</div>
+            <div>
+              <p style="margin: 0; font-size: 11px; color: #666; font-weight: bold;">Puntuación de Bicicleta</p>
+              <h5 style="margin: 3px 0 0 0; font-size: 15px; color: #333;" id="barrio-bike-score">Calculando...</h5>
+            </div>
+          </div>
+        </div>
+
+        <!-- Título de Lugares Cercanos -->
+        <h5 style="margin: 20px 0 10px 0; font-size: 14px; color: #444; font-weight: bold; font-family: sans-serif;">🎒 Servicios y Establecimientos Cercanos</h5>
+        
+        <!-- Carrusel horizontal deslizable para los puntos de interés -->
+        <div id="contenedor-servicios-cercanos" style="display: flex; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; white-space: nowrap; gap: 15px;">
+          <!-- Las tarjetas de colegios, clínicas, mercados, etc., se inyectarán aquí en el aire -->
+        </div>
+      </div>
+
     
     <!-- SECCIÓN VISUAL DEL ACM VOLÁTIL INYECTADA -->
     <div class="seccion-acm" style="margin: 0 20px 20px 20px; padding: 15px; border-top: 2px solid #eee; background-color: #fafafa; border-radius: 4px;">
