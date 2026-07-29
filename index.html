@@ -399,6 +399,61 @@
           </table>
         </div>
       </div>
+      <!-- CALCULADORA HIPOTECARIA Y DESGLOSE (ESTILO ZILLOW PERÚ) -->
+      <div class="calculadora-pago-zillow" style="margin: 20px; padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-family: sans-serif;">
+        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px;">🧮 Calculadora de pago mensual estimado</h4>
+        
+        <!-- Controles dinámicos interactivos -->
+        <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; background: #f9f9f9; padding: 15px; border-radius: 6px;">
+          <div style="flex: 1; min-width: 150px;">
+            <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Cuota Inicial (%)</label>
+            <input type="number" id="calc-porcentaje-inicial" value="20" min="10" max="90" oninput="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Plazo (Años)</label>
+            <select id="calc-plazo-anos" onchange="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+              <option value="10">10 años</option>
+              <option value="15">15 años</option>
+              <option value="20" selected>20 años</option>
+              <option value="25">25 años</option>
+            </select>
+          </div>
+          <div style="flex: 1; min-width: 150px;">
+            <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Tasa de Interés (TEA %)</label>
+            <input type="number" id="calc-tea" value="8.5" step="0.1" min="4" max="20" oninput="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
+          </div>
+        </div>
+
+        <!-- Indicador de Pago Total -->
+        <div style="margin-top: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+          <p style="margin: 0; font-size: 13px; color: #666; font-weight: bold;">Pago Mensual Estimado</p>
+          <h2 id="calc-total-mensual" style="margin: 5px 0 0 0; color: #1a73e8; font-size: 28px;">$0 /mes</h2>
+        </div>
+
+        <!-- Lista de Desglose según captura y ley peruana -->
+        <div style="margin-top: 15px; font-size: 13px; color: #333;">
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
+            <span>🏠 Principal e interés (Amortización Francesa)</span>
+            <span id="calc-item-principal" style="font-weight: bold;">$0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
+            <span>🛡️ Seguro de Desgravamen (Obligatorio SBS)</span>
+            <span id="calc-item-desgravamen" style="font-weight: bold;">$0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
+            <span>🏛️ Impuestos de propiedad (Predial prorrateado)</span>
+            <span id="calc-item-predial" style="font-weight: bold;">$0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
+            <span>🔥 Seguro del Inmueble (Sismos e Incendios)</span>
+            <span id="calc-item-todo-riesgo" style="font-weight: bold;">$0</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; color: #777;">
+            <span>🏢 Mantenimiento / Tarifas HOA</span>
+            <span>N/A</span>
+          </div>
+        </div>
+      </div>
 
 
     <!-- SECCIÓN VISUAL DEL ACM VOLÁTIL INYECTADA -->
