@@ -1117,6 +1117,76 @@ function recalcularHipotecaVolatil() {
 }
 
 // =========================================================================
+// MÓDULO VOLÁTIL DE CONECTIVIDAD URBANA Y LUGARES CERCANAS
+// =========================================================================
+function mostrarConectividadYServicios(propiedadSeleccionada) {
+  const contenedor = document.getElementById("contenedor-servicios-cercanos");
+  const elWalk = document.getElementById("barrio-walk-score");
+  const elBike = document.getElementById("barrio-bike-score");
+
+  if (!contenedor) return;
+  contenedor.innerHTML = "";
+
+  const comparables = propiedadSeleccionada.comparables || [];
+  
+  // 1. Filtrar establecimientos de interés a menos de 1.8 KM a la redonda
+  // (Filtramos comercios, avenidas o colegios que vengan mapeados en tus datos)
+  const lugaresInteres = comparables.filter(c => c.distancia_km <= 1.80);
+
+  // 2. Cálculo dinámico y volátil del Walk Score según densidad de servicios cercanos
+  const conteoLugares = lugaresInteres.length;
+  let walkScore = 30 + (conteoLugares * 8); 
+  if (walkScore > 98) walkScore = 98; // Límite máximo saludable
+  let bikeScore = Math.round(walkScore * 0.95);
+
+  if (elWalk) elWalk.innerHTML = `<strong>${walkScore} / 100</strong> <span style="font-size:11px; color:#666;">(${walkScore > 70 ? 'Muy caminable' : 'Dependiente del auto'})</span>`;
+  if (elBike) elBike.innerHTML = `<strong>${bikeScore} / 100</strong> <span style="font-size:11px; color:#666;">(${bikeScore > 70 ? 'Ideal para bicicleta' : 'Algo bikeable'})</span>`;
+
+  if (lugaresInteres.length === 0) {
+    contenedor.innerHTML = `<p style="color: #888; font-family: sans-serif; padding: 10px; width:100%;">No se registraron establecimientos comerciales o avenidas principales mapeadas a menos de 1.8 km.</p>`;
+    return;
+  }
+
+  // 3. Renderizado de las tarjetas de servicios (estilo Zillow)
+  lugaresInteres.forEach(lugar => {
+    // Clasificación dinámica basada en palabras clave en el título o subtipo de la propiedad comercial
+    let icono = "🏢";
+    let tipoServicio = "Establecimiento";
+    const tituloLower = lugar.titulo.toLowerCase();
+    const subtipoLower = (lugar.subtipo_propiedad || "").toLowerCase();
+
+    if (tituloLower.includes("colegio") || tituloLower.includes("escuela") || tituloLower.includes("univer")) {
+      icono = "🎓"; tipoServicio = "Educación";
+    } else if (tituloLower.includes("clinica") || tituloLower.includes("hospital") || tituloLower.includes("salud")) {
+      icono = "🏥"; tipoServicio = "Salud";
+    } else if (tituloLower.includes("avenida") || tituloLower.includes("av.")) {
+      icono = "🛣️"; tipoServicio = "Vía Principal";
+    } else if (tituloLower.includes("mall") || tituloLower.includes("centro comercial") || tituloLower.includes("plaza")) {
+      icono = "🛍️"; tipoServicio = "Comercio";
+    } else if (tituloLower.includes("mercado") || tituloLower.includes("supermercado") || tituloLower.includes("bodega")) {
+      icono = "🛒"; tipoServicio = "Abasto";
+    }
+
+    const tarjetaHTML = `
+      <div class="tarjeta-servicio" style="min-width: 200px; max-width: 200px; border: 1px solid #eee; border-radius: 8px; background: #fff; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: inline-block; vertical-align: top; font-family: sans-serif;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 20px;">${icono}</span>
+          <span style="font-size: 11px; background: #e8f0fe; color: #1a73e8; padding: 2px 6px; border-radius: 4px; font-weight: bold;">${tipoServicio}</span>
+        </div>
+        <h5 style="margin: 0 0 4px 0; font-size: 13px; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width:100%;" title="${lugar.titulo}">${lugar.titulo}</h5>
+        <p style="margin: 0 0 6px 0; font-size: 11px; color: #777;">Aprox. ${lugar.subtipo_propiedad || 'Zona comercial'}</p>
+        <div style="border-top: 1px solid #f5f5f5; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 12px; font-weight: bold; color: #007054;">📍 ${lugar.distancia_km} km</span>
+          ${lugar.enlace_mapa ? `<a href="${lugar.enlace_mapa}" target="_blank" style="text-decoration:none; font-size:11px; color:#1a73e8; font-weight:bold;">Ver ruta ↗</a>` : ''}
+        </div>
+      </div>
+    `;
+    contenedor.insertAdjacentHTML("beforeend", tarjetaHTML);
+  });
+}
+      
+    
+// =========================================================================
 // RENDERIZADO DEL MAPA DINÁMICO DEL BARRIO
 // =========================================================================
 function mostrarMapaBarrioVolatil(propiedadSeleccionada) {
