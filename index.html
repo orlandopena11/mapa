@@ -663,7 +663,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 document.addEventListener("DOMContentLoaded", comprobarSesionAlCargar);
 
 function inicializarMapa() {
-    map = L.map('mapa', { zoomControl: false }).setView([-12.122, -77.028], 13);
+    map = L.map('mapa', { zoomControl: false }).setView([-12.125, -76.995], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
     L.control.zoom({ position: 'topright' }).addTo(map);
 
