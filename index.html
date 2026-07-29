@@ -704,6 +704,8 @@ function construirUrlImagen(publicId) {
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
 // =========================================================================   
 function procesarDatosDelMotor(data) {
+        // EL ESPÍA: Imprime en la consola el contenido real para auditarlo
+        console.log("DATOS RECIBIDOS DEL BACKEND:", data);
     // 1. Validamos que la data que viene de Google Apps Script sea correcta y contenga las propiedades
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) return;
     
