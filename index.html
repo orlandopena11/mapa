@@ -696,7 +696,8 @@ function construirUrlImagen(publicId) {
   // 5. Limpia espacios o barras extras que puedan venir del Excel
   const cleanPublicId = publicId.trim().replace(/^\/+/, '');
   // 6. Junta la base con la ruta del Excel (Ej: Base + propiedades/PROP-003/Foto_1_ovqn97)
-  return CLOUDINARY_BASE + cleanPublicId;
+  return CLOUDINARY_BASE + cleanPublicId + ".jpg";
+
 }
 
     
