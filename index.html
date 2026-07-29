@@ -684,22 +684,29 @@ function cargarDatosDesdeAppsScript() {
 // CONSTRUCTOR GLOBAL DE URLS DE CLOUDINARY (ESTRATEGIA NOMBRE CORTO)
 // =========================================================================
 function construirUrlImagen(publicId) {
-  // 1. Si la celda está vacía o usa unsplash, manda una foto de repuesto
-  if (!publicId || publicId.trim() === "" || publicId.includes("unsplash.com")) {
-    return "https://unsplash.com"; 
-  }
-    // 2. EL ESCUDO: Si la celda ya tiene una URL larga con http/https, la usa directamente y no hace nada más
-  if (publicId.startsWith("http")) return publicId;
-    // 3. Tu identificador único de cuenta
-  const CLOUDINARY_BASE = "https://res.cloudinary.com/orlandopena11/image/upload/f_auto/";
-
-  // 5. Limpia espacios o barras extras que puedan venir del Excel
-  const cleanPublicId = publicId.trim().replace(/^\/+/, '');
-  // 6. Junta la base con la ruta del Excel (Ej: Base + propiedades/PROP-003/Foto_1_ovqn97)
-  return CLOUDINARY_BASE + cleanPublicId + ".jpg";
-
+    // 1. Si la celda está vacía o usa unsplash, manda una foto de repuesto
+    if (!publicId || publicId.trim() === "" || publicId.includes("unsplash.com")) {
+        return "https://unsplash.com";
+    }
+    
+    // 2. EL ESCUDO: Si la celda ya tiene una URL larga con http/https, la usa directamente
+    if (publicId.startsWith("http")) return publicId;
+    
+    // 3. Tu identificador único de cuenta REAL (obw6ciov) con optimización de Cloudinary
+    const CLOUDINARY_BASE = "https://res.cloudinary.com/obw6ciov/image/upload/f_auto,q_auto/";
+    
+    // 5. Limpia espacios o barras extras que puedan venir del Excel
+    let cleanPublicId = publicId.trim().replace(/^\/+/, '');
+    
+    // 6. ESCUDO INTELIGENTE DE EXTENSIÓN: Si la ruta de la Sheet ya viene con extensión (.jpg, .webp, .png), 
+    // la deja intacta. Si no trae ninguna extensión, le añade .jpg por defecto.
+    const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
+    if (!tieneExtension) {
+        cleanPublicId = cleanPublicId + '.jpg';
+    }
+    
+    return CLOUDINARY_BASE + cleanPublicId;
 }
-
     
 window.procesarDatosDelMotor = function(data) {
   if (data.error) {
