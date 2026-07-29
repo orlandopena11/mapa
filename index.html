@@ -684,22 +684,14 @@ function cargarDatosDesdeAppsScript() {
 // CONSTRUCTOR GLOBAL DE URLS DE CLOUDINARY (ESTRATEGIA NOMBRE CORTO)
 // =========================================================================
 function construirUrlImagen(publicId) {
-    // 1. Si la celda está vacía o usa unsplash, manda una foto de repuesto
     if (!publicId || publicId.trim() === "" || publicId.includes("unsplash.com")) {
-        return "https://unsplash.com";
+        return "https://unsplash.com"; 
     }
-    
-    // 2. EL ESCUDO: Si la celda ya tiene una URL larga con http/https, la usa directamente
     if (publicId.startsWith("http")) return publicId;
     
-    // 3. Tu identificador único de cuenta REAL (obw6ciov) con optimización de Cloudinary
-    const CLOUDINARY_BASE = "https://res.cloudinary.com/obw6ciov/image/upload/f_auto,q_auto/";
-    
-    // 5. Limpia espacios o barras extras que puedan venir del Excel
+    const CLOUDINARY_BASE = "https://cloudinary.com";
     let cleanPublicId = publicId.trim().replace(/^\/+/, '');
     
-    // 6. ESCUDO INTELIGENTE DE EXTENSIÓN: Si la ruta de la Sheet ya viene con extensión (.jpg, .webp, .png), 
-    // la deja intacta. Si no trae ninguna extensión, le añade .jpg por defecto.
     const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
     if (!tieneExtension) {
         cleanPublicId = cleanPublicId + '.jpg';
@@ -707,42 +699,6 @@ function construirUrlImagen(publicId) {
     
     return CLOUDINARY_BASE + cleanPublicId;
 }
-    
-window.procesarDatosDelMotor = function(data) {
-  if (data.error) {
-    console.error("Error del motor:", data.error);
-    return;
-  }
-  propiedadesCombinadas = data.propiedades.map(prop => {
-    let estacReal = prop.estacionamientos !== undefined ? prop.estacionamientos : (prop.estacionamiento !== undefined ? prop.estacionamiento : 0);
-    return {
-      id: prop.id || "",
-      anuncio_id: prop.anuncio_id || "",
-      titulo: prop.titulo || "",
-      precio: parseFloat(prop.precio_base) || 0,
-      moneda: prop.moneda || "USD",
-      foto_principal: construirUrlImagen(prop.foto_principal),
-      imagenes_secundarias: (prop.imagenes_secundarias || []).map(url => construirUrlImagen(url)),
-      habitaciones: parseInt(prop.habitaciones) || 0,
-      banos: parseInt(prop.banos) || 0,
-      estacionamientos: parseInt(estacReal) || 0,
-      area_terreno: parseFloat(prop.area_terreno) || 0,
-      area: parseFloat(prop.area_construida) || 0,
-      descripcion: prop.descripcion || "",
-      direccion: [prop.geo?.direccion, prop.geo?.distrito].filter(Boolean).join(", "),
-      lat: parseFloat(prop.geo?.latitud) || 0,
-      lng: parseFloat(prop.geo?.longitud) || 0,
-      tipo: prop.tipo_anuncio || "Venta",
-      tipo_propiedad: prop.tipo_propiedad || "",
-      telefono: prop.telefono || "Ver datos de contacto",
-      caracteristicas_extras: prop.caracteristicas_extras || [],
-      promocion: prop.promocion || null,
-      historial_precio: prop.historial_precio || [],
-      recorrido_3d: prop.recorrido_3d || null
-    };
-  });
-  renderizarMapaZillow();
-};
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
