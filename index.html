@@ -736,7 +736,9 @@ window.procesarDatosDelMotor = function(data) {
 // =========================================================================
 
 // Pasamos la data de comparables del backend a nuestra estructura combinada del frontend
-if (data && data.propiedades && Array.isArray(data.propiedades)) {
+//if (data && data.propiedades && Array.isArray(data.propiedades)) {
+if (propiedadesCombinadas && Array.isArray(propiedadesCombinadas)) {
+
   propiedadesCombinadas.forEach((prop, index) => {
     const original = data.propiedades[index];
     if (original && original.comparables) {
