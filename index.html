@@ -1383,7 +1383,8 @@ function renderizarMapaZillow() {
 
         let htmlFotosInternas = '';
         misFotosCarrusel.forEach(imgUrl => {
-            htmlFotosInternas += `<img src="${imgUrl}" alt="Propiedad" onclick="abrirVentanaDetalle('${casa.id}')">`;
+            htmlFotosInternas += `<img src="${imgUrl}" crossorigin="anonymous" alt="Propiedad" onclick="abrirVentanaDetalle(${casa.id})">`;
+
         });
 
         let htmlPuntosIndicadores = '';
