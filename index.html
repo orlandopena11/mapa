@@ -1388,6 +1388,8 @@ function abrirVentanaDetalle(idPropiedad) {
       mostrarDatosYCaracteristicasFicha(casa);
       configurarFormularioContacto(casa); // <--- NUEVO DISPARADOR DEL FORMULARIO
       calcularValorMercadoEstimado(casa);
+      mostrarGraficoHistorialPrecios(casa);
+
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const divDetalle = document.getElementById('contenedor-detalle-zillow');
