@@ -1578,6 +1578,7 @@ function abrirVentanaDetalle(idPropiedad) {
       calcularValorMercadoEstimado(casa);
       mostrarGraficoHistorialPrecios(casa);
       mostrarTablaHistorialPrecios(casa); // <--- LOGRADO: HISTORIAL COMPLETO EN LA PANTALLA
+      inicializarCalculadoraHipoteca(casa);
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const divDetalle = document.getElementById('contenedor-detalle-zillow');
