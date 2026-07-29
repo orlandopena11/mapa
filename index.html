@@ -703,6 +703,7 @@ function construirUrlImagen(publicId) {
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
 // =========================================================================
+function procesarDatosDelMotor(data) {
 
 // Pasamos la data de comparables del backend a nuestra estructura combinada del frontend
 //if (data && data.propiedades && Array.isArray(data.propiedades)) {
@@ -760,7 +761,9 @@ function mostrarAnalisisComparativo(propiedadSeleccionada) {
     `;
     contenedorTabla.insertAdjacentHTML("beforeend", filaHTML);
   });
+
 }
+}    
 
 // =========================================================================
 // RENDERIZADO VOLÁTIL DE PROPIEDADES CERCANAS (RADIO DE 1.5 KM)
