@@ -1303,17 +1303,34 @@ function renderizarMapaZillow() {
     const limitesVisuales = map.getBounds();
     let contadorVisual = 0;
 
-    propiedadesCombinadas.forEach(casa => {
-        const coordenada = L.latLng(casa.lat, casa.lng);
+        // =========================================================================
+        // REGLA DE NEGOCIO: ORDENAR POR DESTACADOS PRIMERO ("si" antes que "no")
+        // =========================================================================
+        const propiedadesOrdenadas = [...propiedadesCombinadas].sort((a, b) => {
+            const destA = (a.destacado || "").toLowerCase() === "si" ? 1 : 0;
+            const destB = (b.destacado || "").toLowerCase() === "si" ? 1 : 0;
+            return destB - destA; // Coloca los destacados (1) arriba de los normales (0)
+        });
 
-        if (!limitesVisuales.contains(coordenada)) return;
+        // Ejecutamos el bucle sobre nuestra nueva lista ordenada con tus reglas de negocio
+        propiedadesOrdenadas.forEach((casa) => {
+            const coordenada = L.latLng(casa.lat, casa.lng);
 
-        if (filtroTexto && !casa.direccion.toLowerCase().includes(filtroTexto)) return;
-        if (filtroAnuncio !== "Todos" && casa.tipo !== filtroAnuncio) return;
-        if (filtroPrecioMax !== "Todos" && casa.precio > parseFloat(filtroPrecioMax)) return;
-        if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) return;
-        if (filtroBanos !== "Todos" && casa.banos < parseInt(filtroBanos)) return;
-        if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
+            // OPTIMIZACIÓN: Comentado para que muestre Surco/Miraflores aunque el mapa inicie en otra zona
+            // if (!limitesVisuales.contains(coordenada)) return;
+
+            if (filtroTexto && !casa.direccion.toLowerCase().includes(filtroTexto)) return;
+
+            // CORRECCIÓN 1: Filtro de Anuncio (Venta / Alquiler / Vendido) apuntando a la tabla Anuncio
+            if (filtroAnuncio !== "Todos" && casa.tipo_anuncio !== filtroAnuncio) return;
+
+            // CORRECCIÓN 2: Filtros Numéricos estrictos basados en tu JSON relacional
+            if (filtroPrecioMax !== "Todos" && casa.precio_base > parseFloat(filtroPrecioMax)) return;
+            if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) return;
+            if (filtroBaños !== "Todos" && casa.baños < parseInt(filtroBaños)) return;
+
+            // CORRECCIÓN 3: Filtro de Estructura (Casa / Departamento) apuntando a tipo_propiedad
+            if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
 
         contadorVisual++;
         const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
