@@ -1336,7 +1336,8 @@ function renderizarMapaZillow() {
         contadorVisual++;
         const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte";
 
-        const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
+        const marcador = L.marker([casa.geo.latitud, casa.geo.longitud]).addTo(map)
+
             .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
         marcadoresEnPantalla.push(marcador);
 
