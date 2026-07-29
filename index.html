@@ -691,7 +691,8 @@ function construirUrlImagen(publicId) {
     // 2. EL ESCUDO: Si la celda ya tiene una URL larga con http/https, la usa directamente y no hace nada más
   if (publicId.startsWith("http")) return publicId;
     // 3. Tu identificador único de cuenta
-  const CLOUDINARY_BASE = "";
+  const CLOUDINARY_BASE = "https" + "://" + "://cloudinary.com" + "/" + "orlandopena11" + "/" + "image" + "/" + "upload" + "/" + "f_auto" + "/";
+
 
   // 5. Limpia espacios o barras extras que puedan venir del Excel
   const cleanPublicId = publicId.trim().replace(/^\/+/, '');
