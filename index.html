@@ -361,7 +361,8 @@
           
           <!-- Bloque 2: Rango de Ventas -->
           <div style="flex: 1; min-width: 200px; background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
-            <p style="margin: 0; font-size: 12px; color: #666; font-weight: bold;">Rango de ventas estimado</p>
+            <p style="margin: 0; font-size: 12px;
+                color: #666; font-weight: bold;">Rango de ventas estimado</p>
             <h5 id="zillow-rango-ventas" style="margin: 8px 0 0 0; font-size: 18px; color: #222;">$0 - $0</h5>
           </div>
           
@@ -809,6 +810,80 @@ function calcularValorMercadoEstimado(propiedadSeleccionada) {
   elValor.innerHTML = `$${promedioEstimado.toLocaleString()}`;
   elRango.innerHTML = `$${rangoInferior.toLocaleString()} - $${rangoSuperior.toLocaleString()}`;
   elAlquiler.innerHTML = `$${alquilerMensual.toLocaleString()} /mo`;
+}
+// Variable global para destruir y recrear el gráfico limpiamente al cambiar de propiedad
+let instanciaGraficoHistorial = null;
+
+// =========================================================================
+// RENDERIZADO DEL GRÁFICO HISTÓRICO DE VALORES EN EL AIRE
+// =========================================================================
+function mostrarGraficoHistorialPrecios(propiedadSeleccionada) {
+  const ctx = document.getElementById('lienzoGraficoHistorial');
+  if (!ctx) return;
+
+  // Si el usuario cambia de propiedad, destruimos el gráfico anterior para liberar memoria RAM
+  if (instanciaGraficoHistorial) {
+    instanciaGraficoHistorial.destroy();
+  }
+
+  // Extraemos el arreglo de precios históricos que ya lee tu backend
+  const historialRaw = propiedadSeleccionada.historial_precio || [];
+
+  // Variables para los ejes del gráfico
+  let etiquetasFechas = [];
+  let valoresPrecios = [];
+
+  if (historialRaw.length === 0) {
+    // Si la propiedad no registra historial en Sheets, creamos una simulación lineal basada en su precio actual
+    const precioBase = propiedadSeleccionada.precio || 0;
+    etiquetasFechas = ["2024", "2025", "2026"];
+    valoresPrecios = [Math.round(precioBase * 0.88), Math.round(precioBase * 0.94), precioBase];
+  } else {
+    // Si hay datos reales, los ordenamos cronológicamente por su fecha
+    const historialOrdenado = [...historialRaw].sort((a, b) => new Date(a.fecha_cambio) - new Date(b.fecha_cambio));
+    
+    etiquetasFechas = historialOrdenado.map(item => {
+      const fecha = new Date(item.fecha_cambio || item.fecha);
+      return isNaN(fecha) ? "N/A" : fecha.toLocaleDateString('es-PE', { year: 'numeric', month: 'short' });
+    });
+    
+    valoresPrecios = historialOrdenado.map(item => parseFloat(item.precio_nuevo || item.precio_base || 0));
+  }
+
+  // Renderizado del gráfico lineal estilo Zillow usando Chart.js
+  instanciaGraficoHistorial = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: etiquetasFechas,
+      datasets: [{
+        label: 'Valor de mercado ($)',
+        data: valoresPrecios,
+        borderColor: '#007054', // Verde oficial de las gráficas de Zillow
+        backgroundColor: 'rgba(0, 112, 84, 0.05)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#007054',
+        pointRadius: 4,
+        tension: 0.3, // Curvatura suave de la línea
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: {
+          ticks: {
+            font: { size: 11 },
+            callback: function(value) { return '$' + (value >= 1000 ? (value / 1000) + 'K' : value); }
+          }
+        }
+      }
+    }
+  });
 }
 
     
