@@ -1334,7 +1334,7 @@ function renderizarMapaZillow() {
             if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
 
         contadorVisual++;
-        const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
+        const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte";
 
         const marcador = L.marker([casa.lat, casa.lng]).addTo(map)
             .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
