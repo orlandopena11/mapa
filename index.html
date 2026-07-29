@@ -381,6 +381,24 @@
           <canvas id="lienzoGraficoHistorial"></canvas>
         </div>
       </div>
+      <!-- TABLA DETALLADA DE HISTORIAL DE PRECIOS (ESTILO ZILLOW) -->
+      <div class="tabla-historial-precios-zillow" style="margin: 20px; padding: 20px; background: #fff; border: 1px solid #ddd; border-radius: 8px; font-family: sans-serif;">
+        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px; font-family: sans-serif;">📜 Historia de precios detallada</h4>
+        <div style="overflow-x: auto; margin-top: 15px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-family: sans-serif;">
+            <thead>
+              <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd; color: #333; font-weight: bold;">
+                <th style="padding: 10px;">Fecha</th>
+                <th style="padding: 10px;">Evento</th>
+                <th style="padding: 10px;">Precio</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-historial-precios-body">
+              <!-- Las variaciones temporales se inyectarán aquí en tiempo real -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
 
     <!-- SECCIÓN VISUAL DEL ACM VOLÁTIL INYECTADA -->
