@@ -693,7 +693,8 @@ function construirUrlImagen(publicId) {
     // 3. Tu identificador único de cuenta
   const CLOUDINARY_CLOUD_NAME = "obw6ciov"; 
   // 4. La base que arma la URL automáticamente (f_auto reemplaza la necesidad de escribir .webp)
-  const CLOUDINARY_BASE = `https://cloudinary.com{CLOUDINARY_CLOUD_NAME}/image/upload/f_auto/`;  
+  const CLOUDINARY_BASE = `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/f_auto/`;  
+
   // 5. Limpia espacios o barras extras que puedan venir del Excel
   const cleanPublicId = publicId.trim().replace(/^\/+/, '');
   // 6. Junta la base con la ruta del Excel (Ej: Base + propiedades/PROP-003/Foto_1_ovqn97)
