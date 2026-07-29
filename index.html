@@ -760,6 +760,49 @@ function mostrarDatosYCaracteristicasFicha(propiedadSeleccionada) {
   }
 }
 
+// =========================================================================
+// CÁLCULO VOLÁTIL DE VALOR DE MERCADO ESTIMADO
+// =========================================================================
+function calcularValorMercadoEstimado(propiedadSeleccionada) {
+  const elValor = document.getElementById("zillow-estimado-valor");
+  const elRango = document.getElementById("zillow-rango-ventas");
+  const elAlquiler = document.getElementById("zillow-alquiler-estimado");
+  
+  if (!elValor || !elRango || !elAlquiler) return;
+
+  const comparables = propiedadSeleccionada.comparables || [];
+
+  // Si no hay comparables en el distrito, usamos el precio base del inmueble como referencia
+  if (comparables.length === 0) {
+    const precioBase = propiedadSeleccionada.precio || 0;
+    elValor.innerHTML = `$${precioBase.toLocaleString()}`;
+    elRango.innerHTML = `$${Math.round(precioBase * 0.9).toLocaleString()} - $${Math.round(precioBase * 1.1).toLocaleString()}`;
+    elAlquiler.innerHTML = `$${Math.round(precioBase * 0.006).toLocaleString()} /mo`;
+    return;
+  }
+
+  // Calculamos el promedio matemático exacto de los inmuebles competidores
+  let sumaPrecios = 0;
+  comparables.forEach(comp => {
+    sumaPrecios += comp.precio_base;
+  });
+  
+  const promedioEstimado = Math.round(sumaPrecios / comparables.length);
+  
+  // Establecemos el rango comercial (+/- 10%)
+  const rangoInferior = Math.round(promedioEstimado * 0.90);
+  const rangoSuperior = Math.round(promedioEstimado * 1.10);
+  
+  // Calculamos la estimación de renta mensual (0.6%)
+  const alquilerMensual = Math.round(promedioEstimado * 0.006);
+
+  // Pintamos los resultados calculados en el aire directamente en las tarjetas de la pantalla
+  elValor.innerHTML = `$${promedioEstimado.toLocaleString()}`;
+  elRango.innerHTML = `$${rangoInferior.toLocaleString()} - $${rangoSuperior.toLocaleString()}`;
+  elAlquiler.innerHTML = `$${alquilerMensual.toLocaleString()} /mo`;
+}
+
+    
 // Variable global temporal para guardar la propiedad activa en el modal
 let propiedadActualEnDetalle = null;
 
