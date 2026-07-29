@@ -1011,6 +1011,68 @@ function mostrarTablaHistorialPrecios(propiedadSeleccionada) {
     contenedorTabla.insertAdjacentHTML("beforeend", filaHTML);
   });
 }
+// Variable global para retener la propiedad activa en los cálculos de la calculadora
+let propiedadActivaCalculadora = null;
+
+// =========================================================================
+// MÓDULO MATEMÁTICO DE CRÉDITO HIPOTECARIO (NORMATIVA PERUANA)
+// =========================================================================
+function inicializarCalculadoraHipoteca(propiedadSeleccionada) {
+  propiedadActivaCalculadora = propiedadSeleccionada;
+  recalcularHipotecaVolatil();
+}
+
+function recalcularHipotecaVolatil() {
+  if (!propiedadActivaCalculadora) return;
+
+  const elTotal = document.getElementById("calc-total-mensual");
+  const elPrincipal = document.getElementById("calc-item-principal");
+  const elDesgravamen = document.getElementById("calc-item-desgravamen");
+  const elPredial = document.getElementById("calc-item-predial");
+  const elTodoRiesgo = document.getElementById("calc-item-todo-riesgo");
+
+  if (!elTotal || !elPrincipal || !elDesgravamen || !elPredial || !elTodoRiesgo) return;
+
+  const precioPropiedad = parseFloat(propiedadActivaCalculadora.precio) || 0;
+
+  // 1. Lectura de parámetros dinámicos desde la interfaz
+  const pctInicial = parseFloat(document.getElementById("calc-porcentaje-inicial").value) || 20;
+  const plazoAnos = parseInt(document.getElementById("calc-plazo-anos").value) || 20;
+  const tea = parseFloat(document.getElementById("calc-tea").value) || 8.5;
+
+  // 2. Cálculos base del financiamiento
+  const cuotaInicial = precioPropiedad * (pctInicial / 100);
+  const montoFinanciar = precioPropiedad - cuotaInicial;
+  const numeroMeses = plazoAnos * 12;
+
+  if (montoFinanciar <= 0) {
+    elTotal.innerHTML = "$0 /mes";
+    elPrincipal.innerHTML = "$0";
+    elDesgravamen.innerHTML = "$0";
+    elPredial.innerHTML = "$0";
+    elTodoRiesgo.innerHTML = "$0";
+    return;
+  }
+
+  // 3. Fórmula de Amortización Francesa (Conversión de TEA a Tasa Mensual TEM)
+  const tem = Math.pow(1 + (tea / 100), 1 / 12) - 1;
+  const cuotaPrincipalInteres = montoFinanciar * (tem * Math.pow(1 + tem, numeroMeses)) / (Math.pow(1 + tem, numeroMeses) - 1);
+
+  // 4. Tasas base del ecosistema financiero del Perú (SBS y SAT)
+  const seguroDesgravamenMensual = montoFinanciar * 0.0005; // ~0.05% mensual promedio sobre saldo deudor
+  const seguroTodoRiesgoMensual = precioPropiedad * 0.0002;  // ~0.02% mensual sobre el valor comercial del inmueble
+  const impuestoPredialMensual = (precioPropiedad * 0.002) / 12; // ~0.2% anual prorrateado mensualmente
+
+  // 5. Consolidación del Pago Mensual Total
+  const pagoMensualTotal = cuotaPrincipalInteres + seguroDesgravamenMensual + seguroTodoRiesgoMensual + impuestoPredialMensual;
+
+  // Pintamos los resultados en el aire con formato numérico redondeado
+  elTotal.innerHTML = `$${Math.round(pagoMensualTotal).toLocaleString()} /mes`;
+  elPrincipal.innerHTML = `$${Math.round(cuotaPrincipalInteres).toLocaleString()}`;
+  elDesgravamen.innerHTML = `$${Math.round(seguroDesgravamenMensual).toLocaleString()}`;
+  elPredial.innerHTML = `$${Math.round(impuestoPredialMensual).toLocaleString()}`;
+  elTodoRiesgo.innerHTML = `$${Math.round(seguroTodoRiesgoMensual).toLocaleString()}`;
+}
 
     
 // Variable global temporal para guardar la propiedad activa en el modal
