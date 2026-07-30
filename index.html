@@ -248,11 +248,11 @@
     </select>
 
     <select id="filtro-habitaciones" class="select-filtro" onchange="renderizarMapaZillow()">
-        <option value="Todos">Camas (todas)</option>
-        <option value="1">1+ cama</option>
-        <option value="2">2+ camas</option>
-        <option value="3">3+ camas</option>
-        <option value="4">4+ camas</option>
+        <option value="Todos">Habitaciones (todas)</option>
+        <option value="1">1+ habitacion</option>
+        <option value="2">2+ habitacion</option>
+        <option value="3">3+ habitacion</option>
+        <option value="4">4+ habitaciones</option>
     </select>
 
     <select id="filtro-banos" class="select-filtro" onchange="renderizarMapaZillow()">
@@ -1311,7 +1311,7 @@ function renderizarMapaZillow() {
     let filtroPrecioMax = document.getElementById('filtro-precio-max').value;
     if (filtroPrecioMax === "Todos" || filtroPrecioMax.includes("Precio") || filtroPrecioMax.includes("todos")) filtroPrecioMax = "Todos";
 
-    let filtroHabitaciones = document.getElementById('filtro-camas').value;
+    let filtroHabitaciones = document.getElementById('filtro-habitaciones').value;
     if (filtroHabitaciones === "Todos" || filtroHabitaciones.includes("Camas") || filtroHabitaciones.includes("todas")) filtroHabitaciones = "Todos";
 
     let filtroBaños = document.getElementById('filtro-baños').value;
