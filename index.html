@@ -1292,12 +1292,23 @@ function renderizarMapaZillow() {
 
     // Captura en vivo de todos los filtros del navbar global
     const filtroTexto = document.getElementById('buscador-direccion').value.trim().toLowerCase();
-    const filtroAnuncio = document.getElementById('filtro-tipo-anuncio').value;
-    const filtroPrecioMax = document.getElementById('filtro-precio-max').value;
-    const filtroHabitaciones = document.getElementById('filtro-habitaciones').value;
-    const filtroBanos = document.getElementById('filtro-banos').value;
-    const filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
+    // Capturamos los valores de la interfaz y los normalizamos si tienen los textos por defecto de los selectores
+    let filtroAnuncio = document.getElementById('filtro-tipo-anuncio').value;
+    if (filtroAnuncio.includes("alquiler")) filtroAnuncio = "Todos";
 
+    let filtroPrecioMax = document.getElementById('filtro-precio-max').value;
+    if (filtroPrecioMax.includes("todos") || filtroPrecioMax.includes("Precio")) filtroPrecioMax = "Todos";
+
+    let filtroHabitaciones = document.getElementById('filtro-camas').value;
+    if (filtroHabitaciones.includes("todas") || filtroHabitaciones.includes("Camas")) filtroHabitaciones = "Todos";
+
+    let filtroBaños = document.getElementById('filtro-baños').value;
+    if (filtroBaños.includes("todos") || filtroBaños.includes("Baños")) filtroBaños = "Todos";
+
+    let filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
+    if (filtroPropiedad.includes("propiedad") || filtroPropiedad.includes("Tipo")) filtroPropiedad = "Todos";
+
+    
     if (!map || typeof map.getBounds !== 'function') return;
 
     const limitesVisuales = map.getBounds();
