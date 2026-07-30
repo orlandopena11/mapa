@@ -1337,9 +1337,10 @@ function renderizarMapaZillow() {
         const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte";
 
         const marcador = L.marker([casa.geo.latitud, casa.geo.longitud]).addTo(map)
-
-            .bindPopup(`<b>Código: ${casa.id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`);
+        const popupContenido = `<b>Código: ${casa.anuncio_id}</b><br><b       style="color:#006aff;">${precioFormateado}</b>`;
+        marcador.bindPopup(popupContenido);
         marcadoresEnPantalla.push(marcador);
+    
 
         const esFavorito = favoritosUsuario.includes(casa.id.toString());
         const colorCorazon = usuarioAutenticado ? (esFavorito ? '#d92323' : '#757575') : '#b0bec5';
