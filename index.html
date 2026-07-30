@@ -660,7 +660,12 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     }
 });
 
-document.addEventListener("DOMContentLoaded", comprobarSesionAlCargar);
+//document.addEventListener("DOMContentLoaded", comprobarSesionAlCargar);
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarMapa();
+    comprobarSesionAlCargar();
+});
+    
 
 function inicializarMapa() {
     map = L.map('mapa', { zoomControl: false }).setView([-12.125, -76.995], 13);
