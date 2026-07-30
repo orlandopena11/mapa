@@ -1293,21 +1293,24 @@ function renderizarMapaZillow() {
     // Captura en vivo de todos los filtros del navbar global
     const filtroTexto = document.getElementById('buscador-direccion').value.trim().toLowerCase();
     // Capturamos los valores de la interfaz y los normalizamos si tienen los textos por defecto de los selectores
+    // 1. Si el usuario deja la opción por defecto ("Para el alquiler / venta"), lo convertimos en "Todos"
     let filtroAnuncio = document.getElementById('filtro-tipo-anuncio').value;
-    if (filtroAnuncio.includes("alquiler")) filtroAnuncio = "Todos";
+    if (filtroAnuncio === "Todos" || filtroAnuncio.includes("alquiler") || filtroAnuncio.includes("venta")) {
+        filtroAnuncio = "Todos";
+    }
 
+    // 2. Normalizamos el resto de selectores de la barra superior
     let filtroPrecioMax = document.getElementById('filtro-precio-max').value;
-    if (filtroPrecioMax.includes("todos") || filtroPrecioMax.includes("Precio")) filtroPrecioMax = "Todos";
+    if (filtroPrecioMax === "Todos" || filtroPrecioMax.includes("Precio") || filtroPrecioMax.includes("todos")) filtroPrecioMax = "Todos";
 
     let filtroHabitaciones = document.getElementById('filtro-camas').value;
-    if (filtroHabitaciones.includes("todas") || filtroHabitaciones.includes("Camas")) filtroHabitaciones = "Todos";
+    if (filtroHabitaciones === "Todos" || filtroHabitaciones.includes("Camas") || filtroHabitaciones.includes("todas")) filtroHabitaciones = "Todos";
 
     let filtroBaños = document.getElementById('filtro-baños').value;
-    if (filtroBaños.includes("todos") || filtroBaños.includes("Baños")) filtroBaños = "Todos";
+    if (filtroBaños === "Todos" || filtroBaños.includes("Baños") || filtroBaños.includes("todos")) filtroBaños = "Todos";
 
     let filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
-    if (filtroPropiedad.includes("propiedad") || filtroPropiedad.includes("Tipo")) filtroPropiedad = "Todos";
-
+    if (filtroPropiedad === "Todos" || filtroPropiedad.includes("Propiedad") || filtroPropiedad.includes("Tipo")) filtroPropiedad = "Todos";
     
     if (!map || typeof map.getBounds !== 'function') return;
 
