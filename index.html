@@ -1383,11 +1383,12 @@ function renderizarMapaZillow() {
 
         // Construcción del arreglo de imágenes del carrusel (ya vienen listas para usar)
         let misFotosCarrusel = [];
-        if (casa.foto_principal) misFotosCarrusel.push(casa.foto_principal);
+        // if (casa.foto_principal) misFotosCarrusel.push(casa.foto_principal);
+        if (casa.foto_principal) misFotosCarrusel.push(`https://res.cloudinary.com/obw6ciov/image/upload/${casa.foto_principal}.jpg`); 
         if (casa.imagenes_secundarias && casa.imagenes_secundarias.length > 0) {
             const espacioDisponible = 6 - misFotosCarrusel.length;
             if (espacioDisponible > 0) {
-                casa.imagenes_secundarias.slice(0, espacioDisponible).forEach(url => misFotosCarrusel.push(url));
+            casa.imagenes_secundarias.slice(0, espacioDisponible).forEach(url => misFotosCarrusel.push(`https://res.cloudinary.com/obw6ciov/image/upload/${url}.jpg`));    
             }
         }
         if (misFotosCarrusel.length === 0) misFotosCarrusel.push("https://unsplash.com");
