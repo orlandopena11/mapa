@@ -1469,6 +1469,7 @@ function verificarEstadoYRolUsuario(emailUsuario) {
     .then(async (data) => {
         if (data.success && data.estado_cuenta.toString().toLowerCase().trim() === "activo") {
             usuarioAutenticado = true;
+
             correoUsuarioLogueado = emailUsuario;
             favoritosUsuario = data.favoritos.map(id => id.toString());
             ocultarBannerSuspension();
