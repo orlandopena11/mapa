@@ -1382,6 +1382,9 @@ function renderizarMapaZillow() {
 
         const tarjeta = document.createElement('div');
         tarjeta.className = 'tarjeta-casa';
+        tarjeta.style.flexShrink = "0";
+        tarjeta.style.width = "320px";
+        tarjeta.style.minWidth = "320px";
 
         // Construcción del arreglo de imágenes del carrusel (ya vienen listas para usar)
         let misFotosCarrusel = [];
