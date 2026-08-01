@@ -573,7 +573,9 @@
       <p style="font-size: 12px; color: #666; margin-bottom: 15px; font-family: sans-serif;">Otros inmuebles activos en un radio máximo de 1.5 km a la redonda.</p>
       
       <!-- Contenedor con scroll horizontal táctil y fluido -->
-      <div id="contenedor-propiedades-cercanas" style="display: flex; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; white-space: nowrap;">
+      <div id="contenedor-propiedades-cercanas" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 15px; overflow-y: auto; max-height: calc(100vh - 180px);">
+
+<!--  <div id="contenedor-propiedades-cercanas" style="display: flex; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; white-space: nowrap;">-->
         <!-- Las tarjetas dinámicas se inyectarán aquí en tiempo real por JavaScript -->
       </div>
     </div>
