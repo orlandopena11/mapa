@@ -107,9 +107,10 @@
         .barra-contador { padding: 16px 20px 4px 20px; }
         #contador-propiedades { margin: 0; color: #666; font-size: 14px; }
 
-        .grid-tarjetas { padding: 16px 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .grid-tarjetas { padding: 16px 20px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 
-        .tarjeta-casa { background: white; border: 1px solid var(--gris-borde); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; }
+        .tarjeta-casa { background: white; border: 1px solid var(--gris-borde); border-radius: 12px; overflow: hidden; transition: all 0.3s ease; display: flex; flex-direction: column; position: relative; height: 380px; min-height: 380px;
+ }
         .tarjeta-casa:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: var(--azul-zillow); }
 
         .badge { position: absolute; top: 10px; left: 10px; background: var(--azul-zillow); color: white; padding: 4px 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-transform: uppercase; z-index: 3; }
@@ -1383,15 +1384,6 @@ function renderizarMapaZillow() {
         const tarjeta = document.createElement('div');
         tarjeta.className = 'tarjeta-casa';
 
-        // 1. Forzamos al contenedor de afuera a permitir múltiples filas de 2
-        tarjeta.parentElement || document.getElementById('contenedor-propiedades-cercanas').setAttribute('style', 'display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; overflow-y: auto; max-height: calc(100vh - 180px);');
-
-        // 2. Le damos a cada tarjeta el tamaño exacto para que solo entren dos
-        tarjeta.style.width = '47%';
-        tarleta.style.minWidth = '340px';
-        tarjeta.style.height = '380px';
-        tarjeta.style.minHeight = '380px';
-        tarjeta.style.flexShrink = '0';
         
         // Construcción del arreglo de imágenes del carrusel (ya vienen listas para usar)
         let misFotosCarrusel = [];
