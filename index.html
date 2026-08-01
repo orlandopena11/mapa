@@ -587,7 +587,7 @@
         <!-- Las tarjetas dinámicas se inyectarán aquí en tiempo real por JavaScript -->
       </div>
     </div>
-
+</div>
 <!-- VENTANA FLOTANTE DE GALERÍA COMPLETA (3ra pantalla) -->
 <div id="mi-modal-galeria" class="pantalla-bloqueo">
     <div id="contenedor-galeria-completa" class="caja-login" style="max-width: 1100px; width: 96%; height: 92vh; padding: 0; text-align: left; overflow: hidden;">
@@ -743,12 +743,18 @@ function procesarDatosDelMotor(data) {
 }
 
 function mostrarAnalisisComparativo(propiedadSeleccionada) {
+    // Mostramos la gran pantalla superpuesta que contiene a todos los bloques
+    if(document.getElementById('pantalla-superpuesta-detalle')) document.getElementById('pantalla-superpuesta-detalle').style.display = 'block';
+
+    // Mostramos las secciones ocultas de la pantalla de detalle
+    
+//function mostrarAnalisisComparativo(propiedadSeleccionada) {
         // Mostramos las secciones ocultas de la pantalla de detalle
-    if(document.getElementById('contenedor-mapa-detalle')) document.getElementById('contenedor-mapa-detalle').style.display = 'block';
-    if(document.getElementById('seccion-conectividad-detalle')) document.getElementById('seccion-conectividad-detalle').style.display = 'block';
-    if(document.getElementById('seccion-formulario-agente')) document.getElementById('seccion-formulario-agente').style.display = 'block';
-    if(document.getElementById('seccion-propiedades-cercanas')) document.getElementById('seccion-propiedades-cercanas').style.display = 'block';
-    if(document.getElementById('contenedor-calculadora-detalle')) document.getElementById('contenedor-calculadora-detalle').style.display = 'block';
+  //  if(document.getElementById('contenedor-mapa-detalle')) document.getElementById('contenedor-mapa-detalle').style.display = 'block';
+ //   if(document.getElementById('seccion-conectividad-detalle')) document.getElementById('seccion-conectividad-detalle').style.display = 'block';
+ //   if(document.getElementById('seccion-formulario-agente')) document.getElementById('seccion-formulario-agente').style.display = 'block';
+//    if(document.getElementById('seccion-propiedades-cercanas')) document.getElementById('seccion-propiedades-cercanas').style.display = 'block';
+//    if(document.getElementById('contenedor-calculadora-detalle')) document.getElementById('contenedor-calculadora-detalle').style.display = 'block';
 
     
   const contenedorTabla = document.getElementById("tabla-comparables-body");
