@@ -1382,10 +1382,16 @@ function renderizarMapaZillow() {
 
         const tarjeta = document.createElement('div');
         tarjeta.className = 'tarjeta-casa';
-        tarjeta.style.width = "360px";
-        tarjeta.style.minWidth = "360px";
-        tarjeta.style.height = "380px";
-        tarjeta.style.minHeight = "380px";
+
+        // 1. Forzamos al contenedor de afuera a permitir múltiples filas de 2
+        tarjeta.parentElement || document.getElementById('contenedor-propiedades-cercanas').setAttribute('style', 'display: flex; flex-wrap: wrap; gap: 15px; padding: 10px; overflow-y: auto; max-height: calc(100vh - 180px);');
+
+        // 2. Le damos a cada tarjeta el tamaño exacto para que solo entren dos
+        tarjeta.style.width = '47%';
+        tarleta.style.minWidth = '340px';
+        tarjeta.style.height = '380px';
+        tarjeta.style.minHeight = '380px';
+        tarjeta.style.flexShrink = '0';
         
         // Construcción del arreglo de imágenes del carrusel (ya vienen listas para usar)
         let misFotosCarrusel = [];
