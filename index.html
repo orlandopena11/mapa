@@ -1413,7 +1413,7 @@ function renderizarMapaZillow() {
 
         let htmlFotosInternas = '';
         misFotosCarrusel.forEach(imgUrl => {
-            htmlFotosInternas += `<img src="${construirUrlImagen(imgUrl)}" crossorigin="anonymous" alt="Propiedad" onclick="abrirVentanaDetalle(${casa.id})">`;
+            htmlFotosInternas += `<img src="${construirUrlImagen(imgUrl)}" crossorigin="anonymous" alt="Propiedad" onclick="abrirVentanaDetalle(this.closest('.ficha-tecnica-zillow')?.dataset?.id || localStorage.getItem('idPropiedadActual'))">`;
 
 
         });
