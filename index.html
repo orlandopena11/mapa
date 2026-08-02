@@ -1814,17 +1814,25 @@ function obtenerTodasLasFotos(casa) {
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
-    if (!casa) return;
-      mostrarAnalisisComparativo(casa);
-      mostrarPropiedadesCercanas(casa);
-      mostrarDatosYCaracteristicasFicha(casa);
-      configurarFormularioContacto(casa); // <--- NUEVO DISPARADOR DEL FORMULARIO
-      calcularValorMercadoEstimado(casa);
-      mostrarGraficoHistorialPrecios(casa);
-      mostrarTablaHistorialPrecios(casa); // <--- LOGRADO: HISTORIAL COMPLETO EN LA PANTALLA
-      inicializarCalculadoraHipoteca(casa);
-      mostrarMapaBarrioVolatil(casa);       // <--- NUEVO DISPARADOR DEL MAPA DEL BARRIO
-      mostrarConectividadYServicios(casa);
+        if (!casa) return;
+
+        // 1. Apuntamos directo a la caja contenedora real que flota adelante
+        const cajaDetalleZillow = document.getElementById('contenedor-detalle-zillow');
+        if (!cajaDetalleZillow) return;
+
+        // 2. Limpiamos la caja para recibir la nueva información limpia
+        cajaDetalleZillow.innerHTML = '';
+
+        // 3. Ejecutamos las funciones metiendo cada bloque ordenadamente en la misma caja del frente
+        mostrarAnalisisComparativo(casa);
+        mostrarPropiedadesCercanas(casa);
+        mostrarDatosYCaracteristicasFicha(casa);
+        configurarFormularioContacto(casa);
+        calcularValorMercadoEstimado(casa);
+        mostrarGraficoHistorialPrecios(casa);
+        mostrarTablaHistorialPrecios(casa);
+        mostrarMapaBarrioVolatil(casa);
+        mostrarConectividadYServicios(casa);
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const divDetalle = document.getElementById('contenedor-detalle-zillow');
