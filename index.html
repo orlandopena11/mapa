@@ -463,8 +463,21 @@
         <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px; font-family: sans-serif;">??? Ubicación y Barrio</h4>
         <p style="font-size: 12px; color: #666; margin-bottom: 12px; font-family: sans-serif;" id="barrio-texto-direccion">Explora el entorno y la conectividad de esta propiedad.</p>
 
-    <!-- Nueva etiqueta Padre para la pantalla superpuesta completa -->
-          <div id="pantalla-superpuesta-detalle" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f6f6f9; z-index: 9999; overflow-y: auto; padding: 40px 5%; text-align: center;">
+<!-- Estilos para obligar a los bloques hijos a ocupar casi todo el ancho verticalmente -->
+<style>
+    #pantalla-superpuesta-detalle > div, 
+    #pantalla-superpuesta-detalle > section {
+        width: 92% !important;
+        max-width: 1400px !important;
+        margin: 15px auto !important;
+        display: block !important;
+        clear: both !important;
+        float: none !important;
+    }
+</style>
+
+<!-- Nueva etiqueta Padre para la pantalla superpuesta completa -->
+<div id="pantalla-superpuesta-detalle" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f6f6f9; z-index: 9999; overflow-y: auto; padding: 40px 0;">
  
     
     <!-- Botón de retorno estilo Zillow -->
