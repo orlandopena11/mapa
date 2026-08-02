@@ -743,8 +743,10 @@ function procesarDatosDelMotor(data) {
 }
 
 function mostrarAnalisisComparativo(propiedadSeleccionada) {
+    // Guardamos el ID de la propiedad actual de manera global y ligera en el navegador
+    if (propiedadSeleccionada) localStorage.setItem('idPropiedadActual', propiedadSeleccionada.propiedad_id || propiedadSeleccionada.id);
+
     // Mostramos la gran pantalla superpuesta que contiene a todos los bloques
-    if(document.getElementById('pantalla-superpuesta-detalle')) document.getElementById('pantalla-superpuesta-detalle').style.display = 'block';
 
     // Mostramos las secciones ocultas de la pantalla de detalle
     
