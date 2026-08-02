@@ -1814,28 +1814,19 @@ function obtenerTodasLasFotos(casa) {
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
-        if (!casa) return;
+    
+    if (!casa) return;
 
-        // 1. Apuntamos directo a la caja contenedora real que flota adelante
-        const cajaDetalleZillow = document.getElementById('contenedor-detalle-zillow');
-        if (!cajaDetalleZillow) return;
+    // 1. Apuntamos directo a la caja contenedora real que flota adelante
+    const cajaDetalleZillow = document.getElementById('contenedor-detalle-zillow');
+    if (!cajaDetalleZillow) return;
 
-        // 2. Limpiamos la caja para recibir la nueva información limpia
-        cajaDetalleZillow.innerHTML = '';
+    // 2. Limpiamos la caja para recibir la nueva información limpia
+    cajaDetalleZillow.innerHTML = '';
 
-        // 3. Ejecutamos las funciones metiendo cada bloque ordenadamente en la misma caja del frente
-        mostrarAnalisisComparativo(casa);
-        mostrarPropiedadesCercanas(casa);
-        mostrarDatosYCaracteristicasFicha(casa);
-        configurarFormularioContacto(casa);
-        calcularValorMercadoEstimado(casa);
-        mostrarGraficoHistorialPrecios(casa);
-        mostrarTablaHistorialPrecios(casa);
-        mostrarMapaBarrioVolatil(casa);
-        mostrarConectividadYServicios(casa);
-
+    // 3. Procesamos los textos y bloques estáticos de la propiedad
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
-    const divDetalle = document.getElementById('contenedor-detalle-zillow');
+    const divDetalle = cajaDetalleZillow; // Mantenemos la referencia que usa tu código abajo
     const todasLasFotos = obtenerTodasLasFotos(casa);
 
     let htmlCaracteristicas = '';
@@ -1848,47 +1839,46 @@ function abrirVentanaDetalle(idPropiedad) {
         }
     }
 
-    // Punto real de "promocion": tipo_promocion, fecha_inicio, fecha_fin, costo
     let htmlPromocion = '';
     if (casa.promocion) {
         const p = casa.promocion;
         const etiqueta = p.tipo_promocion || 'Promoción vigente';
         const vigencia = (p.fecha_inicio || p.fecha_fin)
-            ? `Vigente ${p.fecha_inicio || '—'} a ${p.fecha_fin || '—'}`
+            ? `Vigente ${p.fecha_inicio || '-'} a ${p.fecha_fin || '-'}`
             : 'Oferta activa en este anuncio';
-        htmlPromocion = `<div class="bloque-seccion bloque-promocion"><h4>??? ${etiqueta}</h4><p>${vigencia}</p></div>`;
+        htmlPromocion = `<div class="bloque-seccion bloque-promocion"><h4>¡¡¡ ${etiqueta} </h4><p>${vigencia}</p></div>`;
     }
 
     let htmlTour3d = '';
     if (casa.recorrido_3d && casa.recorrido_3d.url) {
-        htmlTour3d = `<div class="bloque-seccion"><h4>Recorrido virtual 3D (${casa.recorrido_3d.proveedor || 'Interactivo'})</h4>
-            <iframe src="${casa.recorrido_3d.url}" width="100%" height="360" style="border:none;border-radius:10px;" allowfullscreen></iframe></div>`;
+        htmlTour3d = `<div class="bloque-seccion"><h4>Recorrido virtual 3D (${casa.recorrido_3d.proveedor || 'Interactivo'})</h4>` +
+            `<iframe src="${casa.recorrido_3d.url}" width="100%" height="360" style="border:none;border-radius:10px;" allowfullscreen></iframe></div>`;
     }
 
-    // Punto real de "historial_precio": precio_anterior, precio_nuevo, fecha_cambio, motivo_cambio
     let htmlHistorial = '';
     if (casa.historial_precio && casa.historial_precio.length) {
         htmlHistorial = `<div class="bloque-seccion"><h4>Historial de precio</h4><ul class="lista-historial">` +
-            casa.historial_precio.map(h => `<li><span>${h.fecha_cambio || ''}</span><span>${h.precio_anterior || ''} ? ${h.precio_nuevo || ''}</span></li>`).join('') +
+            casa.historial_precio.map(h => `<li><span>${h.fecha_cambio || ''}</span> <span>${h.precio_anterior || ''} -> ${h.precio_nuevo || ''}</span></li>`).join('') +
             `</ul></div>`;
     }
 
+    // 4. Inyección del esqueleto base unificado (Toda la pantalla junta)
     divDetalle.innerHTML = `
         <div class="cabecera-detalle">
-            <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()">? Volver</button>
+            <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()">Volver</button>
             <h2>${precioFormateado}</h2>
             <h3>${casa.titulo}</h3>
-            <p>?? ${casa.direccion}</p>
+            <p>${casa.direccion}</p>
         </div>
 
         ${construirCollageInicial(todasLasFotos, casa.id)}
 
         <div class="bloque-seccion">
             <p class="datos-rapidos">
-                ??? <b>${casa.habitaciones}</b> hab &nbsp;|&nbsp;
-                ?? <b>${casa.banos}</b> baños &nbsp;|&nbsp;
-                ?? <b>${casa.estacionamientos}</b> estac &nbsp;|&nbsp;
-                ?? <b>${casa.area}</b> m² construidos
+                <b>${casa.habitaciones}</b> hab &nbsp;|&nbsp;
+                <b>${casa.banos}</b> baños &nbsp;|&nbsp;
+                <b>${casa.estacionamientos}</b> estac &nbsp;|&nbsp;
+                <b>${casa.area}</b> m² construidos
             </p>
             <p class="descripcion-detalle">${casa.descripcion || ''}</p>
         </div>
@@ -1898,8 +1888,19 @@ function abrirVentanaDetalle(idPropiedad) {
         ${htmlTour3d}
         ${htmlHistorial}
 
+        <!-- ================================================================= -->
+        <!-- MARCADORES DE POSICIÓN EXCLUSIVOS PARA TUS 9 FUNCIONES ANALÍTICAS -->
+        <!-- ================================================================= -->
+        <div id="valor-mercado-zillow" class="bloque-analitico-contenedor"></div>
+        <div id="grafico-historial-zillow" class="bloque-analitico-contenedor"></div>
+        <div id="tabla-historial-precios-zillow" class="bloque-analitico-contenedor"></div>
+        <div id="contenedor-mapa-detalle" class="bloque-analitico-contenedor"></div>
+        <div id="seccion-conectividad-detalle" class="bloque-analitico-contenedor"></div>
+        <div id="contenedor-detalle-zillow-interno" class="bloque-analitico-contenedor"></div>
+        <div id="contenedor-propiedades-cercanas" class="bloque-analitico-contenedor"></div>
+
         <div class="bloque-seccion">
-            <button class="btn-ver-contacto" style="max-width:320px;" onclick="verContactoDesdeDetalle('${casa.telefono}')">?? Ver datos del contacto</button>
+            <button class="btn-ver-contacto" style="max-width:320px;" onclick="verContactoDesdeDetalle('${casa.telefono}')">Ver datos del contacto</button>
         </div>
 
         <div class="bloque-seccion bloque-visita">
@@ -1913,10 +1914,26 @@ function abrirVentanaDetalle(idPropiedad) {
                 <option value="virtual">Visita virtual</option>
             </select>
             <button class="btn-continuar" onclick="agendarVisita('${casa.id}', '${casa.anuncio_id}')">Solicitar visita</button>
-            <p id="visita-estado" style="font-size:12px; color:#666;"></p>
+            <p id="visita-state" style="font-size:12px; color:#666;"></p>
         </div>
+        
+        <!-- Contenedor del formulario del agente que antes flotaba solo -->
+        <div id="seccion-formulario-agente" class="bloque-analitico-contenedor"></div>
     `;
+
+    // 5. EJECUCIÓN POST-RENDER: Ahora que los IDs de arriba ya existen en la pantalla, 
+    // ejecutamos tus funciones analíticas para que rellenen sus respectivas cajas de forma ordenada.
+    mostrarAnalisisComparativo(casa);
+    mostrarPropiedadesCercanas(casa);
+    mostrarDatosYCaracteristicasFicha(casa);
+    configurarFormularioContacto(casa);
+    calcularValorMercadoEstimado(casa);
+    mostrarGraficoHistorialPrecios(casa);
+    mostrarTablaHistorialPrecios(casa);
+    mostrarMapaBarrioVolatil(casa);
+    mostrarConectividadYServicios(casa);
 }
+
 function cerrarVentanaDetalle() {
     // Apagamos la gran pantalla superpuesta completa
     if(document.getElementById('pantalla-superpuesta-detalle')) document.getElementById('pantalla-superpuesta-detalle').style.display = 'none';
