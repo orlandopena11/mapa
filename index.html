@@ -1724,11 +1724,11 @@ function construirCollageInicial(fotos, idPropiedad) {
     if (!fotos || !fotos.length) return '';
     
     const total = fotos.length;
-    // Extraemos las fotos desde la posición 1 hasta la 5 para las miniaturas
+    // Extraemos de la posición 1 a la 5 las imágenes que van al bloque de la derecha
     const secundarias = fotos.slice(1, 5); 
 
-    // LA CLAVE: Forzamos la lectura únicamente del primer elemento (índice 0)
-    const urlPrincipal = String(fotos[0]).trim();
+    // Tomamos la primera URL limpia del arreglo (Índice 0)
+    const urlPrincipal = fotos[0];
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
@@ -1736,14 +1736,11 @@ function construirCollageInicial(fotos, idPropiedad) {
 
     if (secundarias.length) {
         html += '<div class="collage-secundario">';
-        secundarias.forEach((fotoUrl, idx) => {
+        secundarias.forEach((urlFoto, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
             
-            // Leemos cada foto secundaria de forma individual uno por uno
-            const urlSecundaria = String(fotoUrl).trim();
-            
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
+                <img src="${urlFoto}" alt="Foto de la propiedad" loading="lazy">
                 ${esUltimaMini ? `<div class="overlay-ver-todas">Ver todas las ${total} fotos</div>` : ''}
             </div>`;
         });
@@ -1752,7 +1749,6 @@ function construirCollageInicial(fotos, idPropiedad) {
     html += '</div>';
     return html;
 }
-
 
 // Galería vertical infinita de la 3ra pantalla (todas las fotos)
 function construirGaleriaAsimetrica(fotos) {
