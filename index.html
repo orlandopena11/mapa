@@ -1723,12 +1723,17 @@ function cerrarVentanaLogin() {
 function construirCollageInicial(fotos, idPropiedad) {
     if (!fotos || !fotos.length) return '';
     const total = fotos.length;
-    const secundarias = fotos.slice(1, 5); // hasta 4 miniaturas a la derecha
+    const secundarias = fotos.slice(1, 5); 
 
-    // CORRECCIÓN: Pasamos la primera foto por el constructor de URLs
-    const urlPrincipal = construirUrlImagen(fotos[0]);
+    // Forzamos que fotos[0] sea un string plano y no el arreglo entero
+    const primerId = Array.isArray(fotos) ? fotos[0] : fotos;
+    
+    // Limpiamos la URL quitándole comillas extras o espacios ocultos de los extremos
+    let urlPrincipal = construirUrlImagen(primerId).replace(/['"]+/g, '').trim();
 
     let html = '<div class="collage-detalle">';
+    
+    // Forzamos las comillas limpias del atributo src del HTML
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
         <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
@@ -1737,8 +1742,8 @@ function construirCollageInicial(fotos, idPropiedad) {
         secundarias.forEach((fotoId, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
             
-            // CORRECCIÓN: Pasamos cada foto secundaria por el constructor de URLs
-            const urlSecundaria = construirUrlImagen(fotoId);
+            // Limpiamos la URL secundaria de comillas extras o espacios ocultos
+            let urlSecundaria = construirUrlImagen(fotoId).replace(/['"]+/g, '').trim();
             
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
