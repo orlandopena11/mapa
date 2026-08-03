@@ -732,7 +732,8 @@ function construirUrlImagen(publicId) {
     if (cleanPublicId.startsWith("http")) return cleanPublicId;
     
     // LA SOLUCIÓN: Agregamos /f_auto/ a la URL base para que Cloudinary detecte si es .webp o .jpg por sí solo
-    const CLOUDINARY_BASE = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    //const CLOUDINARY_BASE = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    const CLOUDINARY_BASE = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
     
     // Limpiamos barras inclinadas de más al inicio
     cleanPublicId = cleanPublicId.replace(/^\/+/, '');
@@ -1731,7 +1732,8 @@ function construirCollageInicial(fotos, idPropiedad) {
     const secundarias = arregloFotos.slice(1, 5); 
     
     // Base de entrega inteligente de Cloudinary
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    //const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
 
     // 1. PROCESAMOS LA FOTO PRINCIPAL (ÍNDICE 0)
     let nombrePrincipal = String(arregloFotos[0]).trim();
@@ -1863,8 +1865,8 @@ function abrirVentanaDetalle(idPropiedad) {
     // CORRECCIÓN MAESTRA: PROCESAMIENTO DE FOTOS CON AUTO-FORMATO CLOUDINARY
     // =========================================================================
     let todasLasFotos = [];
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
-
+    //const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
     // 1. Procesamos la foto principal
     if (casa.foto_principal) {
         let principalLimpia = String(casa.foto_principal).trim().replace(/\s+/g, '_');
