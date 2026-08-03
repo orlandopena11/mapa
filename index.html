@@ -1949,10 +1949,11 @@ function abrirGaleriaCompleta(idPropiedad) {
     }
     
     // 2. Traducimos y acoplamos toda la lista de imágenes secundarias
-    if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
-        const secundariasTraducidas = casa.imagenes_secundarias.map(id => construirUrlImagen(id));
-        todasLasFotos = todasLasFotos.concat(secundariasTraducidas);
-    }
+        if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
+            const secundariasTraducidas = casa.imagenes_secundarias.map(id => construirUrlImagen(id));
+            todasLasFotos = todasLasFotos.concat(secundariasTraducidas);
+        }
+
     
     // 3. Salvaguarda en caso de que no existan fotos
     if (todasLasFotos.length === 0) {
