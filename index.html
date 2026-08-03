@@ -1772,7 +1772,7 @@ function cerrarVentanaLogin() {
 function construirCollageInicial(arregloFotos, idPropiedad) {
     if (!arregloFotos || !arregloFotos.length) return '';
     
-    // Aseguramos que sea un arreglo continuo
+    // Aseguramos el conteo total basado en el arreglo que ingresa
     const total = arregloFotos.length;
     
     const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
@@ -1787,7 +1787,7 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         return BASE_CLOUDINARY + encodeURIComponent(nombre);
     }
 
-    // 1. PROCESAMOS LAS URLS COMPLETAS DE LAS FOTOS
+    // 1. PROCESAMOS LA URL COMPLETA DE LA FOTO PRINCIPAL
     const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
 
     // 2. EXTRAEMOS LAS 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
@@ -1800,17 +1800,17 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS
+    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS EXISTENTES
     let html = '<div class="collage-detalle">';
     
-    // Izquierda: Foto Grande
+    // Lado Izquierdo: Foto Grande
     html += `
         <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
         </div>
     `;
 
-    // Derecha: Bloque de 4 fotos
+    // Lado Derecho: Bloque de 4 fotos agrupadas
     html += '<div class="collage-secundario">';
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
