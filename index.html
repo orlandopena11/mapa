@@ -1727,8 +1727,8 @@ function construirCollageInicial(fotos, idPropiedad) {
     // Extraemos de la posición 1 a la 5 las imágenes que van al bloque de la derecha
     const secundarias = fotos.slice(1, 5); 
 
-    // Tomamos la primera URL limpia del arreglo (Índice 0)
-    const urlPrincipal = fotos[0];
+    // CORRECCIÓN DEFINITIVA: Apuntamos explícitamente al primer elemento de la lista
+    const urlPrincipal = fotos;
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
@@ -1749,7 +1749,7 @@ function construirCollageInicial(fotos, idPropiedad) {
     html += '</div>';
     return html;
 }
-
+    
 // Galería vertical infinita de la 3ra pantalla (todas las fotos)
 function construirGaleriaAsimetrica(fotos) {
     if (!fotos.length) return '';
