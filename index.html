@@ -2027,19 +2027,23 @@ function abrirGaleriaCompleta(idPropiedad) {
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const contenedor = document.getElementById('contenedor-galeria-completa');
+    
+    // CORRECCIÓN DIRECTA: Cambiamos 'todasLasFotos' por el arreglo real de tu objeto
+    const listaDeFotos = casa.fotos || []; 
 
     contenedor.innerHTML = `
-        <button class="btn-volver-lista" onclick="cerrarGaleriaCompleta()">? Volver a la ficha</button>
+        <button class="btn-volver-lista" onclick="cerrarGaleriaCompleta()">← Volver a la ficha</button>
         <div class="pantalla-galeria">
             <div class="galeria-columna-fotos">
-                <div class="galeria-asimetrica">${construirGaleriaAsimetrica(todasLasFotos)}</div>
+                <!-- Enviamos las fotos reales al constructor de la galería asimétrica -->
+                <div class="galeria-asimetrica">${construirGaleriaAsimetrica(listaDeFotos)}</div>
             </div>
             <div class="galeria-sidebar">
                 <h2>${precioFormateado}</h2>
                 <h3>${casa.titulo}</h3>
-                <p>?? ${casa.direccion}<br>
-                   ??? ${casa.habitaciones} hab &nbsp;|&nbsp; ?? ${casa.banos} baños &nbsp;|&nbsp; ?? ${casa.area} m²</p>
-                <button class="btn-ver-contacto" onclick="verContactoDesdeDetalle('${casa.telefono}')">?? Agente de contacto</button>
+                <p>📍 ${casa.direccion}<br>
+                   🛏️ ${casa.habitaciones} hab &nbsp;|&nbsp; 🛁 ${casa.banos} baños &nbsp;|&nbsp; 📐 ${casa.area} m²</p>
+                <button class="btn-ver-contacto" onclick="verContactoDesdeDetalle('${casa.telefono}')">📞 Agente de contacto</button>
             </div>
         </div>
     `;
@@ -2048,6 +2052,7 @@ function abrirGaleriaCompleta(idPropiedad) {
     document.getElementById('mi-modal-galeria').style.display = 'flex';
 }
 
+    
 function cerrarGaleriaCompleta() {
     document.getElementById('mi-modal-galeria').style.display = 'none';
     document.getElementById('mi-modal-detalle').style.display = 'flex';
