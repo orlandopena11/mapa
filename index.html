@@ -1908,8 +1908,32 @@ function abrirVentanaDetalle(idPropiedad) {
 
     cajaDetalleZillow.innerHTML = '';
 
-    // Extraemos el arreglo unificado de fotos que cruzamos desde la segunda tabla
-    const todasLasFotos = casa.fotos || [casa.foto_principal] || ["https://unsplash.com"];
+    // =========================================================================
+    // CORRECCIÓN DEFINITIVA: UNIMOS LA FOTO PRINCIPAL CON LAS 16 SECUNDARIAS
+    // =========================================================================
+    let todasLasFotos = [];
+    
+    // 1. Agregamos la foto principal si existe
+    if (casa.foto_principal) {
+        todasLasFotos.push(casa.foto_principal);
+    }
+    
+    // 2. Extraemos el arreglo 'imagenes_segundarias' que vimos en la consola con 16 fotos
+    const secundariasBackend = casa.imagenes_segundarias || [];
+    if (Array.isArray(secundariasBackend)) {
+        secundariasBackend.forEach(foto => {
+            // Evitamos duplicar la foto principal si ya se encuentra en el listado
+            if (foto && foto !== casa.foto_principal) {
+                todasLasFotos.push(foto);
+            }
+        });
+    }
+
+    // Si por alguna razón está completamente vacío, dejamos un fallback de seguridad
+    if (todasLasFotos.length === 0) {
+        todasLasFotos = ["https://unsplash.com"];
+    }
+    // =========================================================================
 
     if (!casa.precio && casa.precio_base) {
         casa.precio = casa.precio_base;
