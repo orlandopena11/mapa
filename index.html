@@ -1721,19 +1721,22 @@ function cerrarVentanaLogin() {
 
 // Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
 function construirCollageInicial(fotos, idPropiedad) {
+    // Si viene como string (una sola foto), lo convertimos en arreglo para evitar errores
+    if (typeof fotos === 'string') {
+        fotos = [fotos];
+    }
+    
     if (!fotos || !fotos.length) return '';
     const total = fotos.length;
+    
+    // Extraemos hasta 4 miniaturas para la derecha (desde el índice 1 al 5)
     const secundarias = fotos.slice(1, 5); 
 
-    // Forzamos que fotos[0] sea un string plano y no el arreglo entero
-    const primerId = Array.isArray(fotos) ? fotos[0] : fotos;
-    
-    // Limpiamos la URL quitándole comillas extras o espacios ocultos de los extremos
-    let urlPrincipal = construirUrlImagen(primerId).replace(/['"]+/g, '').trim();
+    // LA CLAVE: Forzamos la limpieza de espacios a guiones bajos directamente en el índice 0
+    const fotoPrincipalLimpia = String(fotos[0]).trim().replace(/\s+/g, '_');
+    const urlPrincipal = construirUrlImagen(fotoPrincipalLimpia);
 
     let html = '<div class="collage-detalle">';
-    
-    // Forzamos las comillas limpias del atributo src del HTML
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
         <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
@@ -1742,8 +1745,9 @@ function construirCollageInicial(fotos, idPropiedad) {
         secundarias.forEach((fotoId, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
             
-            // Limpiamos la URL secundaria de comillas extras o espacios ocultos
-            let urlSecundaria = construirUrlImagen(fotoId).replace(/['"]+/g, '').trim();
+            // Forzamos la limpieza de espacios a guiones bajos para cada miniatura
+            const fotoSecundariaLimpia = String(fotoId).trim().replace(/\s+/g, '_');
+            const urlSecundaria = construirUrlImagen(fotoSecundariaLimpia);
             
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
