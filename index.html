@@ -1940,19 +1940,20 @@ function abrirGaleriaCompleta(idPropiedad) {
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
     if (!casa) return;
 
-    // Unificación y traducción rigurosa a URLs reales de Cloudinary
-    let todasLasFotos = [];
-    
-    // 1. Traducimos e insertamos la foto principal si existe
-    if (casa.foto_principal) {
-        todasLasFotos.push(construirUrlImagen(casa.foto_principal));
+    // Traducimos directamente las propiedades del objeto para forzar el uso de Cloudinary
+    if (casa.foto_principal && !casa.foto_principal.startsWith('http')) {
+        casa.foto_principal = construirUrlImagen(casa.foto_principal);
     }
     
-    // 2. Traducimos y acoplamos toda la lista de imágenes secundarias
-        if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
-            const secundariasTraducidas = casa.imagenes_secundarias.map(id => construirUrlImagen(id));
-            todasLasFotos = todasLasFotos.concat(secundariasTraducidas);
-        }
+    if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
+        casa.imagenes_secundarias = casa.imagenes_secundarias.map(id => {
+            return id.startsWith('http') ? id : construirUrlImagen(id);
+        });
+    }
+
+    // El array unificado que lee el collage ahora tendrá las rutas web reales listas
+    let todasLasFotos = [casa.foto_principal].concat(casa.imagenes_secundarias || []).filter(Boolean);
+
 
     
     // 3. Salvaguarda en caso de que no existan fotos
