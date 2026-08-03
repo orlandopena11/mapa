@@ -1723,24 +1723,46 @@ function cerrarVentanaLogin() {
 function construirCollageInicial(fotos, idPropiedad) {
     if (!fotos || !fotos.length) return '';
     
-    const total = fotos.length;
-    // Extraemos de la posición 1 a la 5 las imágenes que van al bloque de la derecha
-    const secundarias = fotos.slice(1, 5); 
+    // Si viene como un solo texto por error, lo transformamos en una lista
+    const arregloFotos = Array.isArray(fotos) ? fotos : [fotos];
+    const total = arregloFotos.length;
+    
+    // Extraemos hasta 4 fotos para el bloque de la derecha (posiciones 1 a 5)
+    const secundarias = arregloFotos.slice(1, 5); 
+    
+    // Base de entrega inteligente de Cloudinary
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
 
-    // CORRECCIÓN DEFINITIVA: Apuntamos explícitamente al primer elemento de la lista
-    const urlPrincipal = fotos;
+    // 1. PROCESAMOS LA FOTO PRINCIPAL (ÍNDICE 0)
+    let nombrePrincipal = String(arregloFotos[0]).trim();
+    // Si ya traía la URL base pegada, la rebanamos para quedarnos solo con el nombre
+    if (nombrePrincipal.includes("image/upload/")) {
+        nombrePrincipal = nombrePrincipal.substring(nombrePrincipal.lastIndexOf("/") + 1);
+    }
+    // Convertimos de forma obligatoria los espacios vacíos en guiones bajos (_)
+    nombrePrincipal = nombrePrincipal.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
+    const urlPrincipal = BASE_CLOUDINARY + encodeURIComponent(nombrePrincipal);
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
         <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
+    // 2. PROCESAMOS LAS FOTOS SECUNDARIAS UNO POR UNO
     if (secundarias.length) {
         html += '<div class="collage-secundario">';
-        secundarias.forEach((urlFoto, idx) => {
+        secundarias.forEach((fotoId, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
             
+            let nombreSecundario = String(fotoId).trim();
+            if (nombreSecundario.includes("image/upload/")) {
+                nombreSecundario = nombreSecundario.substring(nombreSecundario.lastIndexOf("/") + 1);
+            }
+            // Convertimos espacios vacíos en guiones bajos (_) para las miniaturas
+            nombreSecundario = nombreSecundario.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
+            const urlSecundaria = BASE_CLOUDINARY + encodeURIComponent(nombreSecundario);
+            
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-                <img src="${urlFoto}" alt="Foto de la propiedad" loading="lazy">
+                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
                 ${esUltimaMini ? `<div class="overlay-ver-todas">Ver todas las ${total} fotos</div>` : ''}
             </div>`;
         });
