@@ -1891,73 +1891,32 @@ function obtenerTodasLasFotos(casa) {
     return fotos;
 }
 
-    
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
-    const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
     
-    // Línea de diagnóstico temporal para auditar las propiedades reales enviadas por Apps Script
+    // CORRECCIÓN DE ID: Buscamos por propiedad_id mapeando correctamente los datos del Sheets
+    const casa = propiedadesCombinadas.find(c => {
+        const idActual = c.propiedad_id || c.id;
+        return idActual && idActual.toString() === idPropiedad.toString();
+    });
+    
     console.log("DATOS REALES DE LA PROPIEDAD SELECCIONADA:", casa);
-
     if (!casa) return;
 
-    // 1. Apuntamos directo a la caja contenedora real que flota adelante
     const cajaDetalleZillow = document.getElementById('contenedor-detalle-zillow');
     if (!cajaDetalleZillow) return;
 
-    // 2. Limpiamos la caja para recibir la nueva información limpia
     cajaDetalleZillow.innerHTML = '';
 
-    // 3. PROCESAMIENTO PREVIO DE DATOS (Mapeo e Imágenes antes del Renderizado)
-    
-    // Forzamos a que lea el precio real desde la variable correcta del backend
+    // Extraemos el arreglo unificado de fotos que cruzamos desde la segunda tabla
+    const todasLasFotos = casa.fotos || [casa.foto_principal] || ["https://unsplash.com"];
+
     if (!casa.precio && casa.precio_base) {
         casa.precio = casa.precio_base;
     }
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
-
-    // Mapeo riguroso basado exactamente en las columnas de Google Sheets y objeto Geo
     const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || "Dirección no disponible");
     const areaReal = casa.area_construida || casa.area || "0";
-
-    // Conversión inmediata de las Fotos a URLs de Cloudinary al inicio de la función
-        // =========================================================================
-    // CORRECCIÓN MAESTRA: PROCESAMIENTO DE FOTOS CON AUTO-FORMATO CLOUDINARY
-    // =========================================================================
-    let todasLasFotos = [];
-    //const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
-    // 1. Procesamos la foto principal
-    if (casa.foto_principal) {
-        let principalLimpia = String(casa.foto_principal).trim().replace(/\s+/g, '_');
-        principalLimpia = principalLimpia.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
-        
-        const urlFinalPrincipal = casa.foto_principal.startsWith('http') ? casa.foto_principal : (BASE_CLOUDINARY + encodeURIComponent(principalLimpia));
-        todasLasFotos.push(urlFinalPrincipal);
-    }
-
-    // 2. CORRECCIÓN DE ORTOGRAFÍA: Apuntamos a "imagenes_segundarias" con "g" tal como viene del backend
-    const listaSecundarias = casa.imagenes_segundarias || [];
-    
-    if (listaSecundarias && Array.isArray(listaSecundarias)) {
-        listaSecundarias.forEach(id => {
-            if (id) {
-                let secundariaLimpia = String(id).trim().replace(/\s+/g, '_');
-                secundariaLimpia = secundariaLimpia.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
-                
-                const urlFinalSecundaria = id.startsWith('http') ? id : (BASE_CLOUDINARY + encodeURIComponent(secundariaLimpia));
-                todasLasFotos.push(urlFinalSecundaria);
-            }
-        });
-    }
-
-    if (todasLasFotos.length === 0) {
-        todasLasFotos = ["https://unsplash.com"];
-    }
-    // =========================================================================
-
-    
-    const divDetalle = cajaDetalleZillow; // Mantenemos la referencia de tu diseño
 
     let htmlCaracteristicas = '';
     if (casa.caracteristicas_extras && casa.caracteristicas_extras.length) {
@@ -1992,37 +1951,41 @@ function abrirVentanaDetalle(idPropiedad) {
             `</ul></div>`;
     }
 
-    // 4. Inyección del esqueleto base unificado (Toda la pantalla junta)
-    divDetalle.innerHTML = `
-        <div class="cabecera-detalle">
+    // REESTRUCTURACIÓN VERTICAL COMPLETA: Todo el contenido fluye hacia abajo
+    cajaDetalleZillow.innerHTML = `
+        <!-- 1. El collage de fotos ocupa el ancho superior -->
+        ${construirCollageInicial(todasLasFotos, idPropiedad)}
+
+        <!-- 2. Botón de retorno debajo del collage -->
+        <div style="padding: 15px 20px 0 20px;">
             <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()">Volver</button>
+        </div>
+
+        <!-- 3. Información principal (Precio, Título, Dirección) -->
+        <div class="cabecera-detalle" style="padding: 10px 20px;">
             <h2>${precioFormateado}</h2>
             <h3>${casa.titulo}</h3>
             <p style="color: #666; margin: 5px 0 0 0; font-family: sans-serif;">${direccionReal}</p>
-
         </div>
 
-        ${construirCollageInicial(todasLasFotos, casa.id)}
-
+        <!-- 4. Ficha técnica y descripción comercial -->
         <div class="bloque-seccion">
             <p class="datos-rapidos">
-                <b>${casa.habitaciones}</b> hab &nbsp;|&nbsp;
-                <b>${casa.banos}</b> baños &nbsp;|&nbsp;
-                <b>${casa.estacionamientos}</b> estac &nbsp;|&nbsp;
+                <b>${casa.habitaciones || 0}</b> hab &nbsp;|&nbsp;
+                <b>${casa.banos || 0}</b> baños &nbsp;|&nbsp;
+                <b>${casa.estacionamientos || 0}</b> estac &nbsp;|&nbsp;
                 <b>${areaReal}</b> m² construidos
-
             </p>
             <p class="descripcion-detalle">${casa.descripcion || ''}</p>
         </div>
 
+        <!-- Secciones complementarias básicas -->
         ${htmlCaracteristicas}
         ${htmlPromocion}
         ${htmlTour3d}
         ${htmlHistorial}
 
-        <!-- ================================================================= -->
-        <!-- MARCADORES DE POSICIÓN EXCLUSIVOS PARA TUS 9 FUNCIONES ANALÍTICAS -->
-        <!-- ================================================================= -->
+        <!-- 5. MARCADORES DE POSICIÓN EXCLUSIVOS PARA LAS 9 FUNCIONES ANALÍTICAS -->
         <div id="valor-mercado-zillow" class="bloque-analitico-contenedor"></div>
         <div id="grafico-historial-zillow" class="bloque-analitico-contenedor"></div>
         <div id="tabla-historial-precios-zillow" class="bloque-analitico-contenedor"></div>
@@ -2031,10 +1994,12 @@ function abrirVentanaDetalle(idPropiedad) {
         <div id="contenedor-detalle-zillow-interno" class="bloque-analitico-contenedor"></div>
         <div id="contenedor-propiedades-cercanas" class="bloque-analitico-contenedor"></div>
 
+        <!-- Botón de contacto comercial -->
         <div class="bloque-seccion">
             <button class="btn-ver-contacto" style="max-width:320px;" onclick="verContactoDesdeDetalle('${casa.telefono}')">Ver datos del contacto</button>
         </div>
 
+        <!-- Bloque para agendar visitas -->
         <div class="bloque-seccion bloque-visita">
             <h4>Agendar una visita</h4>
             <div class="fila-formulario">
@@ -2045,16 +2010,15 @@ function abrirVentanaDetalle(idPropiedad) {
                 <option value="presencial">Visita presencial</option>
                 <option value="virtual">Visita virtual</option>
             </select>
-            <button class="btn-continuar" onclick="agendarVisita('${casa.id}', '${casa.anuncio_id}')">Solicitar visita</button>
+            <button class="btn-continuar" onclick="agendarVisita('${casa.id || idPropiedad}', '${casa.anuncio_id}')">Solicitar visita</button>
             <p id="visita-state" style="font-size:12px; color:#666;"></p>
         </div>
         
-        <!-- Contenedor del formulario del agente que antes flotaba solo -->
+        <!-- Formulario del agente -->
         <div id="seccion-formulario-agente" class="bloque-analitico-contenedor"></div>
     `;
 
-    // 5. EJECUCIÓN POST-RENDER: Ahora que los IDs de arriba ya existen en la pantalla, 
-    // ejecutamos tus funciones analíticas para que rellenen sus respectivas cajas de forma ordenada.
+    // 6. EJECUCIÓN POST-RENDER: Rellenamos las cajas de arriba mediante las funciones analíticas
     mostrarAnalisisComparativo(casa);
     mostrarPropiedadesCercanas(casa);
     mostrarDatosYCaracteristicasFicha(casa);
@@ -2065,6 +2029,7 @@ function abrirVentanaDetalle(idPropiedad) {
     mostrarMapaBarrioVolatil(casa);
     mostrarConectividadYServicios(casa);
 }
+    
 
 function cerrarVentanaDetalle() {
     // Apagamos la gran pantalla superpuesta completa
