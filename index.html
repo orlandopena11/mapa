@@ -1827,9 +1827,6 @@ function abrirVentanaDetalle(idPropiedad) {
 
     const divDetalle = cajaDetalleZillow; // Mantenemos la referencia de tu diseño
 
-        // Mapeo exacto basado en la estructura de tu JSON del backend
-    const todasLasFotos = obtenerTodasLasFotos(casa);
-
     let htmlCaracteristicas = '';
     if (casa.caracteristicas_extras && casa.caracteristicas_extras.length) {
         const chips = casa.caracteristicas_extras.map(formatearCaracteristica).filter(Boolean);
