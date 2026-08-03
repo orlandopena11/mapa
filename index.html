@@ -1952,34 +1952,13 @@ function cerrarVentanaDetalle() {
     if(document.getElementById('seccion-formulario-agente')) document.getElementById('seccion-formulario-agente').style.display = 'none';
     if(document.getElementById('seccion-propiedades-cercanas')) document.getElementById('seccion-propiedades-cercanas').style.display = 'none';
     if(document.getElementById('contenedor-calculadora-detalle')) document.getElementById('contenedor-calculadora-detalle').style.display = 'none';
-
     
 }
 
 // Punto 4 (3ra pantalla): galería completa con sidebar fijo estilo Zillow
 function abrirGaleriaCompleta(idPropiedad) {
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
-    if (!casa) return;
-
-    // Traducimos directamente las propiedades del objeto para forzar el uso de Cloudinary
-    if (casa.foto_principal && !casa.foto_principal.startsWith('http')) {
-        casa.foto_principal = construirUrlImagen(casa.foto_principal);
-    }
-    
-    if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
-        casa.imagenes_secundarias = casa.imagenes_secundarias.map(id => {
-            return id.startsWith('http') ? id : construirUrlImagen(id);
-        });
-    }
-
-    // El array unificado que lee el collage ahora tendrá las rutas web reales listas
-    let todasLasFotos = [casa.foto_principal].concat(casa.imagenes_secundarias || []).filter(Boolean);
-    
-    // 3. Salvaguarda en caso de que no existan fotos
-    if (todasLasFotos.length === 0) {
-        todasLasFotos = ["https://unsplash.com"]; // URL por defecto de tu función
-    }
-    
+    if (!casa) return; 
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const contenedor = document.getElementById('contenedor-galeria-completa');
