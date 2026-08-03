@@ -1839,18 +1839,42 @@ function abrirVentanaDetalle(idPropiedad) {
     const areaReal = casa.area_construida || casa.area || "0";
 
     // Conversión inmediata de las Fotos a URLs de Cloudinary al inicio de la función
+        // =========================================================================
+    // CORRECCIÓN MAESTRA: PROCESAMIENTO DE FOTOS CON AUTO-FORMATO CLOUDINARY
+    // =========================================================================
     let todasLasFotos = [];
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
+
+    // 1. Procesamos la foto principal
     if (casa.foto_principal) {
-        todasLasFotos.push(casa.foto_principal.startsWith('http') ? casa.foto_principal : construirUrlImagen(casa.foto_principal));
-    }
-    if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
-        const secundariasTraducidas = casa.imagenes_secundarias.map(id => id.startsWith('http') ? id : construirUrlImagen(id));
-        todasLasFotos = todasLasFotos.concat(secundariasTraducidas);
-    }
-    if (todasLasFotos.length === 0) {
-        todasLasFotos = ["Foto_default"];
+        let principalLimpia = String(casa.foto_principal).trim().replace(/\s+/g, '_');
+        principalLimpia = principalLimpia.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
+        
+        const urlFinalPrincipal = casa.foto_principal.startsWith('http') ? casa.foto_principal : (BASE_CLOUDINARY + encodeURIComponent(principalLimpia));
+        todasLasFotos.push(urlFinalPrincipal);
     }
 
+    // 2. CORRECCIÓN DE ORTOGRAFÍA: Apuntamos a "imagenes_segundarias" con "g" tal como viene del backend
+    const listaSecundarias = casa.imagenes_segundarias || [];
+    
+    if (listaSecundarias && Array.isArray(listaSecundarias)) {
+        listaSecundarias.forEach(id => {
+            if (id) {
+                let secundariaLimpia = String(id).trim().replace(/\s+/g, '_');
+                secundariaLimpia = secundariaLimpia.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
+                
+                const urlFinalSecundaria = id.startsWith('http') ? id : (BASE_CLOUDINARY + encodeURIComponent(secundariaLimpia));
+                todasLasFotos.push(urlFinalSecundaria);
+            }
+        });
+    }
+
+    if (todasLasFotos.length === 0) {
+        todasLasFotos = ["https://unsplash.com"];
+    }
+    // =========================================================================
+
+    
     const divDetalle = cajaDetalleZillow; // Mantenemos la referencia de tu diseño
 
     let htmlCaracteristicas = '';
