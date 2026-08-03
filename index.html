@@ -1774,17 +1774,18 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     
     // Aseguramos el conteo total basado en el arreglo que ingresa
     const total = arregloFotos.length;
-    
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
 
-    // Función interna para procesar cada URL con tu lógica de limpieza
+    // Función interna directa: Respeta tu ruta completa de Cloudinary
     function obtenerUrlCloudinary(nombreFoto) {
         let nombre = String(nombreFoto).trim();
-        if (nombre.includes("obw6ciov/image/upload/v1785207128/")) {
-            nombre = nombre.substring(nombre.lastIndexOf("/") + 1);
+        const RUTA_COMPLETA = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
+
+        if (nombre.startsWith("http")) {
+            return nombre;
         }
+
         nombre = nombre.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
-        return BASE_CLOUDINARY + encodeURIComponent(nombre);
+        return RUTA_COMPLETA + encodeURIComponent(nombre) + ".webp";
     }
 
     // 1. PROCESAMOS LA URL COMPLETA DE LA FOTO PRINCIPAL
@@ -1800,7 +1801,7 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS EXISTENTES
+    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS
     let html = '<div class="collage-detalle">';
     
     // Lado Izquierdo: Foto Grande
@@ -1831,6 +1832,7 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     html += '</div>';
     return html;
 }
+
 
     // Lado Izquierdo: Foto Grande
     html += `
