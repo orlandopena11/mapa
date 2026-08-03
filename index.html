@@ -764,20 +764,7 @@ function procesarDatosDelMotor(data) {
 function mostrarAnalisisComparativo(propiedadSeleccionada) {
     // Guardamos el ID de la propiedad actual de manera global y ligera en el navegador
     if (propiedadSeleccionada) localStorage.setItem('idPropiedadActual', propiedadSeleccionada.propiedad_id || propiedadSeleccionada.id);
-
-    // Mostramos la gran pantalla superpuesta que contiene a todos los bloques
-
-    // Mostramos las secciones ocultas de la pantalla de detalle
-    
-//function mostrarAnalisisComparativo(propiedadSeleccionada) {
-        // Mostramos las secciones ocultas de la pantalla de detalle
-  //  if(document.getElementById('contenedor-mapa-detalle')) document.getElementById('contenedor-mapa-detalle').style.display = 'block';
- //   if(document.getElementById('seccion-conectividad-detalle')) document.getElementById('seccion-conectividad-detalle').style.display = 'block';
- //   if(document.getElementById('seccion-formulario-agente')) document.getElementById('seccion-formulario-agente').style.display = 'block';
-//    if(document.getElementById('seccion-propiedades-cercanas')) document.getElementById('seccion-propiedades-cercanas').style.display = 'block';
-//    if(document.getElementById('contenedor-calculadora-detalle')) document.getElementById('contenedor-calculadora-detalle').style.display = 'block';
-
-    
+   
   const contenedorTabla = document.getElementById("tabla-comparables-body");
   if (!contenedorTabla) return;
   
