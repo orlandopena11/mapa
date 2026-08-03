@@ -1769,29 +1769,28 @@ function cerrarVentanaLogin() {
 // =========================================================================
 
 // Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
-function construirCollageInicial(fotos, idPropiedad) {
-    if (!fotos || !fotos.length) return '';
+function construirCollageInicial(arregloFotos, idPropiedad) {
+    if (!arregloFotos || !arregloFotos.length) return '';
     
-    // Si viene como un solo texto por error, lo transformamos en una lista
-    const arregloFotos = Array.isArray(fotos) ? fotos : [fotos];
+    // Aseguramos que sea un arreglo continuo
     const total = arregloFotos.length;
     
     const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
 
-    // --- FUNCIÓN INTERNA PARA PROCESAR CADA URL IGUAL A TU LÓGICA ---
+    // Función interna para procesar cada URL con tu lógica de limpieza
     function obtenerUrlCloudinary(nombreFoto) {
         let nombre = String(nombreFoto).trim();
-        if (nombre.includes("image/upload/")) {
+        if (nombre.includes("obw6ciov/image/upload/v1785207128/")) {
             nombre = nombre.substring(nombre.lastIndexOf("/") + 1);
         }
         nombre = nombre.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
         return BASE_CLOUDINARY + encodeURIComponent(nombre);
     }
 
-    // 1. PROCESAMOS LA FOTO PRINCIPAL (ÍNDICE 0)
+    // 1. PROCESAMOS LAS URLS COMPLETAS DE LAS FOTOS
     const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
 
-    // 2. OBTENEMOS EXACTAMENTE 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
+    // 2. EXTRAEMOS LAS 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
     const fotosDerecha = [];
     for (let i = 1; i <= 4; i++) {
         if (arregloFotos[i]) {
@@ -1801,9 +1800,38 @@ function construirCollageInicial(fotos, idPropiedad) {
         }
     }
 
-    // 3. ARMAMOS EL CONTENEDOR CON TUS CLASES CSS ACTUALIZADAS
+    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS
     let html = '<div class="collage-detalle">';
     
+    // Izquierda: Foto Grande
+    html += `
+        <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+            <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
+        </div>
+    `;
+
+    // Derecha: Bloque de 4 fotos
+    html += '<div class="collage-secundario">';
+    fotosDerecha.forEach((urlSecundaria) => {
+        html += `
+            <div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
+            </div>
+        `;
+    });
+    html += '</div>';
+
+    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
+    html += `
+        <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+            Ver las ${total} fotos
+        </button>
+    `;
+
+    html += '</div>';
+    return html;
+}
+
     // Lado Izquierdo: Foto Grande
     html += `
         <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
