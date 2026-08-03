@@ -1940,7 +1940,24 @@ function abrirGaleriaCompleta(idPropiedad) {
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
     if (!casa) return;
 
-    const todasLasFotos = obtenerTodasLasFotos(casa);
+        // Unificación rigurosa basada en las propiedades reales del backend
+    let todasLasFotos = [];
+    
+    // 1. Insertamos la foto principal en la primera posición si existe
+    if (casa.foto_principal) {
+        todasLasFotos.push(casa.foto_principal);
+    }
+    
+    // 2. Acoplamos la lista de imágenes secundarias si están disponibles
+    if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
+        todasLasFotos = todasLasFotos.concat(casa.imagenes_secundarias);
+    }
+    
+    // 3. Salvaguarda en caso de que ambas variables vengan vacías
+    if (todasLasFotos.length === 0) {
+        todasLasFotos = ["Foto_default"];
+    }
+
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const contenedor = document.getElementById('contenedor-galeria-completa');
 
