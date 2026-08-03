@@ -1714,20 +1714,27 @@ function cerrarVentanaLogin() {
 
 // Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
 function construirCollageInicial(fotos, idPropiedad) {
-    if (!fotos.length) return '';
+    if (!fotos || !fotos.length) return '';
     const total = fotos.length;
     const secundarias = fotos.slice(1, 5); // hasta 4 miniaturas a la derecha
 
+    // CORRECCIÓN: Pasamos la primera foto por el constructor de URLs
+    const urlPrincipal = construirUrlImagen(fotos[0]);
+
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-        <img src="${fotos[0]}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
+        <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
     if (secundarias.length) {
         html += '<div class="collage-secundario">';
-        secundarias.forEach((url, idx) => {
+        secundarias.forEach((fotoId, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
+            
+            // CORRECCIÓN: Pasamos cada foto secundaria por el constructor de URLs
+            const urlSecundaria = construirUrlImagen(fotoId);
+            
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-                <img src="${url}" alt="Foto de la propiedad" loading="lazy">
+                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
                 ${esUltimaMini ? `<div class="overlay-ver-todas">Ver todas las ${total} fotos</div>` : ''}
             </div>`;
         });
