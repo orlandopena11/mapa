@@ -719,7 +719,11 @@ function cargarDatosDesdeAppsScript() {
 function construirUrlImagen(publicId) {
     if (!publicId) return "https://unsplash.com"; 
     
-    let cleanPublicId = String(publicId).trim();
+    // Si por error se pasa un arreglo, extraemos el primer elemento
+    let datoFiltrado = Array.isArray(publicId) ? publicId[0] : publicId;
+    
+    // Forzamos conversión a texto limpio, eliminamos espacios extras y reemplazamos los espacios internos por guiones bajos (_)
+    let cleanPublicId = String(datoFiltrado).trim().replace(/\s+/g, "_");
     
     if (cleanPublicId === "" || cleanPublicId.includes("unsplash.com")) {
         return "https://unsplash.com"; 
@@ -728,17 +732,16 @@ function construirUrlImagen(publicId) {
     if (cleanPublicId.startsWith("http")) return cleanPublicId;
     
     const CLOUDINARY_BASE = "https://res.cloudinary.com/orlandopena11/image/upload/";
-    
-    // 1. Limpiamos barras inclinadas de más al inicio
     cleanPublicId = cleanPublicId.replace(/^\/+/, '');
     
-    // 2. LA CLAVE: Conservamos el nombre EXACTO del backend y solo codificamos los espacios a %20
-    const urlFinal = CLOUDINARY_BASE + cleanPublicId.split('/').map(segmento => encodeURIComponent(segmento)).join('/');
+    const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
+    if (!tieneExtension) {
+        cleanPublicId = cleanPublicId + '.jpg';
+    }
     
-    console.log("👉 URL DEFINITIVA DE PRESENTACIÓN:", urlFinal);
-    
-    return urlFinal;
+    return CLOUDINARY_BASE + cleanPublicId;
 }
+
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
