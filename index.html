@@ -737,8 +737,12 @@ function construirUrlImagen(publicId) {
         cleanPublicId = cleanPublicId + '.jpg';
     }
     
+    // EL ESPÍA: Imprime en la consola la URL final que se calcula
+    console.log("👉 URL GENERADA POR COLLAGE:", CLOUDINARY_BASE + cleanPublicId);
+    
     return CLOUDINARY_BASE + cleanPublicId;
 }
+
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
