@@ -1723,15 +1723,12 @@ function cerrarVentanaLogin() {
 function construirCollageInicial(fotos, idPropiedad) {
     if (!fotos || !fotos.length) return '';
     
-    // Si por error se pasó un string único, lo convertimos en un arreglo
-    const arregloFotos = Array.isArray(fotos) ? fotos : [fotos];
-    const total = arregloFotos.length;
-    
-    // Extraemos las primeras 4 fotos secundarias (desde el índice 1 al 5)
-    const secundarias = arregloFotos.slice(1, 5); 
+    const total = fotos.length;
+    // Extraemos las fotos desde la posición 1 hasta la 5 para las miniaturas
+    const secundarias = fotos.slice(1, 5); 
 
-    // Tomamos las URLs directas tal y como vienen del backend de forma limpia
-    const urlPrincipal = String(arregloFotos[0]).trim();
+    // LA CLAVE: Forzamos la lectura únicamente del primer elemento (índice 0)
+    const urlPrincipal = String(fotos[0]).trim();
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
@@ -1741,6 +1738,8 @@ function construirCollageInicial(fotos, idPropiedad) {
         html += '<div class="collage-secundario">';
         secundarias.forEach((fotoUrl, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
+            
+            // Leemos cada foto secundaria de forma individual uno por uno
             const urlSecundaria = String(fotoUrl).trim();
             
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
