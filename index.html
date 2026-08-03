@@ -1845,7 +1845,8 @@ function abrirVentanaDetalle(idPropiedad) {
             <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()">Volver</button>
             <h2>${precioFormateado}</h2>
             <h3>${casa.titulo}</h3>
-            <p>${casa.direccion}</p>
+            <p style="color: #666; margin: 5px 0 0 0; font-family: sans-serif;">${direccionReal}</p>
+
         </div>
 
         ${construirCollageInicial(todasLasFotos, casa.id)}
@@ -1855,7 +1856,8 @@ function abrirVentanaDetalle(idPropiedad) {
                 <b>${casa.habitaciones}</b> hab &nbsp;|&nbsp;
                 <b>${casa.banos}</b> baños &nbsp;|&nbsp;
                 <b>${casa.estacionamientos}</b> estac &nbsp;|&nbsp;
-                <b>${casa.area}</b> m² construidos
+                <b>${areaReal}</b> m² construidos
+
             </p>
             <p class="descripcion-detalle">${casa.descripcion || ''}</p>
         </div>
