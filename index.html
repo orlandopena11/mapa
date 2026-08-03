@@ -732,20 +732,13 @@ function construirUrlImagen(publicId) {
     // 1. Limpiamos barras inclinadas de más al inicio
     cleanPublicId = cleanPublicId.replace(/^\/+/, '');
     
-    // 2. Aseguramos la extensión .jpg si no cuenta con una válida
-    const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
-    if (!tieneExtension) {
-        cleanPublicId = cleanPublicId + '.jpg';
-    }
-    
-    // 3. LA CLAVE: Dividimos por carpetas e introducimos codificación web para limpiar los espacios problemáticos
+    // 2. LA CLAVE: Conservamos el nombre EXACTO del backend y solo codificamos los espacios a %20
     const urlFinal = CLOUDINARY_BASE + cleanPublicId.split('/').map(segmento => encodeURIComponent(segmento)).join('/');
     
-    console.log("👉 URL CORREGIDA POR EL ESPÍA:", urlFinal);
+    console.log("👉 URL DEFINITIVA DE PRESENTACIÓN:", urlFinal);
     
     return urlFinal;
 }
-
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
