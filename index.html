@@ -722,7 +722,7 @@ function construirUrlImagen(publicId) {
     // Si por error se pasa un arreglo completo, extraemos únicamente el primer elemento
     let datoFiltrado = Array.isArray(publicId) ? publicId[0] : publicId;
     
-    // Forzamos conversión a texto, eliminamos espacios y convertimos cualquier espacio interno a guion bajo
+    // Forzamos conversión a texto, eliminamos espacios y convertimos cualquier espacio interno a guion bajo (_)
     let cleanPublicId = String(datoFiltrado).trim().replace(/\s+/g, "_");
     
     if (cleanPublicId === "" || cleanPublicId.includes("unsplash.com") || cleanPublicId === "undefined" || cleanPublicId === "null") {
@@ -731,15 +731,20 @@ function construirUrlImagen(publicId) {
     
     if (cleanPublicId.startsWith("http")) return cleanPublicId;
     
+    // LA SOLUCIÓN: Agregamos /f_auto/ a la URL base para que Cloudinary detecte si es .webp o .jpg por sí solo
     const CLOUDINARY_BASE = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    
+    // Limpiamos barras inclinadas de más al inicio
     cleanPublicId = cleanPublicId.replace(/^\/+/, '');
     
-    const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
-    if (!tieneExtension) {
-        cleanPublicId = cleanPublicId + '.jpg';
-    }
+    // Quitamos cualquier extensión forzada previa si existiera en el texto
+    cleanPublicId = cleanPublicId.replace(/\.(jpg|png|webp)$/i, '');
     
-    return CLOUDINARY_BASE + cleanPublicId;
+    const urlFinal = CLOUDINARY_BASE + cleanPublicId;
+    
+    console.log("👉 URL INTELIGENTE GENERADA:", urlFinal);
+    
+    return urlFinal;
 }
 
 // =========================================================================
