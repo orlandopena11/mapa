@@ -1777,14 +1777,29 @@ function formatearCaracteristica(c) {
     }
     return valor ? (nombre + ': ' + valor) : nombre;
 }
-
+    
 function obtenerTodasLasFotos(casa) {
     const fotos = [];
-    if (casa.foto_principal) fotos.push(casa.foto_principal);
-    (casa.imagenes_secundarias || []).forEach(url => fotos.push(url));
+    
+    // 1. Validamos y limpiamos la foto principal cambiando espacios por guiones bajos
+    if (casa.foto_principal) {
+        fotos.push(String(casa.foto_principal).trim().replace(/ /g, "_"));
+    }
+    
+    // 2. CORRECCIÓN DE ORTOGRAFÍA: Usamos "segundarias" con "g" tal como viene del backend
+    const secundarias = casa.imagenes_segundarias || casa.imagenes_secundarias || [];
+    
+    // 3. Limpiamos cada foto secundaria asegurando los guiones bajos
+    secundarias.forEach(foto => {
+        if (foto) {
+            fotos.push(String(foto).trim().replace(/ /g, "_"));
+        }
+    });
+    
     return fotos;
 }
 
+    
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
