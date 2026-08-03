@@ -763,34 +763,67 @@ function construirUrlImagen(publicId) {
     return urlFinal;
 }
 
-// =========================================================================
-// INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
-// =========================================================================   
+/**
+ * Procesa los datos del backend (Google Apps Script).
+ * Realiza el cruce de tablas (Join) uniendo cada propiedad con su respectivo
+ * listado de imágenes secundarias mediante el ID común (propiedad_id_fk).
+ * Finalmente, activa el renderizado inicial del mapa y las tarjetas.
+ */
+    
 function procesarDatosDelMotor(data) {
-        // EL ESPÍA: Imprime en la consola el contenido real para auditarlo
-        console.log("DATOS RECIBIDOS DEL BACKEND:", data);
+    // EL ESPÍA: Imprime en la consola el contenido real para auditarlo
+    console.log("DATOS RECIBIDOS DEL BACKEND:", data);
+    
     // 1. Validamos que la data que viene de Google Apps Script sea correcta y contenga las propiedades
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) return;
     
-    // 2. Extraemos y asignamos la lista original del backend a la variable GLOBAL del bucle
-    //    (sin "let": si se redeclara aquí, se crea una variable local que oculta a la
-    //    global y el mapa/las tarjetas nunca reciben los datos reales)
-    propiedadesCombinadas = data.propiedades;
+    // Extraemos la lista secundaria de imágenes si viene en data (usamos alternativas comunes de nombre)
+    const tablaImagenes = data.imagenes || data.imagenes_propiedad || data.imagen_propiedad || [];
+    
+    // 2. Mapeamos las propiedades y les inyectamos sus fotos correspondientes cruzando la tabla secundaria
+    propiedadesCombinadas = data.propiedades.map(prop => {
+        // Obtenemos el ID de la propiedad actual (manejando variantes comunes de nombre de columna)
+        const idProp = prop.propiedad_id || prop.id || prop.propiedad_id_fk;
+        
+        if (idProp) {
+            // Buscamos todas las imágenes en la tabla secundaria que pertenezcan a esta propiedad
+            const fotosFiltradas = tablaImagenes
+                .filter(img => String(img.propiedad_id_fk).trim() === String(idProp).trim())
+                // Ordenamos por la columna 'orden' si existe en la tabla de Sheets
+                .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0))
+                // Extraemos únicamente el nombre del archivo de la columna 'ruta_imagen'
+                .map(img => img.ruta_imagen);
+            
+            // Si encontramos fotos en la segunda tabla, las asignamos reemplazando o complementando el arreglo
+            if (fotosFiltradas.length > 0) {
+                prop.fotos = fotosFiltradas;
+            } else if (prop.foto_principal) {
+                // Si no hay secundarias, creamos el arreglo usando la foto principal de la primera tabla
+                prop.fotos = [prop.foto_principal];
+            } else {
+                prop.fotos = [];
+            }
+        } else {
+            prop.fotos = prop.foto_principal ? [prop.foto_principal] : [];
+        }
+        
+        return prop;
+    });
 
-  propiedadesCombinadas.forEach((prop, index) => {
-    const original = data.propiedades[index];
-    if (original && original.comparables) {
-      prop.comparables = original.comparables;
-    } else {
-      prop.comparables = [];
-    }
-  });
+    propiedadesCombinadas.forEach((prop, index) => {
+        const original = data.propiedades[index];
+        if (original && original.comparables) {
+            prop.comparables = original.comparables;
+        } else {
+            prop.comparables = [];
+        }
+    });
 
     // 3. Con los datos ya disponibles en memoria, disparamos el primer renderizado
-    //    público del mapa y las tarjetas (independiente del estado de sesión)
     renderizarMapaZillow();
 }
 
+    
 function mostrarAnalisisComparativo(propiedadSeleccionada) {
     // Guardamos el ID de la propiedad actual de manera global y ligera en el navegador
     if (propiedadSeleccionada) localStorage.setItem('idPropiedadActual', propiedadSeleccionada.propiedad_id || propiedadSeleccionada.id);
