@@ -1787,7 +1787,9 @@ function obtenerTodasLasFotos(casa) {
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
-    
+        // Línea de diagnóstico temporal para auditar las propiedades reales enviadas por Apps Script
+    console.log("DATOS REALES DE LA PROPIEDAD SELECCIONADA:", casa);
+
     if (!casa) return;
 
     // 1. Apuntamos directo a la caja contenedora real que flota adelante
