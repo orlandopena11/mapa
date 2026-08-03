@@ -1940,23 +1940,25 @@ function abrirGaleriaCompleta(idPropiedad) {
     const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
     if (!casa) return;
 
-        // Unificación rigurosa basada en las propiedades reales del backend
+    // Unificación y traducción rigurosa a URLs reales de Cloudinary
     let todasLasFotos = [];
     
-    // 1. Insertamos la foto principal en la primera posición si existe
+    // 1. Traducimos e insertamos la foto principal si existe
     if (casa.foto_principal) {
-        todasLasFotos.push(casa.foto_principal);
+        todasLasFotos.push(construirUrlImagen(casa.foto_principal));
     }
     
-    // 2. Acoplamos la lista de imágenes secundarias si están disponibles
+    // 2. Traducimos y acoplamos toda la lista de imágenes secundarias
     if (casa.imagenes_secundarias && Array.isArray(casa.imagenes_secundarias)) {
-        todasLasFotos = todasLasFotos.concat(casa.imagenes_secundarias);
+        const secundariasTraducidas = casa.imagenes_secundarias.map(id => construirUrlImagen(id));
+        todasLasFotos = todasLasFotos.concat(secundariasTraducidas);
     }
     
-    // 3. Salvaguarda en caso de que ambas variables vengan vacías
+    // 3. Salvaguarda en caso de que no existan fotos
     if (todasLasFotos.length === 0) {
-        todasLasFotos = ["Foto_default"];
+        todasLasFotos = ["https://unsplash.com"]; // URL por defecto de tu función
     }
+    
 
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
     const contenedor = document.getElementById('contenedor-galeria-completa');
