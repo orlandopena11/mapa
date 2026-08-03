@@ -1721,33 +1721,36 @@ function cerrarVentanaLogin() {
 
 // Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
 function construirCollageInicial(fotos, idPropiedad) {
-    // Si viene como string (una sola foto), lo convertimos en arreglo para evitar errores
-    if (typeof fotos === 'string') {
-        fotos = [fotos];
-    }
-    
+    if (typeof fotos === 'string') { fotos = [fotos]; }
     if (!fotos || !fotos.length) return '';
-    const total = fotos.length;
     
-    // Extraemos hasta 4 miniaturas para la derecha (desde el índice 1 al 5)
+    const total = fotos.length;
     const secundarias = fotos.slice(1, 5); 
+    
+    const BASE_CLOUDINARY_LIMPIA = "https://res.cloudinary.com/orlandopena11/image/upload/";
 
-    // LA CLAVE: Forzamos la limpieza de espacios a guiones bajos directamente en el índice 0
-    const fotoPrincipalLimpia = String(fotos[0]).trim().replace(/\s+/g, '_');
-    const urlPrincipal = construirUrlImagen(fotoPrincipalLimpia);
+    // 1. PROCESAMOS LA FOTO PRINCIPAL
+    let nombrePrincipal = String(fotos[0]).trim().replace(/\s+/g, '_');
+    nombrePrincipal = nombrePrincipal.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
+    const urlPrincipal = BASE_CLOUDINARY_LIMPIA + encodeURIComponent(nombrePrincipal);
+
+    console.log("👉 FOTO PRINCIPAL COLLAGE:", urlPrincipal);
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
         <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
+    // 2. PROCESAMOS LAS FOTOS SECUNDARIAS
     if (secundarias.length) {
         html += '<div class="collage-secundario">';
         secundarias.forEach((fotoId, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
             
-            // Forzamos la limpieza de espacios a guiones bajos para cada miniatura
-            const fotoSecundariaLimpia = String(fotoId).trim().replace(/\s+/g, '_');
-            const urlSecundaria = construirUrlImagen(fotoSecundariaLimpia);
+            let nombreSecundario = String(fotoId).trim().replace(/\s+/g, '_');
+            nombreSecundario = nombreSecundario.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
+            const urlSecundaria = BASE_CLOUDINARY_LIMPIA + encodeURIComponent(nombreSecundario);
+            
+            console.log(`👉 FOTO SECUNDARIA [${idx + 1}]:`, urlSecundaria);
             
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
@@ -1759,6 +1762,7 @@ function construirCollageInicial(fotos, idPropiedad) {
     html += '</div>';
     return html;
 }
+
 
 // Galería vertical infinita de la 3ra pantalla (todas las fotos)
 function construirGaleriaAsimetrica(fotos) {
