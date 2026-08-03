@@ -717,13 +717,21 @@ function cargarDatosDesdeAppsScript() {
 // CONSTRUCTOR GLOBAL DE URLS DE CLOUDINARY (ESTRATEGIA NOMBRE CORTO)
 // =========================================================================
 function construirUrlImagen(publicId) {
-    if (!publicId || publicId.trim() === "" || publicId.includes("unsplash.com")) {
+    if (!publicId) return "https://unsplash.com"; 
+    
+    // Convertimos a texto y limpiamos espacios al inicio y final
+    let cleanPublicId = String(publicId).trim();
+    
+    if (cleanPublicId === "" || cleanPublicId.includes("unsplash.com")) {
         return "https://unsplash.com"; 
     }
-    if (publicId.startsWith("http")) return publicId;
     
+    // Si ya es una URL completa, la dejamos pasar limpia sin modificar nada
+    if (cleanPublicId.startsWith("http")) return cleanPublicId;
+    
+    // Si es un ID de Cloudinary, usamos la base correcta asegurando la barra diagonal
     const CLOUDINARY_BASE = "https://cloudinary.com";
-    let cleanPublicId = publicId.trim().replace(/^\/+/, '');
+    cleanPublicId = cleanPublicId.replace(/^\/+/, '');
     
     const tieneExtension = cleanPublicId.endsWith('.jpg') || cleanPublicId.endsWith('.png') || cleanPublicId.endsWith('.webp');
     if (!tieneExtension) {
@@ -732,6 +740,7 @@ function construirUrlImagen(publicId) {
     
     return CLOUDINARY_BASE + cleanPublicId;
 }
+
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
