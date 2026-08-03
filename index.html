@@ -1953,8 +1953,6 @@ function abrirGaleriaCompleta(idPropiedad) {
 
     // El array unificado que lee el collage ahora tendrá las rutas web reales listas
     let todasLasFotos = [casa.foto_principal].concat(casa.imagenes_secundarias || []).filter(Boolean);
-
-
     
     // 3. Salvaguarda en caso de que no existan fotos
     if (todasLasFotos.length === 0) {
