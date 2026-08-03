@@ -1728,51 +1728,64 @@ function construirCollageInicial(fotos, idPropiedad) {
     const arregloFotos = Array.isArray(fotos) ? fotos : [fotos];
     const total = arregloFotos.length;
     
-    // Extraemos hasta 4 fotos para el bloque de la derecha (posiciones 1 a 5)
-    const secundarias = arregloFotos.slice(1, 5); 
-    
-    // Base de entrega inteligente de Cloudinary
-    //const BASE_CLOUDINARY = "https://res.cloudinary.com/orlandopena11/image/upload/";
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
+
+    // --- FUNCIÓN INTERNA PARA PROCESAR CADA URL IGUAL A TU LÓGICA ---
+    function obtenerUrlCloudinary(nombreFoto) {
+        let nombre = String(nombreFoto).trim();
+        if (nombre.includes("image/upload/")) {
+            nombre = nombre.substring(nombre.lastIndexOf("/") + 1);
+        }
+        nombre = nombre.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
+        return BASE_CLOUDINARY + encodeURIComponent(nombre);
+    }
 
     // 1. PROCESAMOS LA FOTO PRINCIPAL (ÍNDICE 0)
-    let nombrePrincipal = String(arregloFotos[0]).trim();
-    // Si ya traía la URL base pegada, la rebanamos para quedarnos solo con el nombre
-    if (nombrePrincipal.includes("image/upload/")) {
-        nombrePrincipal = nombrePrincipal.substring(nombrePrincipal.lastIndexOf("/") + 1);
+    const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
+
+    // 2. OBTENEMOS EXACTAMENTE 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
+    // Si la propiedad tiene pocas fotos, usamos la principal como relleno para no romper la cuadrícula de 4
+    const fotosDerecha = [];
+    for (let i = 1; i <= 4; i++) {
+        if (arregloFotos[i]) {
+            fotosDerecha.push(obtenerUrlCloudinary(arregloFotos[i]));
+        } else {
+            fotosDerecha.push(urlPrincipal); // Fallback si no hay suficientes fotos
+        }
     }
-    // Convertimos de forma obligatoria los espacios vacíos en guiones bajos (_)
-    nombrePrincipal = nombrePrincipal.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
-    const urlPrincipal = BASE_CLOUDINARY + encodeURIComponent(nombrePrincipal);
 
-    let html = '<div class="collage-detalle">';
-    html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-        <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
+    // 3. ARMAMOS EL CONTENEDOR GRID ESTILO ZILLOW
+    let html = `<div class="galeria-zillow-container">`;
+    
+    // Lado Izquierdo: Foto Grande
+    html += `
+        <div class="zillow-foto-grande">
+            <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
+        </div>
+    `;
 
-    // 2. PROCESAMOS LAS FOTOS SECUNDARIAS UNO POR UNO
-    if (secundarias.length) {
-        html += '<div class="collage-secundario">';
-        secundarias.forEach((fotoId, idx) => {
-            const esUltimaMini = idx === secundarias.length - 1;
-            
-            let nombreSecundario = String(fotoId).trim();
-            if (nombreSecundario.includes("image/upload/")) {
-                nombreSecundario = nombreSecundario.substring(nombreSecundario.lastIndexOf("/") + 1);
-            }
-            // Convertimos espacios vacíos en guiones bajos (_) para las miniaturas
-            nombreSecundario = nombreSecundario.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
-            const urlSecundaria = BASE_CLOUDINARY + encodeURIComponent(nombreSecundario);
-            
-            html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+    // Lado Derecho: Bloque de 4 Fotos agrupadas
+    html += `<div class="zillow-bloque-pequenas">`;
+    fotosDerecha.forEach((urlSecundaria) => {
+        html += `
+            <div class="zillow-foto-mini">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
-                ${esUltimaMini ? `<div class="overlay-ver-todas">Ver todas las ${total} fotos</div>` : ''}
-            </div>`;
-        });
-        html += '</div>';
-    }
-    html += '</div>';
+            </div>
+        `;
+    });
+    html += `</div>`;
+
+    // Parte Inferior Derecha: Botón flotante con letras de color blanco
+    html += `
+        <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
+            Ver las ${total} fotos
+        </button>
+    `;
+
+    html += `</div>`;
     return html;
 }
+
     
 // Galería vertical infinita de la 3ra pantalla (todas las fotos)
 function construirGaleriaAsimetrica(fotos) {
