@@ -719,13 +719,13 @@ function cargarDatosDesdeAppsScript() {
 function construirUrlImagen(publicId) {
     if (!publicId) return "https://unsplash.com"; 
     
-    // Si por error se pasa un arreglo, extraemos el primer elemento
+    // Si por error se pasa un arreglo completo, extraemos únicamente el primer elemento
     let datoFiltrado = Array.isArray(publicId) ? publicId[0] : publicId;
     
-    // Forzamos conversión a texto limpio, eliminamos espacios extras y reemplazamos los espacios internos por guiones bajos (_)
+    // Forzamos conversión a texto, eliminamos espacios y convertimos cualquier espacio interno a guion bajo
     let cleanPublicId = String(datoFiltrado).trim().replace(/\s+/g, "_");
     
-    if (cleanPublicId === "" || cleanPublicId.includes("unsplash.com")) {
+    if (cleanPublicId === "" || cleanPublicId.includes("unsplash.com") || cleanPublicId === "undefined" || cleanPublicId === "null") {
         return "https://unsplash.com"; 
     }
     
@@ -741,7 +741,6 @@ function construirUrlImagen(publicId) {
     
     return CLOUDINARY_BASE + cleanPublicId;
 }
-
 
 // =========================================================================
 // INYECCIÓN VOLÁTIL Y RENDERIZADO DEL ANÁLISIS COMPARATIVO DE MERCADO (ACM)
