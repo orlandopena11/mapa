@@ -1759,7 +1759,6 @@ function construirCollageInicial(fotos, idPropiedad) {
     const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
 
     // 2. OBTENEMOS EXACTAMENTE 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
-    // Si la propiedad tiene pocas fotos, usamos la principal como relleno para no romper la cuadrícula de 4
     const fotosDerecha = [];
     for (let i = 1; i <= 4; i++) {
         if (arregloFotos[i]) {
@@ -1769,35 +1768,35 @@ function construirCollageInicial(fotos, idPropiedad) {
         }
     }
 
-    // 3. ARMAMOS EL CONTENEDOR GRID ESTILO ZILLOW
-    let html = `<div class="galeria-zillow-container">`;
+    // 3. ARMAMOS EL CONTENEDOR CON TUS CLASES CSS ACTUALIZADAS
+    let html = '<div class="collage-detalle">';
     
     // Lado Izquierdo: Foto Grande
     html += `
-        <div class="zillow-foto-grande">
+        <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
         </div>
     `;
 
     // Lado Derecho: Bloque de 4 Fotos agrupadas
-    html += `<div class="zillow-bloque-pequenas">`;
+    html += '<div class="collage-secundario">';
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
-            <div class="zillow-foto-mini">
+            <div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
             </div>
         `;
     });
-    html += `</div>`;
+    html += '</div>';
 
-    // Parte Inferior Derecha: Botón flotante con letras de color blanco
+    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
     html += `
         <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             Ver las ${total} fotos
         </button>
     `;
 
-    html += `</div>`;
+    html += '</div>';
     return html;
 }
 
