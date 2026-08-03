@@ -1801,8 +1801,13 @@ function abrirVentanaDetalle(idPropiedad) {
 
     // 3. Procesamos los textos y bloques estáticos de la propiedad
     const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
-        // Mapeo riguroso basado exactamente en las columnas de Google Sheets
-    const direccionReal = casa.direccion || "Dirección no disponible";
+        // Forzamos a que lea el precio real desde la variable correcta del backend
+    if (!casa.precio && casa.precio_base) {
+        casa.precio = casa.precio_base;
+    }
+
+        // Mapeo exacto basado en la estructura de tu JSON del backend
+    const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || "Dirección no disponible");
     const areaReal = casa.area_construida || casa.area || "0";
 
     const divDetalle = cajaDetalleZillow; // Mantenemos la referencia que usa tu código abajo
