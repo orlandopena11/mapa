@@ -1721,36 +1721,27 @@ function cerrarVentanaLogin() {
 
 // Collage compacto de la 2da pantalla (hasta 5 fotos visibles: 1 grande + 4 mini)
 function construirCollageInicial(fotos, idPropiedad) {
-    if (typeof fotos === 'string') { fotos = [fotos]; }
     if (!fotos || !fotos.length) return '';
     
-    const total = fotos.length;
-    const secundarias = fotos.slice(1, 5); 
+    // Si por error se pasó un string único, lo convertimos en un arreglo
+    const arregloFotos = Array.isArray(fotos) ? fotos : [fotos];
+    const total = arregloFotos.length;
     
-    const BASE_CLOUDINARY_LIMPIA = "https://res.cloudinary.com/orlandopena11/image/upload/";
+    // Extraemos las primeras 4 fotos secundarias (desde el índice 1 al 5)
+    const secundarias = arregloFotos.slice(1, 5); 
 
-    // 1. PROCESAMOS LA FOTO PRINCIPAL
-    let nombrePrincipal = String(fotos[0]).trim().replace(/\s+/g, '_');
-    nombrePrincipal = nombrePrincipal.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
-    const urlPrincipal = BASE_CLOUDINARY_LIMPIA + encodeURIComponent(nombrePrincipal);
-
-    console.log("👉 FOTO PRINCIPAL COLLAGE:", urlPrincipal);
+    // Tomamos las URLs directas tal y como vienen del backend de forma limpia
+    const urlPrincipal = String(arregloFotos[0]).trim();
 
     let html = '<div class="collage-detalle">';
     html += `<div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
         <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy"></div>`;
 
-    // 2. PROCESAMOS LAS FOTOS SECUNDARIAS
     if (secundarias.length) {
         html += '<div class="collage-secundario">';
-        secundarias.forEach((fotoId, idx) => {
+        secundarias.forEach((fotoUrl, idx) => {
             const esUltimaMini = idx === secundarias.length - 1;
-            
-            let nombreSecundario = String(fotoId).trim().replace(/\s+/g, '_');
-            nombreSecundario = nombreSecundario.replace(/^\/+/, '').replace(/\.(jpg|png|webp)$/i, '');
-            const urlSecundaria = BASE_CLOUDINARY_LIMPIA + encodeURIComponent(nombreSecundario);
-            
-            console.log(`👉 FOTO SECUNDARIA [${idx + 1}]:`, urlSecundaria);
+            const urlSecundaria = String(fotoUrl).trim();
             
             html += `<div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
                 <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
