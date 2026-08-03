@@ -1828,10 +1828,6 @@ function abrirVentanaDetalle(idPropiedad) {
     const divDetalle = cajaDetalleZillow; // Mantenemos la referencia de tu diseño
 
         // Mapeo exacto basado en la estructura de tu JSON del backend
-
-    const areaReal = casa.area_construida || casa.area || "0";
-
-    const divDetalle = cajaDetalleZillow; // Mantenemos la referencia que usa tu código abajo
     const todasLasFotos = obtenerTodasLasFotos(casa);
 
     let htmlCaracteristicas = '';
