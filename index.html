@@ -1787,20 +1787,22 @@ function formatearCaracteristica(c) {
 function obtenerTodasLasFotos(casa) {
     const fotos = [];
     
-    // 1. Validamos y limpiamos la foto principal cambiando espacios por guiones bajos
+    // 1. Limpiamos la foto principal y convertimos cualquier espacio a guion bajo (_)
     if (casa.foto_principal) {
-        fotos.push(String(casa.foto_principal).trim().replace(/ /g, "_"));
+        fotos.push(String(casa.foto_principal).trim().replace(/\s+/g, "_"));
     }
     
-    // 2. CORRECCIÓN DE ORTOGRAFÍA: Usamos "segundarias" con "g" tal como viene del backend
-    const secundarias = casa.imagenes_segundarias || casa.imagenes_secundarias || [];
+    // 2. CORRECCIÓN DE ORTOGRAFÍA: Leemos de "imagenes_segundarias" con "g" tal como viene del backend
+    const secundarias = casa.imagenes_segundarias || [];
     
     // 3. Limpiamos cada foto secundaria asegurando los guiones bajos
-    secundarias.forEach(foto => {
-        if (foto) {
-            fotos.push(String(foto).trim().replace(/ /g, "_"));
-        }
-    });
+    if (Array.isArray(secundarias)) {
+        secundarias.forEach(foto => {
+            if (foto) {
+                fotos.push(String(foto).trim().replace(/\s+/g, "_"));
+            }
+        });
+    }
     
     return fotos;
 }
