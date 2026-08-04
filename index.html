@@ -1904,28 +1904,62 @@ function abrirVentanaDetalle(idPropiedad) {
     // =========================================================================
     // CORRECCIÓN DEFINITIVA: UNIMOS LA FOTO PRINCIPAL CON LAS 16 SECUNDARIAS
     // =========================================================================
-    let todasLasFotos = [];
-    
-    // 1. Agregamos la foto principal si existe
+        // =========================================================================
+    // EXPERIMENTO EN PARALELO: ARMADO DE ARREGLOS Y SIEMBRA DE ESPÍAS
+    // =========================================================================
+    let caminoA_TablaSecundaria = [];
+    let caminoB_CadenaComas = [];
+
+    // CAMINO A: Lógica uniendo la foto principal con 'imagenes_segundarias' como Array
     if (casa.foto_principal) {
-        todasLasFotos.push(casa.foto_principal);
+        caminoA_TablaSecundaria.push(casa.foto_principal);
     }
-    
-    // 2. Extraemos el arreglo 'imagenes_segundarias' que vimos en la consola con 16 fotos
     const secundariasBackend = casa.imagenes_segundarias || [];
     if (Array.isArray(secundariasBackend)) {
         secundariasBackend.forEach(foto => {
-            // Evitamos duplicar la foto principal si ya se encuentra en el listado
             if (foto && foto !== casa.foto_principal) {
-                todasLasFotos.push(foto);
+                caminoA_TablaSecundaria.push(foto);
             }
         });
     }
 
-    // Si por alguna razón está completamente vacío, dejamos un fallback de seguridad
-    if (todasLasFotos.length === 0) {
-        todasLasFotos = ["https://unsplash.com"];
+    // CAMINO B: Por si las fotos vienen juntas en texto separado por comas
+    if (casa.foto_principal) {
+        caminoB_CadenaComas.push(casa.foto_principal);
     }
+    if (typeof secundariasBackend === 'string' && secundariasBackend.trim() !== '') {
+        const cortePorComas = secundariasBackend.split(',');
+        cortePorComas.forEach(foto => {
+            let fotoLimpia = foto.trim();
+            if (fotoLimpia && fotoLimpia !== casa.foto_principal) {
+                caminoB_CadenaComas.push(fotoLimpia);
+            }
+        });
+    }
+
+    // 🕵️ EL ESPÍA DE LA ESTACIÓN 2.5: Reporta el estado de ambos caminos
+    console.log("🕵️ ESPÍA REPETIDOR - AUDITORÍA DE CAMINOS EN PARALELO:", {
+        id_propiedad: idPropiedad,
+        objeto_casa_completo: casa,
+        imagenes_segundarias_es_array: Array.isArray(secundariasBackend),
+        tipo_de_dato_secundarias: typeof secundariasBackend,
+        CAMINO_A_FOTOS_ENCONTRADAS: caminoA_TablaSecundaria.length,
+        CAMINO_A_CONTENIDO: caminoA_TablaSecundaria,
+        CAMINO_B_FOTOS_ENCONTRADAS: caminoB_CadenaComas.length,
+        CAMINO_B_CONTENIDO: caminoB_CadenaComas
+    });
+
+    // SELECCIÓN DE GANADOR
+    let todasLasFotos = [];
+    if (caminoA_TablaSecundaria.length > 1) {
+        todasLasFotos = caminoA_TablaSecundaria;
+    } else if (caminoB_CadenaComas.length > 1) {
+        todasLasFotos = caminoB_CadenaComas;
+    } else {
+        todasLasFotos = caminoA_TablaSecundaria.length > 0 ? caminoA_TablaSecundaria : ["https://unsplash.com"];
+    }
+    // =========================================================================
+
     // =========================================================================
 
     if (!casa.precio && casa.precio_base) {
