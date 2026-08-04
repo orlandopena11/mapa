@@ -2030,8 +2030,7 @@ function abrirVentanaDetalle(idPropiedad) {
             <button class="btn-continuar" onclick="agendarVisita('${casa.id || idPropiedad}', '${casa.anuncio_id}')">Solicitar visita</button>
             <p id="visita-state" style="font-size:12px; color:#666;"></p>
         </div>
-        
-        <!-- Formulario del agente -->
+         <!-- Formulario del agente -->
         <div id="seccion-formulario-agente" class="bloque-analitico-contenedor"></div>
     `;
 
@@ -2046,6 +2045,7 @@ function abrirVentanaDetalle(idPropiedad) {
     mostrarMapaBarrioVolatil(casa);
     mostrarConectividadYServicios(casa);
 }
+       
     
 
 function cerrarVentanaDetalle() {
