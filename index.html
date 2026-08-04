@@ -2102,40 +2102,92 @@ function cerrarVentanaDetalle() {
 
 // Punto 4 (3ra pantalla): galería completa con sidebar fijo estilo Zillow
 function abrirGaleriaCompleta(idPropiedad) {
-    const casa = propiedadesCombinadas.find(c => c.id.toString() === idPropiedad.toString());
-    if (!casa) return; 
-
-    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
-    const contenedor = document.getElementById('contenedor-galeria-completa');
+    // 1. Buscamos la propiedad en nuestro catálogo unificado
+    const casa = propiedadesCombinadas.find(c => {
+        const idActual = c.propiedad_id || c.id;
+        return idActual && idActual.toString() === idPropiedad.toString();
+    });
     
-    // CORRECCIÓN DIRECTA: Cambiamos 'todasLasFotos' por el arreglo real de tu objeto
-    const listaDeFotos = casa.fotos || []; 
+    if (!casa) return;
 
-    contenedor.innerHTML = `
-        <button class="btn-volver-lista" onclick="cerrarGaleriaCompleta()">← Volver a la ficha</button>
-        <div class="pantalla-galeria">
-            <div class="galeria-columna-fotos">
-                <!-- Enviamos las fotos reales al constructor de la galería asimétrica -->
-                <div class="galeria-asimetrica">${construirGaleriaAsimetrica(listaDeFotos)}</div>
+    // 2. Ocultamos el detalle de Zillow y mostramos el contenedor de la galería
+    document.getElementById('contenedor-detalle-zillow').style.display = 'none';
+    const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
+    if (!contenedorGaleria) return;
+    contenedorGaleria.style.display = 'block';
+
+    // 3. Reutilizamos el arreglo unificado de fotos que ya sabemos que funciona
+    let fotosParaGaleria = [];
+    if (casa.foto_principal) fotosParaGaleria.push(casa.foto_principal);
+    
+    const secundarias = casa.imagenes_segundarias || [];
+    if (Array.isArray(secundarias)) {
+        secundarias.forEach(f => {
+            if (f && f !== casa.foto_principal) fotosParaGaleria.push(f);
+        });
+    }
+
+    const RUTA_BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
+    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
+    const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || "Dirección no disponible");
+    const areaReal = casa.area_construida || casa.area || "0";
+
+    // 4. Inyectamos el HTML de la galería con scroll vertical continuo
+    let html = `
+        <div class="galeria-zillow-layout" style="display: flex; height: 100vh; font-family: sans-serif;">
+            
+            <!-- Lado Izquierdo: Lista vertical de las 14 fotos con scroll -->
+            <div class="galeria-fotos-columna" style="width: 65%; overflow-y: auto; padding: 20px; background: #f8fafc; box-sizing: border-box;">
+                <button onclick="cerrarGaleriaCompleta('${idPropiedad}')" style="margin-bottom: 20px; background: #fff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #006aff;">
+                    ← Volver a la ficha
+                </button>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+    `;
+
+    fotosParaGaleria.forEach(foto => {
+        let urlFinal = foto.startsWith("http") ? foto : RUTA_BASE_CLOUDINARY + encodeURIComponent(foto.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '')) + ".webp";
+        html += `
+            <div style="width: 100%; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <img src="${urlFinal}" alt="Foto de la propiedad" style="width: 100%; height: auto; display: block;" loading="lazy">
             </div>
-            <div class="galeria-sidebar">
-                <h2>${precioFormateado}</h2>
-                <h3>${casa.titulo}</h3>
-                <p>📍 ${casa.direccion}<br>
-                   🛏️ ${casa.habitaciones} hab &nbsp;|&nbsp; 🛁 ${casa.banos} baños &nbsp;|&nbsp; 📐 ${casa.area} m²</p>
-                <button class="btn-ver-contacto" onclick="verContactoDesdeDetalle('${casa.telefono}')">📞 Agente de contacto</button>
+        `;
+    });
+
+    html += `
+                </div>
+            </div>
+
+            <!-- Lado Derecho: Ficha técnica resumida fija (Estilo Zillow) -->
+            <div class="galeria-info-columna" style="width: 35%; padding: 30px; box-sizing: border-box; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 20px;">
+                <div>
+                    <h2 style="margin: 0 0 5px 0; color: #1e293b; font-size: 28px;">${precioFormateado}</h2>
+                    <h3 style="margin: 0 0 10px 0; color: #334155; font-size: 16px; font-weight: normal;">${casa.titulo || 'Inmueble'}</h3>
+                    <p style="margin: 0; color: #64748b; font-size: 14px;"><i class="fas fa-map-marker-alt"></i> ${direccionReal}</p>
+                </div>
+                
+                <div style="display: flex; gap: 15px; border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; padding: 15px 0; font-size: 14px; color: #475569;">
+                    <span><b>${casa.habitaciones || 0}</b> hab</span>
+                    <span>|</span>
+                    <span><b>${casa.banos || 0}</b> baños</span>
+                    <span>|</span>
+                    <span><b>${areaReal}</b> m²</span>
+                </div>
+
+                <button class="btn-continuar" style="width: 100%; background: #006aff; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="cerrarGaleriaCompleta('${idPropiedad}'); setTimeout(() => { document.querySelector('.btn-ver-contacto').scrollIntoView({behavior: 'smooth'}); }, 300);">
+                    <i class="fas fa-phone-alt"></i> Agente de contacto
+                </button>
             </div>
         </div>
     `;
 
-    document.getElementById('mi-modal-detalle').style.display = 'none';
-    document.getElementById('mi-modal-galeria').style.display = 'flex';
+    contenedorGaleria.innerHTML = html;
 }
 
-    
-function cerrarGaleriaCompleta() {
-    document.getElementById('mi-modal-galeria').style.display = 'none';
-    document.getElementById('mi-modal-detalle').style.display = 'flex';
+// Función hermana de cierre para regresar al collage
+function cerrarGaleriaCompleta(idPropiedad) {
+    const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
+    if (contenedorGaleria) contenedorGaleria.style.display = 'none';
+    document.getElementById('contenedor-detalle-zillow').style.display = 'block';
 }
 
 // Punto 8: formulario de visita -> tabla "visita"
