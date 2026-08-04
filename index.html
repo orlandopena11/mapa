@@ -1773,18 +1773,31 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     if (!arregloFotos || !arregloFotos.length) return '';
     
     const total = arregloFotos.length;
+    
+    // Tu ruta oficial de Cloudinary confirmada para renderizar las imágenes
+    const RUTA_COMPLETA_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
 
-    // 1. ASIGNAMOS LAS URLS DIRECTAS (Ya procesadas en la ventana de detalle)
-    // Tomamos la primera URL para el lado izquierdo
-    const urlPrincipal = arregloFotos[0]; 
+    // Función interna directa para asegurar que cada foto tenga su URL web real
+    function armarUrlReal(nombreFoto) {
+        let nombre = String(nombreFoto).trim();
+        if (nombre.startsWith("http")) {
+            return nombre;
+        }
+        // Limpieza obligatoria de extensiones y espacios si el Sheets los trae
+        nombre = nombre.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
+        return RUTA_COMPLETA_CLOUDINARY + encodeURIComponent(nombre) + ".webp";
+    }
 
-    // 2. EXTRAEMOS LAS 4 SIGUIENTES URLS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
+    // 1. PROCESAMOS LAS URLS COMPLETAS DE LAS FOTOS
+    const urlPrincipal = armarUrlReal(arregloFotos[0]);
+
+    // 2. EXTRAEMOS LAS 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
     const fotosDerecha = [];
     for (let i = 1; i <= 4; i++) {
         if (arregloFotos[i]) {
-            fotosDerecha.push(arregloFotos[i]); // Pasamos la URL directa sin reprocesar
+            fotosDerecha.push(armarUrlReal(arregloFotos[i]));
         } else {
-            fotosDerecha.push(urlPrincipal); // Fallback si la casa tiene menos de 5 fotos
+            fotosDerecha.push(urlPrincipal); // Fallback si la casa tiene pocas fotos
         }
     }
 
