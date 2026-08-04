@@ -625,7 +625,7 @@
 <!-- VENTANA FLOTANTE DE GALERÍA COMPLETA (3ra pantalla) -->
 <div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 10000; justify-content: center; align-items: center;">
     <div id="contenedor-galeria-completa" class="caja-login" style="max-width: 1100px; width: 96%; height: 92vh; padding: 0; text-align: left; overflow: hidden; background: #fff; border-radius: 8px;">
-        <!-- Contenido inyectado dinámicamente por abrirGaleriaCompleta() -->
+        <div id="contenedor-galeria-completa-zillow" style="width:100%; height:100%;"></div>
     </div>
 </div>
    
@@ -764,10 +764,79 @@ function construirUrlImagen(publicId) {
 }
 
 /**
+ * Obtiene el identificador principal de una propiedad considerando las
+ * variantes posibles que podrían venir desde Google Sheets o Apps Script.
+ */
+function obtenerIdPropiedad(prop) {
+    return prop.propiedad_id || prop.id || prop.anuncio_id || prop.propiedad_id_fk || prop.id_propiedad || "";
+}
+
+/**
+ * Normaliza y completa los campos base de una propiedad para que el resto
+ * del código pueda usar un modelo homogéneo sin importar cómo llegue el JSON.
+ */
+function normalizarPropiedad(prop) {
+    const id = obtenerIdPropiedad(prop);
+    const precioBase = parseFloat(prop.precio_base ?? prop.precio ?? prop.precio_actual ?? 0) || 0;
+    const banos = parseInt(prop.banos ?? prop.baños ?? prop.banos_totales ?? 0) || 0;
+    const habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0) || 0;
+    const areaConstruida = parseFloat(prop.area_construida ?? prop.area ?? prop.area_total ?? 0) || 0;
+    const areaTerreno = parseFloat(prop.area_terreno ?? prop.terreno ?? 0) || 0;
+    const tipoPropiedad = prop.tipo_propiedad || prop.tipo || prop.subtipo_propiedad || "";
+    const tipoAnuncio = prop.tipo_anuncio || prop.anuncio_tipo || prop.tipo || "";
+    const telefono = prop.telefono || prop.telefono_agente || prop.telefono_contacto || "";
+    const direccion = prop.direccion || (prop.geo && prop.geo.direccion) || "";
+    const titulo = prop.titulo || prop.nombre || prop.descripcion_corta || "";
+    const descripcion = prop.descripcion || prop.descripcion_larga || "";
+    const moneda = prop.moneda || "USD";
+    const historial = prop.historial_precio || prop.historial || [];
+    const caracteristicasExtras = prop.caracteristicas_extras || prop.detalles || [];
+    const recorrido3d = prop.recorrido_3d || prop.tour_3d || prop.recorrido3d || null;
+    const promocion = prop.promocion || prop.oferta || null;
+
+    const fotos = [];
+    if (prop.foto_principal) fotos.push(String(prop.foto_principal).trim());
+    if (Array.isArray(prop.imagenes_secundarias)) fotos.push(...prop.imagenes_secundarias.map(f => String(f).trim()));
+    if (Array.isArray(prop.fotos)) fotos.push(...prop.fotos.map(f => String(f).trim()));
+
+    const fotosUnicas = [...new Set(fotos.filter(Boolean))];
+
+    prop.id = id;
+    prop.propiedad_id = id;
+    prop.precio_base = precioBase;
+    prop.precio = precioBase;
+    prop.banos = banos;
+    prop.baños = banos;
+    prop.habitaciones = habitaciones;
+    prop.area_construida = areaConstruida;
+    prop.area = areaConstruida;
+    prop.area_terreno = areaTerreno;
+    prop.tipo_propiedad = tipoPropiedad;
+    prop.tipo = tipoPropiedad;
+    prop.tipo_anuncio = tipoAnuncio;
+    prop.telefono = telefono;
+    prop.direccion = direccion;
+    prop.titulo = titulo;
+    prop.descripcion = descripcion;
+    prop.moneda = moneda;
+    prop.historial_precio = historial;
+    prop.caracteristicas_extras = caracteristicasExtras;
+    prop.recorrido_3d = recorrido3d;
+    prop.promocion = promocion;
+    prop.fotos = fotosUnicas;
+    prop.foto_principal = prop.foto_principal || fotosUnicas[0] || "";
+    prop.imagenes_secundarias = Array.isArray(prop.imagenes_secundarias) ? prop.imagenes_secundarias : (prop.imagenes_secundarias ? [prop.imagenes_secundarias] : []);
+    prop.comparables = prop.comparables || [];
+
+    return prop;
+}
+
+/**
  * Procesa los datos del backend (Google Apps Script).
  * Realiza el cruce de tablas (Join) uniendo cada propiedad con su respectivo
  * listado de imágenes secundarias mediante el ID común (propiedad_id_fk).
- * Finalmente, activa el renderizado inicial del mapa y las tarjetas.
+ * Luego normaliza cada registro para que el resto del frontend trabaje con
+ * un modelo de propiedad consistente.
  */
     
 function procesarDatosDelMotor(data) {
@@ -782,44 +851,29 @@ function procesarDatosDelMotor(data) {
     
     // 2. Mapeamos las propiedades y les inyectamos sus fotos correspondientes cruzando la tabla secundaria
     propiedadesCombinadas = data.propiedades.map(prop => {
-        // Obtenemos el ID de la propiedad actual (manejando variantes comunes de nombre de columna)
-        const idProp = prop.propiedad_id || prop.id || prop.propiedad_id_fk;
-        
+        const idProp = obtenerIdPropiedad(prop);
+        let fotosFiltradas = [];
+
         if (idProp) {
-            // Buscamos todas las imágenes en la tabla secundaria que pertenezcan a esta propiedad
-            const fotosFiltradas = tablaImagenes
+            fotosFiltradas = tablaImagenes
                 .filter(img => String(img.propiedad_id_fk).trim() === String(idProp).trim())
-                // Ordenamos por la columna 'orden' si existe en la tabla de Sheets
                 .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0))
-                // Extraemos únicamente el nombre del archivo de la columna 'ruta_imagen'
-                .map(img => img.ruta_imagen);
-            
-            // Si encontramos fotos en la segunda tabla, las asignamos reemplazando o complementando el arreglo
-            if (fotosFiltradas.length > 0) {
-                prop.fotos = fotosFiltradas;
-            } else if (prop.foto_principal) {
-                // Si no hay secundarias, creamos el arreglo usando la foto principal de la primera tabla
-                prop.fotos = [prop.foto_principal];
-            } else {
-                prop.fotos = [];
-            }
-        } else {
-            prop.fotos = prop.foto_principal ? [prop.foto_principal] : [];
+                .map(img => img.ruta_imagen || img.url || img.imagen || "");
         }
-        
-        return prop;
+
+        if (fotosFiltradas.length > 0) {
+            prop.fotos = fotosFiltradas;
+        }
+
+        return normalizarPropiedad(prop);
     });
 
     propiedadesCombinadas.forEach((prop, index) => {
         const original = data.propiedades[index];
-        if (original && original.comparables) {
-            prop.comparables = original.comparables;
-        } else {
-            prop.comparables = [];
-        }
+        prop.comparables = original && Array.isArray(original.comparables) ? original.comparables : [];
     });
 
-    // 3. Con los datos ya disponibles en memoria, disparamos el primer renderizado
+    // 3. Con los datos ya normalizados y disponibles en memoria, disparamos el primer renderizado.
     renderizarMapaZillow();
 }
 
@@ -903,7 +957,7 @@ function mostrarPropiedadesCercanas(propiedadSeleccionada) {
           <h5 style="margin: 0 0 5px 0; font-size: 16px; color: #222;">$${propCercana.precio_base.toLocaleString()}</h5>
           <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; font-weight: bold;">${propCercana.area_construida} m² | ${propCercana.subtipo_propiedad || 'Inmueble'}</p>
           <p style="margin: 0; font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${propCercana.titulo}">${propCercana.titulo}</p>
-          <button onclick="abrirVentanaDetalle('${propCercana.comparable_id}')" style="margin-top: 8px; width: 100%; background: #1a73e8; color: white; border: none; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;">
+          <button onclick="abrirVentanaDetalle('${propCercana.id || propCercana.comparable_id}')" style="margin-top: 8px; width: 100%; background: #1a73e8; color: white; border: none; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;">
             Ver Propiedad
           </button>
         </div>
@@ -914,7 +968,9 @@ function mostrarPropiedadesCercanas(propiedadSeleccionada) {
 }
 
 // =========================================================================
-// RENDERIZADO DE DATOS Y CARACTERÍSTICAS MAESTRAS (ESTILO ZILLOW)
+// RENDERIZADO DE LA FICHA TÉCNICA Y LAS CARACTERÍSTICAS ADICIONALES
+// Esta función monta los bloques de datos principales, including habitaciones,
+// baños, áreas, año de construcción y el listado dinámico de características extras.
 // =========================================================================
 function mostrarDatosYCaracteristicasFicha(propiedadSeleccionada) {
   const contenedorBloques = document.getElementById("bloques-caracteristicas-dinamicas");
@@ -922,7 +978,7 @@ function mostrarDatosYCaracteristicasFicha(propiedadSeleccionada) {
   
   contenedorBloques.innerHTML = "";
 
-  // 1. Construimos el primer bloque base: Habitaciones, Baños y Áreas
+  // 1. Construimos el primer bloque base: ficha técnica con habitaciones, baños, áreas y año
   let htmlHabitaciones = `
     <div class="bloque-carac-grupo" style="background: #fafafa; padding: 15px; border-radius: 6px; border-left: 4px solid #1a73e8;">
       <h4 style="margin: 0 0 10px 0; color: #333; font-size: 15px;">??? Habitaciones y baños</h4>
@@ -1296,12 +1352,9 @@ function mostrarMapaBarrioVolatil(propiedadSeleccionada) {
     return;
   }
 
-  // Generamos una URL de incrustación de mapa interactivo seguro basada en OpenStreetMap (el punto .replace cambia la coma interna si existiera)
   const latC = lat.toString().replace(",", ".");
   const lonC = lon.toString().replace(",", ".");
-  
-  // Usamos el visor universal de OpenStreetMap centrado en la coordenada con zoom 16
-  elIframe.src = `https://google.com{latC},${lonC}&z=16&output=embed`;
+  elIframe.src = `https://www.google.com/maps?q=${latC},${lonC}&z=16&output=embed`;
 }
     
     
@@ -1376,6 +1429,8 @@ function formatearPrecio(precio, moneda) {
 
 // =========================================================================
 // RENDERIZADOR COMERCIAL DINÁMICO
+// Esta función actualiza el mapa, las tarjetas y los marcadores según los filtros
+// activos, la sesión de usuario y los datos normalizados en memoria.
 // =========================================================================
 function renderizarMapaZillow() {
     const contenedor = document.getElementById('contenedor-tarjetas');
@@ -1436,7 +1491,8 @@ function renderizarMapaZillow() {
             // Filtros Numéricos basados estrictamente en tu consola
             if (filtroPrecioMax !== "Todos" && casa.precio_base > parseFloat(filtroPrecioMax)) return;
             if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) return;
-            if (filtroBaños !== "Todos" && casa.baños < parseInt(filtroBaños)) return;
+            const banosCasa = parseInt(casa.banos || casa.baños || 0);
+            if (filtroBaños !== "Todos" && banosCasa < parseInt(filtroBaños)) return;
 
             // Filtro de Tipo de Propiedad (Casa / Departamento)
             if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
@@ -1484,7 +1540,7 @@ function renderizarMapaZillow() {
 
         let htmlFotosInternas = '';
         misFotosCarrusel.forEach(imgUrl => {
-            htmlFotosInternas += `<img src="${construirUrlImagen(imgUrl)}" crossorigin="anonymous" alt="Propiedad" onclick="abrirVentanaDetalle(this.closest('.ficha-tecnica-zillow')?.dataset?.id || localStorage.getItem('idPropiedadActual'))">`;
+            htmlFotosInternas += `<img src="${construirUrlImagen(imgUrl)}" crossorigin="anonymous" alt="Propiedad" onclick="abrirVentanaDetalle('${casa.id}')">`;
 
 
         });
@@ -1522,7 +1578,7 @@ function renderizarMapaZillow() {
                     <p class="precio">${precioFormateado}</p>
                     <p class="caracteristicas">
                         <b>${casa.habitaciones}</b> hab |
-                        <b>${casa.banos}</b> baños |
+                        <b>${casa.banos || casa.baños || 0}</b> baños |
                         <b>${casa.estacionamientos}</b> estac |
                         <b>${casa.area_terreno}</b> m² Terr |
                         <b>${casa.area}</b> m² Const
@@ -1894,7 +1950,8 @@ function obtenerTodasLasFotos(casa) {
 function abrirVentanaDetalle(idPropiedad) {
     document.getElementById('mi-modal-detalle').style.display = 'flex';
     
-    // CORRECCIÓN DE ID: Buscamos por propiedad_id mapeando correctamente los datos del Sheets
+    // Buscamos el registro normalizado de la propiedad en el catálogo local
+    // usando cualquiera de las variantes de ID que puede traer el backend.
     const casa = propiedadesCombinadas.find(c => {
         const idActual = c.propiedad_id || c.id;
         return idActual && idActual.toString() === idPropiedad.toString();
@@ -2027,7 +2084,7 @@ function abrirVentanaDetalle(idPropiedad) {
         <div class="bloque-seccion">
             <p class="datos-rapidos">
                 <b>${casa.habitaciones || 0}</b> hab &nbsp;|&nbsp;
-                <b>${casa.banos || 0}</b> baños &nbsp;|&nbsp;
+                <b>${casa.banos || casa.baños || 0}</b> baños &nbsp;|&nbsp;
                 <b>${casa.estacionamientos || 0}</b> estac &nbsp;|&nbsp;
                 <b>${areaReal}</b> m² construidos
             </p>
@@ -2040,21 +2097,70 @@ function abrirVentanaDetalle(idPropiedad) {
         ${htmlTour3d}
         ${htmlHistorial}
 
-        <!-- 5. MARCADORES DE POSICIÓN EXCLUSIVOS PARA LAS 9 FUNCIONES ANALÍTICAS -->
-        <div id="valor-mercado-zillow" class="bloque-analitico-contenedor"></div>
-        <div id="grafico-historial-zillow" class="bloque-analitico-contenedor"></div>
-        <div id="tabla-historial-precios-zillow" class="bloque-analitico-contenedor"></div>
-        <div id="contenedor-mapa-detalle" class="bloque-analitico-contenedor"></div>
-        <div id="seccion-conectividad-detalle" class="bloque-analitico-contenedor"></div>
-        <div id="contenedor-detalle-zillow-interno" class="bloque-analitico-contenedor"></div>
-        <div id="contenedor-propiedades-cercanas" class="bloque-analitico-contenedor"></div>
+        <!-- 5. Información analítica y visualizaciones -->
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Valor de mercado estimado</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px;">
+                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Valor estimado</p>
+                    <h5 id="zillow-estimado-valor" style="margin: 0; font-size: 20px; font-weight: 700;">$0</h5>
+                </div>
+                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Rango estimado</p>
+                    <h5 id="zillow-rango-ventas" style="margin: 0; font-size: 20px; font-weight: 700;">$0 - $0</h5>
+                </div>
+                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
+                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Alquiler estimado</p>
+                    <h5 id="zillow-alquiler-estimado" style="margin: 0; font-size: 20px; font-weight: 700;">$0 /mo</h5>
+                </div>
+            </div>
+        </div>
 
-        <!-- Botón de contacto comercial -->
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Historia del precio</h4>
+            <div style="width: 100%; height: 320px; margin-top: 15px;">
+                <canvas id="lienzoGraficoHistorial"></canvas>
+            </div>
+            <div style="overflow-x:auto; margin-top:20px;">
+                <table style="width:100%; border-collapse: collapse; font-size:13px;">
+                    <thead><tr style="background:#f5f5f5;"><th style="padding:10px;">Fecha</th><th style="padding:10px;">Evento</th><th style="padding:10px;">Precio</th></tr></thead>
+                    <tbody id="tabla-historial-precios-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Comparables y propiedades cercanas</h4>
+            <div style="overflow-x:auto; margin-top: 15px;">
+                <table style="width:100%; border-collapse: collapse; font-size:13px;">
+                    <thead><tr style="background:#f5f5f5;"><th style="padding:10px;">ID</th><th style="padding:10px;">Propiedad</th><th style="padding:10px;">Precio</th><th style="padding:10px;">Área</th><th style="padding:10px;">Dif Precio</th><th style="padding:10px;">Dif Área</th><th style="padding:10px;">Distancia</th><th style="padding:10px;">Mapa</th></tr></thead>
+                    <tbody id="tabla-comparables-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Ubicación y entorno</h4>
+            <p id="barrio-texto-direccion" style="font-size: 13px; color: #555; margin-bottom: 12px;"></p>
+            <div id="contenedor-mapa-detalle" style="width:100%; height:300px; border-radius:8px; overflow:hidden; border:1px solid #ddd;">
+                <iframe id="iframe-mapa-barrio" src="about:blank" style="border:0;width:100%;height:100%;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Servicios cercanos</h4>
+            <div id="contenedor-servicios-cercanos" style="display:flex; overflow-x:auto; gap:15px; padding:10px 0;"></div>
+        </div>
+
+        <div class="bloque-seccion" style="padding: 20px;">
+            <h4 style="margin-top: 0;">Otras propiedades cercanas</h4>
+            <div id="contenedor-propiedades-cercanas" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 10px;"></div>
+        </div>
+
         <div class="bloque-seccion">
             <button class="btn-ver-contacto" style="max-width:320px;" onclick="verContactoDesdeDetalle('${casa.telefono}')">Ver datos del contacto</button>
         </div>
 
-        <!-- Bloque para agendar visitas -->
         <div class="bloque-seccion bloque-visita">
             <h4>Agendar una visita</h4>
             <div class="fila-formulario">
@@ -2068,7 +2174,7 @@ function abrirVentanaDetalle(idPropiedad) {
             <button class="btn-continuar" onclick="agendarVisita('${casa.id || idPropiedad}', '${casa.anuncio_id}')">Solicitar visita</button>
             <p id="visita-state" style="font-size:12px; color:#666;"></p>
         </div>
-         <!-- Formulario del agente -->
+
         <div id="seccion-formulario-agente" class="bloque-analitico-contenedor"></div>
     `;
 
@@ -2109,10 +2215,14 @@ function abrirGaleriaCompleta(idPropiedad) {
     
     if (!casa) return;
 
-    // Ocultamos el collage y activamos el contenedor de la galería completa
-    document.getElementById('contenedor-detalle-zillow').style.display = 'none';
+    const modalGaleria = document.getElementById('mi-modal-galeria');
     const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
-    if (!contenedorGaleria) return;
+    const modalDetalle = document.getElementById('mi-modal-detalle');
+
+    if (!modalGaleria || !contenedorGaleria) return;
+
+    if (modalDetalle) modalDetalle.style.display = 'none';
+    modalGaleria.style.display = 'flex';
     contenedorGaleria.style.display = 'block';
 
     // Recolectamos el arreglo exacto de fotos que vimos en la consola
@@ -2182,9 +2292,14 @@ function abrirGaleriaCompleta(idPropiedad) {
 }
 
 function cerrarGaleriaCompleta(idPropiedad) {
+    const modalGaleria = document.getElementById('mi-modal-galeria');
     const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
+    const modalDetalle = document.getElementById('mi-modal-detalle');
+
     if (contenedorGaleria) contenedorGaleria.style.display = 'none';
-    document.getElementById('contenedor-detalle-zillow').style.display = 'block';
+    if (modalGaleria) modalGaleria.style.display = 'none';
+    if (modalDetalle) modalDetalle.style.display = 'flex';
+    if (document.getElementById('contenedor-detalle-zillow')) document.getElementById('contenedor-detalle-zillow').style.display = 'block';
 }
 
 // Punto 8: formulario de visita -> tabla "visita"
