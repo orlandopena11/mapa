@@ -1773,39 +1773,32 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     if (!arregloFotos || !arregloFotos.length) return '';
     
     const total = arregloFotos.length;
-    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
 
-    function obtenerUrlCloudinary(nombreFoto) {
-        let nombre = String(nombreFoto).trim();
-        const RUTA_COMPLETA = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
+    // 1. ASIGNAMOS LAS URLS DIRECTAS (Ya procesadas en la ventana de detalle)
+    // Tomamos la primera URL para el lado izquierdo
+    const urlPrincipal = arregloFotos[0]; 
 
-        if (nombre.startsWith("http")) {
-            return nombre;
-        }
-
-        nombre = nombre.replace(/\s+/g, '_').replace(/\.(jpg|png|webp)$/i, '');
-        return RUTA_COMPLETA + encodeURIComponent(nombre) + ".webp";
-    }
-
-    const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
-
+    // 2. EXTRAEMOS LAS 4 SIGUIENTES URLS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
     const fotosDerecha = [];
     for (let i = 1; i <= 4; i++) {
         if (arregloFotos[i]) {
-            fotosDerecha.push(obtenerUrlCloudinary(arregloFotos[i]));
+            fotosDerecha.push(arregloFotos[i]); // Pasamos la URL directa sin reprocesar
         } else {
-            fotosDerecha.push(urlPrincipal);
+            fotosDerecha.push(urlPrincipal); // Fallback si la casa tiene menos de 5 fotos
         }
     }
 
+    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS EXISTENTES
     let html = '<div class="collage-detalle">';
     
+    // Lado Izquierdo: Foto Grande
     html += `
         <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
         </div>
     `;
 
+    // Lado Derecho: Bloque de 4 fotos agrupadas
     html += '<div class="collage-secundario">';
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
@@ -1816,6 +1809,7 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     });
     html += '</div>';
 
+    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
     html += `
         <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             Ver las ${total} fotos
