@@ -1898,60 +1898,57 @@ function abrirVentanaDetalle(idPropiedad) {
     // =========================================================================
     // CORRECCIÓN DEFINITIVA: UNIMOS LA FOTO PRINCIPAL CON LAS 16 SECUNDARIAS
     // =========================================================================
-        // =========================================================================
-    // EXPERIMENTO EN PARALELO: ARMADO DE ARREGLOS Y SIEMBRA DE ESPÍAS
     // =========================================================================
-    let caminoA_TablaSecundaria = [];
-    let caminoB_CadenaComas = [];
-
-    // CAMINO A: Lógica uniendo la foto principal con 'imagenes_segundarias' como Array
+    // EXTRACCIÓN CON PARSEO DE OBJETOS Y SIEMBRA DE ESPÍAS
+    // =========================================================================
+    let todasLasFotos = [];
+    
+    // 1. Añadimos la foto principal como primer elemento
     if (casa.foto_principal) {
-        caminoA_TablaSecundaria.push(casa.foto_principal);
+        todasLasFotos.push(casa.foto_principal);
     }
+    
+    // 2. Extraemos las fotos del arreglo 'imagenes_segundarias' leyendo su propiedad '.url'
     const secundariasBackend = casa.imagenes_segundarias || [];
-    if (Array.isArray(secundariasBackend)) {
-        secundariasBackend.forEach(foto => {
-            if (foto && foto !== casa.foto_principal) {
-                caminoA_TablaSecundaria.push(foto);
-            }
-        });
-    }
-
-    // CAMINO B: Por si las fotos vienen juntas en texto separado por comas
-    if (casa.foto_principal) {
-        caminoB_CadenaComas.push(casa.foto_principal);
-    }
-    if (typeof secundariasBackend === 'string' && secundariasBackend.trim() !== '') {
-        const cortePorComas = secundariasBackend.split(',');
-        cortePorComas.forEach(foto => {
-            let fotoLimpia = foto.trim();
-            if (fotoLimpia && fotoLimpia !== casa.foto_principal) {
-                caminoB_CadenaComas.push(fotoLimpia);
-            }
-        });
-    }
-
-    // 🕵️ EL ESPÍA DE LA ESTACIÓN 2.5: Reporta el estado de ambos caminos
-    console.log("🕵️ ESPÍA REPETIDOR - AUDITORÍA DE CAMINOS EN PARALELO:", {
+    
+    // 🕵️ ESPÍA DE ENTRADA: Revisa cómo vienen estructurados los elementos dentro del Array del backend
+    console.log("🕵️ ESPÍA DETALLE - DATOS CRUDOS QUE RECIBE LA VENTANA:", {
         id_propiedad: idPropiedad,
-        objeto_casa_completo: casa,
-        imagenes_segundarias_es_array: Array.isArray(secundariasBackend),
-        tipo_de_dato_secundarias: typeof secundariasBackend,
-        CAMINO_A_FOTOS_ENCONTRADAS: caminoA_TablaSecundaria.length,
-        CAMINO_A_CONTENIDO: caminoA_TablaSecundaria,
-        CAMINO_B_FOTOS_ENCONTRADAS: caminoB_CadenaComas.length,
-        CAMINO_B_CONTENIDO: caminoB_CadenaComas
+        foto_principal_cruda: casa.foto_principal,
+        imagenes_segundarias_objeto: secundariasBackend,
+        es_arreglo: Array.isArray(secundariasBackend),
+        cantidad_elementos: secundariasBackend.length
     });
 
-    // SELECCIÓN DE GANADOR
-    let todasLasFotos = [];
-    if (caminoA_TablaSecundaria.length > 1) {
-        todasLasFotos = caminoA_TablaSecundaria;
-    } else if (caminoB_CadenaComas.length > 1) {
-        todasLasFotos = caminoB_CadenaComas;
-    } else {
-        todasLasFotos = caminoA_TablaSecundaria.length > 0 ? caminoA_TablaSecundaria : ["https://unsplash.com"];
+    if (Array.isArray(secundariasBackend)) {
+        secundariasBackend.forEach((item, index) => {
+            // Si viene como objeto {orden: X, url: "nombre"}, extraemos el texto de .url. Si viene como texto, lo dejamos tal cual.
+            let fotoId = (item && typeof item === 'object') ? item.url : item;
+            
+            // 🕵️ ESPÍA DE BUCLE: Audita el parseo de cada foto individual
+            console.log(`🕵️ ESPÍA BUCLE - Elemento [${index}]:`, {
+                dato_leido_del_backend: item,
+                tipo_de_dato: typeof item,
+                resultado_extraido_fotoId: fotoId
+            });
+
+            if (fotoId && fotoId !== casa.foto_principal) {
+                todasLasFotos.push(fotoId);
+            }
+        });
     }
+
+    // Fallback de seguridad por si queda vacío
+    if (todasLasFotos.length === 0) {
+        todasLasFotos = ["https://unsplash.com"];
+    }
+
+    // 🕵️ ESPÍA DE SALIDA: El veredicto final antes de enviarlo a la pantalla estilo Zillow
+    console.log("🕵️ ESPÍA SALIDA - ARREGLO FINAL UNIFICADO ENVIADO AL COLLAGE:", {
+        id_propiedad: idPropiedad,
+        lista_final_urls: todasLasFotos,
+        total_fotos_enviadas: todasLasFotos.length
+    });
     // =========================================================================
 
     // =========================================================================
