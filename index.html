@@ -2110,13 +2110,13 @@ function abrirGaleriaCompleta(idPropiedad) {
     
     if (!casa) return;
 
-    // 2. Ocultamos el detalle de Zillow y mostramos el contenedor de la galería
+    // 2. Ocultamos el collage principal y activamos el contenedor de la galería completa
     document.getElementById('contenedor-detalle-zillow').style.display = 'none';
     const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
     if (!contenedorGaleria) return;
     contenedorGaleria.style.display = 'block';
 
-    // 3. Reutilizamos el arreglo unificado de fotos que ya sabemos que funciona
+    // 3. Recolectamos las 14 fotos que vimos viajando en los espías de la consola
     let fotosParaGaleria = [];
     if (casa.foto_principal) fotosParaGaleria.push(casa.foto_principal);
     
@@ -2128,15 +2128,15 @@ function abrirGaleriaCompleta(idPropiedad) {
     }
 
     const RUTA_BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
-    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
+    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : (casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte");
     const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || "Dirección no disponible");
     const areaReal = casa.area_construida || casa.area || "0";
 
-    // 4. Inyectamos el HTML de la galería con scroll vertical continuo
+    // 4. Inyectamos el HTML de la galería con estructura dividida estilo Zillow
     let html = `
         <div class="galeria-zillow-layout" style="display: flex; height: 100vh; font-family: sans-serif;">
             
-            <!-- Lado Izquierdo: Lista vertical de las 14 fotos con scroll -->
+            <!-- Lado Izquierdo: Lista vertical de las 14 fotos con scroll continuo -->
             <div class="galeria-fotos-columna" style="width: 65%; overflow-y: auto; padding: 20px; background: #f8fafc; box-sizing: border-box;">
                 <button onclick="cerrarGaleriaCompleta('${idPropiedad}')" style="margin-bottom: 20px; background: #fff; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; color: #006aff;">
                     ← Volver a la ficha
@@ -2157,8 +2157,8 @@ function abrirGaleriaCompleta(idPropiedad) {
                 </div>
             </div>
 
-            <!-- Lado Derecho: Ficha técnica resumida fija (Estilo Zillow) -->
-            <div class="galeria-info-columna" style="width: 35%; padding: 30px; box-sizing: border-box; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 20px;">
+            <!-- Lado Derecho: Ficha técnica resumida estática -->
+            <div class="galeria-info-columna" style="width: 35%; padding: 30px; box-sizing: border-box; border-left: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 20px; background: #fff;">
                 <div>
                     <h2 style="margin: 0 0 5px 0; color: #1e293b; font-size: 28px;">${precioFormateado}</h2>
                     <h3 style="margin: 0 0 10px 0; color: #334155; font-size: 16px; font-weight: normal;">${casa.titulo || 'Inmueble'}</h3>
@@ -2183,7 +2183,6 @@ function abrirGaleriaCompleta(idPropiedad) {
     contenedorGaleria.innerHTML = html;
 }
 
-// Función hermana de cierre para regresar al collage
 function cerrarGaleriaCompleta(idPropiedad) {
     const contenedorGaleria = document.getElementById('contenedor-galeria-completa-zillow');
     if (contenedorGaleria) contenedorGaleria.style.display = 'none';
