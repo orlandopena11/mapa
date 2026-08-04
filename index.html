@@ -1772,10 +1772,9 @@ function cerrarVentanaLogin() {
 function construirCollageInicial(arregloFotos, idPropiedad) {
     if (!arregloFotos || !arregloFotos.length) return '';
     
-    // Aseguramos el conteo total basado en el arreglo que ingresa
     const total = arregloFotos.length;
+    const BASE_CLOUDINARY = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
 
-    // Función interna directa: Respeta tu ruta completa de Cloudinary
     function obtenerUrlCloudinary(nombreFoto) {
         let nombre = String(nombreFoto).trim();
         const RUTA_COMPLETA = "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/";
@@ -1788,30 +1787,25 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         return RUTA_COMPLETA + encodeURIComponent(nombre) + ".webp";
     }
 
-    // 1. PROCESAMOS LA URL COMPLETA DE LA FOTO PRINCIPAL
     const urlPrincipal = obtenerUrlCloudinary(arregloFotos[0]);
 
-    // 2. EXTRAEMOS LAS 4 FOTOS PARA EL LADO DERECHO (ÍNDICES 1 A 4)
     const fotosDerecha = [];
     for (let i = 1; i <= 4; i++) {
         if (arregloFotos[i]) {
             fotosDerecha.push(obtenerUrlCloudinary(arregloFotos[i]));
         } else {
-            fotosDerecha.push(urlPrincipal); // Fallback si no hay suficientes fotos
+            fotosDerecha.push(urlPrincipal);
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS
     let html = '<div class="collage-detalle">';
     
-    // Lado Izquierdo: Foto Grande
     html += `
         <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
         </div>
     `;
 
-    // Lado Derecho: Bloque de 4 fotos agrupadas
     html += '<div class="collage-secundario">';
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
@@ -1822,36 +1816,6 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     });
     html += '</div>';
 
-    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
-    html += `
-        <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-            Ver las ${total} fotos
-        </button>
-    `;
-
-    html += '</div>';
-    return html;
-}
-
-
-    // Lado Izquierdo: Foto Grande
-    html += `
-        <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-            <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
-        </div>
-    `;
-
-    // Lado Derecho: Bloque de 4 Fotos agrupadas
-    html += '<div class="collage-secundario">';
-    fotosDerecha.forEach((urlSecundaria) => {
-        html += `
-            <div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
-            </div>
-        `;
-    });
-
-    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
     html += `
         <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
             Ver las ${total} fotos
