@@ -234,6 +234,83 @@
         .fila-formulario { display: flex; gap: 10px; margin-bottom: 10px; }
         .fila-formulario input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
         .bloque-visita textarea { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; resize: vertical; }
+
+        /* ====================== NUEVOS ESTILOS PARA VISTA DE DETALLE ====================== */
+        .detalle-layout-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
+        .detalle-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #e2e8e0; padding-bottom: 16px; position: sticky; top: 0; background: #f6f6f9; z-index: 30; }
+        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 10px; }
+        .detalle-back-btn { border: none; background: none; color: #006aff; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+        .detalle-header-logo { width: 24px; height: 24px; object-fit: contain; border-radius: 6px; }
+        .detalle-header-center span { font-size: 14px; font-weight: 800; color: #002E50; }
+        .icono-header { width: 40px; height: 40px; border-radius: 12px; border: 1px solid transparent; background: #ffffff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #002E50; font-size: 18px; transition: transform 0.2s ease, border-color 0.2s ease; }
+        .icono-header:hover { transform: scale(1.05); border-color: #d1d5db; }
+        .detalle-main-grid { display: grid; grid-template-columns: 1.9fr 0.9fr; gap: 24px; width: 100%; min-height: 0; }
+        @media (max-width: 1080px) { .detalle-main-grid { grid-template-columns: 1fr; } .detalle-columna-der { position: static; top: auto; } }
+        .detalle-columna-izq { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .detalle-columna-der { position: sticky; top: 16px; align-self: flex-start; max-height: calc(100vh - 64px); }
+        .detalle-panel-sticky { display: flex; flex-direction: column; gap: 14px; padding: 20px; width: 100%; border-radius: 18px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
+        .btn-detalle-principal, .btn-detalle-secundario { width: 100%; border-radius: 14px; padding: 14px 18px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; }
+        .btn-detalle-principal { background: #006aff; color: #ffffff; }
+        .btn-detalle-secundario { background: #f8fafc; color: #002E50; border: 1px solid #cbd5e1; }
+        .detalle-section { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 22px; box-shadow: 0 8px 20px rgba(15,23,42,0.04); }
+        .detalle-section h4 { margin-top: 0; margin-bottom: 14px; font-size: 18px; color: #102a43; }
+        .detalle-resumen-grid { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
+        .resumen-sinopsis { display: flex; flex-direction: column; gap: 14px; }
+        .precio-destacado { font-size: 34px; font-weight: 900; color: #002E50; margin: 0; }
+        .direccion-detalle { margin: 0; color: #475569; font-size: 15px; line-height: 1.5; }
+        .indicadores-detalle { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+        .indicador-chip { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 999px; color: #1d4ed8; font-size: 13px; font-weight: 700; padding: 8px 12px; }
+        .boton-contacto-rapido { background: #ffffff; border: 1px solid #cbd5e1; color: #002E50; padding: 12px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .ficha-cuadricula { display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)); gap: 14px; }
+        .dato-ficha { padding: 18px 16px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; }
+        .dato-ficha strong { display: block; margin-bottom: 6px; font-size: 14px; color: #102a43; }
+        .dato-ficha span { font-size: 13px; color: #475569; line-height: 1.5; }
+        .chips-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .chip { background: #eef2ff; color: #1d4ed8; padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; }
+        .detalle-texto { color: #334155; line-height: 1.8; white-space: pre-line; margin: 0; }
+        .metrica-horizontal { display: flex; flex-wrap: wrap; gap: 16px; }
+        .metric-card { flex: 1; min-width: 180px; background: #f8fafc; border: 1px solid #dbeafe; border-radius: 14px; padding: 18px; }
+        .metric-card span { display: block; font-size: 13px; color: #64748b; margin-bottom: 8px; }
+        .metric-card strong { font-size: 24px; color: #002E50; display: block; }
+        .modulo-viaje { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 18px; align-items: start; }
+        @media (max-width: 900px) { .modulo-viaje { grid-template-columns: 1fr; } }
+        .modulo-viaje input, .modulo-viaje select, .simulador-capacidad input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; background: #ffffff; }
+        .botones-fechas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+        .date-card { cursor: pointer; border: 1px solid #cbd5e1; border-radius: 16px; padding: 14px 16px; min-width: 110px; background: #ffffff; transition: all 0.2s ease; text-align: center; }
+        .date-card.selected { background: #eff6ff; border-color: #1d4ed8; }
+        .tour-seccion p { margin: 0; color: #475569; }
+        .tour-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .tour-cta button { border-radius: 14px; border: none; padding: 12px 18px; cursor: pointer; font-weight: 700; }
+        .tour-cta button.primary { background: #006aff; color: white; }
+        .tour-cta button.outline { background: #f8fafc; color: #002E50; border: 1px solid #cbd5e1; }
+        .tour-iframe { width: 100%; height: 420px; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
+        .tour-3d-preview { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
+        .tour-3d-preview img { width: 100%; border-radius: 16px; object-fit: cover; }
+        .formulario-vendedor { display: grid; gap: 14px; }
+        .formulario-vendedor input, .formulario-vendedor textarea { border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 14px; font-size: 14px; width: 100%; background: #ffffff; }
+        .formulario-vendedor textarea { min-height: 140px; resize: vertical; }
+        .formulario-vendedor button { border: none; border-radius: 14px; background: #006aff; color: white; padding: 14px; font-weight: 700; cursor: pointer; }
+        .resultado-capacidad { border-radius: 16px; background: #f8fafc; border: 1px solid #dbeafe; padding: 18px; color: #0f172a; font-weight: 700; }
+        .simulador-capacidad { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
+        @media (max-width: 900px) { .simulador-capacidad { grid-template-columns: 1fr; } }
+        .simulador-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .bloque-pois { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+        .poi-card { border-radius: 16px; background: #eff6ff; padding: 18px; border: 1px solid #dbeafe; }
+        .poi-card h5 { margin: 0 0 10px 0; font-size: 15px; color: #002E50; }
+        .poi-card p { margin: 0 6px 0 0; color: #334155; font-size: 13px; }
+        .similares-carrusel { position: relative; }
+        .similares-contenedor { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; }
+        .similares-card { min-width: 240px; max-width: 240px; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; background: white; box-shadow: 0 8px 30px rgba(15,23,42,0.06); }
+        .similares-card img { width: 100%; height: 160px; object-fit: cover; }
+        .similares-card-body { padding: 16px; }
+        .similares-card-body h5 { margin: 0 0 8px 0; font-size: 15px; color: #102a43; }
+        .similares-card-body p { margin: 0 8px 8px 0; color: #475569; font-size: 13px; }
+        .similares-nav { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; }
+        .similares-nav button { width: 38px; height: 38px; border-radius: 999px; border: 1px solid #cbd5e1; background: white; color: #002e50; cursor: pointer; }
+        .modal-tour-confirmacion .caja-login { max-width: 480px; width: 100%; padding: 26px; }
+        .modal-tour-confirmacion h3 { margin-top: 0; font-size: 22px; color: #102a43; }
+        .modal-tour-confirmacion input, .modal-tour-confirmacion textarea, .modal-tour-confirmacion select { width: 100%; margin-bottom: 14px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; }
+        .modal-tour-confirmacion button { width: 100%; border: none; border-radius: 14px; padding: 14px; font-weight: 700; background: #006aff; color: white; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -609,9 +686,13 @@
                                 <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Mensaje</label>
                                 <textarea id="contacto-mensaje" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span id="telefono-agent-click" style="font-size: 13px; color: #1a73e8; font-weight: bold; cursor: pointer; padding: 8px 0;">Mostrar teléfono del agente</span>
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <span id="telefono-agente-click" style="font-size: 13px; color: #1a73e8; font-weight: bold; cursor: pointer; padding: 8px 0;">Mostrar teléfono del agente</span>
                                 <button type="submit" style="background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Contactar Agente</button>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                                <button type="button" id="contacto-whatsapp-btn" class="btn-detalle-secundario" style="flex:1; min-width: 140px;" onclick="enviarPorWhatsApp()">WhatsApp</button>
+                                <button type="button" id="contacto-email-btn" class="btn-detalle-secundario" style="flex:1; min-width: 140px;" onclick="enviarPorEmail()">Email</button>
                             </div>
                         </form>
                     </div>
@@ -1360,6 +1441,9 @@ function mostrarMapaBarrioVolatil(propiedadSeleccionada) {
     
 // Variable global temporal para guardar la propiedad activa en el modal
 let propiedadActualEnDetalle = null;
+let detalleRutaMapa = null;
+let detalleRutaLayer = null;
+let tourFechaSeleccionadaIndex = 0;
 
 // =========================================================================
 // GESTIÓN DEL FORMULARIO DE CONTACTO CON EL AGENTE
@@ -1387,12 +1471,29 @@ function configurarFormularioContacto(casa) {
 
   // 3. Configuración dinámica para revelar el teléfono del agente real
   const botonTelefono = document.getElementById("telefono-agente-click");
+  const botonWhatsApp = document.getElementById("contacto-whatsapp-btn");
+  const botonEmail = document.getElementById("contacto-email-btn");
+  const telefonoAgente = casa.telefono || casa.telefono_contacto || casa.contacto_telefono || '';
+  const emailAgente = casa.email_agente || casa.email || '';
+
   if (botonTelefono) {
-    botonTelefono.innerHTML = `?? Mostrar teléfono del agente`;
-    botonTelefono.onclick = function() {
-      // Usa el teléfono resuelto matemáticamente en tu backend O(N)
-      botonTelefono.innerHTML = `?? Llamar al: <strong>${casa.telefono || 'Ver datos de contacto'}</strong>`;
+    botonTelefono.textContent = 'Mostrar teléfono del agente';
+    botonTelefono.onclick = () => {
+      if (!telefonoAgente) {
+        botonTelefono.textContent = 'Teléfono no disponible';
+        return;
+      }
+      botonTelefono.textContent = `📞 ${telefonoAgente}`;
+      window.open(`tel:${telefonoAgente.replace(/[^0-9+]/g, '')}`, '_blank');
     };
+  }
+  if (botonWhatsApp) {
+    botonWhatsApp.disabled = !telefonoAgente;
+    botonWhatsApp.title = telefonoAgente ? 'Abrir WhatsApp al agente' : 'Teléfono de agente no disponible';
+  }
+  if (botonEmail) {
+    botonEmail.disabled = !emailAgente;
+    botonEmail.title = emailAgente ? 'Enviar email al agente' : 'Email de agente no disponible';
   }
 }
 
@@ -1400,25 +1501,64 @@ function configurarFormularioContacto(casa) {
 function enviarMensajeAlAgente(event) {
   event.preventDefault();
   
+  if (!usuarioAutenticado) {
+    abrirVentanaLogin();
+    return;
+  }
   if (!propiedadActualEnDetalle) return;
 
   const datosEnvio = {
-    accion: "agendar_visita", // Reutiliza tu Endpoint seguro doPost para registrar el interesado
+    accion: "contactar_agente",
     email: document.getElementById("contacto-email").value,
     nombre: document.getElementById("contacto-nombre").value,
-    propiedad_id: propiedadActualEnDetalle.id,
-    anuncio_id: propiedadActualEnDetalle.anuncio_id,
+    propiedad_id: propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id,
+    anuncio_id: propiedadActualEnDetalle.anuncio_id || '',
     tipo_visita: "presencial",
-    fecha_visita: new Date().toISOString().split('T')[0], // Fecha de hoy automática
+    fecha_visita: new Date().toISOString().split('T')[0],
     hora_visita: "10:00",
     mensaje_adicional: document.getElementById("contacto-mensaje").value,
     telefono_interesado: document.getElementById("contacto-telefono").value
   };
 
-  // Si usas fetch directo a tu Web App URL de Google Apps Script:
-  alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id}.`);
-  
-  // Opcional: Aquí disparas tu llamada AJAX/fetch original hacia doPost de Apps Script
+  fetch(urlMiScriptGoogle, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(datosEnvio)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data && (data.success || data.resultado)) {
+      alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id}.`);
+    } else {
+      alert('Tu solicitud fue recibida, pero el servidor no confirmó el envío. Por favor revisa tu correo o intenta nuevamente.');
+    }
+  })
+  .catch(() => {
+    alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id}.`);
+  });
+}
+
+function enviarPorWhatsApp() {
+  if (!propiedadActualEnDetalle) return;
+  const telefono = (propiedadActualEnDetalle.telefono || propiedadActualEnDetalle.telefono_contacto || propiedadActualEnDetalle.contacto_telefono || '').replace(/[^0-9+]/g, '');
+  if (!telefono) {
+    alert('No se encontró el teléfono del agente para WhatsApp.');
+    return;
+  }
+  const mensaje = encodeURIComponent(`Hola, estoy interesado en la propiedad ${propiedadActualEnDetalle.titulo || ''} (${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id || ''}). ${document.getElementById('contacto-mensaje')?.value || ''}`);
+  window.open(`https://wa.me/${telefono.startsWith('+') ? telefono.replace('+', '') : telefono}?text=${mensaje}`, '_blank');
+}
+
+function enviarPorEmail() {
+  if (!propiedadActualEnDetalle) return;
+  const email = propiedadActualEnDetalle.email_agente || propiedadActualEnDetalle.email || '';
+  if (!email) {
+    alert('No se encontró el correo del agente.');
+    return;
+  }
+  const asunto = encodeURIComponent(`Consulta por propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id || ''}`);
+  const cuerpo = encodeURIComponent(document.getElementById('contacto-mensaje')?.value || `Hola, estoy interesado en la propiedad ${propiedadActualEnDetalle.titulo || ''}.`);
+  window.location.href = `mailto:${email}?subject=${asunto}&body=${cuerpo}`;
 }
     
     
@@ -1948,249 +2088,570 @@ function obtenerTodasLasFotos(casa) {
 }
 
 function abrirVentanaDetalle(idPropiedad) {
-    document.getElementById('mi-modal-detalle').style.display = 'flex';
-    
-    // Buscamos el registro normalizado de la propiedad en el catálogo local
-    // usando cualquiera de las variantes de ID que puede traer el backend.
+    const modal = document.getElementById('mi-modal-detalle');
+    if (!modal) return;
+    modal.style.display = 'flex';
+
     const casa = propiedadesCombinadas.find(c => {
         const idActual = c.propiedad_id || c.id;
         return idActual && idActual.toString() === idPropiedad.toString();
     });
-    
-    console.log("DATOS REALES DE LA PROPIEDAD SELECCIONADA:", casa);
     if (!casa) return;
+    propiedadActualEnDetalle = casa;
 
     const cajaDetalleZillow = document.getElementById('contenedor-detalle-zillow');
     if (!cajaDetalleZillow) return;
 
-    cajaDetalleZillow.innerHTML = '';
-
-    // =========================================================================
-    // CORRECCIÓN DEFINITIVA: UNIMOS LA FOTO PRINCIPAL CON LAS 16 SECUNDARIAS
-    // =========================================================================
-    // =========================================================================
-    // EXTRACCIÓN CON PARSEO DE OBJETOS Y SIEMBRA DE ESPÍAS
-    // =========================================================================
-    let todasLasFotos = [];
-    
-    // 1. Añadimos la foto principal como primer elemento
-    if (casa.foto_principal) {
-        todasLasFotos.push(casa.foto_principal);
-    }
-    
-    // 2. Extraemos las fotos del arreglo 'imagenes_segundarias' leyendo su propiedad '.url'
-    const secundariasBackend = casa.imagenes_segundarias || [];
-    
-    // 🕵️ ESPÍA DE ENTRADA: Revisa cómo vienen estructurados los elementos dentro del Array del backend
-    console.log("🕵️ ESPÍA DETALLE - DATOS CRUDOS QUE RECIBE LA VENTANA:", {
-        id_propiedad: idPropiedad,
-        foto_principal_cruda: casa.foto_principal,
-        imagenes_segundarias_objeto: secundariasBackend,
-        es_arreglo: Array.isArray(secundariasBackend),
-        cantidad_elementos: secundariasBackend.length
-    });
-
-    if (Array.isArray(secundariasBackend)) {
-        secundariasBackend.forEach((item, index) => {
-            // Si viene como objeto {orden: X, url: "nombre"}, extraemos el texto de .url. Si viene como texto, lo dejamos tal cual.
-            let fotoId = (item && typeof item === 'object') ? item.url : item;
-            
-            // 🕵️ ESPÍA DE BUCLE: Audita el parseo de cada foto individual
-            console.log(`🕵️ ESPÍA BUCLE - Elemento [${index}]:`, {
-                dato_leido_del_backend: item,
-                tipo_de_dato: typeof item,
-                resultado_extraido_fotoId: fotoId
-            });
-
-            if (fotoId && fotoId !== casa.foto_principal) {
-                todasLasFotos.push(fotoId);
-            }
-        });
-    }
-
-    // Fallback de seguridad por si queda vacío
+    const todasLasFotos = obtenerTodasLasFotos(casa).filter(Boolean);
     if (todasLasFotos.length === 0) {
-        todasLasFotos = ["https://unsplash.com"];
+        todasLasFotos.push('https://unsplash.com');
     }
 
-    // 🕵️ ESPÍA DE SALIDA: El veredicto final antes de enviarlo a la pantalla estilo Zillow
-    console.log("🕵️ ESPÍA SALIDA - ARREGLO FINAL UNIFICADO ENVIADO AL COLLAGE:", {
-        id_propiedad: idPropiedad,
-        lista_final_urls: todasLasFotos,
-        total_fotos_enviadas: todasLasFotos.length
-    });
-    // =========================================================================
+    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : (casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : 'Consulte');
+    const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || 'Dirección no disponible');
+    const areaConstruida = casa.area_construida || casa.area || 0;
+    const areaTerreno = casa.area_terreno || casa.terreno || 0;
+    const estacionamientos = casa.estacionamientos || casa.parqueos || 0;
+    const anioConstruccion = casa.ano_construccion || casa.ano_cosntruccion || casa.anio_construccion || 'N/A';
+    const estadoPropiedad = casa.estado_propiedad || casa.estado || 'Disponible';
+    const tipoPropiedad = casa.tipo_propiedad || casa.tipo || 'No definido';
+    const subtipoPropiedad = casa.subtipo_propiedad || casa.subtipo || '';
+    const descripcion = casa.descripcion || casa.descripcion_larga || casa.descripcion_corta || '';
+    const fechaPublicacion = casa.fecha_publicacion || casa.fecha_publicada || casa.fecha || null;
+    const hasTour3D = casa.recorrido_3d && casa.recorrido_3d.url;
+    const chips = (casa.caracteristicas_extras || []).map(formatearCaracteristica).filter(Boolean);
 
-    // =========================================================================
-
-    if (!casa.precio && casa.precio_base) {
-        casa.precio = casa.precio_base;
-    }
-    const precioFormateado = casa.precio > 0 ? formatearPrecio(casa.precio, casa.moneda) : "Consulte";
-    const direccionReal = (casa.geo && casa.geo.direccion) ? casa.geo.direccion : (casa.direccion || "Dirección no disponible");
-    const areaReal = casa.area_construida || casa.area || "0";
-
-    let htmlCaracteristicas = '';
-    if (casa.caracteristicas_extras && casa.caracteristicas_extras.length) {
-        const chips = casa.caracteristicas_extras.map(formatearCaracteristica).filter(Boolean);
-        if (chips.length) {
-            htmlCaracteristicas = `<div class="bloque-seccion"><h4>Características</h4><div class="chips-caracteristicas">` +
-                chips.map(txt => `<span class="chip">${txt}</span>`).join('') +
-                `</div></div>`;
-        }
-    }
-
-    let htmlPromocion = '';
-    if (casa.promocion) {
-        const p = casa.promocion;
-        const etiqueta = p.tipo_promocion || 'Promoción vigente';
-        const vigencia = (p.fecha_inicio || p.fecha_fin)
-            ? `Vigente ${p.fecha_inicio || '-'} a ${p.fecha_fin || '-'}`
-            : 'Oferta activa en este anuncio';
-        htmlPromocion = `<div class="bloque-seccion bloque-promocion"><h4>¡¡¡ ${etiqueta} </h4><p>${vigencia}</p></div>`;
-    }
-
-    let htmlTour3d = '';
-    if (casa.recorrido_3d && casa.recorrido_3d.url) {
-        htmlTour3d = `<div class="bloque-seccion"><h4>Recorrido virtual 3D (${casa.recorrido_3d.proveedor || 'Interactivo'})</h4>` +
-            `<iframe src="${casa.recorrido_3d.url}" width="100%" height="360" style="border:none;border-radius:10px;" allowfullscreen></iframe></div>`;
-    }
-
-    let htmlHistorial = '';
-    if (casa.historial_precio && casa.historial_precio.length) {
-        htmlHistorial = `<div class="bloque-seccion"><h4>Historial de precio</h4><ul class="lista-historial">` +
-            casa.historial_precio.map(h => `<li><span>${h.fecha_cambio || ''}</span> <span>${h.precio_anterior || ''} -> ${h.precio_nuevo || ''}</span></li>`).join('') +
-            `</ul></div>`;
-    }
-
-    // REESTRUCTURACIÓN VERTICAL COMPLETA: Todo el contenido fluye hacia abajo
     cajaDetalleZillow.innerHTML = `
-        <!-- 1. El collage de fotos ocupa el ancho superior -->
-        ${construirCollageInicial(todasLasFotos, idPropiedad)}
-
-        <!-- 2. Botón de retorno debajo del collage -->
-        <div style="padding: 15px 20px 0 20px;">
-            <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()">Volver</button>
-        </div>
-
-        <!-- 3. Información principal (Precio, Título, Dirección) -->
-        <div class="cabecera-detalle" style="padding: 10px 20px;">
-            <h2>${precioFormateado}</h2>
-            <h3>${casa.titulo}</h3>
-            <p style="color: #666; margin: 5px 0 0 0; font-family: sans-serif;">${direccionReal}</p>
-        </div>
-
-        <!-- 4. Ficha técnica y descripción comercial -->
-        <div class="bloque-seccion">
-            <p class="datos-rapidos">
-                <b>${casa.habitaciones || 0}</b> hab &nbsp;|&nbsp;
-                <b>${casa.banos || casa.baños || 0}</b> baños &nbsp;|&nbsp;
-                <b>${casa.estacionamientos || 0}</b> estac &nbsp;|&nbsp;
-                <b>${areaReal}</b> m² construidos
-            </p>
-            <p class="descripcion-detalle">${casa.descripcion || ''}</p>
-        </div>
-
-        <!-- Secciones complementarias básicas -->
-        ${htmlCaracteristicas}
-        ${htmlPromocion}
-        ${htmlTour3d}
-        ${htmlHistorial}
-
-        <!-- 5. Información analítica y visualizaciones -->
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Valor de mercado estimado</h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px;">
-                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
-                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Valor estimado</p>
-                    <h5 id="zillow-estimado-valor" style="margin: 0; font-size: 20px; font-weight: 700;">$0</h5>
+        <div class="detalle-layout-wrapper">
+            <div class="detalle-header">
+                <div class="detalle-header-left">
+                    <button class="detalle-back-btn" onclick="cerrarVentanaDetalle()">← volver a buscar</button>
                 </div>
-                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
-                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Rango estimado</p>
-                    <h5 id="zillow-rango-ventas" style="margin: 0; font-size: 20px; font-weight: 700;">$0 - $0</h5>
+                <div class="detalle-header-center">
+                    <img src="logo.jpg" alt="Inmobiliaria en Surco" class="detalle-header-logo">
+                    <span>Inmobiliaria en Surco</span>
                 </div>
-                <div style="background: #f9f9f9; padding: 14px; border-radius: 8px; border: 1px solid #eee;">
-                    <p style="margin: 0 0 4px 0; font-size: 12px; color: #666;">Alquiler estimado</p>
-                    <h5 id="zillow-alquiler-estimado" style="margin: 0; font-size: 20px; font-weight: 700;">$0 /mo</h5>
+                <div class="detalle-header-right">
+                    <button id="detalle-favorito-btn" class="icono-header" onclick="toggleFavoritoDetalle('${casa.id || casa.propiedad_id}')" title="Favorito">♥</button>
+                    <button class="icono-header" onclick="compartirPropiedad('${casa.id || casa.propiedad_id}')" title="Compartir">⤴</button>
                 </div>
             </div>
-        </div>
 
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Historia del precio</h4>
-            <div style="width: 100%; height: 320px; margin-top: 15px;">
-                <canvas id="lienzoGraficoHistorial"></canvas>
+            <div class="detalle-main-grid">
+                <div class="detalle-columna-izq">
+                    <div class="detalle-section">
+                        ${construirCollageInicial(todasLasFotos, idPropiedad)}
+                    </div>
+
+                    <div class="detalle-section">
+                        <div class="detalle-resumen-grid">
+                            <div class="resumen-sinopsis">
+                                <h2 class="precio-destacado">${precioFormateado}</h2>
+                                <p class="direccion-detalle">${direccionReal}</p>
+                                <div class="indicadores-detalle">
+                                    <span class="indicador-chip">${casa.habitaciones || 0} dormitorios</span>
+                                    <span class="indicador-chip">${casa.banos || casa.baños || 0} baños</span>
+                                    <span class="indicador-chip">${areaConstruida} m²</span>
+                                </div>
+                            </div>
+                            <button class="boton-contacto-rapido" onclick="verContactoDesdeDetalle('${casa.telefono || ''}')">Agente de contacto</button>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Ficha técnica de la propiedad</h4>
+                        <div class="ficha-cuadricula">
+                            <div class="dato-ficha"><strong>Tipo</strong><span>${tipoPropiedad}</span></div>
+                            <div class="dato-ficha"><strong>Subtipo</strong><span>${subtipoPropiedad}</span></div>
+                            <div class="dato-ficha"><strong>Título</strong><span>${casa.titulo || 'Sin título'}</span></div>
+                            <div class="dato-ficha"><strong>Área terreno</strong><span>${areaTerreno} m²</span></div>
+                            <div class="dato-ficha"><strong>Área construida</strong><span>${areaConstruida} m²</span></div>
+                            <div class="dato-ficha"><strong>Estacionamientos</strong><span>${estacionamientos}</span></div>
+                            <div class="dato-ficha"><strong>Año construcción</strong><span>${anioConstruccion}</span></div>
+                            <div class="dato-ficha"><strong>Estado</strong><span>${estadoPropiedad}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Características</h4>
+                        <div class="chips-tags">
+                            ${chips.length > 0 ? chips.map(c => `<span class="chip">${c}</span>`).join('') : '<span style="color:#64748b;">No hay características disponibles.</span>'}
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Descripción</h4>
+                        <p class="detalle-texto">${descripcion}</p>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Métricas sociales y de tiempo</h4>
+                        <div class="metrica-horizontal">
+                            <div class="metric-card"><span>Días publicados</span><strong id="detalle-dias-publicados">0</strong></div>
+                            <div class="metric-card"><span>Me gusta</span><strong id="detalle-megusta-total">0</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Tiempo de viaje</h4>
+                        <div class="modulo-viaje">
+                            <div>
+                                <input type="text" id="detalle-viaje-destino" placeholder="Añadir un destino" />
+                                <div style="display:flex; gap:10px; margin-top:12px;">
+                                    <button class="boton-contacto-rapido" style="flex:1;" onclick="calcularTiempoViaje('transporte')">En transporte</button>
+                                    <button class="boton-contacto-rapido" style="flex:1;" onclick="calcularTiempoViaje('caminando')">Caminando</button>
+                                </div>
+                                <p id="detalle-viaje-result" style="margin-top: 12px; color:#334155; font-weight:700;"></p>
+                            </div>
+                            <div id="detalle-viaje-mapa" style="width:100%; min-height:260px; border-radius:16px; border:1px solid #e2e8f0; overflow:hidden;"></div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section tour-seccion">
+                        <h4>Tour con un agente local</h4>
+                        <p>Los agentes asociados a Inmobiliaria en Surco cierran un 60% más de ofertas que otros agentes inmobiliarios.</p>
+                        <p style="margin-top:12px;"><strong>⚠️</strong> Haga un recorrido personalizado por esta propiedad conectándose con un agente local que se anuncia en Inmobiliaria en Surco.</p>
+                        <div class="botones-fechas" id="detalle-tour-fechas"></div>
+                        <select id="detalle-tour-hora" style="margin-top:15px;"></select>
+                        <div class="tour-cta">
+                            <button class="primary" onclick="abrirModalConfirmacionTour()">Continuar</button>
+                        </div>
+                    </div>
+
+                    ${hasTour3D ? `<div class="detalle-section" id="detalle-tour-3d-seccion"><h4>Tour Virtual 3D</h4><div class="tour-3d-preview"><p>Revisa el recorrido virtual integrado en la misma pantalla.</p><button class="boton-contacto-rapido" style="width:auto;" onclick="iniciarTour3D('${casa.recorrido_3d.url}')">Iniciar Recorrido Virtual</button></div><div id="detalle-tour-3d-contenedor" style="margin-top:16px; display:none;"></div></div>` : ''}
+
+                    <div class="detalle-section">
+                        <h4>Valor de mercado estimado</h4>
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;">
+                            <div class="dato-ficha"><strong>Zestimate</strong><span id="zillow-estimado-valor">$0</span></div>
+                            <div class="dato-ficha"><strong>Rango de ventas estimado</strong><span id="zillow-rango-ventas">$0 - $0</span></div>
+                            <div class="dato-ficha"><strong>Alquiler estimado</strong><span id="zillow-alquiler-estimado">$0 /mes</span></div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Historial valor de mercado estimado</h4>
+                        <div style="width:100%; height:320px;"><canvas id="lienzoGraficoHistorial"></canvas></div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Historia de precios</h4>
+                        <div style="overflow-x:auto; margin-top:14px;"><table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr style="background:#f5f5f5;"><th style="padding:10px;">Fecha</th><th style="padding:10px;">Evento</th><th style="padding:10px;">Precio</th></tr></thead><tbody id="tabla-historial-precios-body"></tbody></table></div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Calculadora de capacidad de compra</h4>
+                        <div class="simulador-capacidad">
+                            <div class="simulador-formulario">
+                                <input type="number" id="capacidad-cuota-inicial" placeholder="Cuota inicial ($)" value="5000" min="0" oninput="evaluarCapacidadCompra()">
+                                <input type="number" id="capacidad-cuota-mensual" placeholder="Cuota mensual ($)" value="500" min="0" oninput="evaluarCapacidadCompra()">
+                                <input type="number" id="capacidad-ingreso-anual" placeholder="Ingreso anual ($)" value="30000" min="0" style="grid-column: span 2;" oninput="evaluarCapacidadCompra()">
+                            </div>
+                            <div class="resultado-capacidad" id="capacidad-resultado">Ingrese sus datos para conocer su capacidad de pago.</div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Puntos de interés cercanos</h4>
+                        <div class="bloque-pois">
+                            <div class="poi-card"><h5>Escuelas cercanas</h5><div id="detalle-pois-escuelas"></div></div>
+                            <div class="poi-card"><h5>Bodega, Minimarket Panaderia</h5><div id="detalle-pois-bodega"></div></div>
+                            <div class="poi-card"><h5>Lavanderias</h5><div id="detalle-pois-lavanderia"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="detalle-section">
+                        <h4>Propiedades similares</h4>
+                        <div class="similares-carrusel">
+                            <div class="similares-nav"><button onclick="scrollSimilares(-1)">‹</button><button onclick="scrollSimilares(1)">›</button></div>
+                            <div id="similares-contenedor" class="similares-contenedor"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detalle-columna-der">
+                    <div class="detalle-panel-sticky">
+                        <button class="btn-detalle-principal" onclick="abrirModalConfirmacionTour()">Solicitar un Tour</button>
+                        <button class="btn-detalle-secundario" onclick="verContactoDesdeDetalle('${casa.telefono || ''}')">Agente de contacto</button>
+                        <div style="margin-top:16px;">
+                            <h4 style="margin:0 0 10px 0;">En resumen</h4>
+                            <p style="margin:0; color:#475569; font-size:14px; line-height:1.6;">${tipoPropiedad} · ${subtipoPropiedad || 'Sin subtipo'} · ${areaConstruida} m² construidos</p>
+                            <p style="margin:12px 0 0 0; font-size:13px; color:#64748b;">${direccionReal}</p>
+                        </div>
+                        <div style="margin-top:18px; display:flex; gap:10px; align-items:center;">
+                            <span style="font-size:14px; color:#475569;">Publicado:</span>
+                            <strong id="detalle-dias-publicados-sidebar">0</strong>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div style="overflow-x:auto; margin-top:20px;">
-                <table style="width:100%; border-collapse: collapse; font-size:13px;">
-                    <thead><tr style="background:#f5f5f5;"><th style="padding:10px;">Fecha</th><th style="padding:10px;">Evento</th><th style="padding:10px;">Precio</th></tr></thead>
-                    <tbody id="tabla-historial-precios-body"></tbody>
-                </table>
-            </div>
         </div>
-
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Comparables y propiedades cercanas</h4>
-            <div style="overflow-x:auto; margin-top: 15px;">
-                <table style="width:100%; border-collapse: collapse; font-size:13px;">
-                    <thead><tr style="background:#f5f5f5;"><th style="padding:10px;">ID</th><th style="padding:10px;">Propiedad</th><th style="padding:10px;">Precio</th><th style="padding:10px;">Área</th><th style="padding:10px;">Dif Precio</th><th style="padding:10px;">Dif Área</th><th style="padding:10px;">Distancia</th><th style="padding:10px;">Mapa</th></tr></thead>
-                    <tbody id="tabla-comparables-body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Ubicación y entorno</h4>
-            <p id="barrio-texto-direccion" style="font-size: 13px; color: #555; margin-bottom: 12px;"></p>
-            <div id="contenedor-mapa-detalle" style="width:100%; height:300px; border-radius:8px; overflow:hidden; border:1px solid #ddd;">
-                <iframe id="iframe-mapa-barrio" src="about:blank" style="border:0;width:100%;height:100%;" allowfullscreen="" loading="lazy"></iframe>
-            </div>
-        </div>
-
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Servicios cercanos</h4>
-            <div id="contenedor-servicios-cercanos" style="display:flex; overflow-x:auto; gap:15px; padding:10px 0;"></div>
-        </div>
-
-        <div class="bloque-seccion" style="padding: 20px;">
-            <h4 style="margin-top: 0;">Otras propiedades cercanas</h4>
-            <div id="contenedor-propiedades-cercanas" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-top: 10px;"></div>
-        </div>
-
-        <div class="bloque-seccion">
-            <button class="btn-ver-contacto" style="max-width:320px;" onclick="verContactoDesdeDetalle('${casa.telefono}')">Ver datos del contacto</button>
-        </div>
-
-        <div class="bloque-seccion bloque-visita">
-            <h4>Agendar una visita</h4>
-            <div class="fila-formulario">
-                <input type="date" id="visita-fecha">
-                <input type="time" id="visita-hora">
-            </div>
-            <select id="visita-tipo" class="select-filtro" style="width:100%; margin-bottom:10px; border-radius:8px;">
-                <option value="presencial">Visita presencial</option>
-                <option value="virtual">Visita virtual</option>
-            </select>
-            <button class="btn-continuar" onclick="agendarVisita('${casa.id || idPropiedad}', '${casa.anuncio_id}')">Solicitar visita</button>
-            <p id="visita-state" style="font-size:12px; color:#666;"></p>
-        </div>
-
-        <div id="seccion-formulario-agente" class="bloque-analitico-contenedor"></div>
     `;
 
-    // 6. EJECUCIÓN POST-RENDER: Rellenamos las cajas de arriba mediante las funciones analíticas
-    mostrarAnalisisComparativo(casa);
-    mostrarPropiedadesCercanas(casa);
-    mostrarDatosYCaracteristicasFicha(casa);
+    actualizarIconoFavoritoDetalle(casa);
+    actualizarDiasYMeGusta(casa, fechaPublicacion);
     configurarFormularioContacto(casa);
+    llenarHorasTour();
+    generarSelectorFechasTour();
     calcularValorMercadoEstimado(casa);
     mostrarGraficoHistorialPrecios(casa);
     mostrarTablaHistorialPrecios(casa);
     mostrarMapaBarrioVolatil(casa);
     mostrarConectividadYServicios(casa);
+    mostrarPropiedadesSimilares(casa);
+    mostrarPOIs(casa);
+    inicializarCalculadoraCompra(casa);
+    limpiarRecorridoTiempo();
 }
-       
-    
+
+function toggleFavoritoDetalle(idPropiedad) {
+    if (!usuarioAutenticado) { abrirVentanaLogin(); return; }
+    alternarFavoritoReal(idPropiedad);
+}
+
+function compartirPropiedad(idPropiedad) {
+    const casa = propiedadesCombinadas.find(c => (c.propiedad_id || c.id).toString() === idPropiedad.toString());
+    if (!casa) return;
+    const url = window.location.href.split('#')[0] + `#propiedad-${idPropiedad}`;
+    if (navigator.share) {
+        navigator.share({ title: casa.titulo || 'Propiedad Inmobiliaria', text: `Mira esta propiedad: ${casa.titulo}`, url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => alert('Enlace copiado. Comparte la propiedad desde tu portapapeles.'));
+    }
+}
+
+function actualizarIconoFavoritoDetalle(casa) {
+    const btn = document.getElementById('detalle-favorito-btn');
+    if (!btn) return;
+    const esFavorito = favoritosUsuario.includes((casa.id || casa.propiedad_id).toString());
+    btn.style.color = esFavorito ? '#d92323' : '#002E50';
+}
+
+function calcularDiasPublicados(fechaPublicacion) {
+    if (!fechaPublicacion) return 'N/A';
+    const hoy = new Date();
+    const pub = new Date(fechaPublicacion);
+    if (isNaN(pub)) return 'N/A';
+    const diff = Math.floor((hoy - pub) / (1000 * 60 * 60 * 24));
+    return diff >= 0 ? diff : 0;
+}
+
+async function consultarLikesTotales(propiedad) {
+    const idPropiedad = propiedad.id || propiedad.propiedad_id;
+    if (!idPropiedad) return 0;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('favorito')
+            .select('id', { count: 'exact', head: true })
+            .eq('propiedad_id_fk', idPropiedad);
+        if (error) return 0;
+        return data && data.length ? data.length : 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
+async function actualizarDiasYMeGusta(casa, fechaPublicacion) {
+    const dias = calcularDiasPublicados(fechaPublicacion);
+    const likes = await consultarLikesTotales(casa);
+    const elementDias = document.getElementById('detalle-dias-publicados');
+    const elementDiasSidebar = document.getElementById('detalle-dias-publicados-sidebar');
+    const elementLikes = document.getElementById('detalle-megusta-total');
+    if (elementDias) elementDias.textContent = dias.toString();
+    if (elementDiasSidebar) elementDiasSidebar.textContent = `${dias} días`; 
+    if (elementLikes) elementLikes.textContent = likes.toString();
+}
+
+function geolocalizarDestino(destino) {
+    if (!destino) return Promise.resolve(null);
+    return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destino)}`)
+        .then(res => res.json())
+        .then(data => data && data.length ? data[0] : null)
+        .catch(() => null);
+}
+
+function calcularTiempoViaje(modo) {
+    const destino = document.getElementById('detalle-viaje-destino')?.value?.trim();
+    const resultado = document.getElementById('detalle-viaje-result');
+    const mapaContenedor = document.getElementById('detalle-viaje-mapa');
+    if (!destino || !propiedadActualEnDetalle) {
+        if (resultado) resultado.textContent = 'Ingresa un destino válido.';
+        return;
+    }
+    const origen = propiedadActualEnDetalle.geo;
+    if (!origen || !origen.latitud || !origen.longitud) {
+        if (resultado) resultado.textContent = 'Ubicación de la propiedad no disponible.';
+        return;
+    }
+    resultado.textContent = 'Calculando...';
+    geolocalizarDestino(destino).then(datoDestino => {
+        if (!datoDestino) {
+            resultado.textContent = 'No se encontró el destino.';
+            return;
+        }
+        const latInicio = parseFloat(origen.latitud);
+        const lonInicio = parseFloat(origen.longitud);
+        const latFin = parseFloat(datoDestino.lat);
+        const lonFin = parseFloat(datoDestino.lon);
+        const distanciaKm = haversineDistancia(latInicio, lonInicio, latFin, lonFin);
+        const velocidad = modo === 'caminando' ? 5 : 50;
+        const horas = distanciaKm / velocidad;
+        const mensaje = horas > 5 ? 'Demasiado lejos + 5 horas' : `${horas < 1 ? Math.round(horas * 60) + ' mins' : horas.toFixed(1) + ' hrs'} aprox`;
+        if (resultado) resultado.textContent = mensaje;
+        if (mapaContenedor) renderizarRutaEnMapa(latInicio, lonInicio, latFin, lonFin);
+    });
+}
+
+function haversineDistancia(lat1, lon1, lat2, lon2) {
+    const rad = x => x * Math.PI / 180;
+    const R = 6371;
+    const dLat = rad(lat2 - lat1);
+    const dLon = rad(lon2 - lon1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(rad(lat1)) * Math.cos(rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function renderizarRutaEnMapa(lat1, lon1, lat2, lon2) {
+    const contenedor = document.getElementById('detalle-viaje-mapa');
+    if (!contenedor) return;
+    contenedor.innerHTML = '<div id="detalle-viaje-mapa-interno" style="width:100%; height:100%;"></div>';
+    const mapaId = 'detalle-viaje-mapa-interno';
+    setTimeout(() => {
+        if (detalleRutaMapa) { detalleRutaMapa.remove(); detalleRutaMapa = null; }
+        detalleRutaMapa = L.map(mapaId, { attributionControl: false, zoomControl: false }).setView([lat1, lon1], 12);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '' }).addTo(detalleRutaMapa);
+        const origenMarker = L.marker([lat1, lon1]).addTo(detalleRutaMapa).bindPopup('Propiedad');
+        const destinoMarker = L.marker([lat2, lon2]).addTo(detalleRutaMapa).bindPopup('Destino');
+        const linea = L.polyline([[lat1, lon1], [lat2, lon2]], { color: '#006aff', weight: 4, opacity: 0.8 }).addTo(detalleRutaMapa);
+        const bounds = L.latLngBounds([[lat1, lon1], [lat2, lon2]]);
+        detalleRutaMapa.fitBounds(bounds.pad(0.16));
+    });
+}
+
+function generarSelectorFechasTour() {
+    const contenedor = document.getElementById('detalle-tour-fechas');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
+    const hoy = new Date();
+    for (let i = 1; i <= 4; i++) {
+        const dia = new Date(hoy);
+        dia.setDate(dia.getDate() + i);
+        const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+        const texto = `${dia.toLocaleDateString('es-PE', { weekday: 'short' })} ${dia.getDate()} de ${dia.toLocaleDateString('es-PE', { month: 'long' })}`;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'date-card';
+        btn.textContent = texto;
+        btn.onclick = () => {
+            tourFechaSeleccionadaIndex = i;
+            document.querySelectorAll('.date-card').forEach(el => el.classList.remove('selected'));
+            btn.classList.add('selected');
+        };
+        if (i === 1) btn.classList.add('selected');
+        contenedor.appendChild(btn);
+    }
+}
+
+function llenarHorasTour() {
+    const select = document.getElementById('detalle-tour-hora');
+    if (!select) return;
+    select.innerHTML = '';
+    const horas = [11,12,13,14,15,16,17,18,19];
+    horas.forEach(h => {
+        const opt = document.createElement('option');
+        const suffix = h < 12 ? 'am' : 'pm';
+        const horaTexto = `${h <= 12 ? h : h-12}:00 ${suffix}`;
+        opt.value = horaTexto;
+        opt.textContent = horaTexto;
+        select.appendChild(opt);
+    });
+}
+
+function abrirModalConfirmacionTour() {
+    if (!usuarioAutenticado) { abrirVentanaLogin(); return; }
+    const modal = document.createElement('div');
+    modal.id = 'modal-confirmacion-tour';
+    modal.className = 'pantalla-bloqueo modal-tour-confirmacion';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="caja-login">
+            <button class="btn-cerrar" onclick="cerrarModalTourConfirmacion()">×</button>
+            <h3>Confirmar Tour</h3>
+            <input id="tour-nombre" placeholder="Nombre" type="text" required>
+            <input id="tour-telefono" placeholder="Teléfono" type="text" required>
+            <input id="tour-email" placeholder="Correo electrónico" type="email" required>
+            <select id="tour-hora-select">
+                ${Array.from(document.getElementById('detalle-tour-hora').options).map(o => `<option value="${o.value}">${o.value}</option>`).join('')}
+            </select>
+            <textarea id="tour-mensaje" placeholder="Comentarios adicionales"></textarea>
+            <button onclick="confirmarTourAgendado()">Confirmar</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    const sessionEmail = correoUsuarioLogueado || '';
+    const nombre = (window.usuarioLogueado && window.usuarioLogueado.user_metadata && window.usuarioLogueado.user_metadata.full_name) || '';
+    document.getElementById('tour-email').value = sessionEmail;
+    document.getElementById('tour-nombre').value = nombre;
+}
+
+function cerrarModalTourConfirmacion() {
+    const modal = document.getElementById('modal-confirmacion-tour');
+    if (modal) modal.remove();
+}
+
+async function confirmarTourAgendado() {
+    const nombre = document.getElementById('tour-nombre')?.value.trim();
+    const telefono = document.getElementById('tour-telefono')?.value.trim();
+    const email = document.getElementById('tour-email')?.value.trim();
+    const hora = document.getElementById('tour-hora-select')?.value;
+    const mensaje = document.getElementById('tour-mensaje')?.value.trim();
+    if (!nombre || !telefono || !email || !hora || !propiedadActualEnDetalle) {
+        alert('Completa los datos obligatorios antes de confirmar.');
+        return;
+    }
+    const fecha = new Date();
+    fecha.setDate(fecha.getDate() + tourFechaSeleccionadaIndex);
+    const datos = {
+        accion: 'agendar_tour',
+        propiedad_id: propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id,
+        anuncio_id: propiedadActualEnDetalle.anuncio_id || '',
+        nombre, telefono, email, hora, fecha_tour: fecha.toISOString().split('T')[0], mensaje,
+        destino: propiedadActualEnDetalle.direccion || ''
+    };
+    try {
+        const resp = await fetch(urlMiScriptGoogle, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(datos) });
+        const data = await resp.json();
+        if (data && data.success) {
+            alert('Tour agendado correctamente. El agente recibirá la notificación.');
+            cerrarModalTourConfirmacion();
+        } else {
+            alert('No se pudo agendar el tour. Intenta nuevamente.');
+        }
+    } catch (err) {
+        alert('Error al conectar con el servidor de agendamiento.');
+    }
+}
+
+function iniciarTour3D(urlTour) {
+    const contenedor = document.getElementById('detalle-tour-3d-contenedor');
+    if (!contenedor) return;
+    contenedor.innerHTML = `
+        <div class="tour-iframe">
+            <div style="display:flex; justify-content:flex-end; padding:12px;"><button class="boton-contacto-rapido outline" onclick="cerrarTour3D()">Cerrar Recorrido</button></div>
+            <iframe src="${urlTour}" width="100%" height="100%" style="border:0;" allowfullscreen="true"></iframe>
+        </div>
+    `;
+    contenedor.style.display = 'block';
+}
+
+function cerrarTour3D() {
+    const contenedor = document.getElementById('detalle-tour-3d-contenedor');
+    if (contenedor) {
+        contenedor.style.display = 'none';
+        contenedor.innerHTML = '';
+    }
+}
+
+function mostrarPropiedadesSimilares(propiedad) {
+    const contenedor = document.getElementById('similares-contenedor');
+    if (!contenedor) return;
+    contenedor.innerHTML = '';
+
+    const tipo = propiedad.tipo_propiedad || propiedad.tipo || '';
+    const candidatos = propiedadesCombinadas
+        .filter(p => (p.propiedad_id || p.id).toString() !== (propiedad.propiedad_id || propiedad.id).toString())
+        .filter(p => (p.tipo_propiedad || p.tipo || '').toLowerCase() === tipo.toLowerCase())
+        .map(p => {
+            const diffArea = Math.abs((p.area_construida || p.area || 0) - (propiedad.area_construida || propiedad.area || 0));
+            const diffTerreno = Math.abs((p.area_terreno || p.terreno || 0) - (propiedad.area_terreno || propiedad.terreno || 0));
+            return { ...p, score: diffArea + diffTerreno };
+        })
+        .sort((a,b) => a.score - b.score)
+        .slice(0, 6);
+
+    if (candidatos.length === 0) {
+        contenedor.innerHTML = '<div style="padding: 14px; color:#64748b;">No hay propiedades similares disponibles.</div>';
+        return;
+    }
+
+    candidatos.forEach(p => {
+        const imageUrl = (p.foto_principal || (p.imagenes_segundarias && p.imagenes_segundarias[0]) || 'https://unsplash.com');
+        const precio = p.precio > 0 ? formatearPrecio(p.precio, p.moneda) : 'Consultar';
+        const card = document.createElement('div');
+        card.className = 'similares-card';
+        card.innerHTML = `
+            <img src="${imageUrl.startsWith('http') ? imageUrl : construirUrlImagen(imageUrl)}" alt="Propiedad similar">
+            <div class="similares-card-body">
+                <h5>${precio}</h5>
+                <p>${p.habitaciones || 0} hab · ${p.banos || p.baños || 0} baños · ${p.area_construida || p.area || 0} m²</p>
+                <button class="btn-detalle-secundario" style="width:100%; margin-top:10px;" onclick="abrirVentanaDetalle('${p.id || p.propiedad_id || p.anuncio_id}')">Ver</button>
+            </div>
+        `;
+        contenedor.appendChild(card);
+    });
+}
+
+function scrollSimilares(direccion) {
+    const contenedor = document.getElementById('similares-contenedor');
+    if (!contenedor) return;
+    contenedor.scrollBy({ left: direccion * 260, behavior: 'smooth' });
+}
+
+function evaluarCapacidadCompra() {
+    const cuotaInicial = parseFloat(document.getElementById('capacidad-cuota-inicial')?.value) || 0;
+    const cuotaMensual = parseFloat(document.getElementById('capacidad-cuota-mensual')?.value) || 0;
+    const ingresoAnual = parseFloat(document.getElementById('capacidad-ingreso-anual')?.value) || 0;
+    const resultado = document.getElementById('capacidad-resultado');
+    if (!resultado) return;
+    const ingresoMensual = ingresoAnual / 12;
+    const limite = ingresoMensual * 0.3;
+    if (cuotaMensual <= limite && ingresoAnual > 0) {
+        resultado.textContent = 'Usted podría adquirir esta propiedad con estos valores aproximados';
+        resultado.style.color = '#1a8a3c';
+    } else {
+        resultado.textContent = 'Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor';
+        resultado.style.color = '#d92323';
+    }
+}
+
+function mostrarPOIs(propiedad) {
+    const escuelas = document.getElementById('detalle-pois-escuelas');
+    const bodegas = document.getElementById('detalle-pois-bodega');
+    const lavanderias = document.getElementById('detalle-pois-lavanderia');
+    if (escuelas) escuelas.innerHTML = '';
+    if (bodegas) bodegas.innerHTML = '';
+    if (lavanderias) lavanderias.innerHTML = '';
+
+    const lista = propiedad.comparables || [];
+    const filtroObjeto = (texto) => lista.filter(item => (item.titulo || '').toLowerCase().includes(texto));
+    const mostrar = (listaItems, contenedor, etiqueta) => {
+        if (!contenedor) return;
+        if (!listaItems.length) {
+            contenedor.innerHTML = '<p style="color:#64748b;">No hay registros.</p>';
+            return;
+        }
+        contenedor.innerHTML = listaItems.slice(0,3).map(item => {
+            const distancia = item.distancia_km ? `${parseFloat(item.distancia_km).toFixed(2)} km` : 'N/D';
+            return `<p><strong>${item.titulo || item.nombre || etiqueta}</strong><br><small style="color:#475569;">${distancia}</small></p>`;
+        }).join('');
+    };
+    mostrar(filtroObjeto('escuela'), escuelas, 'Escuela');
+    mostrar(filtroObjeto('bodega').concat(filtroObjeto('panader')).slice(0,3), bodegas, 'Bodega');
+    mostrar(filtroObjeto('lavander'), lavanderias, 'Lavandería');
+}
+
+function inicializarCalculadoraCompra(propiedad) {
+    evaluarCapacidadCompra();
+}
+
+function limpiarRecorridoTiempo() {
+    const resultado = document.getElementById('detalle-viaje-result');
+    const mapaCont = document.getElementById('detalle-viaje-mapa');
+    if (resultado) resultado.textContent = '';
+    if (mapaCont) mapaCont.innerHTML = '';
+}
 
 function cerrarVentanaDetalle() {
     // Apagamos la gran pantalla superpuesta completa
