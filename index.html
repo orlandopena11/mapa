@@ -23,7 +23,7 @@
             --gris-borde:#e2e8f0;
             --rojo-alerta:#d92323;
         }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); overflow: hidden; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); overflow: hidden; font-size: 16px; line-height: 1.6; }
         body { display: flex; flex-direction: column; height: 100vh; }
 
         /* =========================================================
@@ -150,7 +150,10 @@
         .btn-ver-contacto { width: 100%; background: #ffffff; color: var(--azul-zillow); border: 1px solid var(--azul-zillow); padding: 10px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s; }
         .btn-ver-contacto:hover { background: #f0f6ff; }
 
-        .pantalla-bloqueo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; justify-content: center; align-items: center; }
+        .pantalla-bloqueo { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.55); z-index: 11000; justify-content: center; align-items: center; }
+        #mi-modal-detalle { z-index: 10500; }
+        #mi-modal-galeria { z-index: 10600; }
+        #mi-modal-login { z-index: 11500; }
         .caja-login { background: white; padding: 30px; width: 90%; max-width: 340px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); position: relative; text-align: center; }
         .btn-cerrar { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666; }
 
@@ -171,32 +174,32 @@
         .cabecera-detalle p { margin: 6px 0 0 0; color: #666; font-size: 14px; }
 
         /* COLLAGE INICIAL (2da pantalla): 1 grande a la izquierda + grid 2x2 a la derecha */
-        .collage-detalle { position: relative; display: flex; gap: 8px; height: 440px; padding: 0 20px; }
-        .collage-principal { flex: 1.3; border-radius: 10px; overflow: hidden; cursor: pointer; }
+        .collage-detalle { position: relative; display: flex; gap: 10px; height: 460px; padding: 0 20px; min-height: 420px; box-sizing: border-box; }
+        .collage-principal, .collage-secundario, .collage-mini { min-height: 0; }
+        .collage-principal { flex: 1.4; border-radius: 16px; overflow: hidden; cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
         .collage-principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
-        .collage-mini { border-radius: 8px; overflow: hidden; cursor: pointer; }
+        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+        .collage-mini { border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-        /* NUEVO BOTÓN ESTILO ZILLOW: Letras blancas, independiente abajo a la derecha */
         .btn-zillow-ver-mas {
             position: absolute;
-            bottom: 16px;
-            right: 36px;
-            background-color: rgba(0, 0, 0, 0.75);
+            bottom: 18px;
+            right: 28px;
+            background-color: rgba(0, 46, 80, 0.95);
             color: #ffffff;
-            border: 1px solid #ffffff;
-            padding: 10px 18px;
-            border-radius: 6px;
-            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.85);
+            padding: 14px 24px;
+            border-radius: 999px;
+            font-weight: 800;
             font-size: 14px;
+            min-width: 220px;
+            white-space: nowrap;
             cursor: pointer;
-            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+            box-shadow: 0px 8px 18px rgba(0,0,0,0.22);
             z-index: 10;
-            transition: background 0.2s;
+            transition: background 0.2s ease;
         }
-        .btn-zillow-ver-mas:hover { background-color: rgba(0, 0, 0, 0.95); }
-
+        .btn-zillow-ver-mas:hover { background-color: rgba(0, 46, 80, 1); }
 
         /* GALERÍA ASIMÉTRICA (3ra pantalla): 1 grande, 2 medianas, 1 grande, 2 medianas... */
         .galeria-asimetrica { padding: 0; }
@@ -237,19 +240,27 @@
 
         /* ====================== NUEVOS ESTILOS PARA VISTA DE DETALLE ====================== */
         .detalle-layout-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
-        .detalle-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid #e2e8e0; padding-bottom: 16px; position: sticky; top: 0; background: #f6f6f9; z-index: 30; }
-        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 10px; }
-        .detalle-back-btn { border: none; background: none; color: #006aff; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-        .detalle-header-logo { width: 24px; height: 24px; object-fit: contain; border-radius: 6px; }
-        .detalle-header-center span { font-size: 14px; font-weight: 800; color: #002E50; }
-        .icono-header { width: 40px; height: 40px; border-radius: 12px; border: 1px solid transparent; background: #ffffff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #002E50; font-size: 18px; transition: transform 0.2s ease, border-color 0.2s ease; }
-        .icono-header:hover { transform: scale(1.05); border-color: #d1d5db; }
-        .detalle-main-grid { display: grid; grid-template-columns: 1.9fr 0.9fr; gap: 24px; width: 100%; min-height: 0; }
+        .detalle-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #e2e8e0; padding: 22px 20px 18px; position: sticky; top: 0; background: #f6f6f9; z-index: 40; }
+        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 12px; }
+        .detalle-back-btn { border: none; background: none; color: #002E50; font-size: 20px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; }
+        .detalle-header-logo { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; }
+        .detalle-header-center span { font-size: 22px; font-weight: 900; color: #002E50; line-height: 1.1; }
+        .detalle-accion-btn { border-radius: 14px; padding: 12px 18px; border: 1px solid transparent; background: #ffffff; display: inline-flex; align-items: center; gap: 8px; color: #002E50; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
+        .detalle-accion-btn:hover { transform: translateY(-1px); border-color: #d1d5db; background: #f8fafc; }
+        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 12px 20px 14px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 76px; z-index: 35; }
+        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 15px; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.08); }
+        .detalle-main-grid { display: grid; grid-template-columns: 2.2fr 0.85fr; gap: 26px; width: 100%; min-height: 0; }
         @media (max-width: 1080px) { .detalle-main-grid { grid-template-columns: 1fr; } .detalle-columna-der { position: static; top: auto; } }
         .detalle-columna-izq { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        .detalle-columna-der { position: sticky; top: 16px; align-self: flex-start; max-height: calc(100vh - 64px); }
-        .detalle-panel-sticky { display: flex; flex-direction: column; gap: 14px; padding: 20px; width: 100%; border-radius: 18px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 8px 24px rgba(15,23,42,0.06); }
-        .btn-detalle-principal, .btn-detalle-secundario { width: 100%; border-radius: 14px; padding: 14px 18px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; }
+        .detalle-columna-der { position: sticky; top: 20px; align-self: flex-start; max-height: calc(100vh - 40px); }
+        .detalle-panel-sticky { display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 24px; width: 100%; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 18px 42px rgba(15,23,42,0.08); }
+        .btn-detalle-principal, .btn-detalle-secundario { width: 100%; border-radius: 18px; padding: 16px 22px; border: none; font-size: 16px; font-weight: 900; cursor: pointer; }
+        .btn-detalle-principal { background: #006aff; color: #ffffff; }
+        .btn-detalle-secundario { background: #f1f5f9; color: #002E50; border: 1px solid #cbd5e1; }
+        .similares-card { min-width: 240px; max-width: 240px; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; background: white; box-shadow: 0 8px 30px rgba(15,23,42,0.06); cursor: pointer; transition: transform 0.2s ease; }
+        .similares-card:hover { transform: translateY(-2px); }
+        .similares-nav { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 1; }
         .btn-detalle-principal { background: #006aff; color: #ffffff; }
         .btn-detalle-secundario { background: #f8fafc; color: #002E50; border: 1px solid #cbd5e1; }
         .detalle-section { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 22px; box-shadow: 0 8px 20px rgba(15,23,42,0.04); }
@@ -2021,7 +2032,7 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
     html += `
         <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-            Ver las ${total} fotos
+            ver todas las ${total} fotos
         </button>
     `;
 
@@ -2132,9 +2143,17 @@ function abrirVentanaDetalle(idPropiedad) {
                     <span>Inmobiliaria en Surco</span>
                 </div>
                 <div class="detalle-header-right">
-                    <button id="detalle-favorito-btn" class="icono-header" onclick="toggleFavoritoDetalle('${casa.id || casa.propiedad_id}')" title="Favorito">♥</button>
-                    <button class="icono-header" onclick="compartirPropiedad('${casa.id || casa.propiedad_id}')" title="Compartir">⤴</button>
+                    <button id="detalle-favorito-btn" class="detalle-accion-btn" onclick="toggleFavoritoDetalle('${casa.id || casa.propiedad_id}')" title="Me gusta">Me gusta ♥</button>
+                    <button class="detalle-accion-btn" onclick="compartirPropiedad('${casa.id || casa.propiedad_id}')" title="Compartir">Compartir ⤴</button>
                 </div>
+            </div>
+
+            <div class="detalle-nav-spy">
+                <button type="button" data-target="seccion-resumen">Resumen</button>
+                <button type="button" data-target="seccion-datos-caracteristicas">Datos y características</button>
+                <button type="button" data-target="seccion-valor-mercado">Valor de mercado</button>
+                <button type="button" data-target="seccion-calculadora-pago">Calculadora de pago</button>
+                <button type="button" data-target="seccion-barrio">Barrio</button>
             </div>
 
             <div class="detalle-main-grid">
@@ -2143,7 +2162,7 @@ function abrirVentanaDetalle(idPropiedad) {
                         ${construirCollageInicial(todasLasFotos, idPropiedad)}
                     </div>
 
-                    <div class="detalle-section">
+                    <div class="detalle-section" id="seccion-resumen">
                         <div class="detalle-resumen-grid">
                             <div class="resumen-sinopsis">
                                 <h2 class="precio-destacado">${precioFormateado}</h2>
@@ -2158,7 +2177,7 @@ function abrirVentanaDetalle(idPropiedad) {
                         </div>
                     </div>
 
-                    <div class="detalle-section">
+                    <div class="detalle-section" id="seccion-datos-caracteristicas">
                         <h4>Ficha técnica de la propiedad</h4>
                         <div class="ficha-cuadricula">
                             <div class="dato-ficha"><strong>Tipo</strong><span>${tipoPropiedad}</span></div>
@@ -2220,7 +2239,7 @@ function abrirVentanaDetalle(idPropiedad) {
 
                     ${hasTour3D ? `<div class="detalle-section" id="detalle-tour-3d-seccion"><h4>Tour Virtual 3D</h4><div class="tour-3d-preview"><p>Revisa el recorrido virtual integrado en la misma pantalla.</p><button class="boton-contacto-rapido" style="width:auto;" onclick="iniciarTour3D('${casa.recorrido_3d.url}')">Iniciar Recorrido Virtual</button></div><div id="detalle-tour-3d-contenedor" style="margin-top:16px; display:none;"></div></div>` : ''}
 
-                    <div class="detalle-section">
+                    <div class="detalle-section" id="seccion-valor-mercado">
                         <h4>Valor de mercado estimado</h4>
                         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;">
                             <div class="dato-ficha"><strong>Zestimate</strong><span id="zillow-estimado-valor">$0</span></div>
@@ -2239,15 +2258,25 @@ function abrirVentanaDetalle(idPropiedad) {
                         <div style="overflow-x:auto; margin-top:14px;"><table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr style="background:#f5f5f5;"><th style="padding:10px;">Fecha</th><th style="padding:10px;">Evento</th><th style="padding:10px;">Precio</th></tr></thead><tbody id="tabla-historial-precios-body"></tbody></table></div>
                     </div>
 
-                    <div class="detalle-section">
+                    <div class="detalle-section" id="seccion-calculadora-pago">
                         <h4>Calculadora de capacidad de compra</h4>
                         <div class="simulador-capacidad">
                             <div class="simulador-formulario">
-                                <input type="number" id="capacidad-cuota-inicial" placeholder="Cuota inicial ($)" value="5000" min="0" oninput="evaluarCapacidadCompra()">
-                                <input type="number" id="capacidad-cuota-mensual" placeholder="Cuota mensual ($)" value="500" min="0" oninput="evaluarCapacidadCompra()">
-                                <input type="number" id="capacidad-ingreso-anual" placeholder="Ingreso anual ($)" value="30000" min="0" style="grid-column: span 2;" oninput="evaluarCapacidadCompra()">
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                                    <label style="font-size:14px; font-weight:700; color:#102a43;">Cuota Inicial $</label>
+                                    <input type="number" id="capacidad-cuota-inicial" value="5000" min="0" placeholder="Ingresa cuota inicial" style="width:100%;" />
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:8px;">
+                                    <label style="font-size:14px; font-weight:700; color:#102a43;">Ingreso mensual $</label>
+                                    <input type="number" id="capacidad-cuota-mensual" value="500" min="0" placeholder="Ingresa ingreso mensual" style="width:100%;" />
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:8px; grid-column: span 2; width:100%;">
+                                    <label style="font-size:14px; font-weight:700; color:#102a43;">Ingreso salario anual $</label>
+                                    <input type="number" id="capacidad-ingreso-anual" value="30000" min="0" placeholder="Ingresa salario anual" style="width:100%;" />
+                                </div>
                             </div>
-                            <div class="resultado-capacidad" id="capacidad-resultado">Ingrese sus datos para conocer su capacidad de pago.</div>
+                            <button class="btn-detalle-principal" style="width:100%; margin-top: 14px;" onclick="calcularCapacidadCompra()">Calcular</button>
+                            <div class="resultado-capacidad" id="capacidad-resultado" style="margin-top: 14px;">Ingrese sus datos para conocer su capacidad de pago.</div>
                         </div>
                     </div>
 
@@ -2302,6 +2331,7 @@ function abrirVentanaDetalle(idPropiedad) {
     mostrarPOIs(casa);
     inicializarCalculadoraCompra(casa);
     limpiarRecorridoTiempo();
+    configurarNavSpyDetalle();
 }
 
 function toggleFavoritoDetalle(idPropiedad) {
@@ -2395,9 +2425,14 @@ function calcularTiempoViaje(modo) {
         const latFin = parseFloat(datoDestino.lat);
         const lonFin = parseFloat(datoDestino.lon);
         const distanciaKm = haversineDistancia(latInicio, lonInicio, latFin, lonFin);
+        if (distanciaKm > 5) {
+            if (resultado) resultado.textContent = 'Distancia mayor a 5 km';
+            if (mapaContenedor) mapaContenedor.innerHTML = '';
+            return;
+        }
         const velocidad = modo === 'caminando' ? 5 : 50;
         const horas = distanciaKm / velocidad;
-        const mensaje = horas > 5 ? 'Demasiado lejos + 5 horas' : `${horas < 1 ? Math.round(horas * 60) + ' mins' : horas.toFixed(1) + ' hrs'} aprox`;
+        const mensaje = horas < 1 ? Math.round(horas * 60) + ' mins aprox' : horas.toFixed(1) + ' hrs aprox';
         if (resultado) resultado.textContent = mensaje;
         if (mapaContenedor) renderizarRutaEnMapa(latInicio, lonInicio, latFin, lonFin);
     });
@@ -2554,6 +2589,41 @@ function cerrarTour3D() {
     }
 }
 
+function configurarNavSpyDetalle() {
+    const modal = document.getElementById('contenedor-detalle-zillow');
+    const botones = Array.from(document.querySelectorAll('.detalle-nav-spy button'));
+    if (!modal || botones.length === 0) return;
+
+    botones.forEach(boton => {
+        boton.onclick = () => {
+            const objetivo = boton.dataset.target;
+            const seccion = document.getElementById(objetivo);
+            if (seccion) {
+                seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+    });
+
+    const secciones = botones.map(boton => document.getElementById(boton.dataset.target)).filter(Boolean);
+    const actualizarBotones = () => {
+        const topActual = modal.scrollTop + 130;
+        let seccionActiva = secciones[0];
+        let distanciaMin = Infinity;
+        secciones.forEach(seccion => {
+            const distancia = Math.abs(seccion.offsetTop - topActual);
+            if (distancia < distanciaMin) {
+                distanciaMin = distancia;
+                seccionActiva = seccion;
+            }
+        });
+        botones.forEach(boton => boton.classList.toggle('active', boton.dataset.target === seccionActiva.id));
+    };
+
+    modal.removeEventListener('scroll', actualizarBotones);
+    modal.addEventListener('scroll', actualizarBotones);
+    actualizarBotones();
+}
+
 function mostrarPropiedadesSimilares(propiedad) {
     const contenedor = document.getElementById('similares-contenedor');
     if (!contenedor) return;
@@ -2599,20 +2669,46 @@ function scrollSimilares(direccion) {
     contenedor.scrollBy({ left: direccion * 260, behavior: 'smooth' });
 }
 
-function evaluarCapacidadCompra() {
+function calcularCapacidadCompra() {
     const cuotaInicial = parseFloat(document.getElementById('capacidad-cuota-inicial')?.value) || 0;
-    const cuotaMensual = parseFloat(document.getElementById('capacidad-cuota-mensual')?.value) || 0;
+    const ingresoMensual = parseFloat(document.getElementById('capacidad-cuota-mensual')?.value) || 0;
     const ingresoAnual = parseFloat(document.getElementById('capacidad-ingreso-anual')?.value) || 0;
     const resultado = document.getElementById('capacidad-resultado');
     if (!resultado) return;
-    const ingresoMensual = ingresoAnual / 12;
-    const limite = ingresoMensual * 0.3;
-    if (cuotaMensual <= limite && ingresoAnual > 0) {
-        resultado.textContent = 'Usted podría adquirir esta propiedad con estos valores aproximados';
+
+    const precioPropiedad = parseFloat(propiedadActualEnDetalle?.precio || propiedadActualEnDetalle?.precio_base || 0) || 0;
+    const montoFinanciar = Math.max(precioPropiedad - cuotaInicial, 0);
+    const plazoMeses = 20 * 12;
+    const tea = 0.085;
+    const tem = Math.pow(1 + tea, 1 / 12) - 1;
+    const cuotaFinanciera = montoFinanciar > 0 ? montoFinanciar * (tem * Math.pow(1 + tem, plazoMeses)) / (Math.pow(1 + tem, plazoMeses) - 1) : 0;
+    const seguroDesgravamen = montoFinanciar * 0.0005;
+    const seguroInmueble = precioPropiedad * 0.0002;
+    const impuestoMensual = (precioPropiedad * 0.002) / 12;
+    const pagoMensualTotal = cuotaFinanciera + seguroDesgravamen + seguroInmueble + impuestoMensual;
+    const limiteMin = ingresoMensual * 0.30;
+    const limiteMax = ingresoMensual * 0.40;
+    const cumpleEnganche = cuotaInicial >= precioPropiedad * 0.20;
+    const cumpleRango = ingresoMensual > 0 && pagoMensualTotal <= limiteMax;
+
+    if (precioPropiedad <= 0 || ingresoMensual <= 0 || ingresoAnual <= 0) {
+        resultado.textContent = 'Por favor completa todos los campos con datos válidos.';
+        resultado.style.color = '#d92323';
+        return;
+    }
+
+    if (cumpleEnganche && cumpleRango) {
+        resultado.innerHTML = `Usted podría adquirir esta propiedad con estos valores aproximados.<br><small style="font-weight:400; color:#334155;">Pago mensual estimado: $${Math.round(pagoMensualTotal).toLocaleString()} | Enganche: ${Math.round(cuotaInicial).toLocaleString()} (${Math.round((cuotaInicial / precioPropiedad) * 100)}%)</small>`;
         resultado.style.color = '#1a8a3c';
     } else {
-        resultado.textContent = 'Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor';
+        resultado.innerHTML = `Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor`;
         resultado.style.color = '#d92323';
+        if (!cumpleEnganche) {
+            resultado.innerHTML += `<br><small style="font-weight:400; color:#555;">Necesita al menos el 20% de enganche sobre el precio de venta.</small>`;
+        }
+        if (!cumpleRango) {
+            resultado.innerHTML += `<br><small style="font-weight:400; color:#555;">El pago mensual estimado excede el 40% de su ingreso mensual.</small>`;
+        }
     }
 }
 
@@ -2643,7 +2739,7 @@ function mostrarPOIs(propiedad) {
 }
 
 function inicializarCalculadoraCompra(propiedad) {
-    evaluarCapacidadCompra();
+    calcularCapacidadCompra();
 }
 
 function limpiarRecorridoTiempo() {
