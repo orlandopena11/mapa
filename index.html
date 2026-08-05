@@ -323,34 +323,35 @@
         .modal-tour-confirmacion input, .modal-tour-confirmacion textarea, .modal-tour-confirmacion select { width: 100%; margin-bottom: 14px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; }
         .modal-tour-confirmacion button { width: 100%; border: none; border-radius: 14px; padding: 14px; font-weight: 700; background: #006aff; color: white; cursor: pointer; }
         /* ===================== ESTILOS ADICIONALES DE DETALLE ===================== */
-        .detalle-header { padding: 20px 20px 10px; position: sticky; top: 0; background: #f6f6f9; z-index: 60; }
-        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 14px; }
-        .detalle-back-btn { font-size: 22px; font-weight: 900; color: #002E50; text-transform: uppercase; letter-spacing: 0.4px; }
-        .detalle-header-center span { font-size: 28px; font-weight: 900; color: #002E50; line-height: 1.05; }
-        .detalle-accion-btn { font-size: 16px; font-weight: 900; padding: 14px 20px; min-height: 52px; gap: 10px; }
-        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 14px 20px 18px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 86px; z-index: 55; }
-        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 16px; font-weight: 800; padding: 12px 18px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.12); }
-        .detalle-section h4 { margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 900; color: #102a43; }
-        .detalle-section p, .detalle-section span, .dato-ficha span, .indicador-chip, .metric-card strong, .metric-card span, .resultado-capacidad { font-size: 15px; line-height: 1.75; }
-        .precio-destacado { font-size: 36px; }
-        .direccion-detalle { font-size: 16px; }
+        .detalle-header { padding: 20px 20px 12px; position: sticky; top: 0; background: #f6f6f9; z-index: 60; }
+        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 16px; }
+        .detalle-back-btn { font-size: 24px; font-weight: 900; color: #002E50; text-transform: uppercase; letter-spacing: 0.5px; }
+        .detalle-header-center span { font-size: 32px; font-weight: 900; color: #002E50; line-height: 1.05; }
+        .detalle-accion-btn { font-size: 16px; font-weight: 900; padding: 14px 22px; min-height: 54px; gap: 12px; }
+        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 14px 20px 18px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 88px; z-index: 65; }
+        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 16px; font-weight: 900; padding: 12px 18px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.14); }
+        .detalle-section { scroll-margin-top: 160px; }
+        .detalle-section h4 { margin-top: 0; margin-bottom: 18px; font-size: 22px; font-weight: 900; color: #102a43; }
+        .detalle-section p, .detalle-section span, .dato-ficha span, .indicador-chip, .metric-card strong, .metric-card span, .resultado-capacidad { font-size: 15px; line-height: 1.8; }
+        .precio-destacado { font-size: 40px; }
+        .direccion-detalle { font-size: 17px; }
         .ficha-cuadricula { gap: 18px; }
-        .dato-ficha { padding: 20px 18px; }
+        .dato-ficha { padding: 22px 20px; }
         .dato-ficha strong { font-size: 15px; }
         .boton-contacto-rapido { font-size: 15px; padding: 14px 18px; }
         .detalle-columna-der { position: sticky; top: 120px; align-self: flex-start; max-height: calc(100vh - 140px); }
-        .detalle-panel-sticky { padding: 26px; gap: 20px; }
+        .detalle-panel-sticky { padding: 26px; gap: 22px; }
         .btn-detalle-principal, .btn-detalle-secundario { font-size: 16px; padding: 16px 22px; }
-        .btn-detalle-principal { min-height: 56px; }
-        .btn-detalle-secundario { min-height: 56px; }
-        .collage-detalle { flex-wrap: wrap; min-height: 460px; }
-        .collage-principal { min-height: 460px; }
+        .btn-detalle-principal { min-height: 58px; }
+        .btn-detalle-secundario { min-height: 58px; }
+        .collage-detalle { display: flex; gap: 12px; flex-wrap: wrap; min-height: 460px; align-items: stretch; }
+        .collage-principal { min-height: 460px; border-radius: 18px; overflow: hidden; }
         .collage-principal img, .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .collage-secundario { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
-        .collage-mini { border-radius: 16px; min-height: 220px; }
-        .btn-zillow-ver-mas { min-width: 260px; font-size: 15px; padding: 16px 24px; white-space: nowrap; }
-        .simulador-capacidad { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .collage-secundario { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; flex: 1; }
+        .collage-mini { border-radius: 18px; min-height: 220px; overflow: hidden; }
+        .btn-zillow-ver-mas { min-width: 280px; font-size: 15px; padding: 16px 24px; white-space: normal; max-width: 320px; text-align: center; line-height: 1.2; }
+        .simulador-capacidad { display: grid; grid-template-columns: 1fr; gap: 18px; }
         .simulador-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .simulador-formulario > div { display: flex; flex-direction: column; gap: 8px; }
         .simulador-formulario input { padding: 14px 16px; font-size: 15px; border-radius: 14px; }
@@ -362,7 +363,7 @@
         .poi-card h5 { font-size: 16px; }
         .similares-card { min-width: 240px; max-width: 240px; }
         .similares-card-body h5 { font-size: 16px; }
-        .similares-nav button { width: 44px; height: 44px; }
+        .similares-nav button { width: 46px; height: 46px; }
     </style>
 </head>
 <body>
@@ -483,7 +484,7 @@
 <!-- ================================================================================= -->
 <!-- VENTANA FLOTANTE ÚNICA DE DETALLE DE PROPIEDAD (2da PANTALLA UNIFICADA ESTILO ZILLOW) -->
 <!-- ================================================================================= -->
-<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; box-sizing: border-box;">
+<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.55); z-index: 11000; justify-content: center; align-items: center; box-sizing: border-box;">
     
     <div id="contenedor-detalle-zillow" class="caja-login" style="max-width: 1200px; width: 95%; height: 92vh; overflow-y: auto; overflow-x: hidden; background: #f6f6f9; text-align: left; padding: 24px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); box-sizing: border-box; position: relative;">
         
@@ -846,17 +847,19 @@ async function procesarSesionRedirigida() {
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
     if (session && session.user) {
-        if (!usuarioAutenticado) verificarEstadoYRolUsuario(session.user.email);
+        window.usuarioLogueado = session.user;
+        correoUsuarioLogueado = session.user.email || correoUsuarioLogueado;
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
+            verificarEstadoYRolUsuario(session.user.email);
+        } else if (!usuarioAutenticado) {
+            verificarEstadoYRolUsuario(session.user.email);
+        }
+        return;
     }
-    else if (event === 'SIGNED_OUT') {
+    if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         usuarioAutenticado = false;
         correoUsuarioLogueado = "";
         favoritosUsuario = [];
-        actualizarBotonCuenta();
-        renderizarMapaZillow();
-    }
-    else {
-        usuarioAutenticado = false;
         actualizarBotonCuenta();
         renderizarMapaZillow();
     }
@@ -2000,7 +2003,9 @@ async function procesarAccesoUsuario() {
         const { data: dataLogin, error: errorLogin } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
 
         if (!errorLogin && dataLogin.user) {
-            verificarEstadoYRolUsuario(email);
+            window.usuarioLogueado = dataLogin.user;
+            correoUsuarioLogueado = email;
+            await verificarEstadoYRolUsuario(email);
             return;
         }
 
@@ -2030,7 +2035,7 @@ async function procesarAccesoUsuario() {
         }
 
     } catch (error) {
-        alert("Error en el sistema de accesos: " + error.message);
+        alert("Error en el sistema de accesos: " + (error.message || error));
     }
 }
 
@@ -2245,7 +2250,8 @@ function abrirVentanaDetalle(idPropiedad) {
     const subtipoPropiedad = casa.subtipo_propiedad || casa.subtipo || '';
     const descripcion = casa.descripcion || casa.descripcion_larga || casa.descripcion_corta || '';
     const fechaPublicacion = casa.fecha_publicacion || casa.fecha_publicada || casa.fecha || null;
-    const hasTour3D = casa.recorrido_3d && casa.recorrido_3d.url;
+    const tour3dUrl = (casa.recorrido_3d && (casa.recorrido_3d.url || casa.recorrido_3d)) || casa.url_recorrido || "";
+    const hasTour3D = Boolean(tour3dUrl && tour3dUrl.toString().trim());
     const chips = (casa.caracteristicas_extras || []).map(formatearCaracteristica).filter(Boolean);
 
     cajaDetalleZillow.innerHTML = `
@@ -2353,7 +2359,7 @@ function abrirVentanaDetalle(idPropiedad) {
                         </div>
                     </div>
 
-                    ${hasTour3D ? `<div class="detalle-section" id="detalle-tour-3d-seccion"><h4>Tour Virtual 3D</h4><div class="tour-3d-preview"><p>Revisa el recorrido virtual integrado en la misma pantalla.</p><button class="boton-contacto-rapido" style="width:auto;" onclick="iniciarTour3D('${casa.recorrido_3d.url}')">Iniciar Recorrido Virtual</button></div><div id="detalle-tour-3d-contenedor" style="margin-top:16px; display:none;"></div></div>` : ''}
+                    ${hasTour3D ? `<div class="detalle-section" id="detalle-tour-3d-seccion"><h4>Tour Virtual 3D</h4><div class="tour-3d-preview"><p>Revisa el recorrido virtual integrado en la misma pantalla.</p><button class="boton-contacto-rapido" style="width:auto;" onclick="iniciarTour3D('${tour3dUrl}')">Iniciar Recorrido Virtual</button></div><div id="detalle-tour-3d-contenedor" style="margin-top:16px; display:none;"></div></div>` : ''}
 
                     <div class="detalle-section" id="seccion-valor-mercado">
                         <h4>Valor de mercado estimado</h4>
@@ -2525,8 +2531,10 @@ function calcularTiempoViaje(modo) {
         if (resultado) resultado.textContent = 'Ingresa un destino válido.';
         return;
     }
-    const origen = propiedadActualEnDetalle.geo;
-    if (!origen || !origen.latitud || !origen.longitud) {
+    const origen = propiedadActualEnDetalle.geo || propiedadActualEnDetalle.ubicacion || {};
+    const latOrigen = parseFloat(origen.latitud || origen.lat || propiedadActualEnDetalle.latitud || propiedadActualEnDetalle.lat || 0);
+    const lonOrigen = parseFloat(origen.longitud || origen.lobgitud || origen.long || propiedadActualEnDetalle.longitud || propiedadActualEnDetalle.lobgitud || propiedadActualEnDetalle.lon || 0);
+    if (!latOrigen || !lonOrigen) {
         if (resultado) resultado.textContent = 'Ubicación de la propiedad no disponible.';
         return;
     }
@@ -2536,8 +2544,8 @@ function calcularTiempoViaje(modo) {
             resultado.textContent = 'No se encontró el destino.';
             return;
         }
-        const latInicio = parseFloat(origen.latitud);
-        const lonInicio = parseFloat(origen.longitud);
+        const latInicio = latOrigen;
+        const lonInicio = lonOrigen;
         const latFin = parseFloat(datoDestino.lat);
         const lonFin = parseFloat(datoDestino.lon);
         const distanciaKm = haversineDistancia(latInicio, lonInicio, latFin, lonFin);
@@ -2841,8 +2849,8 @@ async function mostrarPOIs(propiedad) {
     if (bodegas) bodegas.innerHTML = '<p style="color:#334155;">Cargando puntos de interés...</p>';
     if (lavanderias) lavanderias.innerHTML = '<p style="color:#334155;">Cargando puntos de interés...</p>';
 
-    const lat = parseFloat(propiedad.geo?.latitud || propiedad.latitud || propiedad.lat || 0);
-    const lon = parseFloat(propiedad.geo?.longitud || propiedad.lobgitud || propiedad.longitud || propiedad.lon || 0);
+    const lat = parseFloat(propiedad.geo?.latitud || propiedad.latitud || propiedad.lat || propiedad.ubicacion?.latitud || propiedad.ubicacion?.lat || 0);
+    const lon = parseFloat(propiedad.geo?.longitud || propiedad.geo?.lobgitud || propiedad.lobgitud || propiedad.longitud || propiedad.lon || propiedad.ubicacion?.longitud || propiedad.ubicacion?.lobgitud || 0);
     if (!lat || !lon) {
         if (escuelas) escuelas.innerHTML = '<p style="color:#64748b;">Coordenadas no disponibles.</p>';
         if (bodegas) bodegas.innerHTML = '<p style="color:#64748b;">Coordenadas no disponibles.</p>';
