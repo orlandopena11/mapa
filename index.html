@@ -23,7 +23,7 @@
             --gris-borde:#e2e8f0;
             --rojo-alerta:#d92323;
         }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); overflow: hidden; font-size: 16px; line-height: 1.6; }
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); overflow: hidden; font-size: 17px; line-height: 1.75; }
         body { display: flex; flex-direction: column; height: 100vh; }
 
         /* =========================================================
@@ -322,6 +322,47 @@
         .modal-tour-confirmacion h3 { margin-top: 0; font-size: 22px; color: #102a43; }
         .modal-tour-confirmacion input, .modal-tour-confirmacion textarea, .modal-tour-confirmacion select { width: 100%; margin-bottom: 14px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; }
         .modal-tour-confirmacion button { width: 100%; border: none; border-radius: 14px; padding: 14px; font-weight: 700; background: #006aff; color: white; cursor: pointer; }
+        /* ===================== ESTILOS ADICIONALES DE DETALLE ===================== */
+        .detalle-header { padding: 20px 20px 10px; position: sticky; top: 0; background: #f6f6f9; z-index: 60; }
+        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 14px; }
+        .detalle-back-btn { font-size: 22px; font-weight: 900; color: #002E50; text-transform: uppercase; letter-spacing: 0.4px; }
+        .detalle-header-center span { font-size: 28px; font-weight: 900; color: #002E50; line-height: 1.05; }
+        .detalle-accion-btn { font-size: 16px; font-weight: 900; padding: 14px 20px; min-height: 52px; gap: 10px; }
+        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 14px 20px 18px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 86px; z-index: 55; }
+        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 16px; font-weight: 800; padding: 12px 18px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
+        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.12); }
+        .detalle-section h4 { margin-top: 0; margin-bottom: 16px; font-size: 20px; font-weight: 900; color: #102a43; }
+        .detalle-section p, .detalle-section span, .dato-ficha span, .indicador-chip, .metric-card strong, .metric-card span, .resultado-capacidad { font-size: 15px; line-height: 1.75; }
+        .precio-destacado { font-size: 36px; }
+        .direccion-detalle { font-size: 16px; }
+        .ficha-cuadricula { gap: 18px; }
+        .dato-ficha { padding: 20px 18px; }
+        .dato-ficha strong { font-size: 15px; }
+        .boton-contacto-rapido { font-size: 15px; padding: 14px 18px; }
+        .detalle-columna-der { position: sticky; top: 120px; align-self: flex-start; max-height: calc(100vh - 140px); }
+        .detalle-panel-sticky { padding: 26px; gap: 20px; }
+        .btn-detalle-principal, .btn-detalle-secundario { font-size: 16px; padding: 16px 22px; }
+        .btn-detalle-principal { min-height: 56px; }
+        .btn-detalle-secundario { min-height: 56px; }
+        .collage-detalle { flex-wrap: wrap; min-height: 460px; }
+        .collage-principal { min-height: 460px; }
+        .collage-principal img, .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .collage-secundario { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+        .collage-mini { border-radius: 16px; min-height: 220px; }
+        .btn-zillow-ver-mas { min-width: 260px; font-size: 15px; padding: 16px 24px; white-space: nowrap; }
+        .simulador-capacidad { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        .simulador-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .simulador-formulario > div { display: flex; flex-direction: column; gap: 8px; }
+        .simulador-formulario input { padding: 14px 16px; font-size: 15px; border-radius: 14px; }
+        .simulador-capacidad button { max-width: 320px; width: 100%; margin-top: 8px; }
+        .resultado-capacidad { font-size: 15px; padding: 20px; }
+        .tour-cta button { min-height: 52px; font-size: 15px; }
+        .formulario-vendedor input, .formulario-vendedor textarea { font-size: 15px; padding: 14px 16px; }
+        .poi-card { min-height: 140px; }
+        .poi-card h5 { font-size: 16px; }
+        .similares-card { min-width: 240px; max-width: 240px; }
+        .similares-card-body h5 { font-size: 16px; }
+        .similares-nav button { width: 44px; height: 44px; }
     </style>
 </head>
 <body>
@@ -769,13 +810,38 @@ document.getElementById('btn-facebook').addEventListener('click', async () => {
 async function comprobarSesionAlCargar() {
     inicializarMapa();
 
+    const sessionRedirect = await procesarSesionRedirigida();
+    if (sessionRedirect) return;
+
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session && session.user) {
+        window.usuarioLogueado = session.user;
         verificarEstadoYRolUsuario(session.user.email);
     } else {
         forzarCierreDeInterfazPorSeguridad();
     }
+}
+
+async function procesarSesionRedirigida() {
+    try {
+        const { data, error } = await supabaseClient.auth.getSessionFromUrl();
+        if (error) {
+            console.warn('No se pudo procesar la sesión desde URL:', error.message);
+            return false;
+        }
+        const session = data?.session;
+        if (session && session.user) {
+            window.usuarioLogueado = session.user;
+            await verificarEstadoYRolUsuario(session.user.email);
+            const urlSinToken = window.location.href.split('?')[0];
+            window.history.replaceState({}, document.title, urlSinToken);
+            return true;
+        }
+    } catch (err) {
+        console.warn('Error en getSessionFromUrl:', err);
+    }
+    return false;
 }
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -879,14 +945,27 @@ function normalizarPropiedad(prop) {
     const telefono = prop.telefono || prop.telefono_agente || prop.telefono_contacto || "";
     const direccion = prop.direccion || (prop.geo && prop.geo.direccion) || "";
     const titulo = prop.titulo || prop.nombre || prop.descripcion_corta || "";
-    const descripcion = prop.descripcion || prop.descripcion_larga || "";
+    const descripcion = prop.descripcion || prop.descripcion_larga || prop.descripcion_corta || "";
     const moneda = prop.moneda || "USD";
     const historial = prop.historial_precio || prop.historial || [];
     const caracteristicasExtras = prop.caracteristicas_extras || prop.detalles || [];
-    const recorrido3d = prop.recorrido_3d || prop.tour_3d || prop.recorrido3d || null;
+    const recorrido3d = prop.recorrido_3d || prop.tour_3d || prop.recorrido3d || prop.url_recorrido || null;
     const promocion = prop.promocion || prop.oferta || null;
 
+    const ubicacionProp = prop.ubicacion || prop.ubicaciones || prop.geo || {};
+    const latitudRaw = prop.latitud ?? prop.lat ?? ubicacionProp.latitud ?? ubicacionProp.lat ?? 0;
+    const longitudRaw = prop.lobgitud ?? prop.longitud ??(prop.longitud === undefined ? ubicacionProp.longitud : prop.longitud) ?? ubicacionProp.lon ?? ubicacionProp.lng ?? 0;
+    const latitud = parseFloat(latitudRaw) || 0;
+    const longitud = parseFloat(longitudRaw) || 0;
+    const geo = {
+        latitud,
+        longitud,
+        direccion: direccion || ubicacionProp.direccion || "",
+        distrito: ubicacionProp.distrito || ubicacionProp.barrio || ""
+    };
+
     const fotos = [];
+    prop.geo = geo;
     if (prop.foto_principal) fotos.push(String(prop.foto_principal).trim());
     if (Array.isArray(prop.imagenes_secundarias)) fotos.push(...prop.imagenes_secundarias.map(f => String(f).trim()));
     if (Array.isArray(prop.fotos)) fotos.push(...prop.fotos.map(f => String(f).trim()));
@@ -941,16 +1020,21 @@ function procesarDatosDelMotor(data) {
     // Extraemos la lista secundaria de imágenes si viene en data (usamos alternativas comunes de nombre)
     const tablaImagenes = data.imagenes || data.imagenes_propiedad || data.imagen_propiedad || [];
     
-    // 2. Mapeamos las propiedades y les inyectamos sus fotos correspondientes cruzando la tabla secundaria
+    const ubicaciones = data.ubicacion || data.ubicaciones || data.ubicacion_propiedad || [];
     propiedadesCombinadas = data.propiedades.map(prop => {
         const idProp = obtenerIdPropiedad(prop);
         let fotosFiltradas = [];
 
         if (idProp) {
             fotosFiltradas = tablaImagenes
-                .filter(img => String(img.propiedad_id_fk).trim() === String(idProp).trim())
+                .filter(img => String(img.propiedad_id_fk || img.propiedad_id).trim() === String(idProp).trim())
                 .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0))
                 .map(img => img.ruta_imagen || img.url || img.imagen || "");
+
+            const ubicacionRelacionada = ubicaciones.find(u => String(u.propiedad_id_fk || u.propiedad_id).trim() === String(idProp).trim());
+            if (ubicacionRelacionada) {
+                prop = { ...prop, ubicacion: ubicacionRelacionada, ...ubicacionRelacionada };
+            }
         }
 
         if (fotosFiltradas.length > 0) {
@@ -1462,10 +1546,11 @@ let tourFechaSeleccionadaIndex = 0;
 function configurarFormularioContacto(casa) {
   propiedadActualEnDetalle = casa;
   
-  // 1. Poblado automático del mensaje personalizado estilo Zillow
+  // 1. Poblado automático del mensaje personalizado con la dirección actual de la propiedad
   const campoMensaje = document.getElementById("contacto-mensaje");
   if (campoMensaje) {
-    campoMensaje.value = `Hola, estoy interesado en recibir más información sobre el inmueble: ${casa.titulo} (${casa.id}).`;
+    const direccionProp = casa.geo && casa.geo.direccion ? casa.geo.direccion : casa.direccion || casa.titulo || 'esta propiedad';
+    campoMensaje.value = `Yo estoy interesado en ${direccionProp}`;
   }
 
   // 2. Poblado de datos del usuario logueado en la app (ajustar variables según tu Auth)
@@ -1518,35 +1603,66 @@ function enviarMensajeAlAgente(event) {
   }
   if (!propiedadActualEnDetalle) return;
 
+  const emailUsuario = document.getElementById("contacto-email").value;
+  const nombreUsuario = document.getElementById("contacto-nombre").value;
+  const telefonoUsuario = document.getElementById("contacto-telefono").value;
+  const mensajeUsuario = document.getElementById("contacto-mensaje").value;
+  const telefonoAgente = propiedadActualEnDetalle.telefono || propiedadActualEnDetalle.telefono_contacto || propiedadActualEnDetalle.contacto_telefono || '';
+  const emailAgente = propiedadActualEnDetalle.email_agente || propiedadActualEnDetalle.email || '';
+
   const datosEnvio = {
     accion: "contactar_agente",
-    email: document.getElementById("contacto-email").value,
-    nombre: document.getElementById("contacto-nombre").value,
+    email: emailUsuario,
+    nombre: nombreUsuario,
     propiedad_id: propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id,
     anuncio_id: propiedadActualEnDetalle.anuncio_id || '',
     tipo_visita: "presencial",
     fecha_visita: new Date().toISOString().split('T')[0],
     hora_visita: "10:00",
-    mensaje_adicional: document.getElementById("contacto-mensaje").value,
-    telefono_interesado: document.getElementById("contacto-telefono").value
+    mensaje_adicional: mensajeUsuario,
+    telefono_interesado: telefonoUsuario
   };
 
-  fetch(urlMiScriptGoogle, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(datosEnvio)
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data && (data.success || data.resultado)) {
+  const tareas = [
+    fetch(urlMiScriptGoogle, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(datosEnvio)
+    }),
+    dispatchWhatsApp(telefonoAgente, mensajeUsuario),
+    dispatchEmail(emailAgente, `Consulta por propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id}`, mensajeUsuario)
+  ];
+
+  Promise.allSettled(tareas).then((resultados) => {
+    const exitos = resultados.filter(item => item.status === 'fulfilled').length;
+    if (exitos > 0) {
       alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id}.`);
     } else {
-      alert('Tu solicitud fue recibida, pero el servidor no confirmó el envío. Por favor revisa tu correo o intenta nuevamente.');
+      alert('Hubo un problema al enviar tu solicitud. Intenta nuevamente más tarde.');
     }
-  })
-  .catch(() => {
-    alert(`¡Mensaje enviado con éxito! Un asesor se contactará contigo para coordinar la visita a la propiedad ${propiedadActualEnDetalle.id || propiedadActualEnDetalle.propiedad_id}.`);
   });
+}
+
+function dispatchWhatsApp(telefono, mensaje) {
+  if (!telefono) return Promise.resolve();
+  const texto = encodeURIComponent(`${mensaje} \nContacto: ${telefono}`);
+  const url = `https://api.whatsapp.com/send?phone=${telefono.replace(/[^0-9]/g, '')}&text=${texto}`;
+  return fetch(url, { method: 'GET', mode: 'no-cors' }).catch(() => {});
+}
+
+function dispatchEmail(email, asunto, cuerpo) {
+  if (!email) return Promise.resolve();
+  const datosEmail = {
+    accion: 'enviar_email',
+    destinatario: email,
+    asunto,
+    cuerpo
+  };
+  return fetch(urlMiScriptGoogle, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(datosEmail)
+  }).catch(() => {});
 }
 
 function enviarPorWhatsApp() {
@@ -2656,9 +2772,14 @@ function mostrarPropiedadesSimilares(propiedad) {
             <div class="similares-card-body">
                 <h5>${precio}</h5>
                 <p>${p.habitaciones || 0} hab · ${p.banos || p.baños || 0} baños · ${p.area_construida || p.area || 0} m²</p>
-                <button class="btn-detalle-secundario" style="width:100%; margin-top:10px;" onclick="abrirVentanaDetalle('${p.id || p.propiedad_id || p.anuncio_id}')">Ver</button>
+                <button class="btn-detalle-secundario" style="width:100%; margin-top:10px;">Ver</button>
             </div>
         `;
+        card.addEventListener('click', () => abrirVentanaDetalle(p.id || p.propiedad_id || p.anuncio_id));
+        card.querySelector('button')?.addEventListener('click', (event) => {
+            event.stopPropagation();
+            abrirVentanaDetalle(p.id || p.propiedad_id || p.anuncio_id);
+        });
         contenedor.appendChild(card);
     });
 }
@@ -2686,10 +2807,8 @@ function calcularCapacidadCompra() {
     const seguroInmueble = precioPropiedad * 0.0002;
     const impuestoMensual = (precioPropiedad * 0.002) / 12;
     const pagoMensualTotal = cuotaFinanciera + seguroDesgravamen + seguroInmueble + impuestoMensual;
-    const limiteMin = ingresoMensual * 0.30;
-    const limiteMax = ingresoMensual * 0.40;
-    const cumpleEnganche = cuotaInicial >= precioPropiedad * 0.20;
-    const cumpleRango = ingresoMensual > 0 && pagoMensualTotal <= limiteMax;
+    const capacidadMaxima = ingresoMensual * 0.40;
+    const engancheMinimo = precioPropiedad * 0.20;
 
     if (precioPropiedad <= 0 || ingresoMensual <= 0 || ingresoAnual <= 0) {
         resultado.textContent = 'Por favor completa todos los campos con datos válidos.';
@@ -2697,45 +2816,122 @@ function calcularCapacidadCompra() {
         return;
     }
 
-    if (cumpleEnganche && cumpleRango) {
-        resultado.innerHTML = `Usted podría adquirir esta propiedad con estos valores aproximados.<br><small style="font-weight:400; color:#334155;">Pago mensual estimado: $${Math.round(pagoMensualTotal).toLocaleString()} | Enganche: ${Math.round(cuotaInicial).toLocaleString()} (${Math.round((cuotaInicial / precioPropiedad) * 100)}%)</small>`;
-        resultado.style.color = '#1a8a3c';
-    } else {
-        resultado.innerHTML = `Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor`;
+    if (cuotaInicial < engancheMinimo) {
+        resultado.innerHTML = `Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor. Usted solo tiene una capacidad de pago de: $${Math.round(capacidadMaxima).toLocaleString()}. El pago mensual estimado excede el 40% de su ingreso mensual.`;
+        resultado.innerHTML += `<br><small style="font-weight:400; color:#555;">Requiere un enganche mínimo del 20%: $${Math.round(engancheMinimo).toLocaleString()}.</small>`;
         resultado.style.color = '#d92323';
-        if (!cumpleEnganche) {
-            resultado.innerHTML += `<br><small style="font-weight:400; color:#555;">Necesita al menos el 20% de enganche sobre el precio de venta.</small>`;
-        }
-        if (!cumpleRango) {
-            resultado.innerHTML += `<br><small style="font-weight:400; color:#555;">El pago mensual estimado excede el 40% de su ingreso mensual.</small>`;
-        }
+        return;
     }
+
+    if (pagoMensualTotal > capacidadMaxima) {
+        resultado.innerHTML = `Hay propiedades de diversos precios. Lo animamos a que busque una propiedad que con sus ingresos pueda usted pagar por favor. Usted solo tiene una capacidad de pago de: $${Math.round(capacidadMaxima).toLocaleString()}. El pago mensual estimado excede el 40% de su ingreso mensual.`;
+        resultado.style.color = '#d92323';
+        return;
+    }
+
+    resultado.innerHTML = `Usted podría adquirir esta propiedad con estos valores aproximados. Pago mensual estimado: $${Math.round(pagoMensualTotal).toLocaleString()} | Enganche mínimo requerido: $${Math.round(engancheMinimo).toLocaleString()} (${Math.round((engancheMinimo / precioPropiedad) * 100)}%).`;
+    resultado.style.color = '#1a8a3c';
 }
 
-function mostrarPOIs(propiedad) {
+async function mostrarPOIs(propiedad) {
     const escuelas = document.getElementById('detalle-pois-escuelas');
     const bodegas = document.getElementById('detalle-pois-bodega');
     const lavanderias = document.getElementById('detalle-pois-lavanderia');
-    if (escuelas) escuelas.innerHTML = '';
-    if (bodegas) bodegas.innerHTML = '';
-    if (lavanderias) lavanderias.innerHTML = '';
+    if (escuelas) escuelas.innerHTML = '<p style="color:#334155;">Cargando puntos de interés...</p>';
+    if (bodegas) bodegas.innerHTML = '<p style="color:#334155;">Cargando puntos de interés...</p>';
+    if (lavanderias) lavanderias.innerHTML = '<p style="color:#334155;">Cargando puntos de interés...</p>';
 
-    const lista = propiedad.comparables || [];
-    const filtroObjeto = (texto) => lista.filter(item => (item.titulo || '').toLowerCase().includes(texto));
-    const mostrar = (listaItems, contenedor, etiqueta) => {
+    const lat = parseFloat(propiedad.geo?.latitud || propiedad.latitud || propiedad.lat || 0);
+    const lon = parseFloat(propiedad.geo?.longitud || propiedad.lobgitud || propiedad.longitud || propiedad.lon || 0);
+    if (!lat || !lon) {
+        if (escuelas) escuelas.innerHTML = '<p style="color:#64748b;">Coordenadas no disponibles.</p>';
+        if (bodegas) bodegas.innerHTML = '<p style="color:#64748b;">Coordenadas no disponibles.</p>';
+        if (lavanderias) lavanderias.innerHTML = '<p style="color:#64748b;">Coordenadas no disponibles.</p>';
+        return;
+    }
+
+    const pois = await consultarPOIsOverpass(lat, lon);
+    const mostrarLista = (items, contenedor, etiqueta) => {
         if (!contenedor) return;
-        if (!listaItems.length) {
-            contenedor.innerHTML = '<p style="color:#64748b;">No hay registros.</p>';
+        if (!items.length) {
+            contenedor.innerHTML = `<p style="color:#64748b;">No se encontraron ${etiqueta.toLowerCase()} cercanas.</p>`;
             return;
         }
-        contenedor.innerHTML = listaItems.slice(0,3).map(item => {
-            const distancia = item.distancia_km ? `${parseFloat(item.distancia_km).toFixed(2)} km` : 'N/D';
-            return `<p><strong>${item.titulo || item.nombre || etiqueta}</strong><br><small style="color:#475569;">${distancia}</small></p>`;
+        contenedor.innerHTML = items.slice(0, 3).map(item => {
+            return `<p><strong>${item.nombre}</strong><br><small style="color:#475569;">${item.distanciaMetros} m · ${item.tipo}</small></p>`;
         }).join('');
     };
-    mostrar(filtroObjeto('escuela'), escuelas, 'Escuela');
-    mostrar(filtroObjeto('bodega').concat(filtroObjeto('panader')).slice(0,3), bodegas, 'Bodega');
-    mostrar(filtroObjeto('lavander'), lavanderias, 'Lavandería');
+
+    mostrarLista(pois.escuelas, escuelas, 'Escuelas');
+    mostrarLista(pois.bodegas, bodegas, 'Bodega, Minimarket o Panadería');
+    mostrarLista(pois.lavanderias, lavanderias, 'Lavanderías');
+}
+
+async function consultarPOIsOverpass(lat, lon) {
+    const query = `
+        [out:json][timeout:25];
+        (
+          node(around:3000,${lat},${lon})[amenity=school];
+          way(around:3000,${lat},${lon})[amenity=school];
+          relation(around:3000,${lat},${lon})[amenity=school];
+          node(around:3000,${lat},${lon})[shop=convenience];
+          way(around:3000,${lat},${lon})[shop=convenience];
+          relation(around:3000,${lat},${lon})[shop=convenience];
+          node(around:3000,${lat},${lon})[shop=supermarket];
+          way(around:3000,${lat},${lon})[shop=supermarket];
+          relation(around:3000,${lat},${lon})[shop=supermarket];
+          node(around:3000,${lat},${lon})[shop=bakery];
+          way(around:3000,${lat},${lon})[shop=bakery];
+          relation(around:3000,${lat},${lon})[shop=bakery];
+          node(around:3000,${lat},${lon})[shop=laundry];
+          way(around:3000,${lat},${lon})[shop=laundry];
+          relation(around:3000,${lat},${lon})[shop=laundry];
+        );
+        out center qt;
+    `;
+
+    try {
+        const response = await fetch('https://overpass-api.de/api/interpreter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `data=${encodeURIComponent(query)}`
+        });
+        const json = await response.json();
+        const elementos = Array.isArray(json.elements) ? json.elements : [];
+
+        const categorias = { escuelas: [], bodegas: [], lavanderias: [] };
+
+        elementos.forEach(elemento => {
+            const tags = elemento.tags || {};
+            const nombre = tags.name || tags['addr:housename'] || 'Sin nombre registrado';
+            const latPoi = elemento.lat || elemento.center?.lat;
+            const lonPoi = elemento.lon || elemento.center?.lon;
+            if (!latPoi || !lonPoi) return;
+            const distanciaKm = haversineDistancia(lat, lon, latPoi, lonPoi);
+            const distanciaMetros = Math.round(distanciaKm * 1000);
+            const item = {
+                nombre,
+                distanciaMetros,
+                tipo: tags.amenity === 'school' ? 'Escuela' : (tags.shop || 'Comercio'),
+                lat: latPoi,
+                lon: lonPoi
+            };
+
+            if (tags.amenity === 'school') categorias.escuelas.push(item);
+            if (tags.shop === 'convenience' || tags.shop === 'supermarket' || tags.shop === 'bakery') categorias.bodegas.push(item);
+            if (tags.shop === 'laundry') categorias.lavanderias.push(item);
+        });
+
+        const ordenar = arr => arr.sort((a, b) => a.distanciaMetros - b.distanciaMetros).slice(0, 3);
+        return {
+            escuelas: ordenar(categorias.escuelas),
+            bodegas: ordenar(categorias.bodegas),
+            lavanderias: ordenar(categorias.lavanderias)
+        };
+    } catch (err) {
+        console.error('Error consultando Overpass API:', err);
+        return { escuelas: [], bodegas: [], lavanderias: [] };
+    }
 }
 
 function inicializarCalculadoraCompra(propiedad) {
