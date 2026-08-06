@@ -1319,7 +1319,7 @@ function normalizarPropiedad(prop) {
     const estacionamientos = parseInt(prop.estacionamientos || prop.estacionamiento || prop.estacionamiento_total || prop.parqueaderos || prop.parqueaderos_totales || 0) || 0;
     const cuotaMantenimiento = parseFloat(prop.cuota_mantenimiento || prop.mantenimiento || prop.mantenimiento_mensual || prop.cuota_mensual || 0) || 0;
     const anoConstruccion = parseInt(prop.ano_construccion || prop.anio_construccion || prop.año_construccion || prop.anio || prop.ano || 0) || 0;
-    const tipoListado = String(prop.tipo_listado || prop.quien_vende || prop.publicado_por || prop.origen_oferta || prop.listado_por || "").trim();
+    const tipoListado = String(prop.tipo_listado || prop.situacion_propiedad || prop.quien_vende || prop.publicado_por || prop.origen_oferta || prop.listado_por || "").trim();
     const fechaPublicada = fechaPublicacion;
     const fechaPublicacionNormalized = fechaPublicada;
     const estadoPublicacionNormalized = estadoPublicacion;
