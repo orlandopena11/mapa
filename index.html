@@ -45,6 +45,8 @@
         .navbar-marca { display: flex; align-items: center; gap: 10px; margin-right: 6px; }
         .navbar-marca img { width: 40px; height: 40px; object-fit: contain; border-radius: 6px; }
         .navbar-marca span { display: block; font-size: 14px; font-weight: 700; color: var(--azul-oscuro); line-height: 1.15; }
+        /* Centrar la marca en la barra superior */
+        .navbar-marca { position: absolute; left: 50%; transform: translateX(-50%); z-index: 60; }
 
         .buscador-direccion {
             flex: 1 1 220px;
@@ -69,6 +71,8 @@
         .filtro-dropdown {
             position: relative;
         }
+        .filtro-dropdown.select-filtro { background: white; padding: 8px 12px; border-radius: 24px; border: 1px solid #ccc; }
+        .filtro-dropdown-button { padding: 0; background: transparent; border: none; cursor: pointer; width: 100%; text-align: left; }
         .filtro-dropdown-button {
             width: 100%;
             display: flex;
@@ -524,17 +528,7 @@
 
     <input type="text" id="buscador-direccion" class="buscador-direccion" placeholder="Dirección, barrio, ciudad, ZIP" oninput="renderizarMapaZillow()">
 
-    <div class="filtro-dropdown select-filtro" id="filtro-estado-publicacion">
-        <button type="button" class="filtro-dropdown-button" onclick="toggleFiltroEstadoPublicacion()" aria-expanded="false">
-            <span id="texto-filtro-estado-publicacion">En venta</span>
-            <span class="filtro-arrow">▾</span>
-        </button>
-        <div class="filtro-dropdown-menu" id="menu-estado-publicacion">
-            <label><input type="radio" name="filtro-estado-publicacion" value="Venta" checked onchange="seleccionarFiltroEstadoPublicacion(this)">En venta</label>
-            <label><input type="radio" name="filtro-estado-publicacion" value="Alquiler" onchange="seleccionarFiltroEstadoPublicacion(this)">Para el alquiler</label>
-            <label><input type="radio" name="filtro-estado-publicacion" value="Vendido" onchange="seleccionarFiltroEstadoPublicacion(this)">Vendido</label>
-        </div>
-    </div>
+    
 
     <button id="btn-filtros-panel" class="btn-navbar relleno btn-filtros" type="button" onclick="togglePanelFiltrosAvanzados()">
         Filtros <span class="filtro-arrow">▾</span>
@@ -731,6 +725,18 @@
         <option value="Departamento">Departamento</option>
         <option value="Local">Local Comercial</option>
     </select>
+
+    <div class="filtro-dropdown select-filtro" id="filtro-estado-publicacion">
+        <button type="button" class="filtro-dropdown-button" onclick="toggleFiltroEstadoPublicacion()" aria-expanded="false">
+            <span id="texto-filtro-estado-publicacion">En venta</span>
+            <span class="filtro-arrow">▾</span>
+        </button>
+        <div class="filtro-dropdown-menu" id="menu-estado-publicacion">
+            <label><input type="radio" name="filtro-estado-publicacion" value="Venta" checked onchange="seleccionarFiltroEstadoPublicacion(this)">En venta</label>
+            <label><input type="radio" name="filtro-estado-publicacion" value="Alquiler" onchange="seleccionarFiltroEstadoPublicacion(this)">Para el alquiler</label>
+            <label><input type="radio" name="filtro-estado-publicacion" value="Vendido" onchange="seleccionarFiltroEstadoPublicacion(this)">Vendido</label>
+        </div>
+    </div>
 
     <button id="btn-cuenta" class="btn-navbar relleno" onclick="onClickBotonCuenta()">Iniciar sesión</button>
 </header>
@@ -1090,6 +1096,17 @@ let favoritosUsuario = [];
 let map;
 let propiedadesCombinadas = [];
 let marcadoresEnPantalla = [];
+let debugRechazos = [];
+
+function registrarRechazo(casa, motivo) {
+    try {
+        const id = casa ? (casa.id || casa.propiedad_id || casa.anuncio_id || 'sin-id') : 'sin-casa';
+        if (debugRechazos.length < 300) debugRechazos.push({ id, motivo });
+        console.debug('[DEPURACION] Rechazo', id, motivo);
+    } catch (e) {
+        console.debug('[DEPURACION] Rechazo fallo al registrar', motivo);
+    }
+}
 
 const filtrosAvanzadosAplicados = {
     tipoListado: [
@@ -2318,6 +2335,8 @@ function renderizarMapaZillow() {
 
     marcadoresEnPantalla.forEach(m => map.removeLayer(m));
     marcadoresEnPantalla = [];
+    // reiniciamos debug por cada render para evitar acumulación
+    debugRechazos = [];
 
     const filtroTexto = document.getElementById('buscador-direccion').value.trim().toLowerCase();
     const filtroAnuncio = obtenerFiltroEstadoPublicacionSeleccionado();
@@ -2335,6 +2354,9 @@ function renderizarMapaZillow() {
 
     const colorBurbuja = obtenerColorBurbujaPorEstado();
 
+    console.info('[DEPURACION] renderizarMapaZillow - propiedades:', propiedadesCombinadas.length, 'filtroAnuncio:', filtroAnuncio, 'filtroTexto:', filtroTexto, 'filtroPrecioMax:', filtroPrecioMax, 'filtroHabitaciones:', filtroHabitaciones, 'filtroBaños:', filtroBaños, 'filtroPropiedad:', filtroPropiedad);
+    try { console.debug('[DEPURACION] muestra primeras propiedades:', propiedadesCombinadas.slice(0,5)); } catch(e){}
+
     if (!map || typeof map.getBounds !== 'function') return;
 
     const limitesVisuales = map.getBounds();
@@ -2350,36 +2372,36 @@ function renderizarMapaZillow() {
     // Ejecutamos el bucle sobre nuestra lista ordenada con los campos reales del JSON
     propiedadesOrdenadas.forEach((casa) => {
             // Validamos que existan las coordenadas dentro del objeto relacional "geo"
-            if (!casa.geo || !casa.geo.latitud || !casa.geo.longitud) return;
+            if (!casa.geo || !casa.geo.latitud || !casa.geo.longitud) { registrarRechazo(casa, 'sin_coordenadas'); return; }
             
             const coordenada = L.latLng(casa.geo.latitud, casa.geo.longitud);
 
             // Filtro de texto apuntando a la dirección interna de geo
-            if (filtroTexto && (!casa.geo.direccion || !casa.geo.direccion.toLowerCase().includes(filtroTexto))) return;
+            if (filtroTexto && (!casa.geo.direccion || !casa.geo.direccion.toLowerCase().includes(filtroTexto))) { registrarRechazo(casa, 'no_coincide_texto'); return; }
 
             // Filtro de Anuncio (Venta / Alquiler / Vendido) con estado_publicacion
             const estadoPublicacion = (casa.estado_publicacion || casa.estado || '').toString().toLowerCase().trim();
             const tipoAnuncio = (casa.tipo_anuncio || '').toString().toLowerCase().trim();
             if (filtroAnuncio === 'Venta') {
-                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') return;
-                if (tipoAnuncio !== 'venta') return;
+                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') { registrarRechazo(casa, 'estado_no_disponible'); return; }
+                if (tipoAnuncio !== 'venta') { registrarRechazo(casa, 'tipo_anuncio_no_venta'); return; }
             } else if (filtroAnuncio === 'Alquiler') {
-                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') return;
-                if (tipoAnuncio !== 'alquiler') return;
+                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') { registrarRechazo(casa, 'estado_no_disponible'); return; }
+                if (tipoAnuncio !== 'alquiler') { registrarRechazo(casa, 'tipo_anuncio_no_alquiler'); return; }
             } else if (filtroAnuncio === 'Vendido') {
-                if (estadoPublicacion !== 'vendida' && estadoPublicacion !== 'vendido') return;
+                if (estadoPublicacion !== 'vendida' && estadoPublicacion !== 'vendido') { registrarRechazo(casa, 'estado_no_vendido'); return; }
             }
 
-            if (!filtroAvanzadoCoincide(casa)) return;
+            if (!filtroAvanzadoCoincide(casa)) { registrarRechazo(casa, 'filtro_avanzado_falla'); return; }
 
             // Filtros Numéricos basados estrictamente en tu consola
-            if (filtroPrecioMax !== "Todos" && casa.precio_base > parseFloat(filtroPrecioMax)) return;
-            if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) return;
+            if (filtroPrecioMax !== "Todos" && casa.precio_base > parseFloat(filtroPrecioMax)) { registrarRechazo(casa, 'precio_mayor_que_max'); return; }
+            if (filtroHabitaciones !== "Todos" && casa.habitaciones < parseInt(filtroHabitaciones)) { registrarRechazo(casa, 'habitaciones_insuficientes'); return; }
             const banosCasa = parseInt(casa.banos || casa.baños || 0);
-            if (filtroBaños !== "Todos" && banosCasa < parseInt(filtroBaños)) return;
+            if (filtroBaños !== "Todos" && banosCasa < parseInt(filtroBaños)) { registrarRechazo(casa, 'banos_insuficientes'); return; }
 
             // Filtro de Tipo de Propiedad (Casa / Departamento)
-            if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) return;
+            if (filtroPropiedad !== "Todos" && (!casa.tipo_propiedad || casa.tipo_propiedad.toString().toLowerCase().trim() !== filtroPropiedad.toLowerCase().trim())) { registrarRechazo(casa, 'tipo_propiedad_no_coincide'); return; }
 
         contadorVisual++;
         const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte";
@@ -2490,6 +2512,7 @@ function renderizarMapaZillow() {
     });
 
     txtContador.innerText = `${contadorVisual} propiedades encontradas en esta zona`;
+    console.info('[DEPURACION] resumen: mostradas', contadorVisual, 'rechazadas', debugRechazos.length, 'ejemplo_rechazos:', debugRechazos.slice(0,10));
 }
 // =========================================================================
 // COMUNICACIÓN ASÍNCRONA CON EL BACKEND (doPost)
