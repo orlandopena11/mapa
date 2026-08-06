@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1455,43 +1455,87 @@ function procesarDatosDelMotor(data) {
 
     
 function mostrarAnalisisComparativo(propiedadSeleccionada) {
-    // Guardamos el ID de la propiedad actual de manera global y ligera en el navegador
-    if (propiedadSeleccionada) localStorage.setItem('idPropiedadActual', propiedadSeleccionada.propiedad_id || propiedadSeleccionada.id);
-   
-  const contenedorTabla = document.getElementById("tabla-comparables-body");
-  if (!contenedorTabla) return;
-  
-  // Limpiamos la tabla de consultas anteriores
-  contenedorTabla.innerHTML = "";
-  const listaComparables = propiedadSeleccionada.comparables || [];
+    if (propiedadSeleccionada) {
+        const idPropiedad = propiedadSeleccionada.propiedad_id || propiedadSeleccionada.id;
+        if (idPropiedad) localStorage.setItem('idPropiedadActual', String(idPropiedad));
+    }
 
-  if (listaComparables.length === 0) {
-    contenedorTabla.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #888; padding: 15px;">No se encontraron propiedades comparables activas en el mismo distrito con características similares.</td></tr>`;
-    return;
-  }
+    const contenedorTabla = document.getElementById('tabla-comparables-body');
+    if (!contenedorTabla) return;
 
-  listaComparables.forEach(comp => {
-    const signoPrecio = comp.diferencia_precio >= 0 ? "+" : "";
-    const signoArea = comp.diferencia_area >= 0 ? "+" : "";
-    const colorPrecio = comp.diferencia_precio >= 0 ? "color: #2e7d32; font-weight: bold;" : "color: #c62828; font-weight: bold;";
+    contenedorTabla.innerHTML = '';
 
-                const filaHTML = `
-            <tr style="border-bottom: 1px solid #eee;">
-                <td style="padding: 10px;"><strong>${comp.comparable_id}</strong></td>
-                <td style="padding: 10px;">${comp.titulo} (${comp.subtipo_propiedad})</td>
-                <td style="padding: 10px;">$${comp.precio_base.toLocaleString()}</td>
-                <td style="padding: 10px;">${comp.area_construida} m²</td>
-                <td style="padding: 10px; ${colorPrecio}">${signoPrecio}$${comp.diferencia_precio.toLocaleString()}</td>
-                <td style="padding: 10px;">${signoArea}${comp.diferencia_area} m²</td>
-                <td style="padding: 10px;">${comp.distancia_km} km</td>
-                <td style="padding: 10px; text-align: center;">
-                    ${comp.enlace_mapa ? ('<a href="' + comp.enlace_mapa + '" target="_blank" style="text-decoration: none; background: #1a73e8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Ver</a>') : 'N/A'}
-                </td>
-            </tr>
-        `;
-    contenedorTabla.insertAdjacentHTML("beforeend", filaHTML);
-  });
+    const listaComparables = Array.isArray(propiedadSeleccionada?.comparables)
+        ? propiedadSeleccionada.comparables
+        : [];
 
+    if (listaComparables.length === 0) {
+        contenedorTabla.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888; padding: 15px;">No se encontraron propiedades comparables activas en el mismo distrito con características similares.</td></tr>';
+        return;
+    }
+
+    const fragmento = document.createDocumentFragment();
+
+    listaComparables.forEach(comp => {
+        const signoPrecio = Number(comp?.diferencia_precio || 0) >= 0 ? '+' : '';
+        const signoArea = Number(comp?.diferencia_area || 0) >= 0 ? '+' : '';
+        const colorPrecio = Number(comp?.diferencia_precio || 0) >= 0
+            ? 'color: #2e7d32; font-weight: bold;'
+            : 'color: #c62828; font-weight: bold;';
+
+        const fila = document.createElement('tr');
+        fila.style.borderBottom = '1px solid #eee';
+
+        const celdaComparable = document.createElement('td');
+        celdaComparable.style.padding = '10px';
+        celdaComparable.innerHTML = `<strong>${String(comp?.comparable_id ?? '-')}</strong>`;
+
+        const celdaTitulo = document.createElement('td');
+        celdaTitulo.style.padding = '10px';
+        celdaTitulo.textContent = `${comp?.titulo ?? 'Sin título'} (${comp?.subtipo_propiedad ?? 'Inmueble'})`;
+
+        const celdaPrecio = document.createElement('td');
+        celdaPrecio.style.padding = '10px';
+        celdaPrecio.textContent = `$${Number(comp?.precio_base || 0).toLocaleString('es-PE')}`;
+
+        const celdaArea = document.createElement('td');
+        celdaArea.style.padding = '10px';
+        celdaArea.textContent = `${Number(comp?.area_construida || 0)} m²`;
+
+        const celdaDiferenciaPrecio = document.createElement('td');
+        celdaDiferenciaPrecio.style.padding = '10px';
+        celdaDiferenciaPrecio.style.cssText = colorPrecio;
+        celdaDiferenciaPrecio.textContent = `${signoPrecio}$${Number(comp?.diferencia_precio || 0).toLocaleString('es-PE')}`;
+
+        const celdaDiferenciaArea = document.createElement('td');
+        celdaDiferenciaArea.style.padding = '10px';
+        celdaDiferenciaArea.textContent = `${signoArea}${Number(comp?.diferencia_area || 0)} m²`;
+
+        const celdaDistancia = document.createElement('td');
+        celdaDistancia.style.padding = '10px';
+        celdaDistancia.textContent = `${Number(comp?.distancia_km || 0)} km`;
+
+        const celdaAccion = document.createElement('td');
+        celdaAccion.style.padding = '10px';
+        celdaAccion.style.textAlign = 'center';
+
+        if (comp?.enlace_mapa) {
+            const enlace = document.createElement('a');
+            enlace.href = comp.enlace_mapa;
+            enlace.target = '_blank';
+            enlace.rel = 'noopener noreferrer';
+            enlace.style.cssText = 'text-decoration: none; background: #1a73e8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;';
+            enlace.textContent = 'Ver';
+            celdaAccion.appendChild(enlace);
+        } else {
+            celdaAccion.textContent = 'N/A';
+        }
+
+        [celdaComparable, celdaTitulo, celdaPrecio, celdaArea, celdaDiferenciaPrecio, celdaDiferenciaArea, celdaDistancia, celdaAccion].forEach(celda => fila.appendChild(celda));
+        fragmento.appendChild(fila);
+    });
+
+    contenedorTabla.appendChild(fragmento);
 }
     
 
@@ -1499,48 +1543,80 @@ function mostrarAnalisisComparativo(propiedadSeleccionada) {
 // RENDERIZADO VOLÁTIL DE PROPIEDADES CERCANAS (RADIO DE 1.5 KM)
 // =========================================================================
 function mostrarPropiedadesCercanas(propiedadSeleccionada) {
-  const contenedorCarrusel = document.getElementById("contenedor-propiedades-cercanas");
+  const contenedorCarrusel = document.getElementById('contenedor-propiedades-cercanas');
   if (!contenedorCarrusel) return;
-  
-  // Limpiamos el carrusel de consultas previas
-  contenedorCarrusel.innerHTML = "";
-  
-  // Extraemos todos los comparables calculados por el backend (que contienen la distancia en KM)
-  const todasLasPropiedadesValidadas = propiedadSeleccionada.comparables || [];
-  
-  // Filtramos bajo nuestra regla geográfica estercita: Menor o igual a 1.5 KM
-  const cercanas = todasLasPropiedadesValidadas.filter(comp => comp.distancia_km <= 1.50);
+
+  contenedorCarrusel.innerHTML = '';
+
+  const todasLasPropiedadesValidadas = Array.isArray(propiedadSeleccionada?.comparables)
+    ? propiedadSeleccionada.comparables
+    : [];
+
+  const cercanas = todasLasPropiedadesValidadas.filter(comp => Number(comp?.distancia_km || 0) <= 1.5);
 
   if (cercanas.length === 0) {
-    contenedorCarrusel.innerHTML = `<p style="color: #888; font-family: sans-serif; padding: 10px; width: 100%;">No se encontraron otras propiedades activas a menos de 1.5 km a la redonda.</p>`;
+    contenedorCarrusel.innerHTML = '<p style="color: #888; font-family: sans-serif; padding: 10px; width: 100%;">No se encontraron otras propiedades activas a menos de 1.5 km a la redonda.</p>';
     return;
   }
 
-  // Dibujamos las tarjetas en formato horizontal deslisable como Zillow
+  const fragmento = document.createDocumentFragment();
+
   cercanas.forEach(propCercana => {
-    // Intentamos extraer la foto principal directa desde el backend
-    const urlFoto = propCercana.foto_principal || (propCercana.imagenes_secundarias && propCercana.imagenes_secundarias[0]) || "https://unsplash.com";
-    
-    const tarjetaHTML = `
-      <div class="tarjeta-cercana" style="min-width: 220px; max-width: 220px; border: 1px solid #ddd; border-radius: 8px; background: white; margin-right: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: sans-serif; display: inline-block; vertical-align: top;">
-        <div style="position: relative; height: 120px; background: #eee;">
-          <img src="${urlFoto}" style="width: 100%; height: 100%; object-fit: cover;" alt="Propiedad Cercana">
-          <span style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;">
-            ?? ${propCercana.distancia_km} km
-          </span>
-        </div>
-        <div style="padding: 10px; white-space: normal;">
-          <h5 style="margin: 0 0 5px 0; font-size: 16px; color: #222;">$${propCercana.precio_base.toLocaleString()}</h5>
-          <p style="margin: 0 0 5px 0; font-size: 12px; color: #666; font-weight: bold;">${propCercana.area_construida} m² | ${propCercana.subtipo_propiedad || 'Inmueble'}</p>
-          <p style="margin: 0; font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;" title="${propCercana.titulo}">${propCercana.titulo}</p>
-          <button onclick="abrirVentanaDetalle('${propCercana.id || propCercana.comparable_id}')" style="margin-top: 8px; width: 100%; background: #1a73e8; color: white; border: none; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;">
-            Ver Propiedad
-          </button>
-        </div>
-      </div>
-    `;
-    contenedorCarrusel.insertAdjacentHTML("beforeend", tarjetaHTML);
+    const urlFoto = propCercana?.foto_principal || (Array.isArray(propCercana?.imagenes_secundarias) && propCercana.imagenes_secundarias[0]) || 'https://unsplash.com';
+    const idPropiedad = propCercana?.id || propCercana?.comparable_id;
+
+    const tarjeta = document.createElement('div');
+    tarjeta.className = 'tarjeta-cercana';
+    tarjeta.style.cssText = 'min-width: 220px; max-width: 220px; border: 1px solid #ddd; border-radius: 8px; background: white; margin-right: 15px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-family: sans-serif; display: inline-block; vertical-align: top;';
+
+    const imagenWrapper = document.createElement('div');
+    imagenWrapper.style.cssText = 'position: relative; height: 120px; background: #eee;';
+
+    const imagen = document.createElement('img');
+    imagen.src = urlFoto;
+    imagen.alt = 'Propiedad Cercana';
+    imagen.style.cssText = 'width: 100%; height: 100%; object-fit: cover;';
+
+    const etiqueta = document.createElement('span');
+    etiqueta.style.cssText = 'position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold;';
+    etiqueta.textContent = `≈ ${Number(propCercana?.distancia_km || 0).toFixed(2)} km`;
+
+    imagenWrapper.appendChild(imagen);
+    imagenWrapper.appendChild(etiqueta);
+
+    const contenido = document.createElement('div');
+    contenido.style.cssText = 'padding: 10px; white-space: normal;';
+
+    const precio = document.createElement('h5');
+    precio.style.cssText = 'margin: 0 0 5px 0; font-size: 16px; color: #222;';
+    precio.textContent = `$${Number(propCercana?.precio_base || 0).toLocaleString('es-PE')}`;
+
+    const datos = document.createElement('p');
+    datos.style.cssText = 'margin: 0 0 5px 0; font-size: 12px; color: #666; font-weight: bold;';
+    datos.textContent = `${Number(propCercana?.area_construida || 0)} m² | ${propCercana?.subtipo_propiedad || 'Inmueble'}`;
+
+    const titulo = document.createElement('p');
+    titulo.style.cssText = 'margin: 0; font-size: 11px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%;';
+    titulo.title = propCercana?.titulo || 'Propiedad';
+    titulo.textContent = propCercana?.titulo || 'Propiedad';
+
+    const boton = document.createElement('button');
+    boton.type = 'button';
+    boton.style.cssText = 'margin-top: 8px; width: 100%; background: #1a73e8; color: white; border: none; padding: 6px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; text-align: center;';
+    boton.textContent = 'Ver Propiedad';
+    boton.onclick = () => abrirVentanaDetalle(idPropiedad);
+
+    contenido.appendChild(precio);
+    contenido.appendChild(datos);
+    contenido.appendChild(titulo);
+    contenido.appendChild(boton);
+
+    tarjeta.appendChild(imagenWrapper);
+    tarjeta.appendChild(contenido);
+    fragmento.appendChild(tarjeta);
   });
+
+  contenedorCarrusel.appendChild(fragmento);
 }
 
 // =========================================================================
@@ -3857,4 +3933,4 @@ window.cambiarFotoCarrusel = function(event, boton, direccion) {
 };
 </script>
 </body>
-</html> 
+</html>
