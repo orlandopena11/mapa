@@ -1475,20 +1475,20 @@ function mostrarAnalisisComparativo(propiedadSeleccionada) {
     const signoArea = comp.diferencia_area >= 0 ? "+" : "";
     const colorPrecio = comp.diferencia_precio >= 0 ? "color: #2e7d32; font-weight: bold;" : "color: #c62828; font-weight: bold;";
 
-    const filaHTML = `
-      <tr style="border-bottom: 1px solid #eee;">
-        <td style="padding: 10px;"><strong>${comp.comparable_id}</strong></td>
-        <td style="padding: 10px;">${comp.titulo} (${comp.subtipo_propiedad})</td>
-        <td style="padding: 10px;">$${comp.precio_base.toLocaleString()}</td>
-        <td style="padding: 10px;">${comp.area_construida} m²</td>
-        <td style="padding: 10px; ${colorPrecio}">${signoPrecio}$${comp.diferencia_precio.toLocaleString()}</td>
-        <td style="padding: 10px;">${signoArea}${comp.diferencia_area} m²</td>
-        <td style="padding: 10px;">${comp.distancia_km} km</td>
-        <td style="padding: 10px; text-align: center;">
-          ${comp.enlace_mapa ? `<a href="${comp.enlace_mapa}" target="_blank" style="text-decoration: none; background: #1a73e8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">?? Ver</a>` : 'N/A'}
-        </td>
-      </tr>
-    `;
+                const filaHTML = `
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px;"><strong>${comp.comparable_id}</strong></td>
+                <td style="padding: 10px;">${comp.titulo} (${comp.subtipo_propiedad})</td>
+                <td style="padding: 10px;">$${comp.precio_base.toLocaleString()}</td>
+                <td style="padding: 10px;">${comp.area_construida} m²</td>
+                <td style="padding: 10px; ${colorPrecio}">${signoPrecio}$${comp.diferencia_precio.toLocaleString()}</td>
+                <td style="padding: 10px;">${signoArea}${comp.diferencia_area} m²</td>
+                <td style="padding: 10px;">${comp.distancia_km} km</td>
+                <td style="padding: 10px; text-align: center;">
+                    ${comp.enlace_mapa ? ('<a href="' + comp.enlace_mapa + '" target="_blank" style="text-decoration: none; background: #1a73e8; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">Ver</a>') : 'N/A'}
+                </td>
+            </tr>
+        `;
     contenedorTabla.insertAdjacentHTML("beforeend", filaHTML);
   });
 
@@ -1896,7 +1896,7 @@ function mostrarConectividadYServicios(propiedadSeleccionada) {
         <p style="margin: 0 0 6px 0; font-size: 11px; color: #777;">Aprox. ${lugar.subtipo_propiedad || 'Zona comercial'}</p>
         <div style="border-top: 1px solid #f5f5f5; padding-top: 6px; display: flex; justify-content: space-between; align-items: center;">
           <span style="font-size: 12px; font-weight: bold; color: #007054;">?? ${lugar.distancia_km} km</span>
-          ${lugar.enlace_mapa ? `<a href="${lugar.enlace_mapa}" target="_blank" style="text-decoration:none; font-size:11px; color:#1a73e8; font-weight:bold;">Ver ruta ?</a>` : ''}
+          ${lugar.enlace_mapa ? ('<a href="' + lugar.enlace_mapa + '" target="_blank" style="text-decoration:none; font-size:11px; color:#1a73e8; font-weight:bold;">Ver ruta</a>') : ''}
         </div>
       </div>
     `;
