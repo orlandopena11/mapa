@@ -46,7 +46,7 @@
         .navbar-marca img { width: 52px; height: 52px; object-fit: contain; border-radius: 10px; }
         .navbar-marca span { display: block; font-size: 16px; font-weight: 800; color: var(--azul-oscuro); line-height: 1.05; text-align: center; }
 
-        .navbar-tools {
+    /*    .navbar-tools {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
@@ -56,6 +56,19 @@
             max-width: 1500px;
             overflow-x: auto;
         }
+     */
+        .navbar-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    width: 100%;
+    max-width: 1500px;
+    overflow: visible !important;
+    position: relative;
+    z-index: 1000;
+}
 
         .buscador-direccion {
             flex: 0 1 220px;
