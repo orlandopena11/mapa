@@ -64,6 +64,53 @@
             font-weight: 600;
             color: #2a2a2a;
             cursor: pointer;
+            position: relative;
+        }
+        .filtro-dropdown {
+            position: relative;
+        }
+        .filtro-dropdown-button {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            background: transparent;
+            font: inherit;
+            color: inherit;
+            cursor: pointer;
+            padding: 0;
+        }
+        .filtro-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            width: 240px;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+            padding: 14px 16px;
+            z-index: 120;
+        }
+        .filtro-dropdown-menu.show {
+            display: block;
+        }
+        .filtro-dropdown-menu label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #1f2937;
+            cursor: pointer;
+        }
+        .filtro-dropdown-menu label:last-child { margin-bottom: 0; }
+        .filtro-dropdown-menu input {
+            accent-color: var(--azul-zillow);
+            cursor: pointer;
         }
         .btn-navbar {
             padding: 9px 18px;
@@ -78,6 +125,104 @@
             margin-left: auto;
         }
         .btn-navbar.relleno { background: var(--azul-zillow); color: white; }
+        .btn-filtros { display: inline-flex; align-items: center; gap: 8px; }
+        .panel-filtros {
+            position: absolute;
+            top: calc(100% + 10px);
+            right: 0;
+            width: 420px;
+            max-width: calc(100vw - 26px);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(15, 23, 42, 0.18);
+            padding: 18px;
+            display: none;
+            z-index: 115;
+        }
+        .panel-filtros.show {
+            display: block;
+        }
+        .panel-filtros-contenido { display: grid; gap: 18px; }
+        .panel-filtros-seccion { display: grid; gap: 10px; }
+        .panel-filtros-seccion h4 { margin: 0; font-size: 14px; font-weight: 800; color: #111827; }
+        .panel-checkbox-group { display: grid; gap: 10px; }
+        .panel-checkbox-group label { font-size: 13px; color: #334155; align-items: center; }
+        .panel-checkbox-group input { accent-color: var(--azul-zillow); }
+        .panel-checkbox-group--oculto { display: none; }
+        .panel-link-accion {
+            border: none;
+            background: transparent;
+            color: var(--azul-zillow);
+            font-size: 13px;
+            text-align: left;
+            padding: 0;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .panel-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 14px;
+            background: white;
+            font: inherit;
+            color: #111827;
+            cursor: pointer;
+        }
+        .panel-range-line { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .panel-range-line select,
+        .panel-range-line input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 14px; background: white; font: inherit; }
+        .panel-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; }
+        .panel-footer a { color: #006aff; text-decoration: none; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .panel-footer .btn-aplicar-filtros {
+            background: var(--azul-oscuro);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 800;
+        }
+        .panel-filtros .ayuda {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #dbeafe;
+        }
+        .map-price-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 56px;
+            max-width: 88px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 2px solid white;
+            font-size: 13px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            white-space: nowrap;
+        }
+        .map-price-pill.venta { background: #002E50; }
+        .map-price-pill.alquiler { background: #F9B218; }
+        .map-price-pill.vendido { background: #6B7280; }
+        .popup-card { width: 280px; font-family: 'Segoe UI', Arial, sans-serif; }
+        .popup-card img { width: 100%; border-radius: 18px; object-fit: cover; height: 140px; display: block; }
+        .popup-card .popup-heart { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.85); border: none; border-radius: 999px; width: 34px; height: 34px; font-size: 18px; cursor: pointer; color: #002E50; }
+        .popup-card .popup-price { margin: 12px 0 6px; font-size: 18px; font-weight: 900; color: #111827; }
+        .popup-card .popup-summary { font-size: 13px; color: #475569; margin-bottom: 8px; }
+        .popup-card .popup-address { font-size: 13px; color: #334155; line-height: 1.4; }
 
         /* =========================================================
            BANNER DE BLOQUEO EN TIEMPO REAL (Punto 4)
@@ -379,11 +524,182 @@
 
     <input type="text" id="buscador-direccion" class="buscador-direccion" placeholder="Dirección, barrio, ciudad, ZIP" oninput="renderizarMapaZillow()">
 
-    <select id="filtro-tipo-anuncio" class="select-filtro" onchange="renderizarMapaZillow()">
-        <option value="Todos">Para el alquiler / venta</option>
-        <option value="Venta">En venta</option>
-        <option value="Alquiler">En alquiler</option>
-    </select>
+    <div class="filtro-dropdown select-filtro" id="filtro-estado-publicacion">
+        <button type="button" class="filtro-dropdown-button" onclick="toggleFiltroEstadoPublicacion()" aria-expanded="false">
+            <span id="texto-filtro-estado-publicacion">En venta</span>
+            <span class="filtro-arrow">▾</span>
+        </button>
+        <div class="filtro-dropdown-menu" id="menu-estado-publicacion">
+            <label><input type="radio" name="filtro-estado-publicacion" value="Venta" checked onchange="seleccionarFiltroEstadoPublicacion(this)">En venta</label>
+            <label><input type="radio" name="filtro-estado-publicacion" value="Alquiler" onchange="seleccionarFiltroEstadoPublicacion(this)">Para el alquiler</label>
+            <label><input type="radio" name="filtro-estado-publicacion" value="Vendido" onchange="seleccionarFiltroEstadoPublicacion(this)">Vendido</label>
+        </div>
+    </div>
+
+    <button id="btn-filtros-panel" class="btn-navbar relleno btn-filtros" type="button" onclick="togglePanelFiltrosAvanzados()">
+        Filtros <span class="filtro-arrow">▾</span>
+    </button>
+
+    <div id="panel-filtros-avanzados" class="panel-filtros" aria-hidden="true">
+        <div class="panel-filtros-contenido">
+            <div class="panel-filtros-seccion">
+                <h4>Tipo de listado</h4>
+                <div class="panel-checkbox-group">
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Propietario publicado" checked>Propietario publicado</label>
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Agente listado" checked>Agente listado</label>
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Nueva construcción" checked>Nueva construcción</label>
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Ejecuciones hipotecarias" checked>Ejecuciones hipotecarias <span class="ayuda">?</span></label>
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Subastas" checked>Subastas</label>
+                </div>
+                <div id="filtro-tipo-listado-extension" class="panel-checkbox-group panel-checkbox-group--oculto">
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Ejecutado">Ejecutado <span class="ayuda">?</span></label>
+                    <label><input type="checkbox" name="filtro-tipo-listado" value="Pre-ejecuciones">Pre-ejecuciones <span class="ayuda">?</span></label>
+                </div>
+                <button type="button" class="panel-link-accion" id="boton-mostrar-mas-listado" onclick="toggleMasTiposListado()">v Mostrar más</button>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Estado del listado</h4>
+                <label class="panel-checkbox-single"><input type="checkbox" id="filtro-listado-activo" checked>Activo</label>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Max Cuota de mantenimiento</h4>
+                <select id="filtro-cuota-mantenimiento" class="panel-select">
+                    <option value="Todos">Cualquiera</option>
+                    <option value="100">S/ 100</option>
+                    <option value="200">S/ 200</option>
+                    <option value="300">S/ 300</option>
+                    <option value="400">S/ 400</option>
+                    <option value="500">S/ 500</option>
+                    <option value="600">S/ 600</option>
+                    <option value="700">S/ 700</option>
+                    <option value="800">S/ 800</option>
+                    <option value="900">S/ 900</option>
+                    <option value="1000">S/ 1,000</option>
+                    <option value="1100">S/ 1,100</option>
+                    <option value="1200">S/ 1,200</option>
+                    <option value="1300">S/ 1,300</option>
+                    <option value="1400">S/ 1,400</option>
+                    <option value="1500">S/ 1,500</option>
+                    <option value="1600">S/ 1,600</option>
+                    <option value="1700">S/ 1,700</option>
+                    <option value="1800">S/ 1,800</option>
+                    <option value="1900">S/ 1,900</option>
+                    <option value="2000">S/ 2,000</option>
+                </select>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Tour 3D</h4>
+                <label class="panel-checkbox-single"><input type="checkbox" id="filtro-tour-3d">Debe tener un Tour 3D</label>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Estacionamientos</h4>
+                <select id="filtro-estacionamientos" class="panel-select">
+                    <option value="Cualquiera">Cualquiera</option>
+                    <option value="1">1+</option>
+                    <option value="2">2+</option>
+                    <option value="3">3+</option>
+                    <option value="4">4+</option>
+                    <option value="5">5+</option>
+                </select>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Metros cuadrados</h4>
+                <div class="panel-range-line">
+                    <select id="filtro-area-min" class="panel-select">
+                        <option value="No Min">No Min</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="200">200</option>
+                        <option value="300">300</option>
+                        <option value="400">400</option>
+                        <option value="500">500</option>
+                        <option value="600">600</option>
+                        <option value="700">700</option>
+                        <option value="800">800</option>
+                        <option value="900">900</option>
+                        <option value="1000">1000</option>
+                        <option value="1200">1200</option>
+                        <option value="1400">1400</option>
+                        <option value="1600">1600</option>
+                        <option value="1800">1800</option>
+                        <option value="2000">2000</option>
+                        <option value="2200">2200</option>
+                        <option value="2500">2500</option>
+                    </select>
+                    <select id="filtro-area-max" class="panel-select">
+                        <option value="No Max">No Max</option>
+                        <option value="150">150</option>
+                        <option value="250">250</option>
+                        <option value="350">350</option>
+                        <option value="450">450</option>
+                        <option value="550">550</option>
+                        <option value="650">650</option>
+                        <option value="750">750</option>
+                        <option value="850">850</option>
+                        <option value="950">950</option>
+                        <option value="1050">1050</option>
+                        <option value="1250">1250</option>
+                        <option value="1450">1450</option>
+                        <option value="1650">1650</option>
+                        <option value="1850">1850</option>
+                        <option value="2050">2050</option>
+                        <option value="2250">2250</option>
+                        <option value="2500">2500</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Año de construcción</h4>
+                <div class="panel-range-line">
+                    <input type="number" id="filtro-ano-desde" placeholder="Desde" min="1800" max="2100">
+                    <input type="number" id="filtro-ano-hasta" placeholder="Hasta" min="1800" max="2100">
+                </div>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Características especiales</h4>
+                <div id="panel-filtros-caracteristicas" class="panel-checkbox-group" style="max-height: 180px; overflow-y: auto; padding-right: 2px;"></div>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Vista</h4>
+                <div class="panel-checkbox-group">
+                    <label><input type="checkbox" name="filtro-vista" value="Ciudad">Ciudad</label>
+                    <label><input type="checkbox" name="filtro-vista" value="Montaña">Montaña</label>
+                    <label><input type="checkbox" name="filtro-vista" value="Parque">Parque</label>
+                    <label><input type="checkbox" name="filtro-vista" value="Agua">Agua</label>
+                    <label><input type="checkbox" name="filtro-vista" value="Ninguna">Ninguna</label>
+                </div>
+            </div>
+
+            <div class="panel-filtros-seccion">
+                <h4>Días de publicación</h4>
+                <select id="filtro-dias-publicacion" class="panel-select">
+                    <option value="Cualquiera">Cualquiera</option>
+                    <option value="1 día">1 día</option>
+                    <option value="7 días">7 días</option>
+                    <option value="14 días">14 días</option>
+                    <option value="30 días">30 días</option>
+                    <option value="3 meses">3 meses</option>
+                    <option value="6 meses">6 meses</option>
+                    <option value="12 meses">12 meses</option>
+                    <option value="34 meses">34 meses</option>
+                    <option value="36 meses">36 meses</option>
+                </select>
+            </div>
+
+            <div class="panel-footer">
+                <a href="#" onclick="resetearFiltrosAvanzados(); return false;">Restablecer todos los filtros</a>
+                <button type="button" class="btn-aplicar-filtros" onclick="aplicarFiltrosAvanzados()">Aplicar</button>
+            </div>
+        </div>
+    </div>
 
     <select id="filtro-precio-max" class="select-filtro" onchange="renderizarMapaZillow()">
         <option value="Todos">Precio (todos)</option>
@@ -775,6 +1091,27 @@ let map;
 let propiedadesCombinadas = [];
 let marcadoresEnPantalla = [];
 
+const filtrosAvanzadosAplicados = {
+    tipoListado: [
+        "Propietario publicado",
+        "Agente listado",
+        "Nueva construcción",
+        "Ejecuciones hipotecarias",
+        "Subastas"
+    ],
+    listadoActivo: true,
+    cuotaMantenimiento: "Todos",
+    tour3D: false,
+    estacionamientos: "Cualquiera",
+    areaMin: "No Min",
+    areaMax: "No Max",
+    anoDesde: "",
+    anoHasta: "",
+    caracteristicasEspeciales: [],
+    vistas: [],
+    diasPublicacion: "Cualquiera"
+};
+
 const MENSAJE_SUSPENSION = "Ha sido suspendido por violar las políticas de la aplicación. Por favor, contacte con soporte técnico";
 
 // ?? REEMPLAZA ESTO POR TU URL /exec GENERADA EN GOOGLE APPS SCRIPT
@@ -951,8 +1288,27 @@ function normalizarPropiedad(prop) {
     const descripcion = prop.descripcion || prop.descripcion_larga || prop.descripcion_corta || "";
     const moneda = prop.moneda || "USD";
     const historial = prop.historial_precio || prop.historial || [];
-    const caracteristicasExtras = prop.caracteristicas_extras || prop.detalles || [];
+    let caracteristicasExtras = prop.caracteristicas_extras || prop.detalles || prop.caracteristicas || prop.amenidades || [];
+    if (!Array.isArray(caracteristicasExtras) && typeof caracteristicasExtras === 'string') {
+        caracteristicasExtras = caracteristicasExtras
+            .split(/[,;]+/)
+            .map(item => ({ nombre_caracteristica: item.trim(), valor_caracteristica: 'Si' }))
+            .filter(item => item.nombre_caracteristica);
+    }
     const recorrido3d = prop.recorrido_3d || prop.tour_3d || prop.recorrido3d || prop.url_recorrido || null;
+    const estadoPublicacion = String(prop.estado_publicacion || prop.estado || prop.estado_publicacion_propiedad || prop.estado_propiedad || "").trim();
+    const fechaPublicacion = prop.fecha_publicacion || prop.fecha_publicada || prop.fecha || prop.fecha_publicacion_anuncio || prop.fecha_anuncio || "";
+    const vista = prop.vista || prop.tipo_vista || prop.vistas || "";
+    const estacionamientos = parseInt(prop.estacionamientos || prop.estacionamiento || prop.estacionamiento_total || prop.parqueaderos || prop.parqueaderos_totales || 0) || 0;
+    const cuotaMantenimiento = parseFloat(prop.cuota_mantenimiento || prop.mantenimiento || prop.mantenimiento_mensual || prop.cuota_mensual || 0) || 0;
+    const anoConstruccion = parseInt(prop.ano_construccion || prop.anio_construccion || prop.año_construccion || prop.anio || prop.ano || 0) || 0;
+    const tipoListado = String(prop.tipo_listado || prop.quien_vende || prop.publicado_por || prop.origen_oferta || prop.listado_por || "").trim();
+    const fechaPublicada = fechaPublicacion;
+    const fechaPublicacionNormalized = fechaPublicada;
+    const estadoPublicacionNormalized = estadoPublicacion;
+    const vistaNormalizada = vista;
+    const tipoListadoNormalizado = tipoListado;
+    const caracteristicasExtrasNormalizadas = caracteristicasExtras;
     const promocion = prop.promocion || prop.oferta || null;
 
     const ubicacionProp = prop.ubicacion || prop.ubicaciones || prop.geo || {};
@@ -996,6 +1352,13 @@ function normalizarPropiedad(prop) {
     prop.historial_precio = historial;
     prop.caracteristicas_extras = caracteristicasExtras;
     prop.recorrido_3d = recorrido3d;
+    prop.estado_publicacion = estadoPublicacionNormalized;
+    prop.fecha_publicacion = fechaPublicacionNormalized;
+    prop.vista = vistaNormalizada;
+    prop.estacionamientos = estacionamientos;
+    prop.cuota_mantenimiento = cuotaMantenimiento;
+    prop.ano_construccion = anoConstruccion;
+    prop.tipo_listado = tipoListadoNormalizado;
     prop.promocion = promocion;
     prop.fotos = fotosUnicas;
     prop.foto_principal = prop.foto_principal || fotosUnicas[0] || "";
@@ -1052,7 +1415,8 @@ function procesarDatosDelMotor(data) {
         prop.comparables = original && Array.isArray(original.comparables) ? original.comparables : [];
     });
 
-    // 3. Con los datos ya normalizados y disponibles en memoria, disparamos el primer renderizado.
+    // 3. Con los datos ya normalizados y disponibles en memoria, preparamos los filtros dinámicos.
+    actualizarCaracteristicasEspecialesUI();
     renderizarMapaZillow();
 }
 
@@ -1702,6 +2066,250 @@ function formatearPrecio(precio, moneda) {
 // Esta función actualiza el mapa, las tarjetas y los marcadores según los filtros
 // activos, la sesión de usuario y los datos normalizados en memoria.
 // =========================================================================
+function obtenerFiltroEstadoPublicacionSeleccionado() {
+    const seleccionado = document.querySelector('input[name="filtro-estado-publicacion"]:checked');
+    return seleccionado ? seleccionado.value : 'Venta';
+}
+
+function toggleFiltroEstadoPublicacion() {
+    const menu = document.getElementById('menu-estado-publicacion');
+    if (!menu) return;
+
+    const abierta = menu.classList.toggle('show');
+    document.getElementById('filtro-estado-publicacion').querySelector('.filtro-dropdown-button').setAttribute('aria-expanded', abierta ? 'true' : 'false');
+}
+
+function seleccionarFiltroEstadoPublicacion(input) {
+    if (!input) return;
+    const texto = document.getElementById('texto-filtro-estado-publicacion');
+    if (texto) texto.textContent = input.parentElement.textContent.trim();
+    document.getElementById('menu-estado-publicacion').classList.remove('show');
+    renderizarMapaZillow();
+}
+
+function togglePanelFiltrosAvanzados() {
+    const panel = document.getElementById('panel-filtros-avanzados');
+    if (!panel) return;
+    panel.classList.toggle('show');
+    panel.setAttribute('aria-hidden', panel.classList.contains('show') ? 'false' : 'true');
+}
+
+function cerrarPanelFiltrosAvanzados() {
+    const panel = document.getElementById('panel-filtros-avanzados');
+    if (!panel) return;
+    panel.classList.remove('show');
+    panel.setAttribute('aria-hidden', 'true');
+}
+
+function toggleMasTiposListado() {
+    const extension = document.getElementById('filtro-tipo-listado-extension');
+    const boton = document.getElementById('boton-mostrar-mas-listado');
+    if (!extension || !boton) return;
+    const mostrar = extension.classList.toggle('panel-checkbox-group--oculto');
+    boton.textContent = mostrar ? 'v Mostrar más' : '^ Mostrar menos';
+}
+
+function actualizarCaracteristicasEspecialesUI() {
+    const contenedor = document.getElementById('panel-filtros-caracteristicas');
+    if (!contenedor) return;
+    const valores = new Set();
+    propiedadesCombinadas.forEach(prop => {
+        const extras = prop.caracteristicas_extras || [];
+        if (Array.isArray(extras)) {
+            extras.forEach(item => {
+                const nombre = String(item.nombre_caracteristica || item.nombre || item.descripcion || item).trim();
+                if (nombre) valores.add(nombre);
+            });
+        }
+    });
+
+    const opciones = Array.from(valores).sort((a, b) => a.localeCompare(b, 'es')); 
+    contenedor.innerHTML = '';
+    if (!opciones.length) {
+        contenedor.innerHTML = '<div style="color:#6b7280; font-size:13px;">No hay características especiales disponibles.</div>';
+        return;
+    }
+
+    opciones.forEach(nombre => {
+        const label = document.createElement('label');
+        label.innerHTML = `<input type="checkbox" name="filtro-caracteristica-especial" value="${nombre}">${nombre}`;
+        contenedor.appendChild(label);
+    });
+}
+
+function leerFiltrosAvanzadosUI() {
+    const getCheckboxValues = (name) => {
+        return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(el => el.value.trim());
+    };
+
+    return {
+        tipoListado: getCheckboxValues('filtro-tipo-listado'),
+        listadoActivo: document.getElementById('filtro-listado-activo')?.checked === true,
+        cuotaMantenimiento: document.getElementById('filtro-cuota-mantenimiento')?.value || 'Todos',
+        tour3D: document.getElementById('filtro-tour-3d')?.checked === true,
+        estacionamientos: document.getElementById('filtro-estacionamientos')?.value || 'Cualquiera',
+        areaMin: document.getElementById('filtro-area-min')?.value || 'No Min',
+        areaMax: document.getElementById('filtro-area-max')?.value || 'No Max',
+        anoDesde: document.getElementById('filtro-ano-desde')?.value || '',
+        anoHasta: document.getElementById('filtro-ano-hasta')?.value || '',
+        caracteristicasEspeciales: getCheckboxValues('filtro-caracteristica-especial'),
+        vistas: getCheckboxValues('filtro-vista'),
+        diasPublicacion: document.getElementById('filtro-dias-publicacion')?.value || 'Cualquiera'
+    };
+}
+
+function aplicarFiltrosAvanzados() {
+    Object.assign(filtrosAvanzadosAplicados, leerFiltrosAvanzadosUI());
+    renderizarMapaZillow();
+    cerrarPanelFiltrosAvanzados();
+}
+
+function resetearFiltrosAvanzados() {
+    document.querySelectorAll('#panel-filtros-avanzados input[type="checkbox"]').forEach(checkbox => {
+        if (checkbox.name === 'filtro-tipo-listado') {
+            checkbox.checked = ['Propietario publicado','Agente listado','Nueva construcción','Ejecuciones hipotecarias','Subastas'].includes(checkbox.value);
+        } else if (checkbox.id === 'filtro-listado-activo') {
+            checkbox.checked = true;
+        } else {
+            checkbox.checked = false;
+        }
+    });
+    document.getElementById('filtro-cuota-mantenimiento').value = 'Todos';
+    document.getElementById('filtro-estacionamientos').value = 'Cualquiera';
+    document.getElementById('filtro-area-min').value = 'No Min';
+    document.getElementById('filtro-area-max').value = 'No Max';
+    document.getElementById('filtro-ano-desde').value = '';
+    document.getElementById('filtro-ano-hasta').value = '';
+    document.getElementById('filtro-tour-3d').checked = false;
+    document.getElementById('filtro-dias-publicacion').value = 'Cualquiera';
+    document.querySelectorAll('input[name="filtro-caracteristica-especial"]').forEach(el => el.checked = false);
+    document.querySelectorAll('input[name="filtro-vista"]').forEach(el => el.checked = false);
+    Object.assign(filtrosAvanzadosAplicados, {
+        tipoListado: ['Propietario publicado','Agente listado','Nueva construcción','Ejecuciones hipotecarias','Subastas'],
+        listadoActivo: true,
+        cuotaMantenimiento: 'Todos',
+        tour3D: false,
+        estacionamientos: 'Cualquiera',
+        areaMin: 'No Min',
+        areaMax: 'No Max',
+        anoDesde: '',
+        anoHasta: '',
+        caracteristicasEspeciales: [],
+        vistas: [],
+        diasPublicacion: 'Cualquiera'
+    });
+    renderizarMapaZillow();
+}
+
+function obtenerDiasDesdePublicacion(fecha) {
+    if (!fecha) return null;
+    const valorFecha = new Date(fecha);
+    if (isNaN(valorFecha.getTime())) return null;
+    const hoy = new Date();
+    const diferencia = Math.floor((hoy - valorFecha) / (1000 * 60 * 60 * 24));
+    return diferencia;
+}
+
+function mapearRangoDias(valor) {
+    const meses = { '3 meses': 90, '6 meses': 180, '12 meses': 365, '34 meses': 34 * 30, '36 meses': 36 * 30 };
+    if (valor === 'Cualquiera') return null;
+    if (valor === '1 día') return 1;
+    if (valor === '7 días') return 7;
+    if (valor === '14 días') return 14;
+    if (valor === '30 días') return 30;
+    return meses[valor] || null;
+}
+
+function filtroAvanzadoCoincide(casa) {
+    const filtros = filtrosAvanzadosAplicados;
+    const tipoListado = (casa.tipo_listado || '').toString().toLowerCase();
+    const vista = (casa.vista || '').toString().toLowerCase();
+
+    if (filtros.listadoActivo) {
+        const estado = (casa.estado_publicacion || '').toString().toLowerCase();
+        if (estado !== 'activo' && estado !== 'disponible' && filtrosAvanzadosAplicados && obtenerFiltroEstadoPublicacionSeleccionado() !== 'Vendido') {
+            return false;
+        }
+    }
+
+    if (filtros.cuotaMantenimiento && filtros.cuotaMantenimiento !== 'Todos') {
+        if (parseFloat(casa.cuota_mantenimiento || casa.mantenimiento || 0) > parseFloat(filtros.cuotaMantenimiento)) return false;
+    }
+    if (filtros.tour3D) {
+        const tourUrl = (casa.recorrido_3d || casa.url_recorrido || '');
+        if (!tourUrl) return false;
+    }
+    if (filtros.estacionamientos && filtros.estacionamientos !== 'Cualquiera') {
+        if (parseInt(casa.estacionamientos || 0) < parseInt(filtros.estacionamientos)) return false;
+    }
+    const area = parseFloat(casa.area_construida || casa.area || 0);
+    if (filtros.areaMin !== 'No Min' && area < parseFloat(filtros.areaMin)) return false;
+    if (filtros.areaMax !== 'No Max' && area > parseFloat(filtros.areaMax)) return false;
+    const ano = parseInt(casa.ano_construccion || casa.anio_construccion || casa.año_construccion || 0);
+    if (filtros.anoDesde && ano < parseInt(filtros.anoDesde)) return false;
+    if (filtros.anoHasta && ano > parseInt(filtros.anoHasta)) return false;
+    if (filtros.caracteristicasEspeciales.length > 0) {
+        const extras = (casa.caracteristicas_extras || []).map(item => String(item.nombre_caracteristica || item.nombre || item.descripcion || item).toLowerCase());
+        for (const buscada of filtros.caracteristicasEspeciales) {
+            if (!extras.includes(buscada.toLowerCase())) return false;
+        }
+    }
+    if (filtros.vistas.length > 0) {
+        const vistaSeleccionada = filtros.vistas.map(v => v.toLowerCase());
+        const coincidencias = vistaSeleccionada.some(valor => {
+            if (valor === 'ninguna') return !vista || vista === '' || vista === 'ninguna';
+            return vista.includes(valor);
+        });
+        if (!coincidencias) return false;
+    }
+    if (filtros.diasPublicacion && filtros.diasPublicacion !== 'Cualquiera') {
+        const dias = obtenerDiasDesdePublicacion(casa.fecha_publicacion || casa.fecha || casa.fecha_publicada);
+        const maxDias = mapearRangoDias(filtros.diasPublicacion);
+        if (dias === null || maxDias === null || dias > maxDias) return false;
+    }
+    if (filtros.tipoListado.length > 0) {
+        const coincidirListado = filtros.tipoListado.some(valor => {
+            const buscado = valor.toLowerCase();
+            if (buscado === 'propietario publicado') return tipoListado.includes('propietario') || tipoListado.includes('owner') || tipoListado.includes('dueño');
+            if (buscado === 'agente listado') return tipoListado.includes('agente') || tipoListado.includes('broker') || tipoListado.includes('agency');
+            if (buscado === 'nueva construcción') return tipoListado.includes('nueva') || tipoListado.includes('nuevo') || tipoListado.includes('construcción');
+            if (buscado === 'ejecuciones hipotecarias') return tipoListado.includes('ejecución') || tipoListado.includes('hipotecaria') || tipoListado.includes('foreclosure');
+            if (buscado === 'subastas') return tipoListado.includes('subasta') || tipoListado.includes('auction');
+            if (buscado === 'ejecutado') return tipoListado.includes('ejecutado') || tipoListado.includes('executed');
+            if (buscado === 'pre-ejecuciones') return tipoListado.includes('pre-ejecución') || tipoListado.includes('pre-ejecuciones') || tipoListado.includes('preforeclosure');
+            return false;
+        });
+        if (!coincidirListado) return false;
+    }
+    return true;
+}
+
+function obtenerColorBurbujaPorEstado() {
+    const filtro = obtenerFiltroEstadoPublicacionSeleccionado();
+    if (filtro === 'Venta') return 'venta';
+    if (filtro === 'Alquiler') return 'alquiler';
+    return 'vendido';
+}
+
+function construirPopupCard(casa) {
+    const imagen = casa.foto_principal ? construirUrlImagen(casa.foto_principal) : 'https://unsplash.com';
+    const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : 'Consulte';
+    const resumen = `${casa.habitaciones || 0} bd | ${casa.banos || casa.baños || 0} ba | ${casa.area_construida || casa.area || 0} m²`;
+    const direccion = casa.direccion || (casa.geo && casa.geo.direccion) || 'Dirección no disponible';
+
+    return `
+        <div class="popup-card">
+            <div style="position: relative;">
+                <img src="${imagen}" alt="Propiedad" />
+                <button class="popup-heart" onclick="event.stopPropagation(); alternarFavoritoReal('${casa.id}')">♥</button>
+            </div>
+            <div class="popup-price">${precioFormateado}</div>
+            <div class="popup-summary">${resumen}</div>
+            <div class="popup-address">${direccion}</div>
+        </div>
+    `;
+}
+
 function renderizarMapaZillow() {
     const contenedor = document.getElementById('contenedor-tarjetas');
     const txtContador = document.getElementById('contador-propiedades');
@@ -1711,16 +2319,8 @@ function renderizarMapaZillow() {
     marcadoresEnPantalla.forEach(m => map.removeLayer(m));
     marcadoresEnPantalla = [];
 
-    // Captura en vivo de todos los filtros del navbar global
     const filtroTexto = document.getElementById('buscador-direccion').value.trim().toLowerCase();
-    // Capturamos los valores de la interfaz y los normalizamos si tienen los textos por defecto de los selectores
-    // 1. Si el usuario deja la opción por defecto ("Para el alquiler / venta"), lo convertimos en "Todos"
-    // Capturamos los valores de la interfaz y los normalizamos
-    let filtroAnuncio = document.getElementById('filtro-tipo-anuncio').value;
-    if (filtroAnuncio === "Todos" || filtroAnuncio.includes("alquiler") || filtroAnuncio.includes("venta")) {
-        filtroAnuncio = "Todos";
-    }
-
+    const filtroAnuncio = obtenerFiltroEstadoPublicacionSeleccionado();
     let filtroPrecioMax = document.getElementById('filtro-precio-max').value;
     if (filtroPrecioMax === "Todos" || filtroPrecioMax.includes("Precio") || filtroPrecioMax.includes("todos")) filtroPrecioMax = "Todos";
 
@@ -1732,6 +2332,8 @@ function renderizarMapaZillow() {
 
     let filtroPropiedad = document.getElementById('filtro-tipo-propiedad').value;
     if (filtroPropiedad === "Todos" || filtroPropiedad.includes("Propiedad") || filtroPropiedad.includes("Tipo")) filtroPropiedad = "Todos";
+
+    const colorBurbuja = obtenerColorBurbujaPorEstado();
 
     if (!map || typeof map.getBounds !== 'function') return;
 
@@ -1755,8 +2357,20 @@ function renderizarMapaZillow() {
             // Filtro de texto apuntando a la dirección interna de geo
             if (filtroTexto && (!casa.geo.direccion || !casa.geo.direccion.toLowerCase().includes(filtroTexto))) return;
 
-            // Filtro de Anuncio (Venta / Alquiler / Vendido)
-            if (filtroAnuncio !== "Todos" && casa.tipo_anuncio !== filtroAnuncio) return;
+            // Filtro de Anuncio (Venta / Alquiler / Vendido) con estado_publicacion
+            const estadoPublicacion = (casa.estado_publicacion || casa.estado || '').toString().toLowerCase().trim();
+            const tipoAnuncio = (casa.tipo_anuncio || '').toString().toLowerCase().trim();
+            if (filtroAnuncio === 'Venta') {
+                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') return;
+                if (tipoAnuncio !== 'venta') return;
+            } else if (filtroAnuncio === 'Alquiler') {
+                if (estadoPublicacion !== 'disponible' && estadoPublicacion !== 'activo') return;
+                if (tipoAnuncio !== 'alquiler') return;
+            } else if (filtroAnuncio === 'Vendido') {
+                if (estadoPublicacion !== 'vendida' && estadoPublicacion !== 'vendido') return;
+            }
+
+            if (!filtroAvanzadoCoincide(casa)) return;
 
             // Filtros Numéricos basados estrictamente en tu consola
             if (filtroPrecioMax !== "Todos" && casa.precio_base > parseFloat(filtroPrecioMax)) return;
@@ -1769,12 +2383,23 @@ function renderizarMapaZillow() {
 
         contadorVisual++;
         const precioFormateado = casa.precio_base > 0 ? formatearPrecio(casa.precio_base, casa.moneda) : "Consulte";
-
-        const marcador = L.marker([casa.geo.latitud, casa.geo.longitud]).addTo(map)
-        const popupContenido = `<b>Código: ${casa.anuncio_id}</b><br><b style="color:#006aff;">${precioFormateado}</b>`;
-        marcador.bindPopup(popupContenido);
+        let precioAbreviado = String(casa.precio_base || '');
+        if (casa.precio_base >= 1000000) {
+            precioAbreviado = `${(casa.precio_base / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
+        } else if (casa.precio_base >= 1000) {
+            precioAbreviado = `${Math.round(casa.precio_base / 1000)}K`;
+        }
+        const icono = L.divIcon({
+            className: `leaflet-div-icon map-price-pill ${colorBurbuja}`,
+            html: `<div>${precioAbreviado}</div>`,
+            iconSize: [88, 38],
+            iconAnchor: [44, 20],
+            popupAnchor: [0, -20]
+        });
+        const marcador = L.marker([casa.geo.latitud, casa.geo.longitud], { icon: icono }).addTo(map);
+        const popupContenido = construirPopupCard(casa);
+        marcador.bindPopup(popupContenido, { maxWidth: 300 });
         marcadoresEnPantalla.push(marcador);
-    
 
         const esFavorito = favoritosUsuario.includes(casa.id.toString());
         const colorCorazon = usuarioAutenticado ? (esFavorito ? '#d92323' : '#757575') : '#b0bec5';
