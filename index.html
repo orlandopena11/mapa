@@ -3069,12 +3069,12 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON UNA MAQUETACIÓN NUEVA E INMUNE A TU CSS ANTERIOR
+    // 3. RENDERIZAMOS EL HTML CON UNA NUEVA ALTURA CONTROLADA
     // Contenedor global perfectamente centrado dentro del cuadro blanco
-    let html = '<div class="zillow-galeria-wrapper" style="position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 auto 15px auto !important; padding: 0 !important; overflow: hidden !important;">';
+    let html = '<div class="zillow-galeria-wrapper" style="position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 auto 10px auto !important; padding: 0 !important; overflow: hidden !important;">';
     
-    // Contenedor Flex que divide la pantalla en dos mitades exactas (50% y 50%)
-    html += '<div class="zillow-galeria-flex" style="display: flex !important; flex-direction: row !important; gap: 8px !important; width: 100% !important; height: 380px !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;">';
+    // Bajamos la altura total a 340px para que quepa holgadamente en tu modal actual
+    html += '<div class="zillow-galeria-flex" style="display: flex !important; flex-direction: row !important; gap: 8px !important; width: 100% !important; height: 340px !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important;">';
     
     // Lado Izquierdo: Foto Grande (Mitad exacta del ancho total)
     html += `
@@ -3083,11 +3083,10 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         </div>
     `;
 
-    // Lado Derecho: Cuadrícula simétrica de 2x2 para las 4 fotos pequeñas (Mitad exacta del ancho total)
-    html += '<div class="zillow-g-secundario" style="width: 50% !important; min-width: 50% !important; max-width: 50% !important; height: 100% !important; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(2, 186px) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;">';
+    // Lado Derecho: Cuadrícula simétrica de 2x2 (Cada fila calculada dinámicamente al 50% de la nueva altura menos el gap)
+    html += '<div class="zillow-g-secundario" style="width: 50% !important; min-width: 50% !important; max-width: 50% !important; height: 100% !important; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(2, calc(50% - 4px)) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;">';
     
     fotosDerecha.forEach((urlSecundaria, index) => {
-        // Redondeamos solo las esquinas del extremo derecho para mantener la armonía estética
         let radioEsquina = "0px";
         if (index === 1) radioEsquina = "0 8px 0 0";
         if (index === 3) radioEsquina = "0 0 8px 0";
@@ -3102,11 +3101,11 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     html += '</div>'; // Cierra zillow-g-secundario
     html += '</div>'; // Cierra zillow-galeria-flex
 
-    // Botón flotante perfectamente alineado sobre el borde inferior derecho de las imágenes
+    // Botón flotante subido a 'bottom: 24px' para obligarlo a aparecer en pantalla
     html += `
         <button class="zillow-g-btn" 
                 onclick="abrirGaleriaCompleta('${idPropiedad}')" 
-                style="position: absolute !important; bottom: 16px !important; right: 16px !important; z-index: 99 !important; background-color: #ffffff !important; color: #2a2a2a !important; border: 1px solid #747474 !important; padding: 8px 16px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0px 2px 4px rgba(0,0,0,0.2) !important; display: flex !important; align-items: center !important; gap: 6px !important; font-family: sans-serif !important;">
+                style="position: absolute !important; bottom: 24px !important; right: 24px !important; z-index: 9999 !important; background-color: #ffffff !important; color: #2a2a2a !important; border: 1px solid #747474 !important; padding: 8px 16px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0px 4px 8px rgba(0,0,0,0.3) !important; display: flex !important; align-items: center !important; gap: 6px !important; font-family: sans-serif !important;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             Ver todas las ${total} fotos
         </button>
