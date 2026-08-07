@@ -487,13 +487,21 @@
             position: relative; 
             display: flex; 
             gap: 8px; 
-            height: 480px; 
+            height: 440px; 
             padding: 0 !important; 
             margin: 0 0 24px 0 !important;
             width: 100% !important; 
             max-width: 100% !important; 
-            box-sizing: border-box; 
+            box-sizing: border-box !important; 
+            overflow: hidden !important; 
         }
+        .collage-principal img, .collage-secundario img {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+            border-radius: 0px !important;
+        }
+
         .collage-principal { flex: 1.3; border-radius: 0px !important; overflow: hidden; }
         .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
         .collage-secundario img { border-radius: 0px !important; }
