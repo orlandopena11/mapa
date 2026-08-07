@@ -2335,9 +2335,9 @@ function resetearFiltrosAvanzados() {
     document.getElementById('filtro-dias-publicacion').value = 'Cualquiera';
     document.querySelectorAll('input[name="filtro-caracteristica-especial"]').forEach(el => el.checked = false);
     document.querySelectorAll('input[name="filtro-vista"]').forEach(el => el.checked = false);
-    Object.assign(filtrosAvanzadosAplicados, {
-        tipoListado: [],
-        listadoActivo: false,
+      Object.assign(filtrosAvanzadosAplicados, {
+        tipoListado: ['Propietario publicado','Agente listado','Nueva construcción','Ejecuciones hipotecarias','Subastas'],
+        listadoActivo: true,
         cuotaMantenimiento: 'Todos',
         tour3D: false,
         estacionamientos: 'Cualquiera',
