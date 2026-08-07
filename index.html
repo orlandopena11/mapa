@@ -3069,37 +3069,46 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON TUS CLASES CSS EXISTENTES
-    let html = '<div class="collage-detalle">';
+    // 3. RENDERIZAMOS EL HTML CON ESTILOS FLEXIBLES INCORPORADOS (ESTILO ZILLOW)
+    // Agregamos un contenedor general relativo para posicionar el botón flotante de forma segura
+    let html = '<div class="collage-contenedor-global" style="position: relative; width: 100%; max-width: 100%; box-sizing: border-box; margin-bottom: 20px;">';
+    
+    // Contenedor Grid que distribuye la foto grande a la izquierda y el bloque de 4 a la derecha
+    html += '<div class="collage-detalle" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px; width: 100%; max-height: 410px; overflow: hidden; border-radius: 8px;">';
     
     // Lado Izquierdo: Foto Grande
     html += `
-        <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-            <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy">
+        <div class="collage-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')" style="width: 100%; height: 410px; overflow: hidden; cursor: pointer;">
+            <img src="${urlPrincipal}" alt="Foto principal de la propiedad" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;">
         </div>
     `;
 
-    // Lado Derecho: Bloque de 4 fotos agrupadas
-    html += '<div class="collage-secundario">';
+    // Lado Derecho: Cuadrícula de 2x2 para las 4 fotos secundarias
+    html += '<div class="collage-secundario" style="display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 201px); gap: 8px; width: 100%; height: 410px;">';
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
-            <div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy">
+            <div class="collage-mini" onclick="abrirGaleriaCompleta('${idPropiedad}')" style="width: 100%; height: 100%; overflow: hidden; cursor: pointer;">
+                <img src="${urlSecundaria}" alt="Foto de la propiedad" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </div>
         `;
     });
-    html += '</div>';
+    html += '</div>'; // Cierra collage-secundario
+    html += '</div>'; // Cierra collage-detalle
 
-    // Parte Inferior Derecha: Botón flotante estilo Zillow con letras de color blanco
+    // Parte Inferior Derecha: Botón flotante estilo Zillow perfectamente posicionado
     html += `
-        <button class="btn-zillow-ver-mas" onclick="abrirGaleriaCompleta('${idPropiedad}')">
-            ver todas las ${total} fotos
+        <button class="btn-zillow-ver-mas" 
+                onclick="abrirGaleriaCompleta('${idPropiedad}')" 
+                style="position: absolute; bottom: 15px; right: 15px; z-index: 20; background-color: rgba(255, 255, 255, 0.95); color: #005cbb; border: 1px solid #2a2a2a; padding: 10px 18px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0px 4px 10px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; gap: 5px; transition: background-color 0.2s;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Ver todas las ${total} fotos
         </button>
     `;
 
-    html += '</div>';
+    html += '</div>'; // Cierra collage-contenedor-global
     return html;
 }
+
 
     
 // Galería vertical infinita de la 3ra pantalla (todas las fotos)
