@@ -1035,8 +1035,15 @@
                     
                     <!-- 1. Ficha Técnica de Características -->
                     <div class="tarjeta-blanca-zillow">
-                        <h3 style="margin-top: 0; border-bottom: 2px solid #1a73e8; padding-bottom: 8px; color: #222; font-family: sans-serif; font-size: 16px;">📋 Datos y características</h3>
-                        <div id="bloques-caracteristicas-dinamicas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-family: sans-serif;">
+<!-- Abrimos la grilla maestra estilo Zillow debajo de las fotos -->
+<div class="zillow-grid-dos-columnas">
+    
+    <!-- Columna Izquierda Amplia para la información -->
+    <div class="columna-izquierda-analitica">
+        
+        <h3 style="margin-top: 0; border-bottom: 2px solid #1a73e8; padding-bottom: 8px; color: #222; font-family: sans-serif; font-size: 16px;">📋 Datos y características</h3>
+        <div id="bloques-caracteristicas-dinamicas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-family: sans-serif;">
+
                             <!-- Inyección dinámica -->
                         </div>
                     </div>
@@ -3351,10 +3358,10 @@ function abrirVentanaDetalle(idPropiedad) {
                             <div id="similares-contenedor" class="similares-contenedor"></div>
                         </div>
                     </div>
-                </div>
+            </div> <!-- Aquí cerramos formalmente la columna izquierda analítica de datos -->
 
-                <div class="detalle-columna-der">
-                    <div class="detalle-panel-sticky">
+            <!-- ¡Aquí abrimos tu Columna Derecha Estilo Zillow que se quedará FIJA al hacer scroll! -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%;">
                         <button class="btn-detalle-principal" onclick="abrirModalConfirmacionTour()">Solicitar un Tour</button>
                         <button class="btn-detalle-secundario" onclick="verContactoDesdeDetalle('${casa.telefono || ''}')">Agente de contacto</button>
                         <div style="margin-top:16px;">
@@ -3366,10 +3373,19 @@ function abrirVentanaDetalle(idPropiedad) {
                             <span style="font-size:14px; color:#475569;">Publicado:</span>
                             <strong id="detalle-dias-publicados-sidebar">0</strong>
                         </div>
-                    </div>
-                </div>
-            </div>
+            </div> <!-- Cierra el contenedor interno de datos -->
+        </div> <!-- Cierra la tarjeta-blanca-zillow -->
+    </div> <!-- Cierra oficialmente la columna-izquierda-analitica de datos -->
+
+    <!-- ¡Aquí se abre la Columna Derecha Estilo Zillow que quedará FIJA al hacer scroll! -->
+    <div class="columna-derecha-agente">
+        <div style="display: flex; flex-direction: column; gap: 16px; width: 100%;">
+            <button class="btn-detalle-principal" onclick="abrirModalConfirmacionTour()">Solicitar un Tour</button>
+            <button class="btn-detalle-secundario" onclick="verContactoDesdeDetalle('${casa.telefono || ''}')">Agente de contacto</button>
         </div>
+    </div>
+
+</div> <!-- Cierra la zillow-grid-dos-columnas maestra de lado a lado -->
     `;
 
     actualizarIconoFavoritoDetalle(casa);
