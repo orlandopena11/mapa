@@ -343,6 +343,14 @@
         .cabecera-detalle p { margin: 6px 0 0 0; color: #666; font-size: 14px; }
 
         /* COLLAGE INICIAL (2da pantalla): 1 grande a la izquierda + grid 2x2 a la derecha */
+        /* Ensancha la ventana flotante SOLO cuando contiene la ficha de la propiedad, sin alterar el Login */
+#contenedor-detalle-zillow:has(.zillow-layout-wrapper) {
+    max-width: 1550px !important;
+    width: 96% !important;
+    height: 95vh !important;
+    padding: 20px !important;
+}
+
         .collage-detalle { position: relative; display: flex; gap: 10px; height: 440px; padding: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
         .collage-principal, .collage-secundario, .collage-mini { min-height: 0; }
         .collage-principal { flex: 1.2; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
