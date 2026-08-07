@@ -417,7 +417,7 @@
         .bloque-visita textarea { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; resize: vertical; }
 
         /* ====================== NUEVOS ESTILOS PARA VISTA DE DETALLE ====================== */
-        .detalle-layout-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
+/*        .detalle-layout-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
         .detalle-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #e2e8e0; padding: 22px 20px 18px; position: sticky; top: 0; background: #f6f6f9; z-index: 40; }
         .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 12px; }
         .detalle-back-btn { border: none; background: none; color: #002E50; font-size: 20px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; }
@@ -428,6 +428,93 @@
         .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 12px 20px 14px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 76px; z-index: 35; }
         .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 15px; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
         .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.08); }
+        */
+        /* =========================================================
+           ARQUITECTURA DE DISEÑO ESTILO ZILLOW COMPLETA
+           ========================================================= */
+        .detalle-layout-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 0px; 
+            width: 100% !important; 
+            max-width: 100% !important; 
+            box-sizing: border-box; 
+        }
+
+        /* Cabecera limpia y transparente de lado a lado */
+        .detalle-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 24px; 
+            background: #ffffff !important; 
+            border-bottom: 1px solid #e2e8e0; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+
+        /* Forzar al mosaico de fotos a ocupar el 100% del ancho sin márgenes */
+        .collage-detalle { 
+            position: relative; 
+            display: flex; 
+            gap: 8px; 
+            height: 480px; 
+            padding: 0 !important; 
+            margin: 0 0 24px 0 !important;
+            width: 100% !important; 
+            max-width: 100% !important; 
+            box-sizing: border-box; 
+        }
+        .collage-principal { flex: 1.3; border-radius: 0px !important; overflow: hidden; }
+        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
+        .collage-secundario img { border-radius: 0px !important; }
+
+        /* Grilla de doble columna para la información inferior */
+        .zillow-grid-dos-columnas { 
+            display: grid; 
+            grid-template-columns: 1.8fr 1fr; /* Izquierda amplia, derecha compacta para botones */
+            gap: 32px; 
+            align-items: start; 
+            width: 100%; 
+            padding: 0 24px 24px 24px; /* Margen elegante solo para los datos de abajo */
+            box-sizing: border-box; 
+        }
+
+        @media (max-width: 900px) {
+            .zillow-grid-dos-columnas { grid-template-columns: 1fr; padding: 0 16px 16px 16px; }
+        }
+
+        .columna-izquierda-analitica { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 24px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+
+        /* COLUMNA DERECHA FIJA (STICKY) */
+        .columna-derecha-agente { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 16px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            position: sticky !important; 
+            top: 20px; /* Se queda congelada a 20px del borde superior al hacer scroll */
+            z-index: 10;
+        }
+
+        /* Estilo limpio para las tarjetas de información */
+        .tarjeta-blanca-zillow { 
+            background: #ffffff; 
+            padding: 0px; /* Remueve cajas toscas para que la data fluya limpia */
+            border: none !important; 
+            border-radius: 0px; 
+            box-shadow: none !important; 
+            width: 100%; 
+        }
+
+/*  ====== */        
         .detalle-main-grid { display: grid; grid-template-columns: 2.2fr 0.85fr; gap: 26px; width: 100%; min-height: 0; }
         @media (max-width: 1080px) { .detalle-main-grid { grid-template-columns: 1fr; } .detalle-columna-der { position: static; top: auto; } }
         .detalle-columna-izq { display: flex; flex-direction: column; gap: 20px; width: 100%; }
