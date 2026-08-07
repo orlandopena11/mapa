@@ -3069,21 +3069,30 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
         }
     }
 
-    // 3. RENDERIZAMOS EL HTML CON CONTROL ESTRICTO DE PROPORCIONES (50% / 50%)
-    let html = '<div class="zillow-final-wrapper" style="position: relative !important; width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; margin: 0 auto 15px auto !important; padding: 0 !important; overflow: visible !important;">';
+    // 3. RENDERIZAMOS EL HTML CON ANCHOS REDUCIDOS PARA EVITAR EL DESBORDE DE PANTALLA
+    // Forzamos un ancho máximo del 96% y centramos el bloque entero con margin: 0 auto
+    let html = '<div class="zillow-final-wrapper" style="position: relative !important; width: 96% !important; max-width: 96% !important; box-sizing: border-box !important; margin: 0 auto 15px auto !important; padding: 0 !important; overflow: visible !important;">';
     
-    // Contenedor Flex que obliga a dividir el espacio disponible en dos partes iguales
-    html += '<div class="zillow-final-flex" style="display: flex !important; flex-direction: row !important; gap: 8px !important; width: 100% !important; height: 350px !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 8px !important;">';
+    // El contenedor de imágenes se alinea perfectamente al centro
+    html += '<div class="zillow-final-flex" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; width: 100% !important; height: 330px !important; box-sizing: border-box !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; border-radius: 8px !important;">';
     
-    // Lado Izquierdo: Foto Grande (Exactamente el 50% del ancho del cuadro blanco)
+    // Lado Izquierdo: Reducido sutilmente al 49% para obligarlo a mantenerse lejos del borde
     html += `
-        <div class="zillow-f-principal" onclick="abrirGaleriaCompleta('${idPropiedad}')" style="width: 50% !important; min-width: 50% !important; max-width: 50% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; cursor: pointer !important;">
-            <img src="${urlPrincipal}" alt="Foto principal" loading="lazy" style="width: 100% !important; min-width: 100% !important; max-width: 100% !important; height: 100% !important; min-height: 100% !important; max-height: 100% !important; object-fit: cover !important; object-position: center !important; display: block !important; margin: 0 !important; padding: 0 !important; border: none !important;">
+        <div class="zillow-f-principal" style="position: relative !important; width: 49% !important; min-width: 49% !important; max-width: 49% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important;">
+            <img src="${urlPrincipal}" onclick="abrirGaleriaCompleta('${idPropiedad}')" alt="Foto principal" loading="lazy" style="width: 100% !important; min-width: 100% !important; max-width: 100% !important; height: 100% !important; min-height: 100% !important; max-height: 100% !important; object-fit: cover !important; object-position: center !important; display: block !important; margin: 0 !important; padding: 0 !important; border: none !important; cursor: pointer !important;">
+            
+            <!-- BOTÓN ASEGURADO: Flota a la izquierda dentro de la zona segura de la foto grande -->
+            <button class="zillow-f-btn" 
+                    onclick="abrirGaleriaCompleta('${idPropiedad}')" 
+                    style="position: absolute !important; bottom: 16px !important; left: 16px !important; z-index: 99999999 !important; background-color: #ffffff !important; color: #2a2a2a !important; border: 1px solid #747474 !important; padding: 8px 16px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.35) !important; display: flex !important; align-items: center !important; gap: 6px !important; font-family: sans-serif !important;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Ver todas las ${total} fotos
+            </button>
         </div>
     `;
 
-    // Lado Derecho: Cuadrícula simétrica de 2x2 (Exactamente el 50% restante del ancho)
-    html += '<div class="zillow-f-secundario" style="width: 50% !important; min-width: 50% !important; max-width: 50% !important; height: 100% !important; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(2, calc(50% - 4px)) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;">';
+    // Lado Derecho: Ocupa el otro 49% restante, obligando a que todo el bloque quepa holgadamente
+    html += '<div class="zillow-f-secundario" style="width: 49% !important; min-width: 49% !important; max-width: 49% !important; height: 100% !important; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-template-rows: repeat(2, calc(50% - 4px)) !important; gap: 8px !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important;">';
     
     fotosDerecha.forEach((urlSecundaria) => {
         html += `
@@ -3095,17 +3104,6 @@ function construirCollageInicial(arregloFotos, idPropiedad) {
     
     html += '</div>'; // Cierra zillow-f-secundario
     html += '</div>'; // Cierra zillow-final-flex
-
-    // Botón flotante estilo Zillow con una capa de visualización máxima (z-index masivo)
-    html += `
-        <button class="zillow-f-btn" 
-                onclick="abrirGaleriaCompleta('${idPropiedad}')" 
-                style="position: absolute !important; bottom: 20px !important; right: 20px !important; z-index: 99999999 !important; background-color: #ffffff !important; color: #2a2a2a !important; border: 1px solid #747474 !important; padding: 8px 16px !important; border-radius: 8px !important; font-weight: bold !important; font-size: 13px !important; cursor: pointer !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.3) !important; display: flex !important; align-items: center !important; gap: 6px !important; font-family: sans-serif !important;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            Ver todas las ${total} fotos
-        </button>
-    `;
-
     html += '</div>'; // Cierra zillow-final-wrapper
     return html;
 }
