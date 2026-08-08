@@ -379,17 +379,45 @@
     z-index: 100;
 }
 
-/* Control estricto para evitar desbordes del banner */
-#contenedor-detalle-zillow img[alt*="Inmobiliaria"], 
-#contenedor-detalle-zillow img[src*="logo"],
-.detalle-header-clean img,
-#contenedor-detalle-zillow h1,
-#contenedor-detalle-zillow div[style*="ORLANDO"] {
-    max-width: 100% !important;
-    max-height: 110px !important;
-    object-fit: contain !important;
+/* Cabecera superior interna del modal mejorada */
+.detalle-header-clean {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 24px;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--gris-borde);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 70px; /* Altura fija para que la barra superior sea delgada y elegante */
+    box-sizing: border-box;
+}
+
+/* Redimensionamiento armónico del logotipo de Orlando Peña */
+.detalle-header-clean img {
+    height: 45px !important; /* Tamaño compacto de marca para que no invada la pantalla */
     width: auto !important;
-    height: auto !important;
+    object-fit: contain !important;
+    margin: 0 !important;
+}
+
+/* Espaciado elegante para el título de ubicación */
+.detalle-header-clean h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--azul-oscuro);
+    font-weight: 700;
+}
+
+/* Bloque contenedor de pestañas secundarias para que no choquen */
+.pestanas-contenedor-clean {
+    display: flex;
+    gap: 8px;
+    padding: 10px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid var(--gris-borde);
+    margin-bottom: 15px;
 }
 
 /* PANTALLA 2: Grilla Maestra de 5 Fotos (50% Izquierda - 50% Derecha) */
