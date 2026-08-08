@@ -349,252 +349,169 @@
 
 /* Contenedor Modal de Detalle unificado */
 #contenedor-detalle-zillow {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 95%;
-    max-width: 1200px;
-    height: 90vh;
-    background-color: #f6f6f9;
-    border-radius: 16px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-    overflow-y: auto;
-    overflow-x: hidden;
-    z-index: 11000;
-    box-sizing: border-box;
-    padding: 0;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 95% !important;
+    max-width: 1200px !important;
+    height: 90vh !important;
+    background-color: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    z-index: 11000 !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
 }
 
-/* Cabecera superior interna del modal */
+/* Cabecera Estilo Zillow */
 .detalle-header-clean {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 24px;
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--gris-borde);
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 24px !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 1000 !important;
+    height: 65px !important;
+    box-sizing: border-box !important;
 }
 
-/* Cabecera superior interna del modal reestructurada */
-.detalle-header-clean {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background-color: #ffffff;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    height: 70px;
-    box-sizing: border-box;
-}
-
-/* Letrero / Icono de la marca Orlando Peña estilizado a la izquierda */
-.detalle-header-clean img,
-#contenedor-detalle-zillow img[src*="logo"] {
-    height: 38px !important;
+.logo-cabecera-zillow {
+    height: 40px !important;
     width: auto !important;
     object-fit: contain !important;
-    margin: 0 !important;
 }
 
-/* El botón de volver a buscar alineado a la izquierda */
 .btn-volver-buscar-clean {
-    background: transparent;
-    border: none;
-    color: #2a2a2a;
-    font-size: 15px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
+    background: transparent !important;
+    border: none !important;
+    color: #2a2a2a !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
 }
 
-/* Contenedor horizontal de pestañas estilo submenú de Zillow */
+/* Sub-Navegación */
 .pestanas-subnav-zillow {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    background-color: #ffffff;
-    border-bottom: 1px solid var(--gris-borde);
-    padding: 12px 24px;
-    position: sticky;
-    top: 70px; /* Se clava justo debajo de la cabecera principal */
-    z-index: 999;
+    display: flex !important;
+    gap: 15px !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 10px 24px !important;
+    position: sticky !important;
+    top: 65px !important;
+    z-index: 999 !important;
 }
 
 .tab-link-zillow {
-    background: transparent;
-    border: none;
-    color: #54565a;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    padding-bottom: 6px;
-    border-bottom: 2px solid transparent;
+    background: transparent !important;
+    border: none !important;
+    color: #54565a !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    padding-bottom: 4px !important;
 }
 
 .tab-link-zillow.active {
-    color: var(--azul-zillow);
-    border-bottom: 2px solid var(--azul-zillow);
-    font-weight: 700;
+    color: #006aff !important;
+    border-bottom: 2px solid #006aff !important;
 }
 
-/* PANTALLA 2: Grilla Maestra de 5 Fotos (Ajustada a bordes de Zillow) */
+/* Mosaico simétrico de fotos */
 .galeria-mosaico-zillow {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 4px;
-    width: 100%;
-    height: 440px;
-    margin-bottom: 24px;
-    position: relative;
-    background-color: #ffffff;
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+    gap: 4px !important;
+    width: 100% !important;
+    height: 440px !important;
+    position: relative !important;
+    background-color: #ffffff !important;
 }
 
 .foto-grande-izq {
-    grid-column: 1 / 2;
-    grid-row: 1 / 3;
-    width: 100%;
-    height: 100%;
+    grid-column: 1 / 2 !important;
+    grid-row: 1 / 3 !important;
 }
 
-.foto-grande-izq img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.foto-grande-izq img, .cuadrante-fotos-der img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
 }
 
-/* Posicionado de las 4 fotos secundarias de forma nativa */
-.galeria-mosaico-zillow img.secundaria-zillow {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.cuadrante-fotos-der {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+    gap: 4px !important;
+    grid-column: 2 / 4 !important;
+    grid-row: 1 / 3 !important;
 }
 
-/* Botón flotante "Ver todas las fotos" */
 .btn-flotante-galeria {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    background-color: #ffffff;
-    color: #2a2a2a;
-    border: 1px solid #2a2a2a;
-    padding: 10px 16px;
-    border-radius: 4px;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    position: absolute !important;
+    bottom: 16px !important;
+    right: 16px !important;
+    background-color: #ffffff !important;
+    color: #2a2a2a !important;
+    border: 1px solid #2a2a2a !important;
+    padding: 10px 16px !important;
+    border-radius: 4px !important;
+    font-weight: 700 !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
 }
 
-/* Estructura de Dos Columnas con Caja Sidebar Fija a la derecha */
+/* Grilla de Columnas e Información */
 .zillow-grid-principal {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 40px;
-    padding: 0 32px 32px 32px;
-    align-items: start;
-    box-sizing: border-box;
+    display: grid !important;
+    grid-template-columns: 1.6fr 1fr !important;
+    gap: 40px !important;
+    padding: 24px 32px !important;
+    align-items: start !important;
+    background-color: #ffffff !important;
 }
 
-.informacion-fluyente-izq {
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    text-align: left;
-}
-
-/* CAJA COMPACTA DE ACCIONES TOTALMENTE FIJA (Sticky Sidebar) */
 .columna-sidebar-fija-der {
-    position: sticky;
-    top: 160px; /* Congelada en pantalla teniendo en cuenta la cabecera y pestañas */
-    background-color: #ffffff;
-    border: 1px solid var(--gris-borde);
-    border-radius: 8px;
-    padding: 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-sizing: border-box;
+    position: sticky !important;
+    top: 150px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
 }
 
 .btn-sidebar-accion {
-    width: 100%;
-    padding: 14px;
-    border-radius: 4px;
-    font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    border: none;
-    transition: background-color 0.2s;
+    width: 100% !important;
+    padding: 14px !important;
+    border-radius: 4px !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
 }
 
 .btn-sidebar-tour {
-    background-color: var(--azul-zillow);
-    color: #ffffff;
-}
-
-.btn-sidebar-tour:hover {
-    background-color: #0056ce;
+    background-color: #006aff !important;
+    color: #ffffff !important;
+    border: none !important;
 }
 
 .btn-sidebar-agente {
-    background-color: #ffffff;
-    color: var(--azul-zillow);
-    border: 1px solid var(--azul-zillow);
-}
-
-.btn-sidebar-agente:hover {
-    background-color: #f0f6ff;
-}
-
-/* PANTALLA 3: Rejilla Vertical de Fotos Alternadas */
-.rejilla-fotos-vertical-pantalla3 {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.foto-ancho-completo {
-    width: 100%;
-    height: 380px;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.fila-doble-foto {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    width: 100%;
-    height: 240px;
-}
-
-.fila-doble-foto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 12px;
-}
-
-.precio-grande-remarcado {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--azul-oscuro);
-    margin: 0 0 10px 0;
+    background-color: #ffffff !important;
+    color: #006aff !important;
+    border: 1px solid #006aff !important;
 }
 
     </style>
@@ -893,86 +810,78 @@
 <!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
 <!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
 <!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 1200px; height: 90vh; background-color: #ffffff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow-y: auto; overflow-x: hidden; z-index: 11000; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif;">
-    
-    <!-- Cabecera de Navegación Estilo Zillow Estricto -->
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; height: 65px; box-sizing: border-box;">
-        <button onclick="cerrarVentanaDetalle()" style="background: transparent; border: none; color: #2a2a2a; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Volver a buscar
-        </button>
-        <img src="logo.jpg" alt="Logo" style="height: 38px !important; width: auto !important; object-fit: contain !important; margin: 0 !important;">
-        <div style="display: flex; gap: 15px; color: #54565a; font-size: 14px; font-weight: 500;">
-            <span>♡ Guardar</span>
-            <span>➦ Compartir</span>
-        </div>
-    </div>
-
-    <!-- Barra de Pestañas Secundaria Fija Sub-Nav Corregida -->
-    <div style="display: flex; justify-content: flex-start; gap: 15px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 10px 24px; position: sticky; top: 65px; z-index: 999; box-sizing: border-box; overflow-x: auto; white-space: nowrap;">
-        <button style="background: transparent; border: none; color: #006aff; font-size: 14px; font-weight: 700; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid #006aff;">Resumen</button>
-        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Datos y características</button>
-        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Valor de mercado</button>
-        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; pointer; padding-bottom: 4px;">Calculadora de pago</button>
-        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Barrio</button>
-    </div>
-
-    <!-- Mosaico Armónico de 5 Fotos NATIVO (50% izquierda y 4 fotos a la derecha) -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; width: 100%; height: 420px; position: relative; background-color: #ffffff; box-sizing: border-box;" id="mosaico-fotos-propiedad">
-        <div style="grid-column: 1 / 2; grid-row: 1 / 3; width: 100%; height: 100%;">
-            <img src="https://unsplash.com" alt="Foto Principal" id="foto-detalle-1" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <img src="" alt="Foto 2" id="foto-detalle-2" style="width: 100%; height: 100%; object-fit: cover;">
-        <img src="" alt="Foto 3" id="foto-detalle-3" style="width: 100%; height: 100%; object-fit: cover;">
-        <img src="" alt="Foto 4" id="foto-detalle-4" style="width: 100%; height: 100%; object-fit: cover;">
-        <img src="" alt="Foto 5" id="foto-detalle-5" style="width: 100%; height: 100%; object-fit: cover;">
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none;">
+    <div id="contenedor-detalle-zillow">
         
-        <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()" style="position: absolute; bottom: 16px; right: 16px; background-color: #ffffff; color: #2a2a2a; border: 1px solid #2a2a2a; padding: 10px 16px; border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; display: flex; align-items: center; gap: 6px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            Ver todas las fotos
-        </button>
-    </div>
-
-    <!-- Estructura de Dos Columnas con Caja Fija Lateral (Sticky) -->
-    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; padding: 24px 32px; align-items: start; box-sizing: border-box; background-color: #ffffff;">
-        
-        <!-- Columna Izquierda: Información de la propiedad -->
-        <div style="display: flex; flex-direction: column; gap: 20px; text-align: left;">
-            <div id="bloques-caracteristicas-dinamicas">
-                <!-- Aquí se inyecta la información automáticamente -->
+        <!-- Cabecera Superior Compacta -->
+        <div class="detalle-header-clean">
+            <button class="btn-volver-buscar-clean" onclick="cerrarVentanaDetalle()">← Volver a buscar</button>
+            <img src="logo.jpg" alt="Logo Orlando Peña" class="logo-cabecera-zillow">
+            <div class="acciones-cabecera-der">
+                <span>♡ Guardar</span>
+                <span>➦ Compartir</span>
             </div>
         </div>
 
-        <!-- Columna Derecha: Caja de Acciones Fija (Sticky Sidebar) -->
-        <div style="position: sticky; top: 150px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; z-index: 10;">
-            <button onclick="ejecutarAccionDeContacto('tour')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none; background-color: #006aff; color: #ffffff;">Solicitar un tour</button>
-            <button onclick="ejecutarAccionDeContacto('agente')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; background-color: #ffffff; color: #006aff; border: 1px solid #006aff;">Contacte con un agente</button>
+        <!-- Sub-Navegación de Pestañas Fijas -->
+        <div class="pestanas-subnav-zillow">
+            <button class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</button>
+            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</button>
+            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</button>
+            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</button>
+            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</button>
+        </div>
+
+        <!-- Mosaico de 5 Fotos (Estructura recuperada para JS) -->
+        <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
+            <div class="foto-grande-izq">
+                <img src="" alt="Foto Principal" id="foto-detalle-1">
+            </div>
+            <div class="cuadrante-fotos-der">
+                <img src="" alt="Foto 2" id="foto-detalle-2">
+                <img src="" alt="Foto 3" id="foto-detalle-3">
+                <img src="" alt="Foto 4" id="foto-detalle-4">
+                <img src="" alt="Foto 5" id="foto-detalle-5">
+            </div>
+            <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
+        </div>
+
+        <!-- Distribución de Contenido Inferior -->
+        <div class="zillow-grid-principal">
+            <div class="informacion-fluyente-izq">
+                <div id="bloques-caracteristicas-dinamicas">
+                    <!-- JavaScript inyecta la información aquí de forma automática -->
+                </div>
+            </div>
+
+            <!-- Caja Sticky Lateral Controlada -->
+            <div class="columna-sidebar-fija-der">
+                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
+            </div>
         </div>
 
     </div>
 </div>
 
 <!-- VENTANA FLOTANTE DE VISTA EXTENDIDA DE FOTOS (PANTALLA 3) -->
-<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 1200px; height: 90vh; background-color: #f6f6f9; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow-y: auto; overflow-x: hidden; z-index: 11000; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif;">
-    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; height: 65px; box-sizing: border-box;">
-        <button onclick="cerrarPantalla3Fotos()" style="background: transparent; border: none; color: #2a2a2a; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            Volver al Detalle
-            <img src="logo.jpg" alt="Logo" style="height: 38px !important; width: auto !important; object-fit: contain !important; margin-left: 15px !important;">
-        </button>
-    </div>
-
-    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; padding: 24px 32px; align-items: start; box-sizing: border-box;">
-        <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3">
-            <!-- Se inyecta dinámicamente -->
+<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none;">
+    <div id="contenedor-detalle-zillow">
+        <div class="detalle-header-clean">
+            <button class="btn-volver-buscar-clean" onclick="cerrarPantalla3Fotos()">← Volver al Detalle</button>
+            <img src="logo.jpg" alt="Logo" class="logo-cabecera-zillow">
         </div>
-        <div style="position: sticky; top: 90px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;">
-            <div class="precio-grande-remarcado" id="p3-precio-propiedad" style="font-size: 32px; font-weight: 800; color: #002E50; margin: 0 0 5px 0;">$0</div>
-            <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
-            <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 15px;">
-            <button onclick="ejecutarAccionDeContacto('tour')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none; background-color: #006aff; color: #ffffff;">Solicitar un tour</button>
-            <button onclick="ejecutarAccionDeContacto('agente')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; background-color: #ffffff; color: #006aff; border: 1px solid #006aff;">Contactar con un agente</button>
+        <div class="zillow-grid-principal" style="padding-top: 24px;">
+            <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3"></div>
+            <div class="columna-sidebar-fija-der">
+                <div class="precio-grande-remarcado" id="p3-precio-propiedad">$0</div>
+                <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
+                <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
+                <hr style="border: 0; border-top: 1px solid var(--gris-borde); margin-bottom: 15px;">
+                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contactar con un agente</button>
+            </div>
         </div>
     </div>
 </div>
