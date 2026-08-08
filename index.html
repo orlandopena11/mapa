@@ -343,334 +343,189 @@
         .cabecera-detalle p { margin: 6px 0 0 0; color: #666; font-size: 14px; }
 
         /* COLLAGE INICIAL (2da pantalla): 1 grande a la izquierda + grid 2x2 a la derecha */
-        /* Ensancha la ventana flotante SOLO cuando contiene la ficha de la propiedad, sin alterar el Login */
-#contenedor-detalle-zillow:has(.zillow-layout-wrapper) {
-    max-width: 1550px !important;
-    width: 96% !important;
-    height: 95vh !important;
-    padding: 20px !important;
+/* =========================================================
+   ARQUITECTURA DE DISEÑO ESTILO ZILLOW CORREGIDA (PANTALLAS 2 Y 3)
+   ========================================================= */
+
+/* Contenedor Modal de Detalle unificado */
+#contenedor-detalle-zillow {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 95%;
+    max-width: 1400px;
+    height: 92vh;
+    background-color: #f6f6f9;
+    border-radius: 16px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 11000;
+    box-sizing: border-box;
+    padding: 0;
 }
 
-        .collage-detalle { position: relative; display: flex; gap: 10px; height: 440px; padding: 0; width: 100%; max-width: 100%; box-sizing: border-box; }
-        .collage-principal, .collage-secundario, .collage-mini { min-height: 0; }
-        .collage-principal { flex: 1.2; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
-        .collage-principal img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; width: 100%; box-sizing: border-box; }
+/* Cabecera superior interna del modal */
+.detalle-header-clean {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--gris-borde);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
 
-        .collage-mini { border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
-        .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .btn-zillow-ver-mas {
-            position: absolute;
-            bottom: 18px;
-            right: 28px;
-            background-color: rgba(0, 46, 80, 0.95);
-            color: #ffffff;
-            border: 1px solid rgba(255,255,255,0.85);
-            padding: 14px 24px;
-            border-radius: 999px;
-            font-weight: 800;
-            font-size: 14px;
-            min-width: 220px;
-            white-space: nowrap;
-            cursor: pointer;
-            box-shadow: 0px 8px 18px rgba(0,0,0,0.22);
-            z-index: 10;
-            transition: background 0.2s ease;
-        }
-        .btn-zillow-ver-mas:hover { background-color: rgba(0, 46, 80, 1); }
+/* PANTALLA 2: Grilla Maestra de 5 Fotos (50% Izquierda - 50% Derecha) */
+.galeria-mosaico-zillow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+    height: 460px;
+    margin-bottom: 24px;
+    position: relative;
+}
 
-        /* GALERÍA ASIMÉTRICA (3ra pantalla): 1 grande, 2 medianas, 1 grande, 2 medianas... */
-        .galeria-asimetrica { padding: 0; }
-        .foto-grande { margin-bottom: 10px; }
-        .foto-grande img { width: 100%; height: 320px; object-fit: cover; border-radius: 10px; display: block; }
-        .fila-medianas { display: flex; gap: 10px; margin-bottom: 10px; }
-        .foto-mediana { flex: 1; min-width: 0; }
-        .foto-mediana img { width: 100%; height: 190px; object-fit: cover; border-radius: 10px; display: block; }
+.foto-grande-izq {
+    width: 100%;
+    height: 100%;
+}
 
-        /* PANTALLA DE GALERÍA COMPLETA con sidebar fijo (sticky), estilo Zillow */
-        .btn-volver-lista { background: none; border: none; font-weight: 700; color: var(--azul-zillow); cursor: pointer; font-size: 14px; padding: 16px 20px 0 20px; }
-        .pantalla-galeria { display: flex; height: calc(100% - 44px); }
-        .galeria-columna-fotos { flex: 1; overflow-y: auto; padding: 16px 20px 20px 20px; }
-        .galeria-sidebar { width: 300px; flex-shrink: 0; border-left: 1px solid #eee; padding: 20px; position: sticky; top: 0; align-self: flex-start; height: 100%; overflow-y: auto; box-sizing: border-box; }
-        .galeria-sidebar h2 { margin: 0 0 8px 0; color: var(--azul-zillow); font-size: 22px; }
-        .galeria-sidebar h3 { margin: 0 0 6px 0; font-size: 15px; color: #2a2a2a; }
-        .galeria-sidebar p { margin: 0 0 14px 0; color: #666; font-size: 13px; }
+.foto-grande-izq img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px 0 0 12px;
+}
 
-        .bloque-seccion { padding: 18px 20px; border-top: 1px solid #eee; }
-        .bloque-seccion h4 { margin: 0 0 10px 0; font-size: 16px; color: #2a2a2a; }
-        .datos-rapidos { font-size: 15px; color: #4a4a4a; margin: 0 0 12px 0; }
-        .descripcion-detalle { font-size: 14px; color: #4a4a4a; line-height: 1.5; margin: 0; }
+.cuadrante-fotos-der {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    height: 100%;
+}
 
-        .chips-caracteristicas { display: flex; flex-wrap: wrap; gap: 8px; }
-        .chip { background: #f0f6ff; color: var(--azul-zillow); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 20px; }
+.cuadrante-fotos-der img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
 
-        .bloque-promocion { background: #fff8e6; border-top: 1px solid #f0e2b6; }
-        .bloque-promocion h4 { color: #8a6d1a; }
-        .bloque-promocion p { margin: 0; color: #6b551a; font-size: 14px; }
+.cuadrante-fotos-der img:nth-child(2) { border-radius: 0 12px 0 0; }
+.cuadrante-fotos-der img:nth-child(4) { border-radius: 0 0 12px 0; }
 
-        .lista-historial { list-style: none; margin: 0; padding: 0; }
-        .lista-historial li { display: flex; justify-content: space-between; font-size: 13px; color: #4a4a4a; padding: 6px 0; border-bottom: 1px dashed #e6e6e6; }
+/* Botón flotante para ver todas las fotos */
+.btn-flotante-galeria {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--azul-oscuro);
+    border: 1px solid var(--gris-borde);
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10;
+}
 
-        .bloque-visita { background: #fafbfc; }
-        .fila-formulario { display: flex; gap: 10px; margin-bottom: 10px; }
-        .fila-formulario input { flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
-        .bloque-visita textarea { width: 100%; min-height: 60px; padding: 10px 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; box-sizing: border-box; margin-bottom: 10px; font-family: inherit; resize: vertical; }
+/* Estructura Inferior de Doble Columna Fluyente */
+.zillow-grid-principal {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 30px;
+    padding: 0 24px 24px 24px;
+    align-items: start;
+    box-sizing: border-box;
+}
 
-        /* ====================== NUEVOS ESTILOS PARA VISTA DE DETALLE ====================== */
-/*        .detalle-layout-wrapper { display: flex; flex-direction: column; gap: 20px; width: 100%; box-sizing: border-box; }
-        .detalle-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-bottom: 1px solid #e2e8e0; padding: 22px 20px 18px; position: sticky; top: 0; background: #f6f6f9; z-index: 40; }
-        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 12px; }
-        .detalle-back-btn { border: none; background: none; color: #002E50; font-size: 20px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-transform: uppercase; }
-        .detalle-header-logo { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; }
-        .detalle-header-center span { font-size: 22px; font-weight: 900; color: #002E50; line-height: 1.1; }
-        .detalle-accion-btn { border-radius: 14px; padding: 12px 18px; border: 1px solid transparent; background: #ffffff; display: inline-flex; align-items: center; gap: 8px; color: #002E50; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease; }
-        .detalle-accion-btn:hover { transform: translateY(-1px); border-color: #d1d5db; background: #f8fafc; }
-        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 12px 20px 14px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 76px; z-index: 35; }
-        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 15px; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.08); }
-        */
-        /* =========================================================
-           ARQUITECTURA DE DISEÑO ESTILO ZILLOW COMPLETA
-           ========================================================= */
-                /* Forzar al contenedor flotante a ser un modal centrado con scroll interno */
-        #contenedor-detalle-zillow, .contenedor-detalle-zillow {
-            position: fixed !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            width: 94% !important;
-            max-width: 1480px !important;
-            height: 90vh !important;
-            max-height: 90vh !important;
-            background: #ffffff !important;
-            border-radius: 12px !important;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4) !important;
-            overflow-y: auto !important;
-            overflow-x: hidden !important;
-            z-index: 2000 !important;
-            padding: 0 !important; /* Eliminamos paddings externos para que las fotos toquen los bordes */
-            box-sizing: border-box !important;
-        }
+.informacion-fluyente-izq {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
 
-        /* Controlar el tamaño del logo de la cabecera para que no se desborde */
-        .detalle-header-logo, #contenedor-detalle-zillow img[src*="logo"] {
-            width: 45px !important;
-            height: 45px !important;
-            object-fit: contain !important;
-        }
+/* CAJA CONTENEDORA FIJA LATERAL (Sticky Sidebar) */
+.columna-sidebar-fija-der {
+    position: sticky;
+    top: 90px;
+    background-color: #ffffff;
+    border: 1px solid var(--gris-borde);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-sizing: border-box;
+}
 
+.btn-sidebar-accion {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    text-align: center;
+    border: none;
+}
 
-        
-        .detalle-layout-wrapper { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 0px; 
-            width: 100% !important; 
-            max-width: 100% !important; 
-            box-sizing: border-box; 
-        }
+.btn-sidebar-tour {
+    background-color: var(--azul-zillow);
+    color: #ffffff;
+}
 
-        /* Cabecera limpia y transparente de lado a lado */
-        .detalle-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 24px; 
-            background: #ffffff !important; 
-            border-bottom: 1px solid #e2e8e0; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
+.btn-sidebar-agente {
+    background-color: #ffffff;
+    color: var(--azul-zillow);
+    border: 1px solid var(--azul-zillow);
+}
 
-        /* Forzar al mosaico de fotos a ocupar el 100% del ancho sin márgenes */
-        .collage-detalle { 
-            position: relative; 
-            display: flex; 
-            gap: 8px; 
-            height: 440px; 
-            padding: 0 !important; 
-            margin: 0 0 24px 0 !important;
-            width: 100% !important; 
-            max-width: 100% !important; 
-            box-sizing: border-box !important; 
-            overflow: hidden !important;
-            grid-column: 1 / -1 !important; 
-            order: -1 !important;
-        }
+/* PANTALLA 3: Rejilla Vertical de Fotos Alternadas */
+.rejilla-fotos-vertical-pantalla3 {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
 
-        .collage-principal img, .collage-secundario img {
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            border-radius: 0px !important;
-        }
+.foto-ancho-completo {
+    width: 100%;
+    height: 380px;
+    object-fit: cover;
+    border-radius: 12px;
+}
 
-        .collage-principal { flex: 1.3; border-radius: 0px !important; overflow: hidden; }
-        .collage-secundario { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
-        .collage-secundario img { border-radius: 0px !important; }
+.fila-doble-foto {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+    height: 240px;
+}
 
-        /* Grilla de doble columna para la información inferior */
-        .zillow-grid-dos-columnas { 
-            display: grid !important; 
-            grid-template-columns: 1.7fr 1fr !important; 
-            gap: 24px !important; 
-            align-items: start !important; 
-            width: 100% !important; 
-            max-width: 100% !important;
-             padding: 0 24px 24px 24px !important; 
-            box-sizing: border-box !important; 
-        }
+.fila-doble-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
 
+.precio-grande-remarcado {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--azul-oscuro);
+    margin: 0 0 10px 0;
+}
 
-        @media (max-width: 900px) {
-            .zillow-grid-dos-columnas { grid-template-columns: 1fr; padding: 0 16px 16px 16px; }
-        }
-
-        .columna-izquierda-analitica { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 24px; 
-            width: 100%; 
-            box-sizing: border-box; 
-        }
-
-        /* COLUMNA DERECHA FIJA (STICKY) */
-        .columna-derecha-agente { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 16px; 
-            width: 100%; 
-            box-sizing: border-box; 
-            position: sticky !important; 
-            top: 20px; /* Se queda congelada a 20px del borde superior al hacer scroll */
-            z-index: 10;
-        }
-
-        /* Estilo limpio para las tarjetas de información */
-        .tarjeta-blanca-zillow { 
-            background: #ffffff; 
-            padding: 0px; /* Remueve cajas toscas para que la data fluya limpia */
-            border: none !important; 
-            border-radius: 0px; 
-            box-shadow: none !important; 
-            width: 100%; 
-        }
-
-/*  ====== */        
-        .detalle-main-grid { display: grid; grid-template-columns: 2.2fr 0.85fr; gap: 26px; width: 100%; min-height: 0; }
-        @media (max-width: 1080px) { .detalle-main-grid { grid-template-columns: 1fr; } .detalle-columna-der { position: static; top: auto; } }
-        .detalle-columna-izq { display: flex; flex-direction: column; gap: 20px; width: 100%; }
-        .detalle-columna-der { position: sticky; top: 20px; align-self: flex-start; max-height: calc(100vh - 40px); }
-        .detalle-panel-sticky { display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 24px; width: 100%; border-radius: 24px; background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 18px 42px rgba(15,23,42,0.08); }
-        .btn-detalle-principal, .btn-detalle-secundario { width: 100%; border-radius: 18px; padding: 16px 22px; border: none; font-size: 16px; font-weight: 900; cursor: pointer; }
-        .btn-detalle-principal { background: #006aff; color: #ffffff; }
-        .btn-detalle-secundario { background: #f1f5f9; color: #002E50; border: 1px solid #cbd5e1; }
-        .similares-card { min-width: 240px; max-width: 240px; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; background: white; box-shadow: 0 8px 30px rgba(15,23,42,0.06); cursor: pointer; transition: transform 0.2s ease; }
-        .similares-card:hover { transform: translateY(-2px); }
-        .similares-nav { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; z-index: 1; }
-        .btn-detalle-principal { background: #006aff; color: #ffffff; }
-        .btn-detalle-secundario { background: #f8fafc; color: #002E50; border: 1px solid #cbd5e1; }
-        .detalle-section { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 18px; padding: 22px; box-shadow: 0 8px 20px rgba(15,23,42,0.04); }
-        .detalle-section h4 { margin-top: 0; margin-bottom: 14px; font-size: 18px; color: #102a43; }
-        .detalle-resumen-grid { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
-        .resumen-sinopsis { display: flex; flex-direction: column; gap: 14px; }
-        .precio-destacado { font-size: 34px; font-weight: 900; color: #002E50; margin: 0; }
-        .direccion-detalle { margin: 0; color: #475569; font-size: 15px; line-height: 1.5; }
-        .indicadores-detalle { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
-        .indicador-chip { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 999px; color: #1d4ed8; font-size: 13px; font-weight: 700; padding: 8px 12px; }
-        .boton-contacto-rapido { background: #ffffff; border: 1px solid #cbd5e1; color: #002E50; padding: 12px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-        .ficha-cuadricula { display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)); gap: 14px; }
-        .dato-ficha { padding: 18px 16px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; }
-        .dato-ficha strong { display: block; margin-bottom: 6px; font-size: 14px; color: #102a43; }
-        .dato-ficha span { font-size: 13px; color: #475569; line-height: 1.5; }
-        .chips-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-        .chip { background: #eef2ff; color: #1d4ed8; padding: 10px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; }
-        .detalle-texto { color: #334155; line-height: 1.8; white-space: pre-line; margin: 0; }
-        .metrica-horizontal { display: flex; flex-wrap: wrap; gap: 16px; }
-        .metric-card { flex: 1; min-width: 180px; background: #f8fafc; border: 1px solid #dbeafe; border-radius: 14px; padding: 18px; }
-        .metric-card span { display: block; font-size: 13px; color: #64748b; margin-bottom: 8px; }
-        .metric-card strong { font-size: 24px; color: #002E50; display: block; }
-        .modulo-viaje { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 18px; align-items: start; }
-        @media (max-width: 900px) { .modulo-viaje { grid-template-columns: 1fr; } }
-        .modulo-viaje input, .modulo-viaje select, .simulador-capacidad input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; background: #ffffff; }
-        .botones-fechas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-        .date-card { cursor: pointer; border: 1px solid #cbd5e1; border-radius: 16px; padding: 14px 16px; min-width: 110px; background: #ffffff; transition: all 0.2s ease; text-align: center; }
-        .date-card.selected { background: #eff6ff; border-color: #1d4ed8; }
-        .tour-seccion p { margin: 0; color: #475569; }
-        .tour-cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
-        .tour-cta button { border-radius: 14px; border: none; padding: 12px 18px; cursor: pointer; font-weight: 700; }
-        .tour-cta button.primary { background: #006aff; color: white; }
-        .tour-cta button.outline { background: #f8fafc; color: #002E50; border: 1px solid #cbd5e1; }
-        .tour-iframe { width: 100%; height: 420px; border: 1px solid #e2e8f0; border-radius: 16px; overflow: hidden; }
-        .tour-3d-preview { display: flex; flex-direction: column; gap: 14px; align-items: center; text-align: center; }
-        .tour-3d-preview img { width: 100%; border-radius: 16px; object-fit: cover; }
-        .formulario-vendedor { display: grid; gap: 14px; }
-        .formulario-vendedor input, .formulario-vendedor textarea { border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px 14px; font-size: 14px; width: 100%; background: #ffffff; }
-        .formulario-vendedor textarea { min-height: 140px; resize: vertical; }
-        .formulario-vendedor button { border: none; border-radius: 14px; background: #006aff; color: white; padding: 14px; font-weight: 700; cursor: pointer; }
-        .resultado-capacidad { border-radius: 16px; background: #f8fafc; border: 1px solid #dbeafe; padding: 18px; color: #0f172a; font-weight: 700; }
-        .simulador-capacidad { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; }
-        @media (max-width: 900px) { .simulador-capacidad { grid-template-columns: 1fr; } }
-        .simulador-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .bloque-pois { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-        .poi-card { border-radius: 16px; background: #eff6ff; padding: 18px; border: 1px solid #dbeafe; }
-        .poi-card h5 { margin: 0 0 10px 0; font-size: 15px; color: #002E50; }
-        .poi-card p { margin: 0 6px 0 0; color: #334155; font-size: 13px; }
-        .similares-carrusel { position: relative; }
-        .similares-contenedor { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; }
-        .similares-card { min-width: 240px; max-width: 240px; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; background: white; box-shadow: 0 8px 30px rgba(15,23,42,0.06); }
-        .similares-card img { width: 100%; height: 160px; object-fit: cover; }
-        .similares-card-body { padding: 16px; }
-        .similares-card-body h5 { margin: 0 0 8px 0; font-size: 15px; color: #102a43; }
-        .similares-card-body p { margin: 0 8px 8px 0; color: #475569; font-size: 13px; }
-        .similares-nav { position: absolute; top: 12px; right: 12px; display: flex; gap: 8px; }
-        .similares-nav button { width: 38px; height: 38px; border-radius: 999px; border: 1px solid #cbd5e1; background: white; color: #002e50; cursor: pointer; }
-        .modal-tour-confirmacion .caja-login { max-width: 480px; width: 100%; padding: 26px; }
-        .modal-tour-confirmacion h3 { margin-top: 0; font-size: 22px; color: #102a43; }
-        .modal-tour-confirmacion input, .modal-tour-confirmacion textarea, .modal-tour-confirmacion select { width: 100%; margin-bottom: 14px; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; }
-        .modal-tour-confirmacion button { width: 100%; border: none; border-radius: 14px; padding: 14px; font-weight: 700; background: #006aff; color: white; cursor: pointer; }
-        /* ===================== ESTILOS ADICIONALES DE DETALLE ===================== */
-        .detalle-header { padding: 20px 20px 12px; position: sticky; top: 0; background: #f6f6f9; z-index: 60; }
-        .detalle-header-left, .detalle-header-center, .detalle-header-right { display: flex; align-items: center; gap: 16px; }
-        .detalle-back-btn { font-size: 24px; font-weight: 900; color: #002E50; text-transform: uppercase; letter-spacing: 0.5px; }
-        .detalle-header-center span { font-size: 32px; font-weight: 900; color: #002E50; line-height: 1.05; }
-        .detalle-accion-btn { font-size: 16px; font-weight: 900; padding: 14px 22px; min-height: 54px; gap: 12px; }
-        .detalle-nav-spy { display: flex; gap: 10px; overflow-x: auto; padding: 14px 20px 18px; background: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 88px; z-index: 65; }
-        .detalle-nav-spy button { border: none; background: transparent; color: #475569; font-size: 16px; font-weight: 900; padding: 12px 18px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease; white-space: nowrap; }
-        .detalle-nav-spy button.active { color: var(--azul-zillow); background: rgba(0, 106, 255, 0.14); }
-        .detalle-section { scroll-margin-top: 160px; }
-        .detalle-section h4 { margin-top: 0; margin-bottom: 18px; font-size: 22px; font-weight: 900; color: #102a43; }
-        .detalle-section p, .detalle-section span, .dato-ficha span, .indicador-chip, .metric-card strong, .metric-card span, .resultado-capacidad { font-size: 15px; line-height: 1.8; }
-        .precio-destacado { font-size: 40px; }
-        .direccion-detalle { font-size: 17px; }
-        .ficha-cuadricula { gap: 18px; }
-        .dato-ficha { padding: 22px 20px; }
-        .dato-ficha strong { font-size: 15px; }
-        .boton-contacto-rapido { font-size: 15px; padding: 14px 18px; }
-        .detalle-columna-der { position: sticky; top: 120px; align-self: flex-start; max-height: calc(100vh - 140px); }
-        .detalle-panel-sticky { padding: 26px; gap: 22px; }
-        .btn-detalle-principal, .btn-detalle-secundario { font-size: 16px; padding: 16px 22px; }
-        .btn-detalle-principal { min-height: 58px; }
-        .btn-detalle-secundario { min-height: 58px; }
-        .collage-detalle { display: flex; gap: 12px; flex-wrap: wrap; min-height: 460px; align-items: stretch; }
-        .collage-principal { min-height: 460px; border-radius: 18px; overflow: hidden; }
-        .collage-principal img, .collage-mini img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .collage-secundario { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; flex: 1; }
-        .collage-mini { border-radius: 18px; min-height: 220px; overflow: hidden; }
-        .btn-zillow-ver-mas { min-width: 280px; font-size: 15px; padding: 16px 24px; white-space: normal; max-width: 320px; text-align: center; line-height: 1.2; }
-        .simulador-capacidad { display: grid; grid-template-columns: 1fr; gap: 18px; }
-        .simulador-formulario { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .simulador-formulario > div { display: flex; flex-direction: column; gap: 8px; }
-        .simulador-formulario input { padding: 14px 16px; font-size: 15px; border-radius: 14px; }
-        .simulador-capacidad button { max-width: 320px; width: 100%; margin-top: 8px; }
-        .resultado-capacidad { font-size: 15px; padding: 20px; }
-        .tour-cta button { min-height: 52px; font-size: 15px; }
-        .formulario-vendedor input, .formulario-vendedor textarea { font-size: 15px; padding: 14px 16px; }
-        .poi-card { min-height: 140px; }
-        .poi-card h5 { font-size: 16px; }
-        .similares-card { min-width: 240px; max-width: 240px; }
-        .similares-card-body h5 { font-size: 16px; }
-        .similares-nav button { width: 46px; height: 46px; }
     </style>
 </head>
 <body>
@@ -964,293 +819,196 @@
 <!-- ================================================================================= -->
 <!-- VENTANA FLOTANTE ÚNICA DE DETALLE DE PROPIEDAD (2da PANTALLA UNIFICADA ESTILO ZILLOW) -->
 <!-- ================================================================================= -->
-<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.55); z-index: 11000; justify-content: center; align-items: center; box-sizing: border-box;">
-    
-    <div id="contenedor-detalle-zillow" class="caja-login" style="max-width: 1200px; width: 95%; height: 92vh; overflow-y: auto; overflow-x: hidden; background: #f6f6f9; text-align: left; padding: 24px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3); box-sizing: border-box; position: relative;"> 
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none;">
+    <div id="contenedor-detalle-zillow">
         
-        <!-- ESTILOS DE INTERFAZ EXCLUSIVOS PARA EL INTERIOR DEL MODAL -->
-        <style>
-            .zillow-layout-wrapper {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .zillow-grid-dos-columnas {
-                display: grid;
-                grid-template-columns: 2fr 1fr;
-                gap: 24px;
-                align-items: start;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            @media (max-width: 900px) {
-                .zillow-grid-dos-columnas {
-                    grid-template-columns: 1fr;
-                }
-            }
-            .columna-izquierda-analitica {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                width: 100%;
-                box-sizing: border-box;
-            }
-            .columna-derecha-agente {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                width: 100%;
-                box-sizing: border-box;
-                position: sticky;
-                top: 10px;
-            }
-            .tarjeta-blanca-zillow {
-                background: #ffffff;
-                padding: 20px;
-                border: 1px solid #dddddd;
-                border-radius: 8px;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                box-sizing: border-box;
-                width: 100%;
-            }
-        </style>
+        <!-- Cabecera de Navegación Superior Estilo Zillow -->
+        <div class="detalle-header-clean">
+            <h3 style="margin: 0; color: var(--azul-oscuro); font-weight: 800;">Detalle de la Propiedad</h3>
+            <button class="btn-sidebar-accion btn-sidebar-agente" onclick="cerrarVentanaDetalle()" style="width: auto; padding: 10px 20px;">× Volver a la Lista</button>
+        </div>
 
-        <div class="zillow-layout-wrapper">
+        <!-- Mosaico Armónico de 5 Fotos (Pantalla 2) -->
+        <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
+            <div class="foto-grande-izq">
+                <img src="https://unsplash.com" alt="Foto Principal" id="foto-detalle-1">
+            </div>
+            <div class="cuadrante-fotos-der">
+                <img src="" alt="Foto 2" id="foto-detalle-2">
+                <img src="" alt="Foto 3" id="foto-detalle-3">
+                <img src="" alt="Foto 4" id="foto-detalle-4">
+                <img src="" alt="Foto 5" id="foto-detalle-5">
+            </div>
+            <!-- Botón para pasar a Pantalla 3 -->
+            <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
+        </div>
+
+        <!-- Grilla de Información y Caja Sticky Lateral -->
+        <div class="zillow-grid-principal">
             
-            <!-- Cabecera de Navegación Superior Unificada -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 15px; margin-bottom: 10px;">
-                <div>
-                    <h3 style="margin: 0; color: #222; font-family: sans-serif; font-weight: bold;">Detalle de la Propiedad</h3>
+            <!-- Contenido del Detalle a la Izquierda -->
+            <div class="informacion-fluyente-izq">
+                <div id="bloques-caracteristicas-dinamicas">
+                    <!-- Aquí se inyecta la información de la propiedad automáticamente -->
                 </div>
-                <button class="btn-volver-detalle" onclick="cerrarVentanaDetalle()" style="padding: 10px 20px; background: #006aff; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-family: sans-serif;">✕ Volver a la lista</button>
             </div>
 
-            <!-- GRILLA PRINCIPAL DE DOBLE COLUMNA -->
-            <div class="zillow-grid-dos-columnas">
-                
-                <!-- COLUMNA IZQUIERDA: Bloques Técnicos, Historiales, Mapas y Análisis -->
-                <div class="columna-izquierda-analitica">
-                    
-                    <!-- 1. Ficha Técnica de Características -->
-                    <div class="tarjeta-blanca-zillow">
-<!-- Abrimos la grilla maestra estilo Zillow debajo de las fotos -->
-<div class="zillow-grid-dos-columnas">
-    
-    <!-- Columna Izquierda Amplia para la información -->
-    <div class="columna-izquierda-analitica">
-        
-        <h3 style="margin-top: 0; border-bottom: 2px solid #1a73e8; padding-bottom: 8px; color: #222; font-family: sans-serif; font-size: 16px;">📋 Datos y características</h3>
-        <div id="bloques-caracteristicas-dinamicas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-family: sans-serif;">
+            <!-- CAJA CONTENEDORA FIJA A LA DERECHA (Sticky Sidebar) -->
+            <div class="columna-sidebar-fija-der">
+                <h4 style="margin: 0; font-size: 14px; color: #64748b; font-weight: 700;">ACCIONES EN LÍNEA</h4>
+                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
+            </div>
 
-                            <!-- Inyección dinámica -->
-                        </div>
-                    </div>
-
-                    <!-- 2. Valor de Mercado Estimado -->
-                    <div class="tarjeta-blanca-zillow">
-                        <h4 style="margin-top: 0; color: #222; font-family: sans-serif; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px;">Valor de Mercado Estimado</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; width: 100%; box-sizing: border-box;">
-                            <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
-                                <p style="margin: 0; font-size: 12px; color: #666; font-weight: bold;">Valor Estimado</p>
-                                <h5 id="zillow-estimado-valor" style="margin: 8px 0 0 0; font-size: 22px; color: #222;">$0</h5>
-                            </div>
-                            <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
-                                <p style="margin: 0; font-size: 12px; color: #666; font-weight: bold;">Rango de ventas estimado</p>
-                                <h5 id="zillow-rango-ventas" style="margin: 8px 0 0 0; font-size: 18px; color: #222;">$0 - $0</h5>
-                            </div>
-                            <div style="background: #f9f9f9; padding: 15px; border-radius: 6px; border: 1px solid #eee;">
-                                <p style="margin: 0; font-size: 12px; color: #666; font-weight: bold;">Alquiler Estimado</p>
-                                <h5 id="zillow-alquiler-estimado" style="margin: 8px 0 0 0; font-size: 18px; color: #222;">$0 /mo</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 3. Gráfico de Historia de Zestimate -->
-                    <div class="tarjeta-blanca-zillow">
-                        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px; font-family: sans-serif;">Historia de Zestimate</h4>
-                        <div style="position: relative; width: 100%; height: 260px; margin-top: 15px;">
-                            <canvas id="lienzoGraficoHistorial"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- 4. Tabla de Historial de Precios Detallada -->
-                    <div class="tarjeta-blanca-zillow">
-                        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px; font-family: sans-serif;">📊 Historia de precios detallada</h4>
-                        <div style="overflow-x: auto; margin-top: 15px;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-family: sans-serif;">
-                                <thead>
-                                    <tr style="background-color: #f5f5f5; border-bottom: 2px solid #ddd; color: #333; font-weight: bold;">
-                                        <th style="padding: 10px;">Fecha</th>
-                                        <th style="padding: 10px;">Evento</th>
-                                        <th style="padding: 10px;">Precio</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-historial-precios-body">
-                                    <!-- Inyección dinámica -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- 5. Calculadora Hipotecaria -->
-                    <div class="tarjeta-blanca-zillow" id="contenedor-calculadora-detalle" style="display: none;">
-                        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px; font-family: sans-serif;">🧮 Calculadora de pago mensual estimado</h4>
-                        <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; background: #f9f9f9; padding: 15px; border-radius: 6px;">
-                            <div style="flex: 1; min-width: 130px;">
-                                <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Cuota Inicial (%)</label>
-                                <input type="number" id="calc-porcentaje-inicial" value="20" min="10" max="90" oninput="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
-                            </div>
-                            <div style="flex: 1; min-width: 130px;">
-                                <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Plazo (Años)</label>
-                                <select id="calc-plazo-anos" onchange="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
-                                    <option value="10">10 años</option>
-                                    <option value="15">15 años</option>
-                                    <option value="20" selected>20 años</option>
-                                    <option value="25">25 años</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1; min-width: 130px;">
-                                <label style="display:block; font-size:11px; font-weight:bold; color:#555; margin-bottom:5px;">Tasa Interés (TEA %)</label>
-                                <input type="number" id="calc-tea" value="8.5" step="0.1" min="4" max="20" oninput="recalcularHipotecaVolatil()" style="width:100%; padding:6px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;">
-                            </div>
-                        </div>
-                        <div style="margin-top: 20px; text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px;">
-                            <p style="margin: 0; font-size: 13px; color: #666; font-weight: bold;">Pago Mensual Estimado</p>
-                            <h2 id="calc-total-mensual" style="margin: 5px 0 0 0; color: #1a73e8; font-size: 28px;">$0 /mes</h2>
-                        </div>
-                        <div style="margin-top: 15px; font-size: 13px; color: #333;">
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
-                                <span>Principal e interés (Amortización Francesa)</span>
-                                <span id="calc-item-principal" style="font-weight: bold;">$0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
-                                <span>Seguro de Desgravamen (Obligatorio SBS)</span>
-                                <span id="calc-item-desgravamen" style="font-weight: bold;">$0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
-                                <span>Impuestos de propiedad (Predial)</span>
-                                <span id="calc-item-predial" style="font-weight: bold;">$0</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5;">
-                                <span>Seguro del Inmueble (Sismos e Incendios)</span>
-                                <span id="calc-item-todo-riesgo" style="font-weight: bold;">$0</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- 6. Ubicación y Mapa -->
-                    <div class="tarjeta-blanca-zillow">
-                        <h4 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px; font-family: sans-serif;">📍 Ubicación y Barrio</h4>
-                        <p style="font-size: 12px; color: #666; margin-bottom: 12px; font-family: sans-serif;" id="barrio-texto-direccion">Explora el entorno y la conectividad de esta propiedad.</p>
-                        <div id="contenedor-mapa-detalle" style="width: 100%; height: 300px; border-radius: 6px; overflow: hidden; border: 1px solid #ddd; position: relative;">
-                            <iframe id="iframe-mapa-barrio" src="about:blank" style="border:0; width:100%; height:100%;" allowfullscreen="" loading="lazy"></iframe>
-                        </div>
-                    </div>
-
-                    <!-- 7. Conectividad Entorno Urbano -->
-                    <div class="tarjeta-blanca-zillow" id="seccion-conectividad-detalle" style="display: none;">
-                        <h3 style="margin-top: 0; color: #222; font-size: 16px; border-bottom: 2px solid #ccc; padding-bottom: 8px; font-family: sans-serif;">🚶 Conectividad y Entorno Urbano</h3>
-                        <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
-                            <div style="flex: 1; min-width: 180px; display: flex; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee;">
-                                <div style="font-size: 24px; margin-right: 12px;">🚶</div>
-                                <div>
-                                    <p style="margin: 0; font-size: 11px; color: #666; font-weight: bold;">Puntuación de Caminata</p>
-                                    <h5 style="margin: 3px 0 0 0; font-size: 15px; color: #333;" id="barrio-walk-score">Calculando...</h5>
-                                </div>
-                            </div>
-                            <div style="flex: 1; min-width: 180px; display: flex; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 6px; border: 1px solid #eee;">
-                                <div style="font-size: 24px; margin-right: 12px;">🚲</div>
-                                <div>
-                                    <p style="margin: 0; font-size: 11px; color: #666; font-weight: bold;">Puntuación de Bicicleta</p>
-                                    <h5 style="margin: 3px 0 0 0; font-size: 15px; color: #333;" id="barrio-bike-score">Calculando...</h5>
-                                </div>
-                            </div>
-                        </div>
-                        <h5 style="margin: 20px 0 10px 0; font-size: 14px; color: #444; font-weight: bold; font-family: sans-serif;">🛍️ Servicios y Establecimientos Cercanos</h5>
-                        <div id="contenedor-servicios-cercanos" style="display: flex; overflow-x: auto; padding-bottom: 10px; scroll-behavior: smooth; gap: 15px; white-space: nowrap;">
-                        </div>
-                    </div>
-
-                    <!-- 8. Análisis Comparativo de Mercado (ACM) -->
-                    <div class="tarjeta-blanca-zillow">
-                        <h4 style="margin-top: 0; color: #333; font-family: sans-serif; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px;">📈 Análisis Comparativo de Mercado (ACM Volátil)</h4>
-                        <p style="font-size: 12px; color: #666; margin-bottom: 10px; font-family: sans-serif;">Filtros automáticos: Mismo Ubigeo, Mismo Tipo de Inmueble y Margen de Área Construida de +/- 30%.</p>
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; font-family: sans-serif;">
-                                <thead>
-                                    <tr style="background-color: #eaeaea; border-bottom: 2px solid #ccc; color: #222;">
-                                        <th style="padding: 8px;">ID</th>
-                                        <th style="padding: 8px;">Propiedad Comparable</th>
-                                        <th style="padding: 8px;">Precio Ref.</th>
-                                        <th style="padding: 8px;">Área</th>
-                                        <th style="padding: 8px;">Dif. Precio</th>
-                                        <th style="padding: 8px;">Dif. Área</th>
-                                        <th style="padding: 8px;">Distancia</th>
-                                        <th style="padding: 8px; text-align: center;">Mapa</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tabla-comparables-body">
-                                    <!-- Inyección dinámica -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                     <!-- 9. Propiedades Cercanas -->
-                    <div class="tarjeta-blanca-zillow" id="seccion-propiedades-cercanas" style="display: none;">
-                        <h4 style="margin-top: 0; color: #333; font-family: sans-serif; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px;">🏠 Propiedades Cercanas</h4>
-                        <p style="font-size: 12px; color: #666; margin-bottom: 15px; font-family: sans-serif;">Otros inmuebles activos en un radio máximo de 1.5 km a la redonda.</p>
-                        <div id="contenedor-propiedades-cercanas" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; padding: 10px 0; width: 100%; box-sizing: border-box;">
-                        </div>
-                    </div>
-
-                </div> <!-- Fin columna izquierda -->
-
-                <!-- COLUMNA DERECHA: Formulario de Contacto -->
-                <div class="columna-derecha-agente">
-                    <div class="tarjeta-blanca-zillow" id="seccion-formulario-agente">
-                        <h4 style="margin-top: 0; color: #222; font-family: sans-serif; font-size: 16px; border-bottom: 2px solid #006aff; padding-bottom: 8px;">👤 Contacto con el Agente</h4>
-                        <form id="form-contacto-agente" onsubmit="enviarMensajeAlAgente(event)" style="margin-top: 15px;">
-                            <div style="margin-bottom: 12px;">
-                                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Nombre *</label>
-                                <input type="text" id="contacto-nombre" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Teléfono *</label>
-                                <input type="text" id="contacto-telefono" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-                            <div style="margin-bottom: 12px;">
-                                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Email *</label>
-                                <input type="email" id="contacto-email" required readonly style="width: 100%; padding: 8px; border: 1px solid #eee; background: #fafafa; color: #666; border-radius: 4px; box-sizing: border-box;">
-                            </div>
-                            <div style="margin-bottom: 15px;">
-                                <label style="display: block; font-size: 12px; font-weight: bold; color: #444; margin-bottom: 4px;">Mensaje</label>
-                                <textarea id="contacto-mensaje" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                                <span id="telefono-agente-click" style="font-size: 13px; color: #1a73e8; font-weight: bold; cursor: pointer; padding: 8px 0;">Mostrar teléfono del agente</span>
-                                <button type="submit" style="background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 13px;">Contactar Agente</button>
-                            </div>
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                                <button type="button" id="contacto-whatsapp-btn" class="btn-detalle-secundario" style="flex:1; min-width: 140px;" onclick="enviarPorWhatsApp()">WhatsApp</button>
-                                <button type="button" id="contacto-email-btn" class="btn-detalle-secundario" style="flex:1; min-width: 140px;" onclick="enviarPorEmail()">Email</button>
-                            </div>
-                        </form>
-                    </div>
-                </div> <!-- Fin columna derecha -->
-
-            </div> <!-- Fin grilla dos columnas -->
-        </div> <!-- Fin layout wrapper -->
-    </div> <!-- Fin contenedor detalle zillow -->
-</div> <!-- Fin mi-modal-detalle -->
-
-<!-- VENTANA FLOTANTE DE GALERÍA COMPLETA (3ra pantalla) -->
-<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 10000; justify-content: center; align-items: center;">
-    <div id="contenedor-galeria-completa" class="caja-login" style="max-width: 1100px; width: 96%; height: 92vh; padding: 0; text-align: left; overflow: hidden; background: #fff; border-radius: 8px;">
-        <div id="contenedor-galeria-completa-zillow" style="width:100%; height:100%;"></div>
+        </div>
     </div>
 </div>
+
+<!-- VENTANA FLOTANTE DE VISTA EXTENDIDA DE FOTOS (PANTALLA 3) -->
+<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; background-color: #f6f6f9;">
+    <div id="contenedor-detalle-zillow">
+        
+        <div class="detalle-header-clean">
+            <h3 style="margin: 0; color: var(--azul-oscuro); font-weight: 800;">Galería Completa de Fotos</h3>
+            <button class="btn-sidebar-accion btn-sidebar-agente" onclick="cerrarPantalla3Fotos()" style="width: auto; padding: 10px 20px;">Volver al Detalle</button>
+        </div>
+
+        <div class="zillow-grid-principal" style="padding-top: 24px;">
+            
+            <!-- Columna Izquierda: Rejilla Vertical de Fotos con Orden Alternado -->
+            <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3">
+                <!-- Se inyecta dinámicamente: 1 amplia -> 2 pequeñas -> 1 amplia... -->
+            </div>
+
+            <!-- Columna Derecha: Panel Lateral Estático de Información -->
+            <div class="columna-sidebar-fija-der">
+                <div class="precio-grande-remarcado" id="p3-precio-propiedad">$0</div>
+                <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
+                <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
+                
+                <hr style="border: 0; border-top: 1px solid var(--gris-borde); margin-bottom: 15px;">
+                
+                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contactar con un agente</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
    
 <script>
+    /**
+ * Abre el popup centrado en el mapa al hacer clic en un marcador de precio.
+ * @param {L.Marker} marker - Instancia del marcador sobre el cual se hizo click.
+ * @param {Array} arrayFotos - Vector de URLs de imágenes asociadas a la propiedad.
+ */
+function gestionarPopupCentralMapa(marker, arrayFotos) {
+    const mapaInstancia = map; 
+    mapaInstancia.panTo(marker.getLatLng());
+
+    let imagenesHTML = '';
+    const fotosAUsar = arrayFotos.length > 0 ? arrayFotos : ['https://unsplash.com'];
+    
+    fotosAUsar.slice(0, 5).forEach((url, i) => {
+        imagenesHTML += `<img src="${url}" class="popup-carousel-img ${i === 0 ? 'active' : ''}" data-idx="${i}" style="width:100%; height:220px; object-fit:cover; display:${i === 0 ? 'block' : 'none'}; cursor:pointer;" onclick="activarFlujoPantalla2('${url}')">`;
+    });
+
+    const estructuraPopup = `
+        <div class="popup-card" style="width:300px; position:relative; overflow:hidden;" onmouseenter="this.querySelectorAll('.popup-nav-button').forEach(b=>b.style.opacity=1)" onmouseleave="this.querySelectorAll('.popup-nav-button').forEach(b=>b.style.opacity=0)">
+            <button class="popup-nav-button" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); z-index:10; background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; opacity:0; transition:opacity 0.2s;" onclick="navegarFotosPopup(event, -1)">‹</button>
+            <div class="popup-carousel-container" style="width:100%; height:220px; background:#000;">
+                ${imagenesHTML}
+            </div>
+            <button class="popup-nav-button" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); z-index:10; background:rgba(255,255,255,0.8); border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; font-weight:bold; opacity:0; transition:opacity 0.2s;" onclick="navegarFotosPopup(event, 1)">›</button>
+        </div>
+    `;
+
+    marker.bindPopup(estructuraPopup).openPopup();
+}
+
+/**
+ * Navega internamente de forma circular entre las fotos del carrusel del mapa.
+ */
+function navegarFotosPopup(event, delta) {
+    event.stopPropagation();
+    const contenedor = event.target.closest('.popup-card');
+    const imgs = contenedor.querySelectorAll('.popup-carousel-img');
+    let idxActual = Array.from(imgs).findIndex(img => img.style.display === 'block' || img.classList.contains('active'));
+    
+    imgs[idxActual].style.display = 'none';
+    imgs[idxActual].classList.remove('active');
+    
+    let nuevoIdx = (idxActual + delta + imgs.length) % imgs.length;
+    
+    imgs[nuevoIdx].style.display = 'block';
+    imgs[nuevoIdx].classList.add('active');
+}
+
+/**
+ * Transiciona automáticamente a la Pantalla 2 (Modal de Detalle).
+ */
+function activarFlujoPantalla2(urlFoto) {
+    document.getElementById('mi-modal-detalle').style.display = 'flex';
+}
+
+/**
+ * Procesa la lógica de construcción de grilla vertical para la Pantalla 3.
+ * @param {Array} fotosPropiedad - Listado de URLs de fotos de la propiedad activa.
+ */
+function renderizarFotosVerticalesPantalla3(fotosPropiedad) {
+    const contenedor = document.getElementById('contenedor-fotos-alternadas-p3');
+    contenedor.innerHTML = '';
+    
+    let i = 0;
+    while (i < fotosPropiedad.length) {
+        const imgAmplia = document.createElement('img');
+        imgAmplia.src = fotosPropiedad[i];
+        imgAmplia.className = 'foto-ancho-completo';
+        contenedor.appendChild(imgAmplia);
+        i++;
+        
+        if (i < fotosPropiedad.length) {
+            const contenedorDoble = document.createElement('div');
+            contenedorDoble.className = 'fila-doble-foto';
+            
+            const imgPeq1 = document.createElement('img');
+            imgPeq1.src = fotosPropiedad[i];
+            contenedorDoble.appendChild(imgPeq1);
+            i++;
+            
+            if (i < fotosPropiedad.length) {
+                const imgPeq2 = document.createElement('img');
+                imgPeq2.src = fotosPropiedad[i];
+                contenedorDoble.appendChild(imgPeq2);
+                i++;
+            }
+            contenedor.appendChild(contenedorDoble);
+        }
+    }
+}
+
+/**
+ * Lógica unificada para derivar al usuario hacia los formularios de contacto de negocio.
+ * @param {string} canal - Identificador de flujo: 'tour' o 'agente'.
+ */
+function ejecutarAccionDeContacto(canal) {
+    if (canal === 'tour') {
+        alert("Redirigiendo al formulario oficial de registro: Solicitar un Tour.");
+    } else if (canal === 'agente') {
+        alert("Redirigiendo al formulario oficial de contacto: Registro con Agente.");
+    }
+}
+
+function abrirPantalla3FotosExtendidas() {
+    document.getElementById('mi-modal-galeria').style.display = 'flex';
+}
+
+function cerrarPantalla3Fotos() {
+    document.getElementById('mi-modal-galeria').style.display = 'none';
+}
+
 // =========================================================================
 // VARIABLES GLOBALES DE SESIÓN Y ESTADO COMERCIAL
 // =========================================================================
