@@ -892,98 +892,87 @@
 <!-- ================================================================================= -->
 <!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
 <!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none;">
-    <div id="contenedor-detalle-zillow">
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 1200px; height: 90vh; background-color: #ffffff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow-y: auto; overflow-x: hidden; z-index: 11000; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif;">
+    
+    <!-- Cabecera de Navegación Estilo Zillow Estricto -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; height: 65px; box-sizing: border-box;">
+        <button onclick="cerrarVentanaDetalle()" style="background: transparent; border: none; color: #2a2a2a; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Volver a buscar
+        </button>
+        <img src="logo.jpg" alt="Logo" style="height: 38px !important; width: auto !important; object-fit: contain !important; margin: 0 !important;">
+        <div style="display: flex; gap: 15px; color: #54565a; font-size: 14px; font-weight: 500;">
+            <span>♡ Guardar</span>
+            <span>➦ Compartir</span>
+        </div>
+    </div>
+
+    <!-- Barra de Pestañas Secundaria Fija Sub-Nav Corregida -->
+    <div style="display: flex; justify-content: flex-start; gap: 15px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; padding: 10px 24px; position: sticky; top: 65px; z-index: 999; box-sizing: border-box; overflow-x: auto; white-space: nowrap;">
+        <button style="background: transparent; border: none; color: #006aff; font-size: 14px; font-weight: 700; cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid #006aff;">Resumen</button>
+        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Datos y características</button>
+        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Valor de mercado</button>
+        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; pointer; padding-bottom: 4px;">Calculadora de pago</button>
+        <button style="background: transparent; border: none; color: #54565a; font-size: 14px; font-weight: 500; cursor: pointer; padding-bottom: 4px;">Barrio</button>
+    </div>
+
+    <!-- Mosaico Armónico de 5 Fotos NATIVO (50% izquierda y 4 fotos a la derecha) -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 4px; width: 100%; height: 420px; position: relative; background-color: #ffffff; box-sizing: border-box;" id="mosaico-fotos-propiedad">
+        <div style="grid-column: 1 / 2; grid-row: 1 / 3; width: 100%; height: 100%;">
+            <img src="https://unsplash.com" alt="Foto Principal" id="foto-detalle-1" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <img src="" alt="Foto 2" id="foto-detalle-2" style="width: 100%; height: 100%; object-fit: cover;">
+        <img src="" alt="Foto 3" id="foto-detalle-3" style="width: 100%; height: 100%; object-fit: cover;">
+        <img src="" alt="Foto 4" id="foto-detalle-4" style="width: 100%; height: 100%; object-fit: cover;">
+        <img src="" alt="Foto 5" id="foto-detalle-5" style="width: 100%; height: 100%; object-fit: cover;">
         
-        <!-- Cabecera de Navegación Superior Fija de Zillow -->
-        <div class="detalle-header-clean">
-            <button class="btn-volver-buscar-clean" onclick="cerrarVentanaDetalle()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Volver a buscar
-            </button>
-            <img src="logo.jpg" alt="Logo Orlando Peña">
-            <div style="display: flex; gap: 15px; color: #54565a; font-size: 14px; font-weight: 500;">
-                <span>♡ ¡Ahorra</span>
-                <span>➦ Compartir</span>
+        <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()" style="position: absolute; bottom: 16px; right: 16px; background-color: #ffffff; color: #2a2a2a; border: 1px solid #2a2a2a; padding: 10px 16px; border-radius: 4px; font-weight: 700; font-size: 13px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Ver todas las fotos
+        </button>
+    </div>
+
+    <!-- Estructura de Dos Columnas con Caja Fija Lateral (Sticky) -->
+    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; padding: 24px 32px; align-items: start; box-sizing: border-box; background-color: #ffffff;">
+        
+        <!-- Columna Izquierda: Información de la propiedad -->
+        <div style="display: flex; flex-direction: column; gap: 20px; text-align: left;">
+            <div id="bloques-caracteristicas-dinamicas">
+                <!-- Aquí se inyecta la información automáticamente -->
             </div>
         </div>
 
-        <!-- Barra de Pestañas Secundaria Fija Sub-Nav de Zillow -->
-        <div class="pestanas-subnav-zillow">
-            <button class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</button>
+        <!-- Columna Derecha: Caja de Acciones Fija (Sticky Sidebar) -->
+        <div style="position: sticky; top: 150px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; z-index: 10;">
+            <button onclick="ejecutarAccionDeContacto('tour')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none; background-color: #006aff; color: #ffffff;">Solicitar un tour</button>
+            <button onclick="ejecutarAccionDeContacto('agente')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; background-color: #ffffff; color: #006aff; border: 1px solid #006aff;">Contacte con un agente</button>
         </div>
 
-        <!-- Mosaico Armónico Nativo de Zillow (Foto grande 50% e imágenes 50% derecha) -->
-        <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
-            <div class="foto-grande-izq">
-                <img src="https://unsplash.com" alt="Foto Principal" id="foto-detalle-1">
-            </div>
-            <img src="" alt="Foto 2" id="foto-detalle-2" class="secundaria-zillow">
-            <img src="" alt="Foto 3" id="foto-detalle-3" class="secundaria-zillow">
-            <img src="" alt="Foto 4" id="foto-detalle-4" class="secundaria-zillow">
-            <img src="" alt="Foto 5" id="foto-detalle-5" class="secundaria-zillow">
-            
-            <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                Ver todas las fotos
-            </button>
-        </div>
-
-        <!-- Grilla Maestra de Doble Columna Fluyente con Scroll Independiente -->
-        <div class="zillow-grid-principal">
-            
-            <!-- Contenido de Información Técnica (Izquierda) -->
-            <div class="informacion-fluyente-izq">
-                <div id="bloques-caracteristicas-dinamicas">
-                    <!-- Aquí se inyecta la información de la propiedad automáticamente -->
-                </div>
-            </div>
-
-            <!-- CAJA CONTENEDORA FIJA EXCLUSIVA (Sticky Sidebar Derecha) -->
-            <div class="columna-sidebar-fija-der">
-                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
-                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
-            </div>
-
-        </div>
     </div>
 </div>
 
 <!-- VENTANA FLOTANTE DE VISTA EXTENDIDA DE FOTOS (PANTALLA 3) -->
-<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; background-color: #f6f6f9;">
-    <div id="contenedor-detalle-zillow">
-        
-        <div class="detalle-header-clean">
-            <button class="btn-volver-buscar-clean" onclick="cerrarPantalla3Fotos()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Volver al Detalle
-            </button>
-            <img src="logo.jpg" alt="Logo Orlando Peña" style="margin-right: auto; margin-left: 20px;">
+<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 95%; max-width: 1200px; height: 90vh; background-color: #f6f6f9; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.25); overflow-y: auto; overflow-x: hidden; z-index: 11000; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background-color: #ffffff; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 1000; height: 65px; box-sizing: border-box;">
+        <button onclick="cerrarPantalla3Fotos()" style="background: transparent; border: none; color: #2a2a2a; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Volver al Detalle
+            <img src="logo.jpg" alt="Logo" style="height: 38px !important; width: auto !important; object-fit: contain !important; margin-left: 15px !important;">
+        </button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 40px; padding: 24px 32px; align-items: start; box-sizing: border-box;">
+        <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3">
+            <!-- Se inyecta dinámicamente -->
         </div>
-
-        <div class="zillow-grid-principal" style="padding-top: 24px;">
-            
-            <!-- Columna Izquierda: Rejilla Vertical de Fotos con Orden Alternado -->
-            <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3">
-                <!-- Se inyecta dinámicamente: 1 amplia -> 2 pequeñas -> 1 amplia... -->
-            </div>
-
-            <!-- Columna Derecha: Panel Lateral Estático de Información -->
-            <div class="columna-sidebar-fija-der">
-                <div class="precio-grande-remarcado" id="p3-precio-propiedad">$0</div>
-                <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
-                <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
-                
-                <hr style="border: 0; border-top: 1px solid var(--gris-borde); margin-bottom: 15px;">
-                
-                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
-                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contactar con un agente</button>
-            </div>
-
+        <div style="position: sticky; top: 90px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;">
+            <div class="precio-grande-remarcado" id="p3-precio-propiedad" style="font-size: 32px; font-weight: 800; color: #002E50; margin: 0 0 5px 0;">$0</div>
+            <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
+            <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
+            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 15px;">
+            <button onclick="ejecutarAccionDeContacto('tour')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; border: none; background-color: #006aff; color: #ffffff;">Solicitar un tour</button>
+            <button onclick="ejecutarAccionDeContacto('agente')" style="width: 100%; padding: 14px; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; text-align: center; background-color: #ffffff; color: #006aff; border: 1px solid #006aff;">Contactar con un agente</button>
         </div>
     </div>
 </div>
