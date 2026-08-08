@@ -347,7 +347,11 @@
    ARQUITECTURA DE DISEÑO ESTILO ZILLOW CORREGIDA (PANTALLAS 2 Y 3)
    ========================================================= */
 
-/* Contenedor Modal de Detalle unificado */
+    /* =======================================================
+   REPARACIÓN QUIRÚRGICA: PANTALLA 2 Y 3 ESTILO ZILLOW
+   ======================================================= */
+
+/* Contenedor Modal de Detalle Base */
 #contenedor-detalle-zillow {
     position: fixed !important;
     top: 50% !important;
@@ -359,53 +363,58 @@
     background-color: #ffffff !important;
     border-radius: 16px !important;
     box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+    /* Cambio crítico: El contenedor base NO hace scroll, se vuelve rígido */
+    overflow: hidden !important; 
     z-index: 11000 !important;
     box-sizing: border-box !important;
     padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-/* Cabecera Estilo Zillow */
+/* Cabecera Superior Fija (Inmune a desbordes) */
 .detalle-header-clean {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 12px 24px !important;
+    padding: 0 24px !important;
     background-color: #ffffff !important;
     border-bottom: 1px solid #e2e8f0 !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 1000 !important;
     height: 65px !important;
+    min-height: 65px !important;
+    z-index: 1002 !important;
     box-sizing: border-box !important;
 }
 
+/* Control estricto del logo para evitar gigantismo */
 .logo-cabecera-zillow {
-    height: 40px !important;
+    height: 38px !important;
     width: auto !important;
     object-fit: contain !important;
+    display: block !important;
 }
 
 .btn-volver-buscar-clean {
     background: transparent !important;
     border: none !important;
-    color: #2a2a2a !important;
+    color: #006aff !important; /* Azul Zillow para mejor experiencia */
     font-size: 15px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
 }
 
-/* Sub-Navegación */
+/* Sub-Navegación de Pestañas Fijas */
 .pestanas-subnav-zillow {
     display: flex !important;
-    gap: 15px !important;
+    gap: 20px !important;
     background-color: #ffffff !important;
     border-bottom: 1px solid #e2e8f0 !important;
-    padding: 10px 24px !important;
-    position: sticky !important;
-    top: 65px !important;
-    z-index: 999 !important;
+    padding: 0 24px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    align-items: center !important;
+    z-index: 1001 !important;
+    box-sizing: border-box !important;
 }
 
 .tab-link-zillow {
@@ -415,7 +424,9 @@
     font-size: 14px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
-    padding-bottom: 4px !important;
+    height: 100% !important;
+    border-bottom: 2px solid transparent !important;
+    box-sizing: border-box !important;
 }
 
 .tab-link-zillow.active {
@@ -423,36 +434,36 @@
     border-bottom: 2px solid #006aff !important;
 }
 
-/* Mosaico simétrico de fotos */
+/* Mosaico Asimétrico de 5 Fotos Perfecto */
 .galeria-mosaico-zillow {
-    display: grid !important;
-    grid-template-columns: 2fr 1fr 1fr !important;
-    grid-template-rows: 1fr 1fr !important;
-    gap: 4px !important;
+    display: flex !important; /* Cambiado a Flex para control total 50%/50% */
     width: 100% !important;
     height: 440px !important;
+    min-height: 440px !important;
+    gap: 4px !important;
     position: relative !important;
-    background-color: #ffffff !important;
+    background-color: #f1f5f9 !important;
 }
 
 .foto-grande-izq {
-    grid-column: 1 / 2 !important;
-    grid-row: 1 / 3 !important;
+    width: 50% !important;
+    height: 100% !important;
+}
+
+.cuadrante-fotos-der {
+    width: 50% !important;
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 1fr 1fr !important;
+    gap: 4px !important;
 }
 
 .foto-grande-izq img, .cuadrante-fotos-der img {
     width: 100% !important;
     height: 100% !important;
     object-fit: cover !important;
-}
-
-.cuadrante-fotos-der {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: 1fr 1fr !important;
-    gap: 4px !important;
-    grid-column: 2 / 4 !important;
-    grid-row: 1 / 3 !important;
+    display: block !important;
 }
 
 .btn-flotante-galeria {
@@ -467,8 +478,9 @@
     font-weight: 700 !important;
     z-index: 10 !important;
     cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
-
+    
 /* Grilla de Columnas e Información */
 .zillow-grid-principal {
     display: grid !important;
