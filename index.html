@@ -387,6 +387,26 @@
 }
 
 /* Control estricto del logo para evitar gigantismo */
+ .navbar-marca-detalle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.navbar-marca-detalle img {
+    height: 38px !important;
+    width: auto !important;
+    max-height: 38px !important;
+    object-fit: contain !important;
+}
+
+.navbar-marca-detalle span {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+       
 .logo-cabecera-zillow {
     height: 38px !important;
     width: auto !important;
@@ -829,7 +849,10 @@
         <!-- Cabecera Superior Compacta -->
         <div class="detalle-header-clean">
             <button class="btn-volver-buscar-clean" onclick="cerrarVentanaDetalle()">← Volver a buscar</button>
-            <img src="logo.jpg" alt="Logo Orlando Peña" class="logo-cabecera-zillow">
+            <div class="navbar-marca-detalle">
+                <img src="logo.jpg" alt="Inmobiliaria en Surco">
+                <span>Inmobiliaria<br>en Surco</span>
+            </div>
             <div class="acciones-cabecera-der">
                 <span>♡ Guardar</span>
                 <span>➦ Compartir</span>
