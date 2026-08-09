@@ -342,14 +342,9 @@
         .cabecera-detalle h3 { margin: 0; font-size: 18px; color: #2a2a2a; }
         .cabecera-detalle p { margin: 6px 0 0 0; color: #666; font-size: 14px; }
 
-        /* COLLAGE INICIAL (2da pantalla): 1 grande a la izquierda + grid 2x2 a la derecha */
 /* =========================================================
-   ARQUITECTURA DE DISEÑO ESTILO ZILLOW CORREGIDA (PANTALLAS 2 Y 3)
+   SECCIÓN DE DETALLE UNIFICADA Y CONFIGURACIÓN DEL ESPÍA
    ========================================================= */
-
-    /* =======================================================
-   REPARACIÓN QUIRÚRGICA: PANTALLA 2 Y 3 ESTILO ZILLOW
-   ======================================================= */
 
 /* Contenedor Modal de Detalle Base */
 #contenedor-detalle-zillow {
@@ -363,7 +358,6 @@
     background-color: #ffffff !important;
     border-radius: 16px !important;
     box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
-    /* Cambio crítico: El contenedor base NO hace scroll, se vuelve rígido */
     overflow: hidden !important; 
     z-index: 11000 !important;
     box-sizing: border-box !important;
@@ -372,27 +366,28 @@
     flex-direction: column !important;
 }
 
-/* Cabecera Superior Fija (Inmune a desbordes) */
+/* Cabecera Superior Fija + ¡ESPÍA DE COLOR RADIACTIVO! */
 .detalle-header-clean {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
     padding: 0 24px !important;
-    background-color: #ffffff !important;
-    border-bottom: 1px solid #e2e8f0 !important;
+    background-color: #ff0055 !important; /* ROJO FUCSIA ESPÍA: Si la cabecera se pinta de este color, el CSS sí se está ejecutando */
+    border-bottom: 2px solid #000000 !important;
     height: 65px !important;
     min-height: 65px !important;
     z-index: 1002 !important;
     box-sizing: border-box !important;
 }
 
-/* Control estricto del logo para evitar gigantismo */
- .navbar-marca-detalle {
+/* Contenedor de Marca */
+.navbar-marca-detalle {
     display: flex !important;
     align-items: center !important;
     gap: 8px !important;
 }
 
+/* Control milimétrico y forzado de la imagen del logotipo */
 #contenedor-detalle-zillow .navbar-marca-detalle img {
     width: 55px !important;
     min-width: 55px !important;
@@ -412,13 +407,14 @@
     font-weight: 700 !important;
     color: #1e293b !important;
 }
-       
+
 .logo-cabecera-zillow {
     height: 38px !important;
     width: auto !important;
     object-fit: contain !important;
     display: block !important;
 }
+
 
 .btn-volver-buscar-clean {
     background: transparent !important;
