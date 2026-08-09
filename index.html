@@ -672,7 +672,11 @@ img[alt="Inmobiliaria en Surco"] {
    REPARACIÓN DEL CUERPO INFERIOR: DOBLE COLUMNA Y RESPIRA
    ========================================================= */
 
-/* Forzamos a que el contenedor de doble columna use Flexbox real */
+/* =========================================================
+   RE-INYECCIÓN DE FUERZA BRUTA: DOBLE COLUMNA Y ESPÍA AMARILLO
+   ========================================================= */
+
+/* Forzamos a que el contenedor principal actúe en Flexbox horizontal */
 #contenedor-detalle-zillow .zillow-grid-principal {
     display: flex !important;
     gap: 32px !important;
@@ -684,21 +688,22 @@ img[alt="Inmobiliaria en Surco"] {
     background-color: #ffffff !important;
 }
 
-/* Columna Izquierda (Información): Le damos el margen armonioso para descentrarlo del borde */
+/* Columna Izquierda (Información) + ¡ESPÍA AMARILLO RADIACTIVO! */
 #contenedor-detalle-zillow .informacion-fluyente-izq {
     flex: 1 !important;
-    padding-left: 16px !important; /* El respiro para que no se pegue al borde izquierdo */
+    padding-left: 40px !important; /* Aumentamos el margen para que el cambio sea masivo */
     padding-right: 16px !important;
-    min-width: 0 !important; /* Evita que textos rígidos desborden la caja */
+    min-width: 0 !important;
+    background-color: #ffff00 !important; /* FONDO AMARILLO ESPÍA: Si el fondo del precio se pinta de amarillo, el CSS sí se leyó */
 }
 
-/* Columna Derecha (Sidebar): La congelamos de forma perfecta estilo Zillow */
+/* Columna Derecha (Sidebar): Forzado de posición Sticky */
 #contenedor-detalle-zillow .columna-sidebar-fija-der {
     width: 360px !important;
     min-width: 360px !important;
     position: -webkit-sticky !important;
     position: sticky !important;
-    top: 20px !important; /* Se congela en la pantalla dentro de su contenedor de scroll */
+    top: 20px !important;
     z-index: 100 !important;
     background-color: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
