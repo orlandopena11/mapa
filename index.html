@@ -672,33 +672,32 @@ img[alt="Inmobiliaria en Surco"] {
    REPARACIÓN DEL CUERPO INFERIOR: DOBLE COLUMNA Y RESPIRA
    ========================================================= */
 
-/* =========================================================
-   RE-INYECCIÓN DE FUERZA BRUTA: DOBLE COLUMNA Y ESPÍA AMARILLO
+  /* =========================================================
+   FORZADO ESTRUCTURAL ABSOLUTO (INMUNE A LLAVES ROTAS)
    ========================================================= */
 
-/* Forzamos a que el contenedor principal actúe en Flexbox horizontal */
-#contenedor-detalle-zillow .zillow-grid-principal {
+/* Atacamos directamente al contenedor principal por su ID y su hijo */
+#contenedor-detalle-zillow div.zillow-grid-principal {
     display: flex !important;
+    flex-direction: row !important;
     gap: 32px !important;
     max-width: 1200px !important;
     margin: 0 auto !important;
-    padding: 24px !important;
+    padding: 24px 40px !important; /* Forzamos el margen izquierdo y derecho masivo aquí */
     align-items: start !important;
     box-sizing: border-box !important;
     background-color: #ffffff !important;
 }
 
-/* Columna Izquierda (Información) + ¡ESPÍA AMARILLO RADIACTIVO! */
-#contenedor-detalle-zillow .informacion-fluyente-izq {
+/* Forzamos a la primera caja contenedora interna (izquierda) a estirarse */
+#contenedor-detalle-zillow div.zillow-grid-principal > div:first-child {
     flex: 1 !important;
-    padding-left: 40px !important; /* Aumentamos el margen para que el cambio sea masivo */
-    padding-right: 16px !important;
     min-width: 0 !important;
-    background-color: #ffff00 !important; /* FONDO AMARILLO ESPÍA: Si el fondo del precio se pinta de amarillo, el CSS sí se leyó */
+    padding-left: 10px !important;
 }
 
-/* Columna Derecha (Sidebar): Forzado de posición Sticky */
-#contenedor-detalle-zillow .columna-sidebar-fija-der {
+/* Forzamos a la segunda caja contenedora interna (derecha) a ser la barra fija */
+#contenedor-detalle-zillow div.zillow-grid-principal > div:last-child {
     width: 360px !important;
     min-width: 360px !important;
     position: -webkit-sticky !important;
@@ -712,8 +711,7 @@ img[alt="Inmobiliaria en Surco"] {
     box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
     box-sizing: border-box !important;
 }
-
-        
+      
         
     </style>
 </head>
