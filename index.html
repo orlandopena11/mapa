@@ -506,7 +506,21 @@
     cursor: pointer !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
-    
+/* Fuerza al cuerpo del modal a tener scroll propio sin mover la cabecera */
+.cuerpo-scroll-zillow {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    background-color: #ffffff !important;
+}
+
+/* Evita que el contenedor flexible estire los elementos fijos superiores */
+.detalle-header-clean, .pestanas-subnav-zillow {
+    flex-shrink: 0 !important;
+}
+
+        
 /* Grilla de Columnas e Información */
 .zillow-grid-principal {
     display: grid !important;
