@@ -561,7 +561,75 @@
     color: #006aff !important;
     border: 1px solid #006aff !important;
 }
+/* =========================================================
+   BLOQUE DE FUERZA BRUTA: RESCATE FINAL DE LA CABECERA
+   ========================================================= */
 
+/* Contenedor Modal de Detalle Base Rígido */
+#contenedor-detalle-zillow {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 95% !important;
+    max-width: 1200px !important;
+    height: 90vh !important;
+    background-color: #ffffff !important;
+    border-radius: 16px !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.25) !important;
+    overflow: hidden !important; 
+    z-index: 11000 !important;
+    box-sizing: border-box !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Cabecera Superior con Espía Fucsia Activo */
+.detalle-header-clean {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0 24px !important;
+    background-color: #ff0055 !important; /* ROJO FUCSIA ESPÍA */
+    border-bottom: 2px solid #000000 !important;
+    height: 65px !important;
+    min-height: 65px !important;
+    z-index: 1002 !important;
+    box-sizing: border-box !important;
+}
+
+/* Forzado absoluto del contenedor de la marca */
+.navbar-marca-detalle {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* Freno de mano definitivo e inquebrantable para el logo */
+#contenedor-detalle-zillow .navbar-marca-detalle img,
+.detalle-header-clean img,
+img[alt="Inmobiliaria en Surco"] {
+    width: 55px !important;
+    min-width: 55px !important;
+    max-width: 55px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    object-fit: contain !important;
+    border-radius: 0px !important;
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+}
+
+.navbar-marca-detalle span {
+    font-size: 14px !important;
+    line-height: 1.2 !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+}
+
+        
     </style>
 </head>
 <body>
