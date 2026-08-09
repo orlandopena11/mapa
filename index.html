@@ -628,7 +628,47 @@ img[alt="Inmobiliaria en Surco"] {
     font-weight: 700 !important;
     color: #1e293b !important;
 }
+/* =========================================================
+   REPARACIÓN DEL CUERPO INFERIOR: DOBLE COLUMNA Y RESPIRA
+   ========================================================= */
 
+/* Forzamos a que el contenedor de doble columna use Flexbox real */
+#contenedor-detalle-zillow .zillow-grid-principal {
+    display: flex !important;
+    gap: 32px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 24px !important;
+    align-items: start !important;
+    box-sizing: border-box !important;
+    background-color: #ffffff !important;
+}
+
+/* Columna Izquierda (Información): Le damos el margen armonioso para descentrarlo del borde */
+#contenedor-detalle-zillow .informacion-fluyente-izq {
+    flex: 1 !important;
+    padding-left: 16px !important; /* El respiro para que no se pegue al borde izquierdo */
+    padding-right: 16px !important;
+    min-width: 0 !important; /* Evita que textos rígidos desborden la caja */
+}
+
+/* Columna Derecha (Sidebar): La congelamos de forma perfecta estilo Zillow */
+#contenedor-detalle-zillow .columna-sidebar-fija-der {
+    width: 360px !important;
+    min-width: 360px !important;
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 20px !important; /* Se congela en la pantalla dentro de su contenedor de scroll */
+    z-index: 100 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 24px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06) !important;
+    box-sizing: border-box !important;
+}
+
+        
         
     </style>
 </head>
