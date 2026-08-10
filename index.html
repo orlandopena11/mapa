@@ -1076,44 +1076,49 @@ img[src="logo.jpg"] {
 
         <!-- Sub-Navegación de Pestañas Fijas -->
         <div class="pestanas-subnav-zillow">
-            <button class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</button>
-            <button class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</button>
+            <span class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</span>
         </div>
+
+        <!-- REPARACIÓN CRÍTICA: Contenedor con scrollbar que encapsula las fotos y los datos -->
         <div class="cuerpo-scroll-zillow">
-
-        
-        <!-- Mosaico de 5 Fotos (Estructura recuperada para JS) -->
-        <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
-            <div class="foto-grande-izq">
-                <img src="" alt="Foto Principal" id="foto-detalle-1">
-            </div>
-            <div class="cuadrante-fotos-der">
-                <img src="" alt="Foto 2" id="foto-detalle-2">
-                <img src="" alt="Foto 3" id="foto-detalle-3">
-                <img src="" alt="Foto 4" id="foto-detalle-4">
-                <img src="" alt="Foto 5" id="foto-detalle-5">
-            </div>
-            <button class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
-        </div>
-
-        <!-- Distribución de Contenido Inferior -->
-        <div class="zillow-grid-principal">
-            <div class="informacion-fluyente-izq">
-                <div id="bloques-caracteristicas-dinamicas">
-                    <!-- JavaScript inyecta la información aquí de forma automática -->
+            
+            <!-- Mosaico de 5 Fotos (IDs originales intactos para tu JS) -->
+            <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
+                <div class="foto-grande-izq">
+                    <img src="" alt="Foto Principal" id="foto-detalle-1">
                 </div>
+                <div class="cuadrante-fotos-der">
+                    <img src="" alt="Foto 2" id="foto-detalle-2">
+                    <img src="" alt="Foto 3" id="foto-detalle-3">
+                    <img src="" alt="Foto 4" id="foto-detalle-4">
+                    <img src="" alt="Foto 5" id="foto-detalle-5">
+                </div>
+                <button type="button" class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
             </div>
 
-            <!-- Caja Sticky Lateral Controlada -->
-            <div class="columna-sidebar-fija-der">
-                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
-                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
-            </div>
-        </div>
-        </div>
+            <!-- Distribución de Contenido Inferior de Doble Columna -->
+            <div class="zillow-grid-principal">
+                
+                <!-- Columna Izquierda (Información Fluyente) -->
+                <div class="informacion-fluyente-izq">
+                    <div id="bloques-caracteristicas-dinamicas">
+                        <!-- JavaScript inyecta la información aquí de forma automática -->
+                    </div>
+                </div>
+
+                <!-- Columna Derecha (Caja Sticky de Contacto Estilo Zillow Premium) -->
+                <div class="columna-sidebar-fija-der">
+                    <button type="button" class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                    <button type="button" class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
+                </div>
+
+            </div> <!-- fin .zillow-grid-principal -->
+        </div> <!-- fin .cuerpo-scroll-zillow -->
+
 
             
     </div>
