@@ -1039,104 +1039,6 @@ img[src="logo.jpg"] {
     </div>
 </div>
 
-<!-- ================================================================================= -->
-<!-- VENTANA FLOTANTE ÚNICA DE DETALLE DE PROPIEDAD (2da PANTALLA UNIFICADA ESTILO ZILLOW) -->
-<!-- ================================================================================= -->
-<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
-<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 10500 !important; background: rgba(0,0,0,0.5) !important; justify-content: center !important; align-items: center !important;">
-    <div id="contenedor-detalle-zillow" style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; max-width: 100% !important; max-height: 100% !important; background-color: #ffffff !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; border-radius: 0px !important; box-sizing: border-box !important; margin: 0 !important; padding: 0 !important;">
-       
-        <!-- Cabecera Superior Compacta -->
-        <div class="detalle-header-clean">
-            <button class="btn-volver-buscar-clean" onclick="cerrarVentanaDetalle()">← Volver a buscar</button>
-            <div class="navbar-marca-detalle">
-                <img src="logo.jpg" alt="Inmobiliaria en Surco">
-                <span>Inmobiliaria<br>en Surco</span>
-            </div>
-            <div class="acciones-cabecera-der">
-                <span>♡ Guardar</span>
-                <span>➦ Compartir</span>
-            </div>
-        </div>
-
-        <!-- Sub-Navegación de Pestañas Fijas -->
-        <div class="pestanas-subnav-zillow">
-            <span class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</span>
-            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</span>
-            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</span>
-            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</span>
-            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</span>
-        </div>
-
-        <!-- REPARACIÓN CRÍTICA: Contenedor con scrollbar que encapsula las fotos y los datos -->
-        <div class="cuerpo-scroll-zillow">
-            
-            <!-- Mosaico de 5 Fotos (IDs originales intactos para tu JS) -->
-            <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
-                <div class="foto-grande-izq">
-                    <img src="" alt="Foto Principal" id="foto-detalle-1">
-                </div>
-                <div class="cuadrante-fotos-der">
-                    <img src="" alt="Foto 2" id="foto-detalle-2">
-                    <img src="" alt="Foto 3" id="foto-detalle-3">
-                    <img src="" alt="Foto 4" id="foto-detalle-4">
-                    <img src="" alt="Foto 5" id="foto-detalle-5">
-                </div>
-                <button type="button" class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
-            </div>
-
-            <!-- Distribución de Contenido Inferior de Doble Columna -->
-            <div class="zillow-grid-principal">
-                
-                <!-- Columna Izquierda (Información Fluyente) -->
-                <div class="informacion-fluyente-izq">
-                    <div id="bloques-caracteristicas-dinamicas">
-                        <!-- JavaScript inyecta la información aquí de forma automática -->
-                    </div>
-                </div>
-
-                <!-- Columna Derecha (Caja Sticky de Contacto Estilo Zillow Premium) -->
-                <div class="columna-sidebar-fija-der">
-                    <button type="button" class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
-                    <button type="button" class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
-                </div>
-
-            </div> <!-- fin .zillow-grid-principal -->
-        </div> <!-- fin .cuerpo-scroll-zillow -->
-
-
-            
-    </div>
-</div>
-
-<!-- VENTANA FLOTANTE DE VISTA EXTENDIDA DE FOTOS (PANTALLA 3) -->
-<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none;">
-    <div id="contenedor-galeria-p3">
-        <div class="detalle-header-clean">
-            <button class="btn-volver-buscar-clean" onclick="cerrarPantalla3Fotos()">← Volver al Detalle</button>
-            <div class="navbar-marca-detalle">
-                <img src="logo.jpg" alt="Inmobiliaria en Surco">
-                <span>Inmobiliaria<br>en Surco</span>
-            </div>
-        </div>
-
-        <div class="zillow-grid-principal" style="padding-top: 24px;">
-            <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3"></div>
-            <div class="columna-sidebar-fija-der">
-                <div class="precio-grande-remarcado" id="p3-precio-propiedad">$0</div>
-                <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
-                <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
-                <hr style="border: 0; border-top: 1px solid var(--gris-borde); margin-bottom: 15px;">
-                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
-                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contactar con un agente</button>
-            </div>
-        </div>
-    </div>
-</div>
-
    
 <script>
     /**
@@ -4098,5 +4000,104 @@ window.cambiarFotoCarrusel = function(event, boton, direccion) {
     });
 };
 </script>
+<!-- ================================================================================= -->
+<!-- VENTANA FLOTANTE ÚNICA DE DETALLE DE PROPIEDAD (2da PANTALLA UNIFICADA ESTILO ZILLOW) -->
+<!-- ================================================================================= -->
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<!-- VENTANA FLOTANTE DE DETALLE DE PROPIEDAD (PANTALLA 2) -->
+<div id="mi-modal-detalle" class="pantalla-bloqueo" style="display: none; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 10500 !important; background: rgba(0,0,0,0.5) !important; justify-content: center !important; align-items: center !important;">
+    <div id="contenedor-detalle-zillow" style="position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; max-width: 100% !important; max-height: 100% !important; background-color: #ffffff !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; border-radius: 0px !important; box-sizing: border-box !important; margin: 0 !important; padding: 0 !important;">
+       
+        <!-- Cabecera Superior Compacta -->
+        <div class="detalle-header-clean">
+            <button class="btn-volver-buscar-clean" onclick="cerrarVentanaDetalle()">← Volver a buscar</button>
+            <div class="navbar-marca-detalle">
+                <img src="logo.jpg" alt="Inmobiliaria en Surco">
+                <span>Inmobiliaria<br>en Surco</span>
+            </div>
+            <div class="acciones-cabecera-der">
+                <span>♡ Guardar</span>
+                <span>➦ Compartir</span>
+            </div>
+        </div>
+
+        <!-- Sub-Navegación de Pestañas Fijas -->
+        <div class="pestanas-subnav-zillow">
+            <span class="tab-link-zillow active" onclick="cambiarFichaZillow(event, 'resumen')">Resumen</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'datos')">Datos y características</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'mercado')">Valor de mercado</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'calculadora')">Calculadora de pago</span>
+            <span class="tab-link-zillow" onclick="cambiarFichaZillow(event, 'barrio')">Barrio</span>
+        </div>
+
+        <!-- REPARACIÓN CRÍTICA: Contenedor con scrollbar que encapsula las fotos y los datos -->
+        <div class="cuerpo-scroll-zillow">
+            
+            <!-- Mosaico de 5 Fotos (IDs originales intactos para tu JS) -->
+            <div class="galeria-mosaico-zillow" id="mosaico-fotos-propiedad">
+                <div class="foto-grande-izq">
+                    <img src="" alt="Foto Principal" id="foto-detalle-1">
+                </div>
+                <div class="cuadrante-fotos-der">
+                    <img src="" alt="Foto 2" id="foto-detalle-2">
+                    <img src="" alt="Foto 3" id="foto-detalle-3">
+                    <img src="" alt="Foto 4" id="foto-detalle-4">
+                    <img src="" alt="Foto 5" id="foto-detalle-5">
+                </div>
+                <button type="button" class="btn-flotante-galeria" onclick="abrirPantalla3FotosExtendidas()">Ver todas las fotos</button>
+            </div>
+
+            <!-- Distribución de Contenido Inferior de Doble Columna -->
+            <div class="zillow-grid-principal">
+                
+                <!-- Columna Izquierda (Información Fluyente) -->
+                <div class="informacion-fluyente-izq">
+                    <div id="bloques-caracteristicas-dinamicas">
+                        <!-- JavaScript inyecta la información aquí de forma automática -->
+                    </div>
+                </div>
+
+                <!-- Columna Derecha (Caja Sticky de Contacto Estilo Zillow Premium) -->
+                <div class="columna-sidebar-fija-der">
+                    <button type="button" class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                    <button type="button" class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contacte con un agente</button>
+                </div>
+
+            </div> <!-- fin .zillow-grid-principal -->
+        </div> <!-- fin .cuerpo-scroll-zillow -->
+
+
+            
+    </div>
+</div>
+
+<!-- VENTANA FLOTANTE DE VISTA EXTENDIDA DE FOTOS (PANTALLA 3) -->
+<div id="mi-modal-galeria" class="pantalla-bloqueo" style="display: none;">
+    <div id="contenedor-galeria-p3">
+        <div class="detalle-header-clean">
+            <button class="btn-volver-buscar-clean" onclick="cerrarPantalla3Fotos()">← Volver al Detalle</button>
+            <div class="navbar-marca-detalle">
+                <img src="logo.jpg" alt="Inmobiliaria en Surco">
+                <span>Inmobiliaria<br>en Surco</span>
+            </div>
+        </div>
+
+        <div class="zillow-grid-principal" style="padding-top: 24px;">
+            <div class="rejilla-fotos-vertical-pantalla3" id="contenedor-fotos-alternadas-p3"></div>
+            <div class="columna-sidebar-fija-der">
+                <div class="precio-grande-remarcado" id="p3-precio-propiedad">$0</div>
+                <div style="font-weight: 700; color: #334155; margin-bottom: 5px;" id="p3-caracteristicas-propiedad">0 Camas | 0 Baños | 0 m²</div>
+                <div style="color: #64748b; font-size: 14px; margin-bottom: 20px;" id="p3-direccion-propiedad">Dirección de la propiedad</div>
+                <hr style="border: 0; border-top: 1px solid var(--gris-borde); margin-bottom: 15px;">
+                <button class="btn-sidebar-accion btn-sidebar-tour" onclick="ejecutarAccionDeContacto('tour')">Solicitar un tour</button>
+                <button class="btn-sidebar-accion btn-sidebar-agente" onclick="ejecutarAccionDeContacto('agente')">Contactar con un agente</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
