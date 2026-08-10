@@ -1190,7 +1190,8 @@ function navegarFotosPopup(event, delta) {
  * Transiciona automáticamente a la Pantalla 2 (Modal de Detalle).
  */
 function activarFlujoPantalla2(urlFoto) {
-    document.getElementById('mi-modal-detalle').style.display = 'flex';
+    console.log("🕵️‍♂️ ESPÍA:activarFlujoPantalla2 ejecutada con la foto:", urlFoto);
+    document.getElementById('mi-modal-detalle').style.display = 'block';
 }
 
 /**
@@ -3165,9 +3166,10 @@ function obtenerTodasLasFotos(casa) {
 }
 
 function abrirVentanaDetalle(idPropiedad) {
+    console.log("🕵️‍♂️ ESPÍA MAESTRO: abrirVentanaDetalle ejecutada para la propiedad ID:", idPropiedad);
     const modal = document.getElementById('mi-modal-detalle');
     if (!modal) return;
-    modal.style.display = 'flex';
+    modal.style.display = 'block';
 
     const casa = propiedadesCombinadas.find(c => {
         const idActual = c.propiedad_id || c.id;
@@ -3908,6 +3910,8 @@ function limpiarRecorridoTiempo() {
 }
 
 function cerrarVentanaDetalle() {
+        console.log("🕵️‍♂️ ESPÍA: Función cerrarVentanaDetalle() ejecutada correctamente.");
+
     // Apagamos la gran pantalla superpuesta completa
     if(document.getElementById('pantalla-superpuesta-detalle')) document.getElementById('pantalla-superpuesta-detalle').style.display = 'none';
 
