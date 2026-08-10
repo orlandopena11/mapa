@@ -479,26 +479,39 @@
     box-sizing: border-box !important;
 }
 
+.pestanas-subnav-zillow {
+    display: flex !important;
+    gap: 24px !important;
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 0 24px !important;
+    height: 48px !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+}
+
 .tab-link-zillow {
     background: transparent !important;
     border: none !important;
     color: #54565a !important;
     font-size: 14px !important;
     font-weight: 600 !important;
-    cursor: pointer !important;
     height: 100% !important;
+    cursor: pointer !important;
     border-bottom: 2px solid transparent !important;
     box-sizing: border-box !important;
+    padding: 0 4px !important;
+    font-family: inherit !important;
 }
 
-.tab-link-zillow.active {
+.tab-link-zillow.active, .tab-link-zillow:hover {
     color: #006aff !important;
     border-bottom: 2px solid #006aff !important;
 }
 
 /* Mosaico Asimétrico de 5 Fotos Perfecto */
 .galeria-mosaico-zillow {
-    display: flex !important; /* Cambiado a Flex para control total 50%/50% */
+    display: flex !important;
     width: 100% !important;
     height: 440px !important;
     min-height: 440px !important;
@@ -542,6 +555,7 @@
     cursor: pointer !important;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
+
 /* Fuerza al cuerpo del modal a tener scroll propio sin mover la cabecera */
 .cuerpo-scroll-zillow {
     flex: 1 !important;
@@ -551,11 +565,9 @@
     background-color: #ffffff !important;
 }
 
-/* Evita que el contenedor flexible estire los elementos fijos superiores */
-.detalle-header-clean, .pestanas-subnav-zillow {
+.detalle-header-clean {
     flex-shrink: 0 !important;
 }
-
         
 /* Grilla de Columnas e Información */
 .zillow-grid-principal {
