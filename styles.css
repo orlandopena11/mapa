@@ -148,7 +148,7 @@ body, html {
 }
 
 /* ==========================================================================
-   3. TARJETAS INMOBILIARIAS
+   3. TARJETAS INMOBILIARIAS Y MICRO-CARRUSEL (ESTILO ZILLOW V2)
    ========================================================================== */
 .property-card {
     background-color: var(--blanco);
@@ -159,6 +159,7 @@ body, html {
     display: flex;
     flex-direction: column;
     height: 380px;
+    position: relative;
 }
 
 .property-card:hover {
@@ -166,19 +167,148 @@ body, html {
     box-shadow: var(--shadow-card);
 }
 
+/* Contenedor de la Imagen Enmascarado */
 .card-image-box {
     width: 100%;
     height: 180px;
     background-color: var(--gris-fondo);
     position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
-.card-img {
+/* Riel Interno del Carrusel */
+.carousel-track-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
+.carousel-img--active {
+    display: block;
+}
+
+/* Flechas de Navegación del Carrusel */
+.carousel-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.45);
+    color: var(--blanco);
+    border: none;
+    width: 26px;
+    height: 34px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 15;
+}
+
+.carousel-nav-btn:hover {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.carousel-nav-btn--prev {
+    left: 0;
+    border-radius: 0 4px 4px 0;
+}
+
+.carousel-nav-btn--next {
+    right: 0;
+    border-radius: 4px 0 0 4px;
+}
+
+/* Desbloqueo visual de flechas en hover */
+.property-card:hover .carousel-nav-btn,
+.popup-custom-container:hover .carousel-nav-btn {
+    opacity: 1;
+}
+
+/* Etiquetas de Estado Flotantes */
+.card-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: var(--blanco);
+    color: var(--azul-oscuro);
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    z-index: 20;
+    text-transform: uppercase;
+}
+
+.card-badge--new {
+    background-color: #d92323;
+    color: var(--blanco);
+}
+
+/* Corazón de Favoritos Flotante */
+.card-fav-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--texto-secundario);
+    transition: transform 0.2s, background-color 0.2s, color 0.2s;
+    z-index: 20;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-fav-btn:hover {
+    transform: scale(1.15);
+    background: var(--blanco);
+}
+
+.card-fav-btn--active {
+    color: #d92323;
+}
+
+/* Letreros Informativos de Descripción en la Base de la Foto */
+.card-info-banner {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+    color: var(--blanco);
+    padding: 16px 12px 6px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 10;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Contenido Informativo del Pie */
 .card-content {
     padding: 16px;
     display: flex;
@@ -206,14 +336,60 @@ body, html {
     color: var(--texto-secundario);
 }
 
-/* Ajustes Visuales para Popups de Leaflet */
-.leaflet-popup-content-wrapper {
-    border-radius: 8px;
-    padding: 4px;
+/* ==========================================================================
+   4. COMPONENTES DEL MAPA (BURBUJAS DE PRECIO NATIIVAS)
+   ========================================================================== */
+.marker-bubble {
+    background-color: var(--azul-oscuro);
+    color: var(--blanco);
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 24px;
+    border-radius: 12px;
+    padding: 0 10px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    border: 1px solid var(--blanco);
+    transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-.popup-title {
-    font-weight: 800;
-    color: var(--azul-oscuro);
-    font-size: 14px;
+.marker-bubble:hover {
+    transform: scale(1.08);
+}
+
+.marker-bubble--new {
+    background-color: #d92323;
+}
+
+/* Sobreescritura de Contenedor de Popups de Leaflet para el Carrusel */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    width: 250px !important;
+}
+
+.popup-custom-container {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-custom-container .card-image-box {
+    height: 135px;
+}
+
+.popup-custom-container .card-content {
+    padding: 10px 12px;
+}
+
+.popup-custom-container .prop-price {
+    font-size: 18px;
+    margin-bottom: 2px;
 }
