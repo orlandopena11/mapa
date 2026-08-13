@@ -26,15 +26,29 @@ const AppInmobiliaria = (function() {
 
     // 2. Conectividad Segura con Google Apps Script (Code.gs)
     function fetchSpreadsheetData() {
-        // Validación del entorno de ejecución de Google Sheets
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run
-                .withSuccessHandler(function(response) {
-                    if (response && response.propiedades) {
-                        state.propertiesData = response.propiedades;
-                        renderAppContent();
-                    }
-                })
+    // Conexión externa optimizada hacia Google Apps Script (Web App)
+    const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
+
+    fetch(urlScript)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Fallo en la respuesta de la red");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.propiedades) {
+                state.propertiesData = data.propiedades;
+                renderAppContent();
+            } else {
+                document.getElementById('results-counter').textContent = "No se encontraron propiedades.";
+            }
+        })
+        .catch(err => {
+            console.error("Error al conectar con Google Sheets desde GitHub:", err);
+            document.getElementById('results-counter').textContent = "Error al sincronizar la base de datos.";
+        });
+}
                 .withFailureHandler(function(err) {
                     console.error("Error crítico de sincronización de Sheets:", err);
                     document.getElementById('results-counter').textContent = "Error al leer la base de datos.";
