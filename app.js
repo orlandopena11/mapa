@@ -9,7 +9,7 @@ const AppInmobiliaria = (function() {
         map: null,
         markersGroup: [],
         propertiesData: [],
-        cloudinaryBase: "https://cloudinary.com"
+        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/"
     };
 
     // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
