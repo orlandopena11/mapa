@@ -25,44 +25,31 @@ const AppInmobiliaria = (function() {
     }
 
     // 2. Conectividad Segura con Google Apps Script (Code.gs)
-    function fetchSpreadsheetData() {
-    // Conexión externa optimizada hacia Google Apps Script (Web App)
+function fetchSpreadsheetData() {
+    // Definimos el puente global en memoria para recibir el JSONP de Google
+    window.procesarDatosDelMotor = function(response) {
+        if (response && response.propiedades) {
+            state.propertiesData = response.propiedades;
+            renderAppContent();
+        } else {
+            document.getElementById('results-counter').textContent = "No se encontraron propiedades.";
+        }
+        // Limpieza de seguridad: removemos el script temporal del DOM
+        document.getElementById('jsonp-script-bridge')?.remove();
+    };
+
     const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
 
-    fetch(urlScript)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Fallo en la respuesta de la red");
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.propiedades) {
-                state.propertiesData = data.propiedades;
-                renderAppContent();
-            } else {
-                document.getElementById('results-counter').textContent = "No se encontraron propiedades.";
-            }
-        })
-        .catch(err => {
-            console.error("Error al conectar con Google Sheets desde GitHub:", err);
-            document.getElementById('results-counter').textContent = "Error al sincronizar la base de datos.";
-        });
+    // Bypass legítimo de CORS para Leaflet: Inyectamos un tag de script dinámico
+    const scriptBridge = document.createElement('script');
+    scriptBridge.id = 'jsonp-script-bridge';
+    scriptBridge.src = urlScript;
+    scriptBridge.onerror = function() {
+        document.getElementById('results-counter').textContent = "Error al sincronizar la base de datos.";
+    };
+
+    document.body.appendChild(scriptBridge);
 }
-                .withFailureHandler(function(err) {
-                    console.error("Error crítico de sincronización de Sheets:", err);
-                    document.getElementById('results-counter').textContent = "Error al leer la base de datos.";
-                })
-                .obtenerDatosInmobiliarios(); // Llama a la función de tu archivo Código.gs
-        } else {
-            // Datos deterministas de prueba si estás auditando el frontend de forma local
-            console.warn("Auditoría Local: Cargando datos de respaldo.");
-            state.propertiesData = [
-                { id: 1, precio_base: 250000, habitaciones: 2, banos: 1, area_construida: 839, direccion: "111-50 75th Rd #A1, Forest Hills, NY", foto_principal: "sample_casa.jpg", latitud: -12.125, longitud: -76.995 }
-            ];
-            renderAppContent();
-        }
-    }
 
     // 3. Formateador inteligente de URLs Cortas para Cloudinary
     function buildCloudinaryUrl(publicId) {
