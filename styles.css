@@ -1,0 +1,219 @@
+/* ==========================================================================
+   VARIABLES GLOBALES (Diseño Moderno y Altamente Mantenible)
+   ========================================================================== */
+:root {
+    --azul-zillow: #006aff;
+    --azul-oscuro: #002e50;
+    --gris-fondo: #f6f6f9;
+    --gris-borde: #e2e8f0;
+    --texto-principal: #111827;
+    --texto-secundario: #475569;
+    --blanco: #ffffff;
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   RESETS VISUALES (Previene colisiones estructurales)
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    height: 100%;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    background-color: var(--gris-fondo);
+    color: var(--texto-principal);
+    overflow: hidden;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* ==========================================================================
+   1. BARRA SUPERIOR FIJA
+   ========================================================================== */
+.navbar-global {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    background-color: var(--blanco);
+    border-bottom: 1px solid var(--gris-borde);
+    box-shadow: var(--shadow-soft);
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--azul-zillow);
+    letter-spacing: -0.5px;
+}
+
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-grow: 1;
+}
+
+.search-input {
+    padding: 10px 16px;
+    border: 1px solid var(--gris-borde);
+    border-radius: 24px;
+    font-size: 14px;
+    width: 240px;
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--azul-zillow);
+}
+
+.filter-btn {
+    padding: 10px 16px;
+    background-color: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: var(--azul-zillow);
+    color: var(--azul-zillow);
+}
+
+/* ==========================================================================
+   2. VISTA DIVIDIDA (Split-View de Caja Modular)
+   ========================================================================== */
+.split-view {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+/* Contenedor del Mapa (Izquierda 45%) */
+.map-wrapper {
+    width: 45%;
+    height: 100%;
+    position: relative;
+    border-right: 1px solid var(--gris-borde);
+}
+
+#map-instance {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Panel de Propiedades (Derecha 55%) */
+.properties-panel {
+    width: 55%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: var(--blanco);
+    padding: 24px;
+}
+
+.panel-header {
+    margin-bottom: 20px;
+}
+
+.panel-header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--texto-principal);
+}
+
+/* Rejilla Grid Responsiva */
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* ==========================================================================
+   3. TARJETAS INMOBILIARIAS
+   ========================================================================== */
+.property-card {
+    background-color: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 380px;
+}
+
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card);
+}
+
+.card-image-box {
+    width: 100%;
+    height: 180px;
+    background-color: var(--gris-fondo);
+    position: relative;
+}
+
+.card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+}
+
+.prop-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--texto-principal);
+    margin-bottom: 4px;
+}
+
+.prop-specs {
+    font-size: 13px;
+    color: var(--texto-secundario);
+    margin-bottom: 8px;
+}
+
+.prop-address {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--texto-secundario);
+}
+
+/* Ajustes Visuales para Popups de Leaflet */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.popup-title {
+    font-weight: 800;
+    color: var(--azul-oscuro);
+    font-size: 14px;
+}
