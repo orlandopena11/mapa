@@ -35,7 +35,7 @@ const AppInmobiliaria = (function() {
 
     // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
     function initMap() {
-        // Enlazamos al ID 'mapa' de tu index.html original para restaurar la vista
+        // CORREGIDO: Se enlaza directamente al ID 'mapa' de tu index.html original
         state.map = L.map('mapa', {
             zoomControl: false,
             doubleClickZoom: true,
@@ -49,7 +49,7 @@ const AppInmobiliaria = (function() {
         L.control.zoom({ position: 'topright' }).addTo(state.map);
     }
 
-    // 2. Conectividad Secura con Google Apps Script (JSONP)
+    // 2. Conectividad Segura con Google Apps Script (JSONP)
     function fetchSpreadsheetData() {
         window.procesarDatosDelMotor = function(response) {
             if (response && response.propiedades) {
@@ -97,7 +97,7 @@ const AppInmobiliaria = (function() {
         const cleanId = String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "");
         return `${state.cloudinaryBase}${cleanId}`;
     }
-/**
+
  * ==========================================================================
  * PARTE: 2-5 (NORMALIZADORES DE OBJETO, PARSEADORES Y SANITIZACIÓN ANTI-XSS)
  * ==========================================================================
