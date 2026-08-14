@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buscador Inmobiliario - Estilo Zillow V2</title>
-    
-    <!-- Hoja de Estilos Externa para el Mapa -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-    
-    <!-- Enlace a tus estilos locales -->
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -16,37 +12,185 @@
     <div class="app-container">
         <!-- Barra Superior Global (Navbar & Filtros) -->
         <header class="navbar-global">
-            <div class="navbar-brand">Zillow OS</div>
+            <img src="logo.jpg" alt="Logo Zillow" class="navbar-brand-logo" id="app-main-logo">
+            
             <div class="search-controls">
+                <!-- Filtro 1: Buscador de Dirección -->
                 <input type="text" class="search-input" id="search-address" placeholder="Dirección, ciudad o distrito...">
-                <button class="filter-btn">En venta</button>
-                <button class="filter-btn">Precio</button>
-                <button class="filter-btn">Camas y baños</button>
+                
+                <!-- Filtro 2: Tipo de Transacción -->
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-btn" id="btn-filter-status">En venta ▾</button>
+                    <div class="dropdown-content-panel" id="dropdown-status">
+                        <div class="filter-group-options">
+                            <label class="filter-checkbox-label"><input type="radio" name="transaccion" value="venta" checked> En venta</label>
+                            <label class="filter-checkbox-label"><input type="radio" name="transaccion" value="alquiler"> Para el alquiler</label>
+                            <label class="filter-checkbox-label"><input type="radio" name="transaccion" value="vendida"> Vendida</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro 3: Rango de Precios -->
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-btn" id="btn-filter-price">Precio ▾</button>
+                    <div class="dropdown-content-panel" id="dropdown-price">
+                        <div class="filter-section-title">Rango de precios</div>
+                        <div class="histogram-visual-container" id="price-histogram-box"></div>
+                        <div class="range-inputs-inputs-row">
+                            <input type="number" class="range-box-input" id="price-min" placeholder="No Min">
+                            <span>-</span>
+                            <input type="number" class="range-box-input" id="price-max" placeholder="No Max" value="1300000">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro 4: Camas y Baños -->
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-btn" id="btn-filter-specs">Camas y baños ▾</button>
+                    <div class="dropdown-content-panel" id="dropdown-specs">
+                        <div class="filter-section-title">Dormitorios</div>
+                        <div class="segmented-control-row" id="row-beds">
+                            <button class="segmented-btn active" data-val="0">Cualquiera</button>
+                            <button class="segmented-btn" data-val="1">1+</button>
+                            <button class="segmented-btn" data-val="2">2+</button>
+                            <button class="segmented-btn" data-val="3">3+</button>
+                            <button class="segmented-btn" data-val="4">4+</button>
+                            <button class="segmented-btn" data-val="5">5+</button>
+                        </div>
+                        <label class="filter-checkbox-label" style="margin-bottom: 12px;"><input type="checkbox" id="beds-exact"> Coincidencia exacta</label>
+                        
+                        <div class="filter-section-title">Baños</div>
+                        <div class="segmented-control-row" id="row-baths">
+                            <button class="segmented-btn active" data-val="0">Cualquiera</button>
+                            <button class="segmented-btn" data-val="1">1+</button>
+                            <button class="segmented-btn" data-val="1.5">1.5+</button>
+                            <button class="segmented-btn" data-val="2">2+</button>
+                            <button class="segmented-btn" data-val="3">3+</button>
+                            <button class="segmented-btn" data-val="4">4+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtro 5: Tipo de Propiedad -->
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
+                    <div class="dropdown-content-panel" id="dropdown-type">
+                        <div class="filter-group-options">
+                            <label class="filter-checkbox-label"><input type="checkbox" id="type-select-all" checked> Seleccione Todos</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Casa" checked> Casas</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Casa adosada" checked> Casas adosadas</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Multifamiliar" checked> Multifamiliar</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Condominio" checked> Condominios/Co-ops</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Lote" checked> Lotes/Tierra</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Apartamento" checked> Apartamentos</label>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filtro 6: Mega Menú de Más Filtros -->
+                <div class="filter-dropdown-wrapper">
+                    <button class="filter-btn" id="btn-filter-more">Filtros ▾</button>
+                    <div class="dropdown-content-panel dropdown-content-panel--large" id="dropdown-more">
+                        
+                        <div class="filter-section-title">Cuota de mantenimiento (HOA)</div>
+                        <div class="filter-group-options">
+                            <select id="filter-hoa" class="range-box-input" style="width: 100%;">
+                                <option value="any">Cualquiera</option>
+                                <option value="0">Sin cuota de mantenimiento</option>
+                                <option value="50">S/. 50/mes o menos</option>
+                                <option value="100">S/. 100/mes o menos</option>
+                                <option value="200">S/. 200/mes o menos</option>
+                                <option value="500">S/. 500/mes o menos</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-section-title">Tipo de listado</div>
+                        <div class="filter-group-options">
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Propietario publicado" checked> Propietario publicado</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Agente listado" checked> Agente listado</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Nueva construccion" checked> Nueva construcción</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Ejecucion hipotecaria" checked> Ejecuciones hipotecarias</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Subasta" checked> Subastas</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Ejecutado"> Ejecutado</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" class="list-type-cb" value="Pre-ejecucion"> Pre-ejecuciones</label>
+                        </div>
+
+                        <div class="filter-section-title">Tours</div>
+                        <div class="filter-group-options">
+                            <label class="filter-checkbox-label"><input type="checkbox" id="filter-tour3d"> Debe tener Tour 3D</label>
+                        </div>
+
+                        <div class="filter-section-title">Plazas de aparcamiento</div>
+                        <div class="filter-group-options">
+                            <select id="filter-parking" class="range-box-input" style="width: 100%;">
+                                <option value="any">Cualquiera</option>
+                                <option value="1">1 o más</option>
+                                <option value="2">2 o más</option>
+                                <option value="3">3 o más</option>
+                                <option value="4">4 o más</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-section-title">Área construida (m²)</div>
+                        <div class="range-inputs-inputs-row">
+                            <input type="number" class="range-box-input" id="built-min" placeholder="No Min">
+                            <input type="number" class="range-box-input" id="built-max" placeholder="No Max">
+                        </div>
+
+                        <div class="filter-section-title">Área de terreno (m²)</div>
+                        <div class="range-inputs-inputs-row">
+                            <input type="number" class="range-box-input" id="lot-min" placeholder="No Min">
+                            <input type="number" class="range-box-input" id="lot-max" placeholder="No Max">
+                        </div>
+
+                        <div class="filter-section-title">Año construido</div>
+                        <div class="range-inputs-inputs-row">
+                            <input type="number" class="range-box-input" id="year-min" placeholder="No Min">
+                            <input type="number" class="range-box-input" id="year-max" placeholder="No Max">
+                        </div>
+
+                        <div class="filter-section-title">Características adicionales</div>
+                        <div class="filter-group-options">
+                            <label class="filter-checkbox-label"><input type="checkbox" id="feat-basement"> Tiene sótano</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" id="feat-storage"> Tiene almacén</label>
+                            <label class="filter-checkbox-label"><input type="checkbox" id="feat-view"> Vista</label>
+                        </div>
+
+                        <div class="filter-section-title">Días publicados</div>
+                        <div class="filter-group-options">
+                            <select id="filter-days" class="range-box-input" style="width: 100%;">
+                                <option value="any">Cualquiera</option>
+                                <option value="1">Menos de 1 día</option>
+                                <option value="7">Menos de 7 días</option>
+                                <option value="30">Menos de 30 días</option>
+                            </select>
+                        </div>
+
+                        <div class="panel-action-footer">
+                            <button type="button" class="action-link-btn" id="master-reset-btn">Restablecer todos los filtros</button>
+                            <button type="button" class="action-submit-btn" id="master-apply-btn">Aplicar</button>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </header>
+
         <!-- Contenedor Principal Split-View -->
         <main class="split-view">
-            <!-- Lado Izquierdo: Mapa Modular -->
             <div class="map-wrapper">
                 <div id="map-instance"></div>
             </div>
-
-            <!-- Lado Derecho: Panel Escrolable de Resultados -->
             <div class="properties-panel">
                 <div class="panel-header">
                     <h1 id="results-counter">Cargando propiedades...</h1>
                 </div>
-                <div class="properties-grid" id="properties-grid-target">
-                    <!-- Las tarjetas seguras se inyectarán dinámicamente mediante JS -->
-                </div>
+                <div class="properties-grid" id="properties-grid-target"></div>
             </div>
         </main>
     </div>
 
-    <!-- Script del Motor del Mapa -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-    
-    <!-- Enlace a tu lógica JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"></script>
     <script src="app.js"></script>
 </body>
 </html>
