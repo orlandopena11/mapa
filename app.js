@@ -253,8 +253,9 @@ function renderizarMapaZillow() {
         capaMarcadores.clearLayers();
     }
 
-    // Filtrado reactivo de las propiedades basado en el estado seguro de memoria
-    const filtradas = state.propiedades.filter(prop => {
+    // Reemplazo exacto dentro de renderizarMapaZillow() y renderizarCatálogoTarjetas()
+        const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+
         const matchesEstado = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
         return matchesEstado;
     });
@@ -320,8 +321,9 @@ function renderizarCatálogoTarjetas() {
     }
 
     const fragmento = document.createDocumentFragment();
-    
-    const filtradas = state.propiedades.filter(prop => {
+    // Reemplazo exacto dentro de renderizarMapaZillow() y renderizarCatálogoTarjetas()
+    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+
         return state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
     });
 
