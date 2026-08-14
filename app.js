@@ -1,6 +1,6 @@
 /**
  * ==========================================================================
- * PARTE: 1-5 (ÁMBITO DE ESTADO, INICIALIZADORES MAPA Y CAPTURA JSONP)
+ * PARTE: 1-5 (ÁMBITO DE ESTADO PROTEGIDO E INICIALIZACIÓN DE LEAFLET)
  * ==========================================================================
  */
 const AppInmobiliaria = (function() {
@@ -9,7 +9,7 @@ const AppInmobiliaria = (function() {
         map: null,
         markersGroup: [],
         propertiesData: [], // Base de datos maestra normalizada
-        filteredData: [],   // Datos que cumplen los filtros activos
+        filteredData: [],   // Colección filtrada en tiempo real
         favoritosUsuario: [],
         activeListeners: [],
         activeFilters: {
@@ -33,14 +33,10 @@ const AppInmobiliaria = (function() {
         cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
     };
 
-    // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
+    // 1. Inicialización Determinista de la Instancia de Leaflet + OpenStreetMap
     function initMap() {
-        // Validación preventiva contra asincronía del DOM
         const mapContainer = document.getElementById('mapa');
-        if (!mapContainer) {
-            console.warn("Contenedor #mapa no detectado aún en el DOM. Reintentando...");
-            return false;
-        }
+        if (!mapContainer) return false;
 
         state.map = L.map('mapa', {
             zoomControl: false,
@@ -56,11 +52,17 @@ const AppInmobiliaria = (function() {
         return true;
     }
 
-    // 2. Conectividad Segura con Google Apps Script (JSONP)
+    /**
+ * ==========================================================================
+ * PARTE: 2-5 (CONECTIVIDAD ASÍNCRONA, NORMALIZADORES Y BLINDAJE ANTI-XSS)
+ * ==========================================================================
+ */
+    // 2. Sincronización Segura con Google Apps Script (Code.gs)
     function fetchSpreadsheetData() {
         window.procesarDatosDelMotor = function(response) {
             if (response && response.propiedades) {
                 const tablaImagenes = response.imagenes || [];
+
                 state.propertiesData = response.propiedades.map(function(prop) {
                     const idProp = prop.propiedad_id || prop.id || "";
                     let fotosFiltradas = [];
@@ -77,11 +79,11 @@ const AppInmobiliaria = (function() {
                 });
 
                 state.filteredData = [...state.propertiesData];
+                buildPriceHistogram();
                 renderAppContent();
-                attachInterfaceEventHandlers();
             } else {
                 const contador = document.getElementById('contador-propiedades');
-                if (counterTarget) counterTarget.textContent = "No se encontraron propiedades.";
+                if (contador) contador.textContent = "No se encontraron propiedades.";
             }
             document.getElementById('jsonp-script-bridge')?.remove();
         };
@@ -96,19 +98,66 @@ const AppInmobiliaria = (function() {
     function buildCloudinaryUrl(publicId) {
         if (!publicId) return "https://unsplash.com";
         if (String(publicId).startsWith("http")) return publicId;
-        const cleanId = String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "");
-        return `${state.cloudinaryBase}${cleanId}`;
+        return `${state.cloudinaryBase}${String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "")}`;
     }
 
-/**
- * ==========================================================================
- * PARTE: 3-5 (CONSTRUCTOR DE CARRUSEL DOBLE, BADGES VISUALES Y FAVORITOS)
- * ==========================================================================
- */
-    // 6. Generador Dinámico de Micro-Carrusel Seguro (Doble Instancia: Rejilla y Popups)
+    function normalizarEstructuraInmueble(prop) {
+        prop.precio_base = parseFloat(prop.precio_base ?? prop.precio ?? 0);
+        prop.habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0);
+        prop.banos = parseFloat(prop.banos ?? prop.baños ?? 0);
+        prop.area_construida = parseFloat(prop.area_construida ?? prop.area ?? 0);
+        prop.area_terreno = parseFloat(prop.area_terreno ?? 0);
+        prop.cuota_mantenimiento = parseFloat(prop.cuota_mantenimiento ?? 0);
+        prop.ano_construccion = parseInt(prop.ano_construccion || prop.anio || 0);
+        
+        prop.direccion = String(prop.direccion || "").trim();
+        prop.estado_publicacion = String(prop.estado_publicacion || "").toLowerCase().trim();
+        prop.tipo_anuncio = String(prop.tipo_anuncio || "").toLowerCase().trim();
+        prop.tipo_propiedad = String(prop.tipo_propiedad || "").trim();
+        prop.situacion_propiedad = String(prop.situacion_propiedad || prop.tipo_listado || "").trim();
+        
+        const fotosPool = [];
+        if (prop.foto_principal) fotosPool.push(prop.foto_principal);
+        if (Array.isArray(prop.fotos)) fotosPool.push(...prop.fotos);
+        prop.fotos_unicas = [...new Set(fotosPool.filter(Boolean))];
+        
+        return prop;
+    }
+
+    function sanitizeHtmlString(unsafeText) {
+        if (!unsafeText) return '';
+        return String(unsafeText)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function formatCompactPrice(priceValue) {
+        const num = Number(priceValue || 0);
+        if (num >= 1000000) return `S/. ${(num / 1000000).toFixed(2)}M`;
+        if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
+        return `S/. ${num}`;
+    }
+
+    function buildPriceHistogram() {
+        const histogramBox = document.getElementById('price-histogram-box');
+        if (!histogramBox) return;
+        histogramBox.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 24; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'histogram-bar-node in-range';
+            bar.style.height = Math.floor(Math.random() * 45) + 15 + 'px';
+            fragment.appendChild(bar);
+        }
+        histogramBox.appendChild(fragment);
+    }
+
+        // ==========================================================================
+    // PARTE: 3-5 (CONSTRUCTOR DE MICRO-CARRUSEL INTERACTIVO PARA DOBLE VISTA)
+    // ==========================================================================
     function buildSecureCarouselComponent(property) {
         const imageBox = document.createElement('div');
-        imageBox.className = 'contenedor-foto'; // Clases originales de tu archivo styles.css
+        imageBox.className = 'contenedor-foto';
 
         const imagesCollection = property.fotos_unicas.slice(0, 5);
         if (imagesCollection.length === 0) imagesCollection.push("");
@@ -127,14 +176,12 @@ const AppInmobiliaria = (function() {
             imgElement.style.width = "100%";
             imgElement.style.height = "100%";
             imgElement.style.objectFit = "cover";
-            // Manejo dinámico de visualización limpia libre de deformaciones
             imgElement.style.display = idx === 0 ? 'block' : 'none';
             trackContainer.appendChild(imgElement);
             imageNodes.push(imgElement);
         });
         imageBox.appendChild(trackContainer);
 
-        // Inyección de Etiquetas Flotantes Zillow (Badges)
         if (property.estado) {
             const badge = document.createElement('div');
             badge.className = 'badge';
@@ -142,7 +189,6 @@ const AppInmobiliaria = (function() {
             imageBox.appendChild(badge);
         }
 
-        // Inyección de Letreros Descriptivos Inferiores de Foto
         if (property.frase_descriptiva) {
             const infoBanner = document.createElement('div');
             infoBanner.className = 'card-info-banner';
@@ -150,7 +196,6 @@ const AppInmobiliaria = (function() {
             imageBox.appendChild(infoBanner);
         }
 
-        // Icono de Favoritos Reactivo con mutación encapsulada
         const favButton = document.createElement('button');
         favButton.className = 'corazon-favorito';
         const propertyKey = property.direccion;
@@ -166,13 +211,23 @@ const AppInmobiliaria = (function() {
             } else {
                 state.favoritosUsuario = [...state.favoritosUsuario, propertyKey];
             }
-            synchronizeFavoriteInterfaceNodes(propertyKey);
+            
+            document.querySelectorAll('.corazon-favorito').forEach(btn => {
+                const parent = btn.closest('.tarjeta-casa') || btn.closest('.popup-custom-container');
+                if (parent) {
+                    const addressNode = parent.querySelector('.direccion-texto');
+                    if (addressNode && addressNode.textContent === propertyKey) {
+                        const nowFav = state.favoritosUsuario.includes(propertyKey);
+                        btn.textContent = nowFav ? '♥' : '♡';
+                        btn.style.color = nowFav ? '#d92323' : '#002650';
+                    }
+                }
+            });
         };
         favButton.addEventListener('click', favClickHandler);
         state.activeListeners.push({ element: favButton, type: 'click', handler: favClickHandler });
         imageBox.appendChild(favButton);
 
-        // Flechas Laterales de Navegación Infinita Circular
         if (totalImages > 1) {
             const prevBtn = document.createElement('button');
             prevBtn.className = 'flecha-carrusel flecha-izq';
@@ -201,23 +256,8 @@ const AppInmobiliaria = (function() {
 
         return imageBox;
     }
-
-    function synchronizeFavoriteInterfaceNodes(targetKey) {
-        const isFav = state.favoritosUsuario.includes(targetKey);
-        document.querySelectorAll('.corazon-favorito').forEach(btn => {
-            const parent = btn.closest('.tarjeta-casa') || btn.closest('.popup-custom-container');
-            if (parent) {
-                const addressNode = parent.querySelector('.direccion-texto');
-                if (addressNode && addressNode.textContent === targetKey) {
-                    btn.textContent = isFav ? '♥' : '♡';
-                    btn.style.color = isFav ? '#d92323' : '#002650';
-                }
-            }
-        });
-    }
-
     // ==========================================================================
-    // PARTE: 4-5 (MOTOR DE RENDERIZADO PRINCIPAL Y PÍLDORAS DIVICON EN MAPA)
+    // PARTE: 4-5 (MOTOR DE RENDERIZADO DE REJILLA Y BUBBLE PIN EN EL MAPA)
     // ==========================================================================
     function renderAppContent() {
         const gridTarget = document.getElementById('contenedor-tarjetas');
@@ -276,7 +316,7 @@ const AppInmobiliaria = (function() {
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
                     iconSize: [null, 30],
-                    iconAnchor: [30, 15]
+                    iconAnchor: [35, 15]
                 });
 
                 const popupRoot = document.createElement('div');
@@ -313,22 +353,17 @@ const AppInmobiliaria = (function() {
 
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
-    
-/**
- * ==========================================================================
- * PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y RECOLECTOR RAM)
- * ==========================================================================
- */
-    // Pipeline Analítico que procesa el cruce de tablas relacionales (Matrix Cross-Sheet)
+
+       // ==========================================================================
+    // PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y ENTRADA AL DOM)
+    // ==========================================================================
     function executeFilterEnginePipeline() {
         const querySearch = document.getElementById('buscador-direccion').value.toLowerCase().trim();
 
         state.filteredData = state.propertiesData.filter(function(prop) {
-            // A) Filtro Reactivo de Texto (Avenidas, Distritos, Barrios)
             const direccionPropiedad = String(prop.direccion || '').toLowerCase();
             if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
 
-            // B) Cruce relacional Estado Publicación y Anuncio (Inmune a mayúsculas)
             const stPub = prop.estado_publicacion;
             const tpAnuncio = prop.tipo_anuncio;
 
@@ -340,25 +375,18 @@ const AppInmobiliaria = (function() {
                 if (stPub !== "vendida" && stPub !== "vendido") return false;
             }
 
-            // C) Rangos de Precios Básicos
             const price = prop.precio_base;
             if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
             if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
 
-            // D) Reglas de Dormitorios
             const beds = prop.habitaciones;
             if (state.activeFilters.beds > 0) {
                 if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
                 if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
             }
 
-            // E) Reglas de Baños
             if (state.activeFilters.baths > 0 && prop.banos < state.activeFilters.baths) return false;
-
-            // F) Categoría de Tipo de Propiedad
             if (state.activeFilters.types.length > 0 && !state.activeFilters.types.includes(prop.tipo_propiedad)) return false;
-
-            // G) Características avanzadas booleanas del Megapanel
             if (state.activeFilters.tour3d && !prop.tour_3d) return false;
 
             return true;
@@ -366,35 +394,27 @@ const AppInmobiliaria = (function() {
 
         renderAppContent();
 
-        // Auto-reubicación inteligente del mapa al primer resultado encontrado
         if (state.filteredData.length > 0) {
-            const firstCoord = state.filteredData;
+            const firstCoord = state.filteredData[0];
             if (firstCoord.latitud && firstCoord.longitud) {
                 state.map.setView([firstCoord.latitud, firstCoord.longitud], 14);
             }
         }
 
-        // Auto-reinicio controlado únicamente de controles flotantes (Mantiene intacta la cajita)
         autoResetFlotantesFormFields();
     }
 
     function autoResetFlotantesFormFields() {
-        // Restablece los inputs secundarios opcionales sin interferir con la caja de texto activa
         const prMin = document.getElementById('price-min'); if (prMin) prMin.value = '';
-        const t3d = document.getElementById('filter-tour3d'); if (t3d) t3d.checked = false;
     }
 
     function attachInterfaceEventHandlers() {
-        // Enlaza la cajita de búsqueda nativa por dirección al pipeline en tiempo real
         const inputBuscador = document.getElementById('buscador-direccion');
         if (inputBuscador) {
-            inputBuscador.removeAttribute('oninput'); // Limpieza de código inline residual viejo
             inputBuscador.addEventListener('input', executeFilterEnginePipeline);
         }
 
-        // Vinculación controlada para botones de tipo de anuncio de tu layout
         document.getElementsByName('filtro-estado-publicacion').forEach(radio => {
-            radio.removeAttribute('onchange');
             radio.addEventListener('change', function() {
                 const val = this.value.toLowerCase();
                 if (val === 'venta') state.activeFilters.transaccion = 'venta';
@@ -418,23 +438,21 @@ const AppInmobiliaria = (function() {
         state.markersGroup = [];
     }
 
-    // Exposición de puente global seguro para que el index original reciba la consulta JSONP externa
-    window.renderizarMapaZillow = function() {
-        executeFilterEnginePipeline();
-    };
-
     return {
         initialize: function() {
-            initMap();
-            fetchSpreadsheetData();
+            const mapSuccess = initMap();
+            if (mapSuccess) {
+                attachInterfaceEventHandlers();
+                fetchSpreadsheetData();
+            } else {
+                console.error("Fallo estructural: El contenedor HTML #mapa no se encuentra listo.");
+            }
         }
     };
 })();
 
-// Reemplaza las líneas finales de tu script por este disparador seguro
+// PUNTO DE ENTRADA LÓGICO Y DETERMINISTA: Cero parches de tiempo, espera al DOM nativo
 document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        AppInmobiliaria.initialize();
-    }, 300); // 300ms de gracia garantizan que la caja #mapa ya exista físicamente
+    AppInmobiliaria.initialize();
 });
-
+                      
