@@ -1,15 +1,14 @@
 /**
  * ==========================================================================
- * PARTE: 1-5 (ÁMBITO DE ESTADO, INICIALIZADORES MAPA Y CAPTURA JSONP)
+ * ARQUITECTURA BUSCADOR INMOBILIARIO (ZILLOW V2 - NÚCLEO ESTABLE CONSOLIDADO)
  * ==========================================================================
  */
 const AppInmobiliaria = (function() {
-    // Estado interno protegido (Evita inyecciones externas y variables globales)
     const state = {
         map: null,
         markersGroup: [],
-        propertiesData: [], // Base de datos maestra normalizada
-        filteredData: [],   // Datos que cumplen los filtros activos
+        propertiesData: [],
+        filteredData: [],
         favoritosUsuario: [],
         activeListeners: [],
         activeFilters: {
@@ -33,9 +32,7 @@ const AppInmobiliaria = (function() {
         cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
     };
 
-    // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
     function initMap() {
-        // CORREGIDO: Se enlaza directamente al ID 'mapa' de tu index.html original
         state.map = L.map('mapa', {
             zoomControl: false,
             doubleClickZoom: true,
@@ -49,16 +46,11 @@ const AppInmobiliaria = (function() {
         L.control.zoom({ position: 'topright' }).addTo(state.map);
     }
 
-    // 2. Conectividad Segura con Google Apps Script (JSONP)
     function fetchSpreadsheetData() {
         window.procesarDatosDelMotor = function(response) {
             if (response && response.propiedades) {
-                // Sincronización analítica cruzada con el esquema original de imágenes
                 const tablaImagenes = response.imagenes || [];
-                const listaUbicaciones = response.ubicacion || [];
-
                 state.propertiesData = response.propiedades.map(function(prop) {
-                    // Inyectamos la búsqueda relacional de imágenes secundarias original
                     const idProp = prop.propiedad_id || prop.id || "";
                     let fotosFiltradas = [];
                     if (idProp) {
@@ -70,7 +62,6 @@ const AppInmobiliaria = (function() {
                     if (fotosFiltradas.length > 0) {
                         prop.fotos = fotosFiltradas;
                     }
-                    // Retornamos el objeto normalizado para homogenizar el modelo
                     return normalizarEstructuraInmueble(prop);
                 });
 
@@ -79,12 +70,13 @@ const AppInmobiliaria = (function() {
                 attachInterfaceEventHandlers();
             } else {
                 const contador = document.getElementById('contador-propiedades');
-                if (contador) contador.textContent = "No se encontraron propiedades disponibles.";
+                if (contador) contador.textContent = "No se encontraron propiedades.";
             }
             document.getElementById('jsonp-script-bridge')?.remove();
         };
 
-        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
+        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec
+";
         const scriptBridge = document.createElement('script');
         scriptBridge.id = 'jsonp-script-bridge';
         scriptBridge.src = urlScript;
@@ -98,12 +90,7 @@ const AppInmobiliaria = (function() {
         return `${state.cloudinaryBase}${cleanId}`;
     }
 
- * ==========================================================================
- * PARTE: 2-5 (NORMALIZADORES DE OBJETO, PARSEADORES Y SANITIZACIÓN ANTI-XSS)
- * ==========================================================================
- */
     function normalizarEstructuraInmueble(prop) {
-        // Asegura consistencia de tipos numéricos y de texto para las columnas relacionales
         prop.precio_base = parseFloat(prop.precio_base ?? prop.precio ?? 0);
         prop.habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0);
         prop.banos = parseFloat(prop.banos ?? prop.baños ?? 0);
@@ -139,6 +126,7 @@ const AppInmobiliaria = (function() {
         if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
         return `S/. ${num}`;
     }
+
 /**
  * ==========================================================================
  * PARTE: 3-5 (CONSTRUCTOR DE CARRUSEL DOBLE, BADGES VISUALES Y FAVORITOS)
