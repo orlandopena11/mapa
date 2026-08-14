@@ -335,14 +335,12 @@ const AppInmobiliaria = (function() {
                 if (isNew) bubbleClass += ' nuevo marker-bubble--new';
                 if (isVendido) bubbleClass += ' vendido';
 
+                // CORREGIDO: Coordenadas numéricas estables para forzar la renderización de Leaflet
                 const bubbleMarkerIcon = L.divIcon({
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
-
-                    // Configuración recomendada para centrado perfecto de píldoras horizontales
-                    iconSize: [null, 30], 
-                    iconAnchor: [40, 15] // 40px a la izquierda (mitad de un ancho estimado de 80px) y 15px hacia arriba (mitad exacta de 30px de alto)
-
+                    iconSize: [null, 30],
+                    iconAnchor: [40, 15]
                 });
 
                 const popupRoot = document.createElement('div');
