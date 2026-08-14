@@ -278,54 +278,10 @@ const AppInmobiliaria = (function() {
 
         return imageBox;
     }
+
     // ==========================================================================
-    // PARTE: 4-5 (MOTOR DE RENDERIZADO DE REJILLA Y BUBBLE PIN EN EL MAPA)
-    // ==========================================================================
-    function renderAppContent() {
-        // Enlaza de forma adaptativa a cualquier ID que tenga tu grilla de resultados
-        const gridTarget = document.getElementById('contenedor-tarjetas') || document.getElementById('properties-grid-target');
-        const counterTarget = document.getElementById('contador-propiedades') || document.getElementById('results-counter');
-        
-        clearActiveListeners();
-        if (gridTarget) gridTarget.innerHTML = '';
-        clearActiveMarkers();
-
-        if (counterTarget) {
-            counterTarget.textContent = `${state.filteredData.length} Viviendas Disponibles`;
-        }
-        
-        const documentFragment = document.createDocumentFragment();
-
-        state.filteredData.forEach(function(property) {
-            const safeAddress = sanitizeHtmlString(property.direccion);
-            const safePrice = property.precio_base.toLocaleString('es-PE');
-            const compactPriceLabel = formatCompactPrice(property.precio_base);
-            
-            const card = document.createElement('div');
-            card.className = document.getElementById('contenedor-tarjetas') ? 'tarjeta-casa' : 'property-card';
-            card.appendChild(buildSecureCarouselComponent(property));
-
-            const contentBox = document.createElement('div');
-            contentBox.className = document.getElementById('contenedor-tarjetas') ? 'datos-casa' : 'card-content';
-            
-            const precioDiv = document.createElement('div');
-            precioDiv.className = document.getElementById('contenedor-tarjetas') ? 'precio' : 'prop-price';
-            precioDiv.textContent = 'S/. ' + safePrice;
-            contentBox.appendChild(precioDiv);
-
-            const specsDiv = document.createElement('div');
-            specsDiv.className = document.getElementById('contenedor-tarjetas') ? 'caracteristicas' : 'prop-specs';
-            specsDiv.textContent = (property.habitaciones || 0) + ' bd | ' + (property.banos || 0) + ' ba | ' + (property.area_construida || 0) + ' m²';
-            contentBox.appendChild(specsDiv);
-
-            const addressDiv = document.createElement('div');
-            addressDiv.className = document.getElementById('contenedor-tarjetas') ? 'direccion-texto' : 'prop-address';
-            addressDiv.textContent = safeAddress;
-            contentBox.appendChild(addressDiv);
-
-            card.appendChild(contentBox);
-            documentFragment.appendChild(card);
-
+    // PARTE: 4-5 
+    // ==========================================================================    
             if (state.map && property.latitud && property.longitud) {
                 const propEstado = String(property.estado || '').toLowerCase();
                 const isNew = propEstado === 'nuevo';
@@ -335,12 +291,12 @@ const AppInmobiliaria = (function() {
                 if (isNew) bubbleClass += ' nuevo marker-bubble--new';
                 if (isVendido) bubbleClass += ' vendido';
 
-                // CORREGIDO: Coordenadas numéricas estables para forzar la renderización de Leaflet
+                // SOLUCCIÓN DEFINITIVA: Se usa L.point para evadir filtros y forzar las dimensiones
                 const bubbleMarkerIcon = L.divIcon({
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
-                    iconSize: [null, 30],
-                    iconAnchor: [40, 15]
+                    iconSize: L.point(80, 30),
+                    iconAnchor: L.point(40, 15)
                 });
 
                 const popupRoot = document.createElement('div');
@@ -373,10 +329,7 @@ const AppInmobiliaria = (function() {
 
                 state.markersGroup.push(marker);
             }
-        });
 
-        if (gridTarget) gridTarget.appendChild(documentFragment);
-    }
     
 /**
  * ==========================================================================
