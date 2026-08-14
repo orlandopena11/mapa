@@ -235,14 +235,7 @@ function crearComponenteTarjetaZillow(propiedad) {
     return tarjeta;
 }
 
-// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS ENLAZADOS)
-/**
- * CONTROL DE RENDERIZADO DE BURBUJAS DINÁMICAS Y POPUPS MODULARES EN LEAFLET
- * Vincula el componente de micro-carrusel circular dinámico directamente sobre el mapa.
- */
-
-let capaMarcadores = null;
-
+// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS ENLAZADOS - REPARADO)
 function renderizarMapaZillow() {
     // Vinculación estricta al ID nativo del HTML: 'map-instance'
     if (!window.map || !document.getElementById('map-instance')) return;
@@ -253,13 +246,10 @@ function renderizarMapaZillow() {
         capaMarcadores.clearLayers();
     }
 
-    // Reemplazo exacto dentro de renderizarMapaZillow() y renderizarCatálogoTarjetas()
-        const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+    // Filtrado lógico unificado mediante nuestra función de criterios avanzados
+    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-        const matchesEstado = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
-        return matchesEstado;
-    });
-
+    // Iteración nativa sobre los registros válidos para montar las píldoras
     filtradas.forEach(prop => {
         if (!prop.latitud || !prop.longitud) return;
 
@@ -298,6 +288,7 @@ function renderizarMapaZillow() {
         capaMarcadores.addLayer(marcador);
     });
 }
+
 
 // PARTE: 5-5 (REJILLA Y CONTROLADOR CORE CONFIGURADO)
 /**
