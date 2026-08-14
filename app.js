@@ -313,8 +313,8 @@ const AppInmobiliaria = (function() {
                 const bubbleMarkerIcon = L.divIcon({
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
-                    iconSize: [null, 30],
-                    iconAnchor:
+                    iconSize: [null, 24],
+                    iconAnchor: [40, 12]
                 });
 
                 const popupRoot = document.createElement('div');
