@@ -259,12 +259,13 @@ const AppInmobiliaria = (function() {
             if (property.latitud && property.longitud) {
                 const isNewProperty = String(property.estado).toLowerCase() === 'nuevo';
 
+                //  CÓDIGO CORREGIDO (Centrado perfecto de la píldora)
                 const bubbleMarkerIcon = L.divIcon({
-                    className: isNewProperty ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
-                    html: `<span>${compactPriceLabel}</span>`,
-                    iconSize: null,
-                    iconAnchor: [35, 12]
-                });
+                className: isNewProperty ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
+                html: `<span>${compactPriceLabel}</span>`,
+                iconSize: null, // CSS autogestiona el tamaño dinámico
+                iconAnchor: [35, 12] // Desplazamiento simétrico para centrar la píldora
+            });
 
                 const popupRootContainer = document.createElement('div');
                 popupRootContainer.className = 'popup-custom-container';
