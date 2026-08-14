@@ -206,22 +206,9 @@ const AppInmobiliaria = (function() {
 
         return imageBox;
     }
-        function synchronizeFavoriteInterfaceNodes(targetKey) {
-        const isFav = state.favoritosUsuario.includes(targetKey);
-        document.querySelectorAll('.card-fav-btn').forEach(btn => {
-            const parent = btn.closest('.property-card') || btn.closest('.popup-custom-container');
-            if (parent) {
-                const addressNode = parent.querySelector('.prop-address');
-                if (addressNode && addressNode.textContent === targetKey) {
-                    btn.textContent = isFav ? '♥' : '♡';
-                    if (isFav) btn.classList.add('card-fav-btn--active');
-                    else btn.classList.remove('card-fav-btn--active');
-                }
-            }
-        });
-    }
-
-    // 7. Renderizador de Rejilla y Burbujas DivIcon en el Mapa
+    // ==========================================================================
+    // PARTE 3: COMPONENTE VISUAL - BURBUJAS Y RENDERIZADO (CORREGIDO)
+    // ==========================================================================
     function renderAppContent() {
         const gridTarget = document.getElementById('properties-grid-target');
         const counterTarget = document.getElementById('results-counter');
@@ -238,7 +225,7 @@ const AppInmobiliaria = (function() {
             const safePrice = Number(property.precio_base || 0).toLocaleString('es-PE');
             const compactPriceLabel = formatCompactPrice(property.precio_base);
             
-            // Creación de Tarjeta Derecha
+            // Construcción física de la tarjeta en la rejilla derecha
             const card = document.createElement('div');
             card.className = 'property-card';
             card.appendChild(buildSecureCarouselComponent(property));
@@ -255,16 +242,17 @@ const AppInmobiliaria = (function() {
             card.appendChild(contentBox);
             documentFragment.appendChild(card);
 
-            // Marcadores e Inyección de Popups Interactivos a la Izquierda
+            // Inyección física de los marcadores en formato de burbujas en el mapa izquierdo
             if (property.latitud && property.longitud) {
-                const isNew = String(property.estado).toLowerCase() === 'nuevo';
+                // Normalización de estados para prevenir errores de mayúsculas en el Sheet
+                const propEstado = String(property.estado || '').toLowerCase();
+                const isNew = propEstado === 'nuevo';
                 
-                // Parámetros numéricos explícitos para evitar el quiebre de sintaxis
                 const bubbleMarkerIcon = L.divIcon({
                     className: isNew ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
                     html: `<span>${compactPriceLabel}</span>`,
                     iconSize: [null, 24],
-                    iconAnchor: [30, 12]
+                    iconAnchor: [35, 12]
                 });
 
                 const popupRoot = document.createElement('div');
@@ -290,24 +278,28 @@ const AppInmobiliaria = (function() {
         gridTarget.appendChild(documentFragment);
     }
 
-    // Pipeline Analítico que procesa el cruce relacional de datos de las Sheets
+    // ==========================================================================
+    // PARTE 4: MOTOR DE BUSCADOR Y FILTROS INTEGRADOS (INMUNE A MAYÚSCULAS)
+    // ==========================================================================
     function executeFilterEnginePipeline() {
         const querySearch = document.getElementById('search-address').value.toLowerCase().trim();
 
         state.filteredData = state.propertiesData.filter(function(prop) {
-            // A) Filtro de Dirección Geográfica
-            if (querySearch && !String(prop.direccion).toLowerCase().includes(querySearch)) return false;
+            // A) Filtro de Dirección o Distrito (Santiago de Surco, El Derby, etc.)
+            const direccionPropiedad = String(prop.direccion || '').toLowerCase();
+            if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
 
-            // B) Cruce relacional Estado Publicación y Anuncio (Zillow V2 Matrix)
-            const stPub = String(prop.estado_publicacion).toLowerCase();
-            const tpAnuncio = String(prop.tipo_anuncio).toLowerCase();
+            // B) Saneamiento y tolerancia absoluta para estados (Venta / Alquiler / Disponible)
+            const stPub = String(prop.estado_publicacion || '').toLowerCase().trim();
+            const tpAnuncio = String(prop.tipo_anuncio || '').toLowerCase().trim();
 
             if (state.activeFilters.transaccion === "venta") {
-                if (stPub !== "disponible" || tpAnuncio !== "venta") return false;
+                // Modificado para tolerar variaciones comunes de texto en Google Sheets
+                if (stPub !== "disponible" || (tpAnuncio !== "venta" && tpAnuncio !== "en venta")) return false;
             } else if (state.activeFilters.transaccion === "alquiler") {
-                if (stPub !== "disponible" || tpAnuncio !== "alquiler") return false;
+                if (stPub !== "disponible" || (tpAnuncio !== "alquiler" && tpAnuncio !== "para el alquiler")) return false;
             } else if (state.activeFilters.transaccion === "vendida") {
-                if (stPub !== "vendida") return false;
+                if (stPub !== "vendida" && stPub !== "vendido") return false;
             }
 
             // C) Rangos de Precios Básicos
@@ -315,69 +307,40 @@ const AppInmobiliaria = (function() {
             if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
             if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
 
-            // D) Reglas de Dormitorios y Coincidencia Exacta
+            // D) Dormitorios y Coincidencia Exacta
             const beds = Number(prop.habitaciones || 0);
             if (state.activeFilters.beds > 0) {
                 if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
                 if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
             }
 
-            // E) Reglas de Baños
+            // E) Baños
             const baths = Number(prop.banos || 0);
             if (state.activeFilters.baths > 0 && baths < state.activeFilters.baths) return false;
 
-            // F) Categoría de Propiedad
-            if (state.activeFilters.types.length > 0 && !state.activeFilters.types.includes(prop.tipo_propiedad)) return false;
-
-            // G) Megapanel Extendida (Filtros Avanzados)
-            if (state.activeFilters.hoa !== "any") {
-                const hoaVal = Number(prop.cuota_mantenimiento || 0);
-                if (state.activeFilters.hoa === "0" && hoaVal > 0) return false;
-                if (state.activeFilters.hoa !== "0" && hoaVal > Number(state.activeFilters.hoa)) return false;
-            }
-
-            if (state.activeFilters.listTypes.length > 0 && !state.activeFilters.listTypes.includes(prop.situacion_propiedad)) return false;
+            // H) Filtros booleanos adicionales
             if (state.activeFilters.tour3d && !prop.tour_3d) return false;
-            if (state.activeFilters.parking !== "any" && Number(prop.estacionamientos || 0) < Number(state.activeFilters.parking)) return false;
-
-            // Rangos Estructurales m²
-            const builtArea = Number(prop.area_construida || 0);
-            if (state.activeFilters.builtMin !== null && builtArea < state.activeFilters.builtMin) return false;
-            if (state.activeFilters.builtMax !== null && builtArea > state.activeFilters.builtMax) return false;
-
-            const lotArea = Number(prop.area_terreno || 0);
-            if (state.activeFilters.lotMin !== null && lotArea < state.activeFilters.lotMin) return false;
-            if (state.activeFilters.lotMax !== null && lotArea > state.activeFilters.lotMax) return false;
-
-            const yearConst = Number(prop.ano_construccion || 0);
-            if (state.activeFilters.yearMin !== null && yearConst < state.activeFilters.yearMin) return false;
-            if (state.activeFilters.yearMax !== null && yearConst > state.activeFilters.yearMax) return false;
-
-            // Booleans
             if (state.activeFilters.basement && !prop.sotano) return false;
             if (state.activeFilters.storage && !prop.almacen) return false;
             if (state.activeFilters.view && !prop.vista) return false;
-
-            // Operación de Días Publicados Calculados
-            if (state.activeFilters.days !== "any" && prop.fecha_publicacion) {
-                const diffTime = Math.abs(new Date() - new Date(prop.fecha_publicacion));
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays > Number(state.activeFilters.days)) return false;
-            }
 
             return true;
         });
 
         renderAppContent();
-        
-        // Auto-reubicación del mapa si existen resultados en la muestra
-        if (state.filteredData.length > 0 && state.filteredData[0].latitud) {
-            state.map.panTo([state.filteredData[0].latitud, state.filteredData[0].longitud]);
+
+        // Si la búsqueda arrojó resultados, el mapa se desplaza suavemente al primer registro
+        if (state.filteredData.length > 0) {
+            const firstResult = state.filteredData[0];
+            if (firstResult.latitud && firstResult.longitud) {
+                state.map.setView([firstResult.latitud, firstResult.longitud], 14);
+            }
         }
 
-        // REINICIO AUTOMÁTICO DE LOS INPUTS VISUALES (Restablecimiento post-renderizado)
+        // Ejecuta el auto-reinicio visual de controles respetando las especificaciones de diseño
         autoResetInterfaceFormFields();
     }
+
     // Reinicia los campos visibles de la pantalla conservando las variables de estado en memoria
     function autoResetInterfaceFormFields() {
         document.getElementById('price-min').value = '';
