@@ -546,48 +546,57 @@ body, html {
     margin-bottom: 2px;
 }
 /* ==========================================================================
-   BURBUJAS DE PRECIO ESTILO ZILLOW V2 (CORRECCIÓN VISUAL DE CAPAS)
+   BURBUJAS DE PRECIO ESTILO ZILLOW V2 (ALTA ESPECIFICIDAD REFORZADA)
    ========================================================================== */
-.map-price-pill, .marker-bubble {
+div.leaflet-marker-icon.map-price-pill, 
+div.leaflet-marker-icon.marker-bubble {
     background-color: #002e50; /* Azul oscuro corporativo de Zillow */
-    color: #ffffff;            /* Texto blanco de alta visibilidad */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #ffffff;            /* Texto blanco */
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     font-size: 12px;
     font-weight: bold;
     text-align: center;
-    line-height: 26px;        /* Centrado vertical perfecto del texto */
-    border-radius: 14px;      /* Forma de píldora redondeada */
+    line-height: 26px;        /* Centrado vertical perfecto */
+    border-radius: 14px;      /* Forma de píldora */
     padding: 0 10px;          /* Espaciado horizontal adaptativo */
-    white-space: nowrap;      /* Evita que el precio se rompa en dos líneas */
+    white-space: nowrap;      /* Evita saltos de línea */
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    border: 1px solid #ffffff; /* Borde blanco nítido de separación */
-    display: inline-block;
-    min-width: 55px;          /* Ancho mínimo para precios cortos */
+    border: 1px solid #ffffff; /* Borde blanco nítido */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
     height: 28px;
+    overflow: visible;        /* Permite que el texto respire */
     transition: transform 0.15s ease, background-color 0.15s ease;
     z-index: 1000;
 }
 
-/* Estado dinámico para registros marcados como 'Nuevo' */
-.map-price-pill.nuevo, .marker-bubble--new {
+/* Estado dinámico para registros destacados marcados como 'Nuevo' */
+div.leaflet-marker-icon.map-price-pill.nuevo, 
+div.leaflet-marker-icon.marker-bubble--new {
     background-color: #d92323; /* Rojo alerta Zillow */
 }
 
-/* Estado dinámico para registros marcados como 'Vendido' o 'Vendida' */
-.map-price-pill.vendido {
-    background-color: #718096; /* Gris neutro de inactividad */
+/* Estado dinámico para registros inactivos marcados como 'Vendido' o 'Vendida' */
+div.leaflet-marker-icon.map-price-pill.vendido {
+    background-color: #718096; /* Gris neutro */
 }
 
-/* Efecto hover suave al pasar el cursor sobre el precio en el mapa */
-.map-price-pill:hover, .marker-bubble:hover {
+/* Efecto hover suave al pasar el cursor sobre la píldora en el mapa */
+div.leaflet-marker-icon.map-price-pill:hover, 
+div.leaflet-marker-icon.marker-bubble:hover {
     transform: scale(1.1);
-    background-color: #006aff; /* Cambia al azul encendido de Zillow */
+    background-color: #006aff; /* Azul encendido Zillow */
     cursor: pointer;
     z-index: 2000;
 }
 
-/* Forzar que el texto interno herede el color blanco de forma correcta */
-.map-price-pill span, .marker-bubble span {
+/* Asegura que las etiquetas internas span hereden la visibilidad blanca limpia */
+div.leaflet-marker-icon.map-price-pill span, 
+div.leaflet-marker-icon.marker-bubble span {
     color: #ffffff;
+    font-weight: 700;
     display: block;
+    pointer-events: none; /* Evita que el texto interfiera con el clic del marcador */
 }
