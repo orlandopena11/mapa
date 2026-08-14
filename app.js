@@ -266,7 +266,7 @@ function renderizarMapaZillow() {
             className: 'custom-leaflet-container',
             iconSize: L.point(80, 30),
             iconAnchor: L.point(40, 15)
-        });
+   
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
