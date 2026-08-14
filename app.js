@@ -1,14 +1,15 @@
 /**
  * ==========================================================================
- * ARQUITECTURA BUSCADOR INMOBILIARIO (ZILLOW V2 - NÚCLEO ESTABLE CONSOLIDADO)
+ * PARTE: 1-5 (ÁMBITO DE ESTADO, INICIALIZADORES MAPA Y CAPTURA JSONP)
  * ==========================================================================
  */
 const AppInmobiliaria = (function() {
+    // Estado interno protegido (Evita inyecciones externas y variables globales)
     const state = {
         map: null,
         markersGroup: [],
-        propertiesData: [],
-        filteredData: [],
+        propertiesData: [], // Base de datos maestra normalizada
+        filteredData: [],   // Datos que cumplen los filtros activos
         favoritosUsuario: [],
         activeListeners: [],
         activeFilters: {
@@ -29,10 +30,18 @@ const AppInmobiliaria = (function() {
             basement: false, storage: false, view: false,
             days: "any"
         },
-        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
+        cloudinaryBase: "https://cloudinary.com"
     };
 
+    // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
     function initMap() {
+        // Validación preventiva contra asincronía del DOM
+        const mapContainer = document.getElementById('mapa');
+        if (!mapContainer) {
+            console.warn("Contenedor #mapa no detectado aún en el DOM. Reintentando...");
+            return false;
+        }
+
         state.map = L.map('mapa', {
             zoomControl: false,
             doubleClickZoom: true,
@@ -44,8 +53,10 @@ const AppInmobiliaria = (function() {
         }).addTo(state.map);
 
         L.control.zoom({ position: 'topright' }).addTo(state.map);
+        return true;
     }
 
+    // 2. Conectividad Segura con Google Apps Script (JSONP)
     function fetchSpreadsheetData() {
         window.procesarDatosDelMotor = function(response) {
             if (response && response.propiedades) {
@@ -70,12 +81,12 @@ const AppInmobiliaria = (function() {
                 attachInterfaceEventHandlers();
             } else {
                 const contador = document.getElementById('contador-propiedades');
-                if (contador) contador.textContent = "No se encontraron propiedades.";
+                if (counterTarget) counterTarget.textContent = "No se encontraron propiedades.";
             }
             document.getElementById('jsonp-script-bridge')?.remove();
         };
 
-        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
+        const urlScript = "https://google.com";
         const scriptBridge = document.createElement('script');
         scriptBridge.id = 'jsonp-script-bridge';
         scriptBridge.src = urlScript;
@@ -87,43 +98,6 @@ const AppInmobiliaria = (function() {
         if (String(publicId).startsWith("http")) return publicId;
         const cleanId = String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "");
         return `${state.cloudinaryBase}${cleanId}`;
-    }
-
-    function normalizarEstructuraInmueble(prop) {
-        prop.precio_base = parseFloat(prop.precio_base ?? prop.precio ?? 0);
-        prop.habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0);
-        prop.banos = parseFloat(prop.banos ?? prop.baños ?? 0);
-        prop.area_construida = parseFloat(prop.area_construida ?? prop.area ?? 0);
-        prop.area_terreno = parseFloat(prop.area_terreno ?? 0);
-        prop.cuota_mantenimiento = parseFloat(prop.cuota_mantenimiento ?? 0);
-        prop.ano_construccion = parseInt(prop.ano_construccion || prop.anio || 0);
-        
-        prop.direccion = String(prop.direccion || "").trim();
-        prop.estado_publicacion = String(prop.estado_publicacion || "").toLowerCase().trim();
-        prop.tipo_anuncio = String(prop.tipo_anuncio || "").toLowerCase().trim();
-        prop.tipo_propiedad = String(prop.tipo_propiedad || "").trim();
-        prop.situacion_propiedad = String(prop.situacion_propiedad || prop.tipo_listado || "").trim();
-        
-        const fotosPool = [];
-        if (prop.foto_principal) fotosPool.push(prop.foto_principal);
-        if (Array.isArray(prop.fotos)) fotosPool.push(...prop.fotos);
-        prop.fotos_unicas = [...new Set(fotosPool.filter(Boolean))];
-        
-        return prop;
-    }
-
-    function sanitizeHtmlString(unsafeText) {
-        if (!unsafeText) return '';
-        return String(unsafeText)
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    }
-
-    function formatCompactPrice(priceValue) {
-        const num = Number(priceValue || 0);
-        if (num >= 1000000) return `S/. ${(num / 1000000).toFixed(2)}M`;
-        if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
-        return `S/. ${num}`;
     }
 
 /**
@@ -241,12 +215,10 @@ const AppInmobiliaria = (function() {
             }
         });
     }
-/**
- * ==========================================================================
- * PARTE: 4-5 (MOTOR DE RENDERIZADO PRINCIPAL Y PÍLDORAS DIVICON EN MAPA)
- * ==========================================================================
- */
-    // 7. Renderizador de Rejilla y Marcadores en forma de Píldora
+
+    // ==========================================================================
+    // PARTE: 4-5 (MOTOR DE RENDERIZADO PRINCIPAL Y PÍLDORAS DIVICON EN MAPA)
+    // ==========================================================================
     function renderAppContent() {
         const gridTarget = document.getElementById('contenedor-tarjetas');
         const counterTarget = document.getElementById('contador-propiedades');
@@ -266,7 +238,6 @@ const AppInmobiliaria = (function() {
             const safePrice = property.precio_base.toLocaleString('es-PE');
             const compactPriceLabel = formatCompactPrice(property.precio_base);
             
-            // Construcción del Nodo de la Tarjeta Derecha original
             const card = document.createElement('div');
             card.className = 'tarjeta-casa';
             card.appendChild(buildSecureCarouselComponent(property));
@@ -276,12 +247,12 @@ const AppInmobiliaria = (function() {
             
             const precioDiv = document.createElement('div');
             precioDiv.className = 'precio';
-            precioDiv.textContent = `S/. ${safePrice}`;
+            precioDiv.textContent = 'S/. ' + safePrice;
             contentBox.appendChild(precioDiv);
 
             const specsDiv = document.createElement('div');
             specsDiv.className = 'caracteristicas';
-            specsDiv.textContent = `${property.habitaciones || 0} bd | ${property.banos || 0} ba | ${property.area_construida || 0} m²`;
+            specsDiv.textContent = (property.habitaciones || 0) + ' bd | ' + (property.banos || 0) + ' ba | ' + (property.area_construida || 0) + ' m²';
             contentBox.appendChild(specsDiv);
 
             const addressDiv = document.createElement('div');
@@ -292,8 +263,7 @@ const AppInmobiliaria = (function() {
             card.appendChild(contentBox);
             documentFragment.appendChild(card);
 
-            // Marcadores en forma de Burbuja de Precio sobre el Mapa de Leaflet
-            if (property.latitud && property.longitud) {
+            if (state.map && property.latitud && property.longitud) {
                 const propEstado = String(property.estado || '').toLowerCase();
                 const isNew = propEstado === 'nuevo';
                 const isVendido = propEstado === 'vendido' || String(property.estado_publicacion) === 'vendida';
@@ -304,22 +274,33 @@ const AppInmobiliaria = (function() {
 
                 const bubbleMarkerIcon = L.divIcon({
                     className: bubbleClass,
-                    html: `<span>${compactPriceLabel}</span>`,
+                    html: '<span>' + compactPriceLabel + '</span>',
                     iconSize: [null, 30],
-                    iconAnchor: [24, 15]
+                    iconAnchor: [30, 15]
                 });
 
-                // Contenedor del Popup Clonado con Carrusel incluido dentro del Mapa
                 const popupRoot = document.createElement('div');
                 popupRoot.className = 'popup-custom-container';
                 popupRoot.appendChild(buildSecureCarouselComponent(property));
 
                 const popupContent = document.createElement('div');
                 popupContent.className = 'card-content';
-                popupContent.innerHTML = `
-                    <div class="prop-price" style="font-size:16px; font-weight:800; margin-top:6px;">S/. ${safePrice}</div>
-                    <div class="direccion-texto" style="font-size:11px; color:#555;">${safeAddress}</div>
-                `;
+                
+                const pPrice = document.createElement('div');
+                pPrice.className = 'prop-price';
+                pPrice.style.fontSize = '16px';
+                pPrice.style.fontWeight = '800';
+                pPrice.style.marginTop = '6px';
+                pPrice.textContent = 'S/. ' + safePrice;
+                popupContent.appendChild(pPrice);
+
+                const pAddress = document.createElement('div');
+                pAddress.className = 'direccion-texto';
+                pAddress.style.fontSize = '11px';
+                pAddress.style.color = '#555';
+                pAddress.textContent = safeAddress;
+                popupContent.appendChild(pAddress);
+
                 popupRoot.appendChild(popupContent);
 
                 const marker = L.marker([property.latitud, property.longitud], { icon: bubbleMarkerIcon })
@@ -332,6 +313,7 @@ const AppInmobiliaria = (function() {
 
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
+    
 /**
  * ==========================================================================
  * PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y RECOLECTOR RAM)
