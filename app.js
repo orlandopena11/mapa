@@ -286,7 +286,7 @@ function renderizarMapaZillow() {
         });
 
         capaMarcadores.addLayer(marcador);
-    });
+    }
 }
 
 
