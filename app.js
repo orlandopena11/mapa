@@ -30,7 +30,7 @@ const AppInmobiliaria = (function() {
             basement: false, storage: false, view: false,
             days: "any"
         },
-        cloudinaryBase: "https://cloudinary.com"
+        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
     };
 
     // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
@@ -84,7 +84,7 @@ const AppInmobiliaria = (function() {
             document.getElementById('jsonp-script-bridge')?.remove();
         };
 
-        const urlScript = "https://google.com";
+        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
         const scriptBridge = document.createElement('script');
         scriptBridge.id = 'jsonp-script-bridge';
         scriptBridge.src = urlScript;
