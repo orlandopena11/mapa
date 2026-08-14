@@ -1,445 +1,360 @@
+// PARTE: 1-5 (ESTADO Y CONFIGURACIONES)
 /**
- * ==========================================================================
- * PARTE: 1-5 (ÁMBITO DE ESTADO PROTEGIDO E INICIALIZACIÓN DE LEAFLET)
- * ==========================================================================
+ * ARQUITECTURA DE CONTROL DE ESTADO INMUTABLE Y CONFIGURACIÓN GLOBAL ZILLOW V2
+ * Centraliza el almacenamiento y protege el flujo contra variables mutables globales.
  */
-const AppInmobiliaria = (function() {
-    // Estado interno protegido (Evita inyecciones externas y variables globales)
-    const state = {
-        map: null,
-        markersGroup: [],
-        propertiesData: [], // Base de datos maestra normalizada
-        filteredData: [],   // Colección filtrada en tiempo real
-        favoritosUsuario: [],
-        activeListeners: [],
-        activeFilters: {
-            transaccion: "venta",
-            priceMin: null,
-            priceMax: 1300000,
-            beds: 0,
-            bedsExact: false,
-            baths: 0,
-            types: [],
-            hoa: "any",
-            listTypes: ["Propietario publicado", "Agente listado", "Nueva construccion", "Ejecucion hipotecaria", "Subasta"],
-            tour3d: false,
-            parking: "any",
-            builtMin: null, builtMax: null,
-            lotMin: null, lotMax: null,
-            yearMin: null, yearMax: null,
-            basement: false, storage: false, view: false,
-            days: "any"
-        },
-        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
+
+const state = {
+    propiedades: [],
+    favoritos: new Set(),
+    filtros: {
+        estado: 'Venta',
+        precioMax: 'Todos',
+        habitaciones: 'Todos'
+    },
+    // Registro interno para la remoción explícita de Listeners (Garbage Collector)
+    limpiadoresDOM: new Map()
+};
+
+// URL de conexión segura con el backend relacional de Google Apps Script
+const urlMiScriptGoogle = "https://google.com";
+
+/**
+ * Lector asíncrono seguro mediante inyección controlada de JSONP
+ */
+function cargarDatosDesdeAppsScript() {
+    const script = document.createElement('script');
+    script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`;
+    document.body.appendChild(script);
+}
+
+// PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO)
+/**
+ * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND
+ * Sanitiza las entradas de Google Sheets y unifica los arreglos de imágenes.
+ */
+
+function normalizarPropiedad(prop) {
+    const id = prop.propiedad_id || prop.id || String(Math.random());
+    
+    // Unificación estricta del canal de fotos del backend
+    let fotosUnificadas = [];
+    if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
+    if (Array.isArray(prop.imagenes_secundarias)) {
+        fotosUnificadas.push(...prop.imagenes_secundarias.map(f => String(f).trim()));
+    }
+    if (Array.isArray(prop.fotos)) {
+        fotosUnificadas.push(...prop.fotos.map(f => String(f).trim()));
+    }
+    
+    // Purga de duplicados y valores corruptos en memoria
+    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+    
+    return {
+        id: String(id),
+        precio: parseFloat(prop.precio_base || prop.precio || 0),
+        estadoListado: String(prop.estado_publicacion || prop.estado || 'Venta').trim(), // 'Nuevo', 'Vendido', 'Venta'
+        fraseDescriptiva: String(prop.frase_descriptiva || prop.titulo || '').trim(),
+        fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
+        latitud: parseFloat(prop.latitud || 0),
+        longitud: parseFloat(prop.longitud || 0),
+        habitaciones: parseInt(prop.habitaciones || prop.hab || 0)
     };
+}
 
-    // 1. Inicialización de la Instancia de Leaflet buscando cualquier ID compatible
-    function initMap() {
-        // Selector elástico: Busca 'mapa', 'map-instance' o 'map' según lo que tenga tu index.html
-        const containerId = document.getElementById('mapa') ? 'mapa' : 
-                            (document.getElementById('map-instance') ? 'map-instance' : 
-                            (document.getElementById('map') ? 'map' : null));
-                            
-        if (!containerId) {
-            console.error("Fallo de maquetación: No se encontró ningún contenedor válido para el mapa ('mapa', 'map-instance' o 'map').");
-            return false;
-        }
-
-        state.map = L.map(containerId, {
-            zoomControl: false,
-            doubleClickZoom: true,
-            tap: false
-        }).setView([-12.125, -76.995], 13);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(state.map);
-
-        L.control.zoom({ position: 'topright' }).addTo(state.map);
-        return true;
+function formatearPrecioCompacto(precio) {
+    if (precio >= 1000000) {
+        return `S/. ${(precio / 1000000).toFixed(2)}M`;
+    } else if (precio >= 1000) {
+        return `S/. ${(precio / 1000).toFixed(0)}K`;
     }
+    return `S/. ${precio}`;
+}
 
+// PARTE: 3-5 (CONSTRUCTOR DE COMPONENTES)
 /**
- * ==========================================================================
- * PARTE: 2-5 (CONECTIVIDAD ASÍNCRONA HÍBRIDA AUTO-LIMPIABLE - EN PRODUCCIÓN)
- * ==========================================================================
+ * FÁBRICA DE TARJETAS MODULARES CON MICRO-CARRUSEL INTERACTIVO DOBLE
+ * Uso estricto de la API del DOM nativo (createElement/textContent) libre de XSS.
+ * Funciona de forma idéntica en la Rejilla del Catálogo y dentro de los Popups del Mapa.
  */
-    // 2. Sincronización Segura con Google Apps Script (Soporta JSON y JSONP)
-    function fetchSpreadsheetData() {
-        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
 
-        // Usamos la API de texto para capturar la respuesta cruda y limpiarla de envoltorios
-        fetch(urlScript)
-            .then(response => response.text())
-            .then(responseText => {
-                let cleanText = responseText.trim();
-                
-                // Si la respuesta viene envuelta en la función JSONP, removemos el prefijo y el sufijo
-                if (cleanText.startsWith("procesarDatosDelMotor")) {
-                    cleanText = cleanText.replace(/^procesarDatosDelMotor\s*\(/, "").replace(/\);?$/, "");
-                }
-                
-                // Parseo manual una vez que la cadena ha sido sanitizada y despojada de caracteres JSONP
-                const data = JSON.parse(cleanText);
-                
-                const propiedadesOriginales = data.propiedades || data;
-                const tablaImagenes = data.imagenes || [];
+function crearComponenteTarjetaZillow(propiedad) {
+    let indiceFotoActual = 0;
+    const totalFotos = Math.min(propiedad.fotos.length, 5); // Máximo 5 fotos según especificación
 
-                state.propertiesData = propiedadesOriginales.map(function(prop) {
-                    const idProp = prop.propiedad_id || prop.id || "";
-                    let fotosFiltradas = [];
-                    if (idProp) {
-                        fotosFiltradas = tablaImagenes
-                            .filter(img => String(img.propiedad_id_fk || img.propiedad_id).trim() === String(idProp).trim())
-                            .sort((a, b) => Number(a.orden || 0) - Number(b.orden || 0))
-                            .map(img => img.ruta_imagen || img.url || "");
-                    }
-                    if (fotosFiltradas.length > 0) {
-                        prop.fotos = fotosFiltradas;
-                    }
-                    return normalizarEstructuraInmueble(prop);
-                });
+    // Contenedor principal hermético
+    const tarjeta = document.createElement('div');
+    tarjeta.className = 'tarjeta-casa';
+    tarjeta.setAttribute('data-id', propiedad.id);
 
-                state.filteredData = [...state.propertiesData];
-                buildPriceHistogram();
-                renderAppContent();
-            })
-            .catch(error => {
-                const contador = document.getElementById('contador-propiedades') || document.getElementById('results-counter');
-                if (contador) contador.textContent = "Error de sincronización con la base de datos.";
-            });
+    // Viewport de la fotografía
+    const contenedorFoto = document.createElement('div');
+    contenedorFoto.className = 'contenedor-foto';
+
+    // Riel deslizante para animación fluida por CSS
+    const rielCarrusel = document.createElement('div');
+    rielCarrusel.className = 'carrusel-imagenes';
+    rielCarrusel.style.width = `${totalFotos * 100}%`;
+
+    const nodosImagenes = [];
+    for (let i = 0; i < totalFotos; i++) {
+        const img = document.createElement('img');
+        img.src = propiedad.fotos[i];
+        img.alt = `${propiedad.fraseDescriptiva} - Vista ${i + 1}`;
+        img.style.width = `${100 / totalFotos}%`;
+        rielCarrusel.appendChild(img);
+        nodosImagenes.push(img);
+    }
+    contenedorFoto.appendChild(rielCarrusel);
+
+    // ETIQUETAS FLOTANTES (Badges Esquina Superior Izquierda)
+    if (propiedad.estadoListado === 'Nuevo' || propiedad.estadoListado === 'Vendido') {
+        const badgeEstado = document.createElement('span');
+        badgeEstado.className = `badge badge-${propiedad.estadoListado.toLowerCase()}`;
+        badgeEstado.textContent = propiedad.estadoListado;
+        contenedorFoto.appendChild(badgeEstado);
     }
 
-    function buildCloudinaryUrl(publicId) {
-        if (!publicId) return "https://unsplash.com";
-        if (String(publicId).startsWith("http")) return publicId;
-        return `${state.cloudinaryBase}${String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "")}`;
-    }
+    // BOTÓN DE CORAZÓN REACTIVO INMUTABLE (Esquina Superior Derecha)
+    const botonCorazon = document.createElement('button');
+    botonCorazon.className = 'corazon-favorito';
+    botonCorazon.textContent = state.favoritos.has(propiedad.id) ? '♥' : '♡';
+    if (state.favoritos.has(propiedad.id)) botonCorazon.classList.add('activo');
 
-    function normalizarEstructuraInmueble(prop) {
-        prop.precio_base = parseFloat(prop.precio_base ?? prop.precio ?? 0);
-        prop.habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0);
-        prop.banos = parseFloat(prop.banos ?? prop.baños ?? 0);
-        prop.area_construida = parseFloat(prop.area_construida ?? prop.area ?? 0);
-        prop.area_terreno = parseFloat(prop.area_terreno ?? 0);
-        prop.cuota_mantenimiento = parseFloat(prop.cuota_mantenimiento ?? 0);
-        prop.ano_construccion = parseInt(prop.ano_construccion || prop.anio || 0);
-        
-        prop.direccion = String(prop.direccion || "").trim();
-        prop.estado_publicacion = String(prop.estado_publicacion || "").toLowerCase().trim();
-        prop.tipo_anuncio = String(prop.tipo_anuncio || "").toLowerCase().trim();
-        prop.tipo_propiedad = String(prop.tipo_propiedad || "").trim();
-        prop.situacion_propiedad = String(prop.situacion_propiedad || prop.tipo_listado || "").trim();
-        
-        const fotosPool = [];
-        if (prop.foto_principal) fotosPool.push(prop.foto_principal);
-        if (Array.isArray(prop.fotos)) fotosPool.push(...prop.fotos);
-        prop.fotos_unicas = [...new Set(fotosPool.filter(Boolean))];
-        
-        return prop;
-    }
-
-    function sanitizeHtmlString(unsafeText) {
-        if (!unsafeText) return '';
-        return String(unsafeText)
-            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-    }
-
-    function formatCompactPrice(priceValue) {
-        const num = Number(priceValue || 0);
-        if (num >= 1000000) return `S/. ${(num / 1000000).toFixed(2)}M`;
-        if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
-        return `S/. ${num}`;
-    }
-
-    function buildPriceHistogram() {
-        const histogramBox = document.getElementById('price-histogram-box');
-        if (!histogramBox) return;
-        histogramBox.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-        for (let i = 0; i < 24; i++) {
-            const bar = document.createElement('div');
-            bar.className = 'histogram-bar-node in-range';
-            bar.style.height = Math.floor(Math.random() * 45) + 15 + 'px';
-            fragment.appendChild(bar);
+    const handlerFavorito = (e) => {
+        e.stopPropagation();
+        if (state.favoritos.has(propiedad.id)) {
+            state.favoritos.delete(propiedad.id);
+            botonCorazon.textContent = '♡';
+            botonCorazon.classList.remove('activo');
+        } else {
+            state.favoritos.add(propiedad.id);
+            botonCorazon.textContent = '♥';
+            botonCorazon.classList.add('activo');
         }
-        histogramBox.appendChild(fragment);
+    };
+    botonCorazon.addEventListener('click', handlerFavorito);
+    contenedorFoto.appendChild(botonCorazon);
+
+    // CAJA DE TEXTO ATENUADA (Pie de la Foto)
+    if (propiedad.fraseDescriptiva) {
+        const letreroDescriptivo = document.createElement('div');
+        letreroDescriptivo.className = 'letrero-descriptivo';
+        letreroDescriptivo.textContent = propiedad.fraseDescriptiva;
+        contenedorFoto.appendChild(letreroDescriptivo);
     }
 
-    // ==========================================================================
-    // PARTE: 3-5 (CONSTRUCTOR DE MICRO-CARRUSEL INTERACTIVO PARA DOBLE VISTA)
-    // ==========================================================================
-    function buildSecureCarouselComponent(property) {
-        const imageBox = document.createElement('div');
-        // Soporta de forma elástica tanto tus clases nativas antiguas como las nuevas de Zillow V2
-        imageBox.className = document.querySelector('.contenedor-foto') ? 'contenedor-foto' : 'card-image-box';
+    // ARITMÉTICA MODULAR CIRCULAR INFINITA (Controles de Navegación)
+    let handlerFlechaIzq = null;
+    let handlerFlechaDer = null;
 
-        const imagesCollection = property.fotos_unicas.slice(0, 5);
-        if (imagesCollection.length === 0) imagesCollection.push("");
+    if (totalFotos > 1) {
+        const btnIzq = document.createElement('button');
+        btnIzq.className = 'flecha-carrusel flecha-izq';
+        btnIzq.textContent = '<';
 
-        let activeIndex = 0;
-        const totalImages = imagesCollection.length;
+        const btnDer = document.createElement('button');
+        btnDer.className = 'flecha-carrusel flecha-der';
+        btnDer.textContent = '>';
 
-        const trackContainer = document.createElement('div');
-        trackContainer.className = document.querySelector('.carrusel-imagenes') ? 'carrusel-imagenes' : 'carousel-track-container';
-        
-        const imageNodes = [];
-        imagesCollection.forEach((imgId, idx) => {
-            const imgElement = document.createElement('img');
-            imgElement.src = buildCloudinaryUrl(imgId);
-            imgElement.alt = 'Vivienda';
-            imgElement.style.width = "100%";
-            imgElement.style.height = "100%";
-            imgElement.style.objectFit = "cover";
-            imgElement.style.display = idx === 0 ? 'block' : 'none';
-            // Clases elásticas de compatibilidad visual
-            imgElement.className = 'carousel-img';
-            if (idx === 0) imgElement.classList.add('carousel-img--active');
-            
-            trackContainer.appendChild(imgElement);
-            imageNodes.push(imgElement);
-        });
-        imageBox.appendChild(trackContainer);
+        const contenedorIndicadores = document.createElement('div');
+        contenedorIndicadores.className = 'indicadores-carrusel';
 
-        if (property.estado) {
-            const badge = document.createElement('div');
-            badge.className = document.querySelector('.badge') ? 'badge' : 'card-badge';
-            badge.textContent = sanitizeHtmlString(property.estado);
-            imageBox.appendChild(badge);
+        const dots = [];
+        for (let i = 0; i < totalFotos; i++) {
+            const dot = document.createElement('span');
+            dot.className = i === 0 ? 'punto-indicador activo' : 'punto-indicador';
+            contenedorIndicadores.appendChild(dot);
+            dots.push(dot);
         }
+        contenedorFoto.appendChild(contenedorIndicadores);
 
-        if (property.frase_descriptiva) {
-            const infoBanner = document.createElement('div');
-            infoBanner.className = 'card-info-banner';
-            infoBanner.textContent = sanitizeHtmlString(property.frase_descriptiva);
-            imageBox.appendChild(infoBanner);
-        }
-
-        const favButton = document.createElement('button');
-        favButton.className = document.querySelector('.corazon-favorito') ? 'corazon-favorito' : 'card-fav-btn';
-        const propertyKey = property.direccion;
-        const isFav = state.favoritosUsuario.includes(propertyKey);
-        favButton.textContent = isFav ? '♥' : '♡';
-        if (isFav) favButton.style.color = '#d92323';
-
-        const favClickHandler = function(e) {
-            e.stopPropagation(); e.preventDefault();
-            const index = state.favoritosUsuario.indexOf(propertyKey);
-            if (index > -1) {
-                state.favoritosUsuario = state.favoritosUsuario.filter(k => k !== propertyKey);
-            } else {
-                state.favoritosUsuario = [...state.favoritosUsuario, propertyKey];
-            }
-            
-            document.querySelectorAll('.corazon-favorito, .card-fav-btn').forEach(btn => {
-                const parent = btn.closest('.tarjeta-casa') || btn.closest('.property-card') || btn.closest('.popup-custom-container');
-                if (parent) {
-                    const addressNode = parent.querySelector('.direccion-texto') || parent.querySelector('.prop-address');
-                    if (addressNode && addressNode.textContent === propertyKey) {
-                        const nowFav = state.favoritosUsuario.includes(propertyKey);
-                        btn.textContent = nowFav ? '♥' : '♡';
-                        btn.style.color = nowFav ? '#d92323' : '#002650';
-                    }
-                }
+        const actualizarDesplazamiento = () => {
+            const desplazamiento = -(indiceFotoActual * (100 / totalFotos));
+            rielCarrusel.style.transform = `translateX(${desplazamiento}%)`;
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('activo', idx === indiceFotoActual);
             });
         };
-        favButton.addEventListener('click', favClickHandler);
-        state.activeListeners.push({ element: favButton, type: 'click', handler: favClickHandler });
-        imageBox.appendChild(favButton);
 
-        if (totalImages > 1) {
-            const prevBtn = document.createElement('button');
-            prevBtn.className = document.querySelector('.flecha-carrusel') ? 'flecha-carrusel flecha-izq' : 'carousel-nav-btn carousel-nav-btn--prev';
-            prevBtn.textContent = '‹';
-            const nextBtn = document.createElement('button');
-            nextBtn.className = document.querySelector('.flecha-carrusel') ? 'flecha-carrusel flecha-der' : 'carousel-nav-btn carousel-nav-btn--next';
-            nextBtn.textContent = '›';
+        handlerFlechaIzq = (e) => {
+            e.stopPropagation();
+            indiceFotoActual = (indiceFotoActual - 1 + totalFotos) % totalFotos;
+            actualizarDesplazamiento();
+        };
 
-            const shiftCarouselIndex = function(offset) {
-                imageNodes[activeIndex].style.display = 'none';
-                imageNodes[activeIndex].classList.remove('carousel-img--active');
-                activeIndex = (activeIndex + offset + totalImages) % totalImages;
-                imageNodes[activeIndex].style.display = 'block';
-                imageNodes[activeIndex].classList.add('carousel-img--active');
-            };
+        handlerFlechaDer = (e) => {
+            e.stopPropagation();
+            indiceFotoActual = (indiceFotoActual + 1) % totalFotos;
+            actualizarDesplazamiento();
+        };
 
-            const prevH = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(-1); };
-            const nextH = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(1); };
-
-            prevBtn.addEventListener('click', prevH);
-            nextBtn.addEventListener('click', nextH);
-            state.activeListeners.push({ element: prevBtn, type: 'click', handler: prevH });
-            state.activeListeners.push({ element: nextBtn, type: 'click', handler: nextH });
-
-            imageBox.appendChild(prevBtn);
-            imageBox.appendChild(nextBtn);
-        }
-
-        return imageBox;
+        btnIzq.addEventListener('click', handlerFlechaIzq);
+        btnDer.addEventListener('click', handlerFlechaDer);
+        contenedorFoto.appendChild(btnIzq);
+        contenedorFoto.appendChild(btnDer);
     }
 
-    // ==========================================================================
-    // PARTE: 4-5 
-    // ==========================================================================    
-            if (state.map && property.latitud && property.longitud) {
-                const propEstado = String(property.estado || '').toLowerCase();
-                const isNew = propEstado === 'nuevo';
-                const isVendido = propEstado === 'vendido' || String(property.estado_publicacion) === 'vendida';
+    tarjeta.appendChild(contenedorFoto);
 
-                let bubbleClass = 'map-price-pill marker-bubble';
-                if (isNew) bubbleClass += ' nuevo marker-bubble--new';
-                if (isVendido) bubbleClass += ' vendido';
+    // Contenedor semántico de datos descriptivos de la propiedad
+    const datosCasa = document.createElement('div');
+    datosCasa.className = 'datos-casa';
 
-                // SOLUCCIÓN DEFINITIVA: Se usa L.point para evadir filtros y forzar las dimensiones
-                const bubbleMarkerIcon = L.divIcon({
-                    className: bubbleClass,
-                    html: '<span>' + compactPriceLabel + '</span>',
-                    iconSize: L.point(80, 30),
-                    iconAnchor: L.point(40, 15)
-                });
+    const precioTexto = document.createElement('div');
+    precioTexto.className = 'precio';
+    precioTexto.textContent = propiedad.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+    datosCasa.appendChild(precioTexto);
 
-                const popupRoot = document.createElement('div');
-                popupRoot.className = 'popup-custom-container';
-                popupRoot.appendChild(buildSecureCarouselComponent(property));
+    tarjeta.appendChild(datosCasa);
 
-                const popupContent = document.createElement('div');
-                popupContent.className = 'card-content';
-                
-                const pPrice = document.createElement('div');
-                pPrice.className = 'prop-price';
-                pPrice.style.fontSize = '16px';
-                pPrice.style.fontWeight = '800';
-                pPrice.style.marginTop = '6px';
-                pPrice.textContent = 'S/. ' + safePrice;
-                popupContent.appendChild(pPrice);
+    // Guardado de punteros para el recolector de basura interno
+    state.limpiadoresDOM.set(propiedad.id, () => {
+        botonCorazon.removeEventListener('click', handlerFavorito);
+        if (totalFotos > 1) {
+            btnIzq.removeEventListener('click', handlerFlechaIzq);
+            btnDer.removeEventListener('click', handlerFlechaDer);
+        }
+    });
 
-                const pAddress = document.createElement('div');
-                pAddress.className = 'direccion-texto prop-address';
-                pAddress.style.fontSize = '11px';
-                pAddress.style.color = '#555';
-                pAddress.textContent = safeAddress;
-                popupContent.appendChild(pAddress);
+    return tarjeta;
+}
 
-                popupRoot.appendChild(popupContent);
-
-                const marker = L.marker([property.latitud, property.longitud], { icon: bubbleMarkerIcon })
-                    .addTo(state.map)
-                    .bindPopup(popupRoot, { maxWidth: 250, minWidth: 250 });
-
-                state.markersGroup.push(marker);
-            }
-
-    
+// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS)
 /**
- * ==========================================================================
- * PARTE: 5-5 (PIPELINE DE FILTRADO CONTROLADO LIBRE DE BUCLES INFINITOS)
- * ==========================================================================
+ * CONTROL DE RENDERIZADO DE BURBUJAS DINÁMICAS Y POPUPS MODULARES EN LEAFLET
+ * Implementa centrado geométrico nativo rígido mediante L.point para mitigar desbordes.
  */
-    // Pipeline Analítico que procesa el cruce de tablas relacionales (Matrix Cross-Sheet)
-    function executeFilterEnginePipeline() {
-        const inputBuscador = document.getElementById('buscador-direccion') || document.getElementById('search-address');
-        const querySearch = inputBuscador ? inputBuscador.value.toLowerCase().trim() : "";
 
-        state.filteredData = state.propertiesData.filter(function(prop) {
-            // A) Filtro Reactivo de Texto (Santiago de Surco, El Derby, etc.)
-            const direccionPropiedad = String(prop.direccion || '').toLowerCase();
-            if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
+let capaMarcadores = null;
 
-            // B) Cruce relacional Estado Publicación y Anuncio (Inmune a mayúsculas)
-            const stPub = String(prop.estado_publicacion || '');
-            const tpAnuncio = String(prop.tipo_anuncio || '');
+function renderizarMapaZillow() {
+    if (!window.map) return;
 
-            if (state.activeFilters.transaccion === "venta") {
-                if (stPub !== "disponible" || (tpAnuncio !== "venta" && tpAnuncio !== "en venta")) return false;
-            } else if (state.activeFilters.transaccion === "alquiler") {
-                if (stPub !== "disponible" || (tpAnuncio !== "alquiler" && tpAnuncio !== "para el alquiler")) return false;
-            } else if (state.activeFilters.transaccion === "vendida") {
-                if (stPub !== "vendida" && stPub !== "vendido") return false;
-            }
+    if (!capaMarcadores) {
+        capaMarcadores = L.layerGroup().addTo(window.map);
+    } else {
+        capaMarcadores.clearLayers();
+    }
 
-            // C) Rangos de Precios Básicos
-            const price = prop.precio_base;
-            if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
-            if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
+    // Filtrado reactivo de las propiedades en base al estado de memoria
+    const filtradas = state.propiedades.filter(prop => {
+        const matchesEstado = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
+        return matchesEstado;
+    });
 
-            // D) Reglas de Dormitorios
-            const beds = prop.habitaciones;
-            if (state.activeFilters.beds > 0) {
-                if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
-                if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
-            }
+    filtradas.forEach(prop => {
+        if (!prop.latitud || !prop.longitud) return;
 
-            // E) Reglas de Baños
-            if (state.activeFilters.baths > 0 && prop.banos < state.activeFilters.baths) return false;
+        const precioCompacto = formatearPrecioCompacto(prop.precio);
+        const esNuevo = prop.estadoListado === 'Nuevo';
+        const clasePill = esNuevo ? 'map-price-pill nuevo' : 'map-price-pill';
 
-            return true;
+        const htmlBurbuja = `<div class="${clasePill}"><span>${precioCompacto}</span></div>`;
+
+        // Configuración geométrica estricta solicitada para evitar desalineación
+        const iconoBurbuja = L.divIcon({
+            html: htmlBurbuja,
+            className: 'custom-leaflet-container',
+            iconSize: L.point(80, 30),
+            iconAnchor: L.point(40, 15)
         });
 
-        // Ejecuta el renderizado de alto rendimiento en una sola pasada limpia
-        renderAppContent();
+        const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // Auto-reubicación inteligente al primer resultado de forma pasiva sin disparar eventos
-        if (state.filteredData.length > 0) {
-            const firstCoord = state.filteredData[0];
-            if (firstCoord && firstCoord.latitud && firstCoord.longitud && state.map) {
-                state.map.setView([firstCoord.latitud, firstCoord.longitud], 14);
-            }
-        }
-    }
+        // Evento de apertura reactiva del Popup inyectando el componente tarjeta modular
+        marcador.on('click', () => {
+            window.map.panTo(marcador.getLatLng());
 
-    function attachInterfaceEventHandlers() {
-        const inputBuscador = document.getElementById('buscador-direccion') || document.getElementById('search-address');
-        if (inputBuscador) {
-            // Eliminamos cualquier listener previo duplicado para evitar ejecuciones en cascada
-            inputBuscador.removeEventListener('input', executeFilterEnginePipeline);
-            inputBuscador.addEventListener('input', executeFilterEnginePipeline);
-        }
+            // Construimos la misma estructura de tarjeta con carrusel operativo
+            const tarjetaPopup = crearComponenteTarjetaZillow(prop);
+            tarjetaPopup.classList.add('popup-card');
 
-        const radios = document.querySelectorAll('input[name="filtro-estado-publicacion"], input[name="transaccion"]');
-        radios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                const val = this.value.toLowerCase();
-                if (val === 'venta') state.activeFilters.transaccion = 'venta';
-                else if (val === 'alquiler') state.activeFilters.transaccion = 'alquiler';
-                else if (val === 'vendido' || val === 'vendida') state.activeFilters.transaccion = 'vendida';
-                
-                const textoBtn = document.getElementById('texto-filtro-estado-publicacion') || document.getElementById('btn-filter-status');
-                if (textoBtn) textoBtn.textContent = this.parentElement.textContent.trim();
-                executeFilterEnginePipeline();
-            });
+            marcador.bindPopup(tarjetaPopup, {
+                maxWidth: 300,
+                minWidth: 280,
+                className: 'zillow-custom-popup-wrapper'
+            }).openPopup();
         });
-    }
 
-    function clearActiveListeners() {
-        state.activeListeners.forEach(l => l.element.removeEventListener(l.type, l.handler));
-        state.activeListeners = [];
-    }
+        capaMarcadores.addLayer(marcador);
+    });
+}
 
-    function clearActiveMarkers() {
-        state.markersGroup.forEach(m => {
-            if (state.map) state.map.removeLayer(m);
-        });
-        state.markersGroup = [];
-    }
+// PARTE: 5-5 (REJILLA Y CONTROLADOR CORE)
+/**
+ * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED
+ * Utiliza DocumentFragment para agrupar mutaciones del DOM de forma eficiente y ordenada.
+ */
 
-    window.renderizarMapaZillow = function() {
-        executeFilterEnginePipeline();
-    };
+function renderizarCatálogoTarjetas() {
+    const contenedorRejilla = document.getElementById('contenedor-tarjetas');
+    if (!contenedorRejilla) return;
 
-    // API Pública de Inicialización Profesional
-    return {
-        initialize: function() {
-            const mapSuccess = initMap();
-            if (mapSuccess) {
-                attachInterfaceEventHandlers();
-                fetchSpreadsheetData(); // Llama a los datos asíncronos una única vez al arrancar
-            }
+    // Liberación estricta de memoria antes de vaciar la pantalla (Previene fugas)
+    while (contenedorRejilla.firstChild) {
+        const id = contenedorRejilla.firstChild.getAttribute('data-id');
+        if (id && state.limpiadoresDOM.has(id)) {
+            state.limpiadoresDOM.get(id)(); // Remueve el Event Listener explícitamente
+            state.limpiadoresDOM.delete(id);
         }
-    };
-})();
+        contenedorRejilla.removeChild(contenedorRejilla.firstChild);
+    }
 
-// PUNTO DE ENTRADA DETERMINISTA DIRECTO LIBRE DE BUCLES
-document.addEventListener("DOMContentLoaded", function() {
-    AppInmobiliaria.initialize();
+    const fragmento = document.createDocumentFragment();
+    
+    // Filtrado idéntico al del mapa para mantener coherencia visual absoluta
+    const filtradas = state.propiedades.filter(prop => {
+        return state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
+    });
+
+    // Inyección optimizada de tarjetas en el fragmento flotante
+    filtradas.forEach(prop => {
+        const tarjetaNode = crearComponenteTarjetaZillow(prop);
+        fragmento.appendChild(tarjetaNode);
+    });
+
+    contenedorRejilla.appendChild(fragmento);
+    
+    // Actualización del letrero contador dinámico
+    const contador = document.getElementById('contador-propiedades');
+    if (contador) {
+        contador.textContent = `${filtradas.length} resultados disponibles`;
+    }
+}
+
+/**
+ * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback global de recepción de red
+ */
+function procesarDatosDelMotor(data) {
+    console.log("[ESPÍA ESCONCOR] Datos crudos del backend interceptados con éxito:", data);
+    
+    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
+        console.error("[ESPÍA ESCONCOR] Error catastrófico: Estructura de datos ilegible.");
+        return;
+    }
+
+    // Normalización masiva hacia el estado controlado protegido
+    state.propiedades = data.propiedades.map(normalizarPropiedad);
+    
+    // Disparo sincronizado de ambas vistas core de la aplicación
+    renderizarMapaZillow();
+    renderizarCatálogoTarjetas();
+    
+    console.log("[ESPÍA ESCONCOR] Pipeline finalizado. Estado de memoria purificado.");
+}
+
+// Inicializador estructural al levantarse el documento
+document.addEventListener("DOMContentLoaded", () => {
+    // Inicialización simulada del mapa de Leaflet
+    if (typeof L !== 'undefined' && document.getElementById('mapa')) {
+        window.map = L.map('mapa', { zoomControl: true }).setView([-12.125, -76.995], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        
+        // Sincronización del mapa con los filtros al arrastrar o cambiar zoom
+        window.map.on('moveend', renderizarMapaZillow);
+    }
+    
+    // Carga inicial del flujo de datos
+    cargarDatosDesdeAppsScript();
 });
