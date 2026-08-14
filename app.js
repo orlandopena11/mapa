@@ -263,7 +263,7 @@ const AppInmobiliaria = (function() {
                 const bubbleMarkerIcon = L.divIcon({
                     className: isNew ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
                     html: `<span>${compactPriceLabel}</span>`,
-                    iconSize:,
+                    iconSize: [null, 24],
                     iconAnchor: [30, 12]
                 });
 
