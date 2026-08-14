@@ -61,31 +61,29 @@ const AppInmobiliaria = (function() {
 
 /**
  * ==========================================================================
- * PARTE: 2-5 (MANEJADOR DE DIAGNÓSTICO MODERNO - ESPÍA TRANSITORIO)
+ * PARTE: 2-5 (CONECTIVIDAD ASÍNCRONA HÍBRIDA AUTO-LIMPIABLE - EN PRODUCCIÓN)
  * ==========================================================================
  */
-    // 2. Sincronización Segura con Google Apps Script (Inmune a Bloqueos MIME)
+    // 2. Sincronización Segura con Google Apps Script (Soporta JSON y JSONP)
     function fetchSpreadsheetData() {
         const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
 
-        console.log("[ESPÍA ACTIVADO]: Iniciando petición fetch hacia Google Apps Script...");
-
-        // Usamos fetch nativo en lugar de etiquetas <script> para saltarnos el bloqueo 'nosniff'
+        // Usamos la API de texto para capturar la respuesta cruda y limpiarla de envoltorios
         fetch(urlScript)
-            .then(response => {
-                console.log("[ESPÍA RED]: Respuesta recibida del servidor HTTP Status:", response.status);
-                return response.json(); // Parsea de forma nativa la estructura JSON de Google
-            })
-            .then(data => {
-                console.log("[ESPÍA DATOS]: Datos crudos capturados con éxito:", data);
+            .then(response => response.text())
+            .then(responseText => {
+                let cleanText = responseText.trim();
                 
-                // Si tu Apps Script envuelve el JSON en una función, extraemos el objeto interno
+                // Si la respuesta viene envuelta en la función JSONP, removemos el prefijo y el sufijo
+                if (cleanText.startsWith("procesarDatosDelMotor")) {
+                    cleanText = cleanText.replace(/^procesarDatosDelMotor\s*\(/, "").replace(/\);?$/, "");
+                }
+                
+                // Parseo manual una vez que la cadena ha sido sanitizada y despojada de caracteres JSONP
+                const data = JSON.parse(cleanText);
+                
                 const propiedadesOriginales = data.propiedades || data;
                 const tablaImagenes = data.imagenes || [];
-
-                if (!propiedadesOriginales || propiedadesOriginales.length === 0) {
-                    console.warn("[ESPÍA ALERTA]: La colección de propiedades llegó vacía de las Sheets.");
-                }
 
                 state.propertiesData = propiedadesOriginales.map(function(prop) {
                     const idProp = prop.propiedad_id || prop.id || "";
@@ -107,10 +105,66 @@ const AppInmobiliaria = (function() {
                 renderAppContent();
             })
             .catch(error => {
-                console.error("[ESPÍA ERROR FATAL]: Falló la canalización de la tubería de red:", error);
                 const contador = document.getElementById('contador-propiedades') || document.getElementById('results-counter');
                 if (contador) contador.textContent = "Error de sincronización con la base de datos.";
             });
+    }
+
+    function buildCloudinaryUrl(publicId) {
+        if (!publicId) return "https://unsplash.com";
+        if (String(publicId).startsWith("http")) return publicId;
+        return `${state.cloudinaryBase}${String(publicId).trim().replace(/\s+/g, "_").replace(/^\/+/, "")}`;
+    }
+
+    function normalizarEstructuraInmueble(prop) {
+        prop.precio_base = parseFloat(prop.precio_base ?? prop.precio ?? 0);
+        prop.habitaciones = parseInt(prop.habitaciones ?? prop.hab ?? 0);
+        prop.banos = parseFloat(prop.banos ?? prop.baños ?? 0);
+        prop.area_construida = parseFloat(prop.area_construida ?? prop.area ?? 0);
+        prop.area_terreno = parseFloat(prop.area_terreno ?? 0);
+        prop.cuota_mantenimiento = parseFloat(prop.cuota_mantenimiento ?? 0);
+        prop.ano_construccion = parseInt(prop.ano_construccion || prop.anio || 0);
+        
+        prop.direccion = String(prop.direccion || "").trim();
+        prop.estado_publicacion = String(prop.estado_publicacion || "").toLowerCase().trim();
+        prop.tipo_anuncio = String(prop.tipo_anuncio || "").toLowerCase().trim();
+        prop.tipo_propiedad = String(prop.tipo_propiedad || "").trim();
+        prop.situacion_propiedad = String(prop.situacion_propiedad || prop.tipo_listado || "").trim();
+        
+        const fotosPool = [];
+        if (prop.foto_principal) fotosPool.push(prop.foto_principal);
+        if (Array.isArray(prop.fotos)) fotosPool.push(...prop.fotos);
+        prop.fotos_unicas = [...new Set(fotosPool.filter(Boolean))];
+        
+        return prop;
+    }
+
+    function sanitizeHtmlString(unsafeText) {
+        if (!unsafeText) return '';
+        return String(unsafeText)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    function formatCompactPrice(priceValue) {
+        const num = Number(priceValue || 0);
+        if (num >= 1000000) return `S/. ${(num / 1000000).toFixed(2)}M`;
+        if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
+        return `S/. ${num}`;
+    }
+
+    function buildPriceHistogram() {
+        const histogramBox = document.getElementById('price-histogram-box');
+        if (!histogramBox) return;
+        histogramBox.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 24; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'histogram-bar-node in-range';
+            bar.style.height = Math.floor(Math.random() * 45) + 15 + 'px';
+            fragment.appendChild(bar);
+        }
+        histogramBox.appendChild(fragment);
     }
 
     // ==========================================================================
