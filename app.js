@@ -431,5 +431,10 @@ const AppInmobiliaria = (function() {
     };
 })();
 
-// Disparo seguro e inmune al ciclo de vida del DOM
-document.addEventListener("DOMContentLoaded", () => AppInmobiliaria.initialize());
+// Reemplaza las líneas finales de tu script por este disparador seguro
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        AppInmobiliaria.initialize();
+    }, 300); // 300ms de gracia garantizan que la caja #mapa ya exista físicamente
+});
+
