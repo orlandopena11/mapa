@@ -319,7 +319,7 @@ const AppInmobiliaria = (function() {
                     className: bubbleClass,
                     html: `<span>${compactPriceLabel}</span>`,
                     iconSize: [null, 30],
-                    iconAnchor:
+                    iconAnchor: [40, 12]
                 });
 
                 // Contenedor del Popup Clonado con Carrusel incluido dentro del Mapa
