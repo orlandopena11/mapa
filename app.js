@@ -370,19 +370,25 @@ const AppInmobiliaria = (function() {
 
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
-    // ==========================================================================
-    // PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y ENTRADA AL DOM)
-    // ==========================================================================
+    
+/**
+ * ==========================================================================
+ * PARTE: 5-5 (PIPELINE DE FILTRADO CONTROLADO LIBRE DE BUCLES INFINITOS)
+ * ==========================================================================
+ */
+    // Pipeline Analítico que procesa el cruce de tablas relacionales (Matrix Cross-Sheet)
     function executeFilterEnginePipeline() {
         const inputBuscador = document.getElementById('buscador-direccion') || document.getElementById('search-address');
         const querySearch = inputBuscador ? inputBuscador.value.toLowerCase().trim() : "";
 
         state.filteredData = state.propertiesData.filter(function(prop) {
+            // A) Filtro Reactivo de Texto (Santiago de Surco, El Derby, etc.)
             const direccionPropiedad = String(prop.direccion || '').toLowerCase();
             if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
 
-            const stPub = prop.estado_publicacion;
-            const tpAnuncio = prop.tipo_anuncio;
+            // B) Cruce relacional Estado Publicación y Anuncio (Inmune a mayúsculas)
+            const stPub = String(prop.estado_publicacion || '');
+            const tpAnuncio = String(prop.tipo_anuncio || '');
 
             if (state.activeFilters.transaccion === "venta") {
                 if (stPub !== "disponible" || (tpAnuncio !== "venta" && tpAnuncio !== "en venta")) return false;
@@ -392,40 +398,41 @@ const AppInmobiliaria = (function() {
                 if (stPub !== "vendida" && stPub !== "vendido") return false;
             }
 
+            // C) Rangos de Precios Básicos
             const price = prop.precio_base;
             if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
             if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
 
+            // D) Reglas de Dormitorios
             const beds = prop.habitaciones;
             if (state.activeFilters.beds > 0) {
                 if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
                 if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
             }
 
+            // E) Reglas de Baños
             if (state.activeFilters.baths > 0 && prop.banos < state.activeFilters.baths) return false;
 
             return true;
         });
 
+        // Ejecuta el renderizado de alto rendimiento en una sola pasada limpia
         renderAppContent();
 
+        // Auto-reubicación inteligente al primer resultado de forma pasiva sin disparar eventos
         if (state.filteredData.length > 0) {
-            const firstCoord = state.filteredData;
-            if (firstCoord && firstCoord.latitud && firstCoord.longitud) {
+            const firstCoord = state.filteredData[0];
+            if (firstCoord && firstCoord.latitud && firstCoord.longitud && state.map) {
                 state.map.setView([firstCoord.latitud, firstCoord.longitud], 14);
             }
         }
-
-        autoResetFlotantesFormFields();
-    }
-
-    function autoResetFlotantesFormFields() {
-        const prMin = document.getElementById('price-min'); if (prMin) prMin.value = '';
     }
 
     function attachInterfaceEventHandlers() {
         const inputBuscador = document.getElementById('buscador-direccion') || document.getElementById('search-address');
         if (inputBuscador) {
+            // Eliminamos cualquier listener previo duplicado para evitar ejecuciones en cascada
+            inputBuscador.removeEventListener('input', executeFilterEnginePipeline);
             inputBuscador.addEventListener('input', executeFilterEnginePipeline);
         }
 
@@ -450,7 +457,9 @@ const AppInmobiliaria = (function() {
     }
 
     function clearActiveMarkers() {
-        state.markersGroup.forEach(m => state.map.removeLayer(m));
+        state.markersGroup.forEach(m => {
+            if (state.map) state.map.removeLayer(m);
+        });
         state.markersGroup = [];
     }
 
@@ -464,13 +473,13 @@ const AppInmobiliaria = (function() {
             const mapSuccess = initMap();
             if (mapSuccess) {
                 attachInterfaceEventHandlers();
-                fetchSpreadsheetData(); // Ejecuta la llamada asíncrona de inmediato
+                fetchSpreadsheetData(); // Llama a los datos asíncronos una única vez al arrancar
             }
         }
     };
 })();
 
-// PUNTO DE ENTRADA DETERMINISTA DIRECTO: Cero MutationObservers inestables o tiempos muertos
+// PUNTO DE ENTRADA DETERMINISTA DIRECTO LIBRE DE BUCLES
 document.addEventListener("DOMContentLoaded", function() {
     AppInmobiliaria.initialize();
 });
