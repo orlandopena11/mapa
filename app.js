@@ -330,7 +330,7 @@ const AppInmobiliaria = (function() {
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
                     iconSize: [null, 30],
-                    iconAnchor:
+                    iconAnchor: [40, 12]
                 });
 
                 const popupRoot = document.createElement('div');
