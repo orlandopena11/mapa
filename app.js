@@ -354,19 +354,18 @@ const AppInmobiliaria = (function() {
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
 
-/**
- * ==========================================================================
- * PARTE: 5-5 (VERSION CORREGIDA CON OBSERVADOR DE INTERFAZ DETERMINISTA)
- * ==========================================================================
- */
-    // Pipeline Analítico que procesa el cruce de tablas relacionales (Matrix Cross-Sheet)
+    // ==========================================================================
+    // PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y ENTRADA AL DOM)
+    // ==========================================================================
     function executeFilterEnginePipeline() {
         const querySearch = document.getElementById('buscador-direccion').value.toLowerCase().trim();
 
         state.filteredData = state.propertiesData.filter(function(prop) {
+            // A) Filtro Reactivo de Texto (Santiago de Surco, El Derby, etc.)
             const direccionPropiedad = String(prop.direccion || '').toLowerCase();
             if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
 
+            // B) Cruce relacional Estado Publicación y Anuncio (Inmune a mayúsculas)
             const stPub = prop.estado_publicacion;
             const tpAnuncio = prop.tipo_anuncio;
 
@@ -378,25 +377,27 @@ const AppInmobiliaria = (function() {
                 if (stPub !== "vendida" && stPub !== "vendido") return false;
             }
 
+            // C) Rangos de Precios Básicos
             const price = prop.precio_base;
             if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
             if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
 
+            // D) Reglas de Dormitorios
             const beds = prop.habitaciones;
             if (state.activeFilters.beds > 0) {
                 if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
                 if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
             }
 
+            // E) Reglas de Baños
             if (state.activeFilters.baths > 0 && prop.banos < state.activeFilters.baths) return false;
-            if (state.activeFilters.types.length > 0 && !state.activeFilters.types.includes(prop.tipo_propiedad)) return false;
-            if (state.activeFilters.tour3d && !prop.tour_3d) return false;
 
             return true;
         });
 
         renderAppContent();
 
+        // Auto-reubicación inteligente al primer resultado
         if (state.filteredData.length > 0) {
             const firstCoord = state.filteredData[0];
             if (firstCoord && firstCoord.latitud && firstCoord.longitud) {
@@ -441,20 +442,24 @@ const AppInmobiliaria = (function() {
         state.markersGroup = [];
     }
 
+    // Exposición de puente global seguro para que el index original reciba la consulta JSONP externa
+    window.renderizarMapaZillow = function() {
+        executeFilterEnginePipeline();
+    };
+
+    // API Pública de Inicialización Profesional
     return {
         initialize: function() {
             const mapSuccess = initMap();
             if (mapSuccess) {
                 attachInterfaceEventHandlers();
-                fetchSpreadsheetData();
-                return true;
+                fetchSpreadsheetData(); // DETERMINISTA: Ejecuta la llamada inmediatamente tras validar el mapa
             }
-            return false;
         }
     };
 })();
 
-// OBSERVADOR DE ELEMENTOS NATAL: Inicializa la app inmediatamente cuando la caja entra al DOM
+// OBSERVADOR DE ELEMENTOS: Despierta la aplicación sin retardos artificiales
 (function() {
     function verificarYDespertarAplicacion() {
         if (document.getElementById('mapa')) {
@@ -465,9 +470,9 @@ const AppInmobiliaria = (function() {
     }
 
     if (!verificarYDespertarAplicacion()) {
-        const supervisorDOM = new MutationObserver(function(mutations, observer) {
+        const supervisorDOM = new MutationObserver(function(mutations, supervisor) {
             if (verificarYDespertarAplicacion()) {
-                observer.disconnect(); // Desconexión inmediata para liberar RAM
+                supervisor.disconnect(); // Liberación estricta de RAM
             }
         });
         supervisorDOM.observe(document.body, { childList: true, subtree: true });
