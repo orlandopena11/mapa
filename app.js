@@ -329,8 +329,11 @@ const AppInmobiliaria = (function() {
                 const bubbleMarkerIcon = L.divIcon({
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
-                    iconSize: [null, 30],
-                    iconAnchor: [40, 12]
+
+                    // Configuración recomendada para centrado perfecto de píldoras horizontales
+                    iconSize: [null, 30], 
+                    iconAnchor: [40, 15] // 40px a la izquierda (mitad de un ancho estimado de 80px) y 15px hacia arriba (mitad exacta de 30px de alto)
+
                 });
 
                 const popupRoot = document.createElement('div');
