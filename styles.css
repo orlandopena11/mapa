@@ -1,21 +1,28 @@
 /* ==========================================================================
-   VARIABLES GLOBALES (Diseño Moderno y Altamente Mantenible)
+   PARTE: 1-5 (VARIABLES Y RESETS NATIVOS)
+   Arquitectura de Diseño Fluido Estilo Zillow V2 - Sin Colisiones de Cascada
    ========================================================================== */
+
 :root {
+    /* Paleta de Colores Oficiales */
     --azul-zillow: #006aff;
     --azul-oscuro: #002e50;
+    --rojo-alerta: #d92323;
+    --gris-neutro: #718096;
     --gris-fondo: #f6f6f9;
     --gris-borde: #e2e8f0;
+    --blanco: #ffffff;
+    
+    /* Tipografía y Contraste Semántico */
     --texto-principal: #111827;
     --texto-secundario: #475569;
-    --blanco: #ffffff;
+    
+    /* Capas de Sombras Flotantes */
     --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
     --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* ==========================================================================
-   RESETS VISUALES (Previene colisiones estructurales)
-   ========================================================================== */
+/* Reset Estructural Obligatorio */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -30,6 +37,7 @@ body, html {
     overflow: hidden;
 }
 
+/* Contenedor Semántico Global */
 .app-container {
     display: flex;
     flex-direction: column;
@@ -38,8 +46,10 @@ body, html {
 }
 
 /* ==========================================================================
-   1. BARRA SUPERIOR FIJA CON LOGO DINÁMICO Y CONTROLES
+   PARTE: 2-5 (BARRA SUPERIOR Y SPLIT-VIEW)
+   Estructuración del Layout de Distribución de Pantalla Dividida
    ========================================================================== */
+
 .navbar-global {
     flex-shrink: 0;
     display: flex;
@@ -58,210 +68,7 @@ body, html {
     object-fit: contain;
 }
 
-.search-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-grow: 1;
-    position: relative;
-}
-
-.search-input {
-    padding: 10px 16px;
-    border: 1px solid var(--gris-borde);
-    border-radius: 24px;
-    font-size: 14px;
-    width: 240px;
-    transition: border-color 0.2s;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: var(--azul-zillow);
-}
-
-/* Menús Desplegables de los Filtros Avanzados */
-.filter-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.filter-btn {
-    padding: 10px 16px;
-    background-color: var(--blanco);
-    border: 1px solid var(--gris-borde);
-    border-radius: 24px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--texto-secundario);
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-btn:hover, .filter-btn.active {
-    border-color: var(--azul-zillow);
-    color: var(--azul-zillow);
-}
-
-.dropdown-content-panel {
-    display: none;
-    position: absolute;
-    top: 45px;
-    left: 0;
-    background-color: var(--blanco);
-    min-width: 280px;
-    max-height: 480px;
-    overflow-y: auto;
-    border: 1px solid var(--gris-borde);
-    border-radius: 12px;
-    box-shadow: var(--shadow-card);
-    padding: 16px;
-    z-index: 1100;
-}
-
-.dropdown-content-panel.show {
-    display: block;
-}
-
-.dropdown-content-panel--large {
-    min-width: 360px;
-    right: 0;
-    left: auto;
-}
-
-/* Elementos de Formulario de Filtros */
-.filter-section-title {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: var(--texto-principal);
-}
-
-.filter-group-options {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.filter-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--texto-secundario);
-    cursor: pointer;
-}
-
-.segmented-control-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    background-color: var(--gris-fondo);
-    padding: 4px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-}
-
-.segmented-btn {
-    flex: 1;
-    min-width: 45px;
-    padding: 6px 10px;
-    background: transparent;
-    border: none;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--texto-secundario);
-    cursor: pointer;
-    border-radius: 6px;
-    transition: background-color 0.2s, color 0.2s;
-    text-align: center;
-}
-
-.segmented-btn.active {
-    background-color: var(--blanco);
-    color: var(--azul-zillow);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* Gráfico de Histograma del Filtro de Precios */
-.histogram-visual-container {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    height: 60px;
-    margin-bottom: 12px;
-    padding: 0 4px;
-}
-
-.histogram-bar-node {
-    flex: 1;
-    margin: 0 1px;
-    background-color: #bad5ff;
-    border-radius: 2px 2px 0 0;
-    transition: background-color 0.2s;
-}
-
-.histogram-bar-node.in-range {
-    background-color: var(--azul-zillow);
-}
-
-.range-inputs-inputs-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 14px;
-}
-
-.range-box-input {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--gris-borde);
-    border-radius: 6px;
-    font-size: 13px;
-}
-
-/* Botones de acción del panel expandido */
-.panel-action-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid var(--gris-borde);
-    padding-top: 12px;
-    margin-top: 12px;
-    gap: 10px;
-}
-
-.action-link-btn {
-    background: none;
-    border: none;
-    color: var(--azul-zillow);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.action-submit-btn {
-    background-color: var(--azul-zillow);
-    color: var(--blanco);
-    border: none;
-    padding: 8px 16px;
-    border-radius: 24px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.action-submit-btn:hover {
-    background-color: var(--azul-oscuro);
-}
-/* ==========================================================================
-   2. VISTA DIVIDIDA (Split-View de Caja Modular)
-   ========================================================================== */
+/* Core del Split-View (Mapa Izquierda / Catálogo Derecha) */
 .split-view {
     display: flex;
     flex: 1;
@@ -300,7 +107,7 @@ body, html {
     color: var(--texto-principal);
 }
 
-/* Rejilla Grid Responsiva */
+/* Rejilla Grid Responsiva Flex-Auto */
 .properties-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -308,295 +115,272 @@ body, html {
 }
 
 /* ==========================================================================
-   3. TARJETAS INMOBILIARIAS Y MICRO-CARRUSEL (ESTIRO ZILLOW V2)
+   PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
+   Arquitectura del Riel del Deslizador y Animaciones de Transición Fluida
    ========================================================================== */
-.property-card {
+
+.tarjeta-casa {
     background-color: var(--blanco);
     border: 1px solid var(--gris-borde);
     border-radius: 12px;
     overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
     height: 380px;
     position: relative;
 }
 
-.property-card:hover {
+.tarjeta-casa:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-card);
 }
 
-.card-image-box {
+/* Viewport Rígido del Carrusel */
+.contenedor-foto {
     width: 100%;
-    height: 180px;
+    height: 200px;
     background-color: var(--gris-fondo);
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
 }
 
-.carousel-track-container {
-    width: 100%;
+/* Riel Continuo Desplazable por Transform */
+.carrusel-imagenes {
+    display: flex;
     height: 100%;
-    position: relative;
+    width: 100%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 }
 
-.carousel-img {
-    width: 100%;
+.carrusel-imagenes img {
     height: 100%;
     object-fit: cover;
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 0;
+    flex-shrink: 0;
 }
 
-.carousel-img--active {
-    display: block;
-}
-
-.carousel-nav-btn {
+/* Botones de Navegación Atenuados del Carrusel */
+.flecha-carrusel {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     background-color: rgba(0, 0, 0, 0.45);
     color: var(--blanco);
     border: none;
-    width: 26px;
-    height: 34px;
+    width: 28px;
+    height: 36px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: bold;
     opacity: 0;
     transition: opacity 0.2s ease, background-color 0.2s ease;
     z-index: 15;
 }
 
-.carousel-nav-btn:hover {
+.flecha-carrusel:hover {
     background-color: rgba(0, 0, 0, 0.75);
 }
 
-.carousel-nav-btn--prev {
+.flecha-izq {
     left: 0;
     border-radius: 0 4px 4px 0;
 }
 
-.carousel-nav-btn--next {
+.flecha-der {
     right: 0;
     border-radius: 4px 0 0 4px;
 }
 
-.property-card:hover .carousel-nav-btn,
-.popup-custom-container:hover .carousel-nav-btn {
+/* Revelado Reactivo de Flechas al Pasar el Cursor */
+.contenedor-foto:hover .flecha-carrusel {
     opacity: 1;
 }
 
-/* Capas flotantes Zillow */
-.card-badge {
+/* Contenedor Flotante Central de Puntos (Dots Indicadores) */
+.indicadores-carrusel {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 4px 8px;
+    border-radius: 10px;
+}
+
+.punto-indicador {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.punto-indicador.activo {
+    background-color: var(--blanco);
+    transform: scale(1.2);
+}
+
+/* ==========================================================================
+   PARTE: 4-5 (CAPAS FLOTANTES Y DETALLE)
+   Diseño de Etiquetas Informativas Coincidentes con la Captura Real de Zillow
+   ========================================================================== */
+
+/* Badges de Estado (Esquina Superior Izquierda) */
+.badge {
     position: absolute;
     top: 10px;
     left: 10px;
-    background-color: var(--blanco);
-    color: var(--azul-oscuro);
+    background-color: var(--gris-neutro);
+    color: var(--blanco);
     padding: 4px 8px;
     font-size: 11px;
-    font-weight: bold;
+    font-weight: 700;
     border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     z-index: 20;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.card-badge--new {
-    background-color: #d92323;
-    color: var(--blanco);
+.badge-nuevo {
+    background-color: var(--rojo-alerta);
 }
 
-.card-fav-btn {
+.badge-vendido {
+    background-color: var(--gris-neutro);
+}
+
+/* Botón Favorito de Corazón Flotante (Esquina Superior Derecha) */
+.corazon-favorito {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.85);
     border: none;
     border-radius: 50%;
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 18px;
     color: var(--texto-secundario);
-    transition: transform 0.2s, background-color 0.2s, color 0.2s;
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
     z-index: 20;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.card-fav-btn:hover {
-    transform: scale(1.15);
-    background: var(--blanco);
+.corazon-favorito:hover {
+    transform: scale(1.1);
+    background-color: var(--blanco);
 }
 
-.card-fav-btn--active {
-    color: #d92323;
+.corazon-favorito.activo {
+    color: var(--rojo-alerta);
 }
 
-.card-info-banner {
+/* Letrero Descriptivo Atenuado (Pie Interno de la Foto) */
+.letrero-descriptivo {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
     color: var(--blanco);
-    padding: 16px 12px 6px 12px;
+    padding: 20px 12px 8px 12px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     z-index: 10;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.card-content {
+/* Bloque Inferior de Contenido de Texto */
+.datos-casa {
     padding: 16px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     flex: 1;
 }
 
-.prop-price {
+.precio {
     font-size: 22px;
     font-weight: 800;
     color: var(--texto-principal);
-    margin-bottom: 4px;
-}
-
-.prop-specs {
-    font-size: 13px;
-    color: var(--texto-secundario);
-    margin-bottom: 8px;
-}
-
-.prop-address {
-    font-size: 13px;
-    line-height: 1.4;
-    color: var(--texto-secundario);
+    letter-spacing: -0.5px;
 }
 
 /* ==========================================================================
-   4. MARCADORES DEL MAPA (BURBUJAS DE PRECIO NATIIVAS)
+   PARTE: 5-5 (BURBUJAS MAPA Y POPUP INJECT)
+   Sobreescrituras Estrictas de Leaflet para Inyección Limpia de Tarjetas Dom
    ========================================================================== */
-.marker-bubble {
+
+/* Píldoras de Precio de Alta Especificidad NAtiva */
+div.leaflet-marker-icon.map-price-pill {
     background-color: var(--azul-oscuro);
     color: var(--blanco);
-    font-size: 12px;
-    font-weight: bold;
-    text-align: center;
-    line-height: 24px;
-    border-radius: 12px;
-    padding: 0 10px;
-    white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    border: 1px solid var(--blanco);
-    transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-.marker-bubble:hover {
-    transform: scale(1.08);
-}
-
-.marker-bubble--new {
-    background-color: #d92323;
-}
-
-/* Sobreescritura de Contenedor de Popups de Leaflet para el Carrusel */
-.leaflet-popup-content-wrapper {
-    border-radius: 12px;
-    padding: 0;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.leaflet-popup-content {
-    margin: 0 !important;
-    width: 250px !important;
-}
-
-.popup-custom-container {
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-}
-
-.popup-custom-container .card-image-box {
-    height: 135px;
-}
-
-.popup-custom-container .card-content {
-    padding: 10px 12px;
-}
-
-.popup-custom-container .prop-price {
-    font-size: 18px;
-    margin-bottom: 2px;
-}
-/* ==========================================================================
-   BURBUJAS DE PRECIO ESTILO ZILLOW V2 (ALTA ESPECIFICIDAD REFORZADA)
-   ========================================================================== */
-div.leaflet-marker-icon.map-price-pill, 
-div.leaflet-marker-icon.marker-bubble {
-    background-color: #002e50; /* Azul oscuro corporativo de Zillow */
-    color: #ffffff;            /* Texto blanco */
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
     font-size: 12px;
     font-weight: bold;
     text-align: center;
-    line-height: 26px;        /* Centrado vertical perfecto */
-    border-radius: 14px;      /* Forma de píldora */
-    padding: 0 10px;          /* Espaciado horizontal adaptativo */
-    white-space: nowrap;      /* Evita saltos de línea */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    border: 1px solid #ffffff; /* Borde blanco nítido */
+    border-radius: 14px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--blanco);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 60px;
-    height: 28px;
-    overflow: visible;        /* Permite que el texto respire */
     transition: transform 0.15s ease, background-color 0.15s ease;
+    cursor: pointer;
     z-index: 1000;
 }
 
-/* Estado dinámico para registros destacados marcados como 'Nuevo' */
-div.leaflet-marker-icon.map-price-pill.nuevo, 
-div.leaflet-marker-icon.marker-bubble--new {
-    background-color: #d92323; /* Rojo alerta Zillow */
+div.leaflet-marker-icon.map-price-pill.nuevo {
+    background-color: var(--rojo-alerta);
 }
 
-/* Estado dinámico para registros inactivos marcados como 'Vendido' o 'Vendida' */
-div.leaflet-marker-icon.map-price-pill.vendido {
-    background-color: #718096; /* Gris neutro */
-}
-
-/* Efecto hover suave al pasar el cursor sobre la píldora en el mapa */
-div.leaflet-marker-icon.map-price-pill:hover, 
-div.leaflet-marker-icon.marker-bubble:hover {
+div.leaflet-marker-icon.map-price-pill:hover {
     transform: scale(1.1);
-    background-color: #006aff; /* Azul encendido Zillow */
-    cursor: pointer;
+    background-color: var(--azul-zillow);
     z-index: 2000;
 }
 
-/* Asegura que las etiquetas internas span hereden la visibilidad blanca limpia */
-div.leaflet-marker-icon.map-price-pill span, 
-div.leaflet-marker-icon.marker-bubble span {
-    color: #ffffff;
+div.leaflet-marker-icon.map-price-pill span {
+    color: var(--blanco);
     font-weight: 700;
-    display: block;
-    pointer-events: none; /* Evita que el texto interfiera con el clic del marcador */
+    pointer-events: none; /* Evita interrupción del clic por capas internas */
+}
+
+/* Reseteo Quirúrgico de los Contenedores Nativos de Leaflet Popups */
+.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.zillow-custom-popup-wrapper .leaflet-popup-content {
+    margin: 0;
+    width: 280px; /* Dimensionamiento adaptativo idéntico al catálogo */
+}
+
+/* Adaptación Milimétrica de la Tarjeta al ser Inyectada en el Popup */
+.zillow-custom-popup-wrapper .tarjeta-casa.popup-card {
+    border: none;
+    border-radius: 0;
+    height: 320px; /* Compactación vertical para optimizar espacio del mapa */
+}
+
+.zillow-custom-popup-wrapper .tarjeta-casa.popup-card .contenedor-foto {
+    height: 150px;
 }
