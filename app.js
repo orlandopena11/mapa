@@ -365,10 +365,12 @@ function procesarDatosDelMotor(data) {
 
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
+    
     // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
     if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
         window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        inicializarEventosDeFiltros();
         
         // Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
         window.map.on('moveend', renderizarMapaZillow);
