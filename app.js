@@ -220,16 +220,17 @@ function crearComponenteTarjetaZillow(propiedad) {
     return tarjeta;
 }
 
-// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS)
+// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS ENLAZADOS)
 /**
  * CONTROL DE RENDERIZADO DE BURBUJAS DINÁMICAS Y POPUPS MODULARES EN LEAFLET
- * Implementa centrado geométrico nativo rígido mediante L.point para mitigar desbordes.
+ * Vincula el componente de micro-carrusel circular dinámico directamente sobre el mapa.
  */
 
 let capaMarcadores = null;
 
 function renderizarMapaZillow() {
-    if (!window.map) return;
+    // Vinculación estricta al ID nativo del HTML: 'map-instance'
+    if (!window.map || !document.getElementById('map-instance')) return;
 
     if (!capaMarcadores) {
         capaMarcadores = L.layerGroup().addTo(window.map);
@@ -237,7 +238,7 @@ function renderizarMapaZillow() {
         capaMarcadores.clearLayers();
     }
 
-    // Filtrado reactivo de las propiedades en base al estado de memoria
+    // Filtrado reactivo de las propiedades basado en el estado seguro de memoria
     const filtradas = state.propiedades.filter(prop => {
         const matchesEstado = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
         return matchesEstado;
@@ -247,12 +248,13 @@ function renderizarMapaZillow() {
         if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio);
+        // Si el estado es 'Nuevo', la píldora se pintará de rojo alerta (#d92323) automáticamente por CSS
         const esNuevo = prop.estadoListado === 'Nuevo';
         const clasePill = esNuevo ? 'map-price-pill nuevo' : 'map-price-pill';
 
         const htmlBurbuja = `<div class="${clasePill}"><span>${precioCompacto}</span></div>`;
 
-        // Configuración geométrica estricta solicitada para evitar desalineación
+        // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({
             html: htmlBurbuja,
             className: 'custom-leaflet-container',
@@ -262,11 +264,11 @@ function renderizarMapaZillow() {
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // Evento de apertura reactiva del Popup inyectando el componente tarjeta modular
+        // Apertura interactiva del popup inyectando la misma fábrica pura de micro-carruseles circulares
         marcador.on('click', () => {
             window.map.panTo(marcador.getLatLng());
 
-            // Construimos la misma estructura de tarjeta con carrusel operativo
+            // Fabricamos la tarjeta modular con capacidad de navegación de 5 fotos nativa
             const tarjetaPopup = crearComponenteTarjetaZillow(prop);
             tarjetaPopup.classList.add('popup-card');
 
@@ -281,21 +283,22 @@ function renderizarMapaZillow() {
     });
 }
 
-// PARTE: 5-5 (REJILLA Y CONTROLADOR CORE)
+// PARTE: 5-5 (REJILLA Y CONTROLADOR CORE CONFIGURADO)
 /**
- * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED
- * Utiliza DocumentFragment para agrupar mutaciones del DOM de forma eficiente y ordenada.
+ * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
+ * Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
  */
 
 function renderizarCatálogoTarjetas() {
-    const contenedorRejilla = document.getElementById('contenedor-tarjetas');
+    // Vinculación corregida apuntando de forma natural al ID: 'properties-grid-target'
+    const contenedorRejilla = document.getElementById('properties-grid-target');
     if (!contenedorRejilla) return;
 
-    // Liberación estricta de memoria antes de vaciar la pantalla (Previene fugas)
+    // Garbage Collector interno activo: Remueve de la memoria RAM los Listeners de tarjetas previas
     while (contenedorRejilla.firstChild) {
         const id = contenedorRejilla.firstChild.getAttribute('data-id');
         if (id && state.limpiadoresDOM.has(id)) {
-            state.limpiadoresDOM.get(id)(); // Remueve el Event Listener explícitamente
+            state.limpiadoresDOM.get(id)(); // Remoción limpia garantizada
             state.limpiadoresDOM.delete(id);
         }
         contenedorRejilla.removeChild(contenedorRejilla.firstChild);
@@ -303,12 +306,11 @@ function renderizarCatálogoTarjetas() {
 
     const fragmento = document.createDocumentFragment();
     
-    // Filtrado idéntico al del mapa para mantener coherencia visual absoluta
     const filtradas = state.propiedades.filter(prop => {
         return state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
     });
 
-    // Inyección optimizada de tarjetas en el fragmento flotante
+    // Inyección atómica de los nodos puros en el fragmento flotante
     filtradas.forEach(prop => {
         const tarjetaNode = crearComponenteTarjetaZillow(prop);
         fragmento.appendChild(tarjetaNode);
@@ -316,45 +318,45 @@ function renderizarCatálogoTarjetas() {
 
     contenedorRejilla.appendChild(fragmento);
     
-    // Actualización del letrero contador dinámico
-    const contador = document.getElementById('contador-propiedades');
+    // Vinculación corregida apuntando de forma natural al ID contador: 'results-counter'
+    const contador = document.getElementById('results-counter');
     if (contador) {
         contador.textContent = `${filtradas.length} resultados disponibles`;
     }
 }
 
 /**
- * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback global de recepción de red
+ * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
  */
 function procesarDatosDelMotor(data) {
-    console.log("[ESPÍA ESCONCOR] Datos crudos del backend interceptados con éxito:", data);
+    console.log("[ESPÍA ESCONCOR] Intercepción de red exitosa. Datos crudos:", data);
     
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("[ESPÍA ESCONCOR] Error catastrófico: Estructura de datos ilegible.");
+        console.error("[ESPÍA ESCONCOR] Formato del backend corrupto o ilegible.");
         return;
     }
 
-    // Normalización masiva hacia el estado controlado protegido
+    // Actualización inmutable del estado central protegido
     state.propiedades = data.propiedades.map(normalizarPropiedad);
     
-    // Disparo sincronizado de ambas vistas core de la aplicación
+    // Disparo unificado y sincronizado de ambas vistas del Split-View
     renderizarMapaZillow();
     renderizarCatálogoTarjetas();
     
-    console.log("[ESPÍA ESCONCOR] Pipeline finalizado. Estado de memoria purificado.");
+    console.log("[ESPÍA ESCONCOR] Proceso finalizado. Interfaz de usuario sincronizada perfectamente.");
 }
 
-// Inicializador estructural al levantarse el documento
+// Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
-    // Inicialización simulada del mapa de Leaflet
-    if (typeof L !== 'undefined' && document.getElementById('mapa')) {
-        window.map = L.map('mapa', { zoomControl: true }).setView([-12.125, -76.995], 13);
+    // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
+    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
+        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
         
-        // Sincronización del mapa con los filtros al arrastrar o cambiar zoom
+        // Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
         window.map.on('moveend', renderizarMapaZillow);
     }
     
-    // Carga inicial del flujo de datos
+    // Disparo inicial asíncronizado de red
     cargarDatosDesdeAppsScript();
 });
