@@ -354,9 +354,12 @@ const AppInmobiliaria = (function() {
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
 
-       // ==========================================================================
-    // PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y ENTRADA AL DOM)
-    // ==========================================================================
+/**
+ * ==========================================================================
+ * PARTE: 5-5 (VERSION CORREGIDA CON OBSERVADOR DE INTERFAZ DETERMINISTA)
+ * ==========================================================================
+ */
+    // Pipeline Analítico que procesa el cruce de tablas relacionales (Matrix Cross-Sheet)
     function executeFilterEnginePipeline() {
         const querySearch = document.getElementById('buscador-direccion').value.toLowerCase().trim();
 
@@ -396,7 +399,7 @@ const AppInmobiliaria = (function() {
 
         if (state.filteredData.length > 0) {
             const firstCoord = state.filteredData[0];
-            if (firstCoord.latitud && firstCoord.longitud) {
+            if (firstCoord && firstCoord.latitud && firstCoord.longitud) {
                 state.map.setView([firstCoord.latitud, firstCoord.longitud], 14);
             }
         }
@@ -444,15 +447,29 @@ const AppInmobiliaria = (function() {
             if (mapSuccess) {
                 attachInterfaceEventHandlers();
                 fetchSpreadsheetData();
-            } else {
-                console.error("Fallo estructural: El contenedor HTML #mapa no se encuentra listo.");
+                return true;
             }
+            return false;
         }
     };
 })();
 
-// PUNTO DE ENTRADA LÓGICO Y DETERMINISTA: Cero parches de tiempo, espera al DOM nativo
-document.addEventListener("DOMContentLoaded", function() {
-    AppInmobiliaria.initialize();
-});
-                      
+// OBSERVADOR DE ELEMENTOS NATAL: Inicializa la app inmediatamente cuando la caja entra al DOM
+(function() {
+    function verificarYDespertarAplicacion() {
+        if (document.getElementById('mapa')) {
+            AppInmobiliaria.initialize();
+            return true;
+        }
+        return false;
+    }
+
+    if (!verificarYDespertarAplicacion()) {
+        const supervisorDOM = new MutationObserver(function(mutations, observer) {
+            if (verificarYDespertarAplicacion()) {
+                observer.disconnect(); // Desconexión inmediata para liberar RAM
+            }
+        });
+        supervisorDOM.observe(document.body, { childList: true, subtree: true });
+    }
+})();
