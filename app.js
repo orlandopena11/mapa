@@ -28,6 +28,21 @@ function cargarDatosDesdeAppsScript() {
     document.body.appendChild(script);
 }
 
+// PARTE: 1-5 (EXTENSIÓN DE CONTROL DE FILTROS EN EL ESTADO)
+/**
+ * Modelo de datos unificado para la captura reactiva de parámetros de búsqueda.
+ */
+state.filtros = {
+    estado: 'Venta',       // Tipo de Transacción (Radio: Venta, Alquiler, Vendido)
+    precioMin: 0,          // Rango de precio mínimo
+    precioMax: 1300000,    // Rango de precio máximo
+    camas: 0,              // Cantidad mínima de dormitorios (0 = Cualquiera)
+    camasExactas: false,   // Switch de coincidencia exacta para dormitorios
+    baños: 0,              // Cantidad mínima de baños completos
+    tiposPropiedad: new Set(['Casa', 'Apartamento']) // Tipos activos para el filtrado multidimensional
+};
+
+
 // PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO)
 /**
  * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND
@@ -360,3 +375,209 @@ document.addEventListener("DOMContentLoaded", () => {
     // Disparo inicial asíncronizado de red
     cargarDatosDesdeAppsScript();
 });
+
+// PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
+/**
+ * GESTOR DE APERTURA, CIERRE Y CAPTURA REACTIVA DE FILTROS AVANZADOS
+ * Resuelve la interacción de menús y actualiza de forma inmutable el estado del sistema.
+ */
+
+function inicializarEventosDeFiltros() {
+    // 1. Control de apertura/cierre de los paneles desplegables (Dropdowns)
+    const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
+    
+    wrappers.forEach(wrapper => {
+        const boton = wrapper.querySelector('.filter-btn');
+        const panel = wrapper.querySelector('.dropdown-content-panel');
+        
+        if (!boton || !panel) return;
+        
+        boton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Cerramos todos los demás paneles para evitar colisiones visuales
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => {
+                if (p !== panel) p.classList.remove('show');
+            });
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                if (b !== boton) b.classList.remove('active');
+            });
+            
+            // Alternamos el estado del panel actual
+            panel.classList.toggle('show');
+            boton.classList.toggle('active');
+        });
+    });
+
+    // Cierre natural al hacer clic en cualquier zona vacía de la pantalla
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    });
+
+    // Evita que el menú se cierre solo al interactuar con los controles internos
+    document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
+        panel.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    // 2. FILTRO 2: Captura del Tipo de Transacción (Radio Buttons)
+    const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
+    radiosTransaccion.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            state.filtros.estado = e.target.value;
+            
+            // Actualizamos dinámicamente el letrero del botón principal
+            const btnStatus = document.getElementById('btn-filter-status');
+            if (btnStatus) btnStatus.textContent = `${e.target.parentElement.textContent.trim()} ▾`;
+            
+            ejecutarTuberíaSincronizada();
+        });
+    });
+
+    // 3. FILTRO 3: Captura del Rango de Precios (Inputs Numéricos)
+    const inputMinPrecio = document.getElementById('price-min');
+    const inputMaxPrecio = document.getElementById('price-max');
+    
+    const handlerPrecios = () => {
+        state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
+        state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
+        ejecutarTuberíaSincronizada();
+    };
+
+    if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
+    if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
+
+    // 4. FILTRO 4: Control Segmentado de Camas y Baños (Botones)
+    configurarSegmentado('row-beds', (valor) => {
+        state.filtros.camas = parseInt(valor);
+        ejecutarTuberíaSincronizada();
+    });
+
+    configurarSegmentado('row-baths', (valor) => {
+        state.filtros.baños = parseFloat(valor);
+        ejecutarTuberíaSincronizada();
+    });
+
+    const checkCamasExactas = document.getElementById('beds-exact');
+    if (checkCamasExactas) {
+        checkCamasExactas.addEventListener('change', (e) => {
+            state.filtros.camasExactas = e.target.checked;
+            ejecutarTuberíaSincronizada();
+        });
+    }
+
+    // 5. FILTRO 5: Tipo de Propiedad (Checkboxes Multiselect)
+    const checkSelectAll = document.getElementById('type-select-all');
+    const checkboxesTipo = document.querySelectorAll('.type-cb');
+
+    if (checkSelectAll) {
+        checkSelectAll.addEventListener('change', (e) => {
+            checkboxesTipo.forEach(cb => {
+                cb.checked = e.target.checked;
+                if (e.target.checked) {
+                    state.filtros.tiposPropiedad.add(cb.value);
+                } else {
+                    state.filtros.tiposPropiedad.delete(cb.value);
+                }
+            });
+            ejecutarTuberíaSincronizada();
+        });
+    }
+
+    checkboxesTipo.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                state.filtros.tiposPropiedad.add(e.target.value);
+            } else {
+                state.filtros.tiposPropiedad.delete(e.target.value);
+            }
+            
+            // Si deselecciona uno, desactivamos el "Seleccionar Todos" para mantener coherencia
+            if (!e.target.checked && checkSelectAll) checkSelectAll.checked = false;
+            ejecutarTuberíaSincronizada();
+        });
+    });
+
+    // 6. BOTONES DE ACCIÓN: Limpiador maestro y aplicador del menú expandido
+    const btnReset = document.getElementById('master-reset-btn');
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            inputMinPrecio.value = '';
+            inputMaxPrecio.value = '1300000';
+            if (checkSelectAll) checkSelectAll.checked = true;
+            
+            checkboxesTipo.forEach(cb => {
+                cb.checked = true;
+                state.filtros.tiposPropiedad.add(cb.value);
+            });
+            
+            state.filtros.precioMin = 0;
+            state.filtros.precioMax = 1300000;
+            
+            ejecutarTuberíaSincronizada();
+        });
+    }
+
+    const btnApply = document.getElementById('master-apply-btn');
+    if (btnApply) {
+        btnApply.addEventListener('click', () => {
+            // Cerramos el mega panel de filtros al presionar Aplicar
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        });
+    }
+}
+
+/**
+ * Helper modular nativo para gestionar la clase active en las filas de controles segmentados
+ */
+function configurarSegmentado(idContenedor, callback) {
+    const contenedor = document.getElementById(idContenedor);
+    if (!contenedor) return;
+    
+    contenedor.addEventListener('click', (e) => {
+        const botonNode = e.target.closest('.segmented-btn');
+        if (!botonNode) return;
+        
+        contenedor.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
+        botonNode.classList.add('active');
+        
+        const valorAtributo = botonNode.getAttribute('data-val');
+        callback(valorAtributo);
+    });
+}
+
+/**
+ * Filtro lógico multidimensional puro: Evalúa si un registro pasa todos los criterios activos
+ */
+function evaluarCriteriosDeFiltrado(prop) {
+    // A. Filtro por Tipo de Transacción
+    const matchTransaccion = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
+    
+    // B. Filtro por Rango de Precios
+    const matchPrecio = prop.precio >= state.filtros.precioMin && prop.precio <= state.filtros.precioMax;
+    
+    // C. Filtro por Dormitorios (Camas)
+    let matchCamas = true;
+    if (state.filtros.camas > 0) {
+        if (state.filtros.camasExactas) {
+            matchCamas = prop.habitaciones === state.filtros.camas;
+        } else {
+            matchCamas = prop.habitaciones >= state.filtros.camas;
+        }
+    }
+    
+    // D. Filtro por Tipo de Propiedad (Uso eficiente de Set.has)
+    const matchTipo = state.filtros.tiposPropiedad.size === 0 || state.filtros.tiposPropiedad.has(prop.tipoPropiedad || 'Casa');
+
+    return matchTransaccion && matchPrecio && matchCamas && matchTipo;
+}
+
+/**
+ * Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
+ */
+function ejecutarTuberíaSincronizada() {
+    // Redirigimos el renderizado del mapa para que consuma la lógica unificada
+    renderizarMapaZillow();
+    renderizarCatálogoTarjetas();
+}
