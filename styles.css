@@ -545,3 +545,49 @@ body, html {
     font-size: 18px;
     margin-bottom: 2px;
 }
+/* ==========================================================================
+   BURBUJAS DE PRECIO ESTILO ZILLOW V2 (CORRECCIÓN VISUAL DE CAPAS)
+   ========================================================================== */
+.map-price-pill, .marker-bubble {
+    background-color: #002e50; /* Azul oscuro corporativo de Zillow */
+    color: #ffffff;            /* Texto blanco de alta visibilidad */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 26px;        /* Centrado vertical perfecto del texto */
+    border-radius: 14px;      /* Forma de píldora redondeada */
+    padding: 0 10px;          /* Espaciado horizontal adaptativo */
+    white-space: nowrap;      /* Evita que el precio se rompa en dos líneas */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    border: 1px solid #ffffff; /* Borde blanco nítido de separación */
+    display: inline-block;
+    min-width: 55px;          /* Ancho mínimo para precios cortos */
+    height: 28px;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    z-index: 1000;
+}
+
+/* Estado dinámico para registros marcados como 'Nuevo' */
+.map-price-pill.nuevo, .marker-bubble--new {
+    background-color: #d92323; /* Rojo alerta Zillow */
+}
+
+/* Estado dinámico para registros marcados como 'Vendido' o 'Vendida' */
+.map-price-pill.vendido {
+    background-color: #718096; /* Gris neutro de inactividad */
+}
+
+/* Efecto hover suave al pasar el cursor sobre el precio en el mapa */
+.map-price-pill:hover, .marker-bubble:hover {
+    transform: scale(1.1);
+    background-color: #006aff; /* Cambia al azul encendido de Zillow */
+    cursor: pointer;
+    z-index: 2000;
+}
+
+/* Forzar que el texto interno herede el color blanco de forma correcta */
+.map-price-pill span, .marker-bubble span {
+    color: #ffffff;
+    display: block;
+}
