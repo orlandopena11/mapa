@@ -9,9 +9,33 @@ const AppInmobiliaria = (function() {
         map: null,
         markersGroup: [],
         propertiesData: [],
-        favoritosUsuario: [], // Almacén inmutable de identificadores únicos
-        activeListeners: [],  // Registro activo para recolección de basura
-        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
+        filteredData: [],
+        favoritosUsuario: [],
+        activeListeners: [],
+        activeFilters: {
+            transaccion: "venta",
+            priceMin: null,
+            priceMax: 1300000,
+            beds: 0,
+            bedsExact: false,
+            baths: 0,
+            types: [],
+            hoa: "any",
+            listTypes: ["Propietario publicado", "Agente listado", "Nueva construccion", "Ejecucion hipotecaria", "Subasta"],
+            tour3d: false,
+            parking: "any",
+            builtMin: null,
+            builtMax: null,
+            lotMin: null,
+            lotMax: null,
+            yearMin: null,
+            yearMax: null,
+            basement: false,
+            storage: false,
+            view: false,
+            days: "any"
+        },
+        cloudinaryBase: "https://cloudinary.com"
     };
 
     // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
@@ -25,76 +49,78 @@ const AppInmobiliaria = (function() {
             attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
         }).addTo(state.map);
     }
-    // 2. Conectividad Segura con Google Apps Script (Code.gs)
+
+    // 2. Conectividad Segura con Google Apps Script (JSONP)
     function fetchSpreadsheetData() {
         window.procesarDatosDelMotor = function(response) {
             if (response && response.propiedades) {
                 state.propertiesData = response.propiedades;
+                state.filteredData = [...response.propiedades];
+                buildPriceHistogram();
                 renderAppContent();
+                attachInterfaceEventHandlers();
             } else {
                 document.getElementById('results-counter').textContent = "No se encontraron propiedades.";
             }
             document.getElementById('jsonp-script-bridge')?.remove();
         };
 
-        const urlScript = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
-
+        const urlScript = "https://google.com";
         const scriptBridge = document.createElement('script');
         scriptBridge.id = 'jsonp-script-bridge';
         scriptBridge.src = urlScript;
-        scriptBridge.onerror = function() {
-            document.getElementById('results-counter').textContent = "Error al sincronizar la base de datos.";
-        };
-
         document.body.appendChild(scriptBridge);
     }
 
-    // 3. Formateador inteligente de URLs Cortas para Cloudinary
     function buildCloudinaryUrl(publicId) {
         if (!publicId) {
             return "https://unsplash.com";
         }
-        const cleanPublicId = String(publicId).trim().replace(/\s+/g, "_");
-        return `${state.cloudinaryBase}${cleanPublicId}`;
+        return `${state.cloudinaryBase}${String(publicId).trim().replace(/\s+/g, "_")}`;
     }
 
-    // 4. Formateador compacto para Burbujas de Precio (Ej: 250K o 1.13M)
     function formatCompactPrice(priceValue) {
         const num = Number(priceValue || 0);
-        if (num >= 1000000) {
-            return `S/. ${(num / 1000000).toFixed(2)}M`;
-        } else if (num >= 1000) {
-            return `S/. ${(num / 1000).toFixed(0)}K`;
-        }
+        if (num >= 1000000) return `S/. ${(num / 1000000).toFixed(2)}M`;
+        if (num >= 1000) return `S/. ${(num / 1000).toFixed(0)}K`;
         return `S/. ${num}`;
     }
 
-    // 5. Sanitizador de Datos (Blindaje absoluto contra ataques XSS)
     function sanitizeHtmlString(unsafeText) {
         if (!unsafeText) return '';
         return String(unsafeText)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
     }
-    // 6. Generador Dinámico de Micro-Carrusel Seguro e Infinito
+
+    function buildPriceHistogram() {
+        const histogramBox = document.getElementById('price-histogram-box');
+        if (!histogramBox) return;
+        histogramBox.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < 24; i++) {
+            const bar = document.createElement('div');
+            bar.className = 'histogram-bar-node in-range';
+            bar.style.height = `${Math.floor(Math.random() * 45) + 15}px`;
+            fragment.appendChild(bar);
+        }
+        histogramBox.appendChild(fragment);
+    }
+    // 6. Generador Dinámico de Micro-Carrusel Seguro (Doble Instancia: Rejilla y Popups)
     function buildSecureCarouselComponent(property) {
         const imageBox = document.createElement('div');
         imageBox.className = 'card-image-box';
 
+        // Estructuración del pool de 5 fotos del registro
         const imagesCollection = [];
-        if (property.foto_principal) {
-            imagesCollection.push(property.foto_principal);
-        }
+        if (property.foto_principal) imagesCollection.push(property.foto_principal);
+        
         if (property.imagenes_secundarias) {
-            const secondaryList = String(property.imagenes_secundarias).split(',');
-            secondaryList.forEach(img => {
-                if (img.trim()) imagesCollection.push(img.trim());
+            String(property.imagenes_secundarias).split(',').forEach(img => {
+                if (img.trim() && imagesCollection.length < 5) imagesCollection.push(img.trim());
             });
         }
-        if (imagesCollection.length === 0) imagesCollection.push("");
+        while (imagesCollection.length < 1) imagesCollection.push("");
 
         let activeIndex = 0;
         const totalImages = imagesCollection.length;
@@ -108,25 +134,20 @@ const AppInmobiliaria = (function() {
             imgElement.src = buildCloudinaryUrl(imgId);
             imgElement.className = 'carousel-img';
             imgElement.alt = 'Vivienda';
-            if (idx === 0) {
-                imgElement.classList.add('carousel-img--active');
-            }
+            if (idx === 0) imgElement.classList.add('carousel-img--active');
             trackContainer.appendChild(imgElement);
             imageNodes.push(imgElement);
         });
         imageBox.appendChild(trackContainer);
-        // Inyección de Capas Flotantes de Estado (Badge)
+
+        // Capas flotantes Zillow
         if (property.estado) {
             const badge = document.createElement('div');
-            badge.className = 'card-badge';
+            badge.className = String(property.estado).toLowerCase() === 'nuevo' ? 'card-badge card-badge--new' : 'card-badge';
             badge.textContent = sanitizeHtmlString(property.estado);
-            if (String(property.estado).toLowerCase() === 'nuevo') {
-                badge.classList.add('card-badge--new');
-            }
             imageBox.appendChild(badge);
         }
 
-        // Inyección de Frases Descriptivas del Inmueble
         if (property.frase_descriptiva) {
             const infoBanner = document.createElement('div');
             infoBanner.className = 'card-info-banner';
@@ -134,37 +155,33 @@ const AppInmobiliaria = (function() {
             imageBox.appendChild(infoBanner);
         }
 
-        // Botón de Favoritos Reactivo con mutación encapsulada
+        // Corazón reactivo inmutable
         const favButton = document.createElement('button');
         favButton.className = 'card-fav-btn';
-        const propertyKey = property.direccion; 
-        const isCurrentlyFav = state.favoritosUsuario.includes(propertyKey);
-        
-        favButton.textContent = isCurrentlyFav ? '♥' : '♡';
-        if (isCurrentlyFav) favButton.classList.add('card-fav-btn--active');
+        const propertyKey = property.direccion;
+        const isFav = state.favoritosUsuario.includes(propertyKey);
+        favButton.textContent = isFav ? '♥' : '♡';
+        if (isFav) favButton.classList.add('card-fav-btn--active');
 
-        const favClickHandler = function(event) {
-            event.stopPropagation();
-            event.preventDefault();
-            const isFav = state.favoritosUsuario.includes(propertyKey);
-            if (isFav) {
-                state.favoritosUsuario = state.favoritosUsuario.filter(key => key !== propertyKey);
+        const favClickHandler = function(e) {
+            e.stopPropagation(); e.preventDefault();
+            const index = state.favoritosUsuario.indexOf(propertyKey);
+            if (index > -1) {
+                state.favoritosUsuario = state.favoritosUsuario.filter(k => k !== propertyKey);
             } else {
                 state.favoritosUsuario = [...state.favoritosUsuario, propertyKey];
             }
             synchronizeFavoriteInterfaceNodes(propertyKey);
         };
-
         favButton.addEventListener('click', favClickHandler);
         state.activeListeners.push({ element: favButton, type: 'click', handler: favClickHandler });
         imageBox.appendChild(favButton);
 
-        // Flechas de Navegación Interactiva (Aritmética Modular Cíclica)
+        // Flechas con lógica aritmética modular
         if (totalImages > 1) {
             const prevBtn = document.createElement('button');
             prevBtn.className = 'carousel-nav-btn carousel-nav-btn--prev';
             prevBtn.textContent = '‹';
-
             const nextBtn = document.createElement('button');
             nextBtn.className = 'carousel-nav-btn carousel-nav-btn--next';
             nextBtn.textContent = '›';
@@ -175,14 +192,13 @@ const AppInmobiliaria = (function() {
                 imageNodes[activeIndex].classList.add('carousel-img--active');
             };
 
-            const prevHandler = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(-1); };
-            const nextHandler = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(1); };
+            const prevH = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(-1); };
+            const nextH = function(e) { e.stopPropagation(); e.preventDefault(); shiftCarouselIndex(1); };
 
-            prevBtn.addEventListener('click', prevHandler);
-            nextBtn.addEventListener('click', nextHandler);
-
-            state.activeListeners.push({ element: prevBtn, type: 'click', handler: prevHandler });
-            state.activeListeners.push({ element: nextBtn, type: 'click', handler: nextHandler });
+            prevBtn.addEventListener('click', prevH);
+            nextBtn.addEventListener('click', nextH);
+            state.activeListeners.push({ element: prevBtn, type: 'click', handler: prevH });
+            state.activeListeners.push({ element: nextBtn, type: 'click', handler: nextH });
 
             imageBox.appendChild(prevBtn);
             imageBox.appendChild(nextBtn);
@@ -190,27 +206,22 @@ const AppInmobiliaria = (function() {
 
         return imageBox;
     }
-    // Sincronizador de Interfaz Localizado para Favoritos
     function synchronizeFavoriteInterfaceNodes(targetKey) {
         const isFav = state.favoritosUsuario.includes(targetKey);
-        const activeButtons = document.querySelectorAll('.card-fav-btn');
-        
-        activeButtons.forEach(btn => {
-            const parentCard = btn.closest('.property-card') || btn.closest('.popup-custom-container');
-            if (parentCard) {
-                const addressNode = parentCard.querySelector('.prop-address');
+        document.querySelectorAll('.card-fav-btn').forEach(btn => {
+            const parent = btn.closest('.property-card') || btn.closest('.popup-custom-container');
+            if (parent) {
+                const addressNode = parent.querySelector('.prop-address');
                 if (addressNode && addressNode.textContent === targetKey) {
                     btn.textContent = isFav ? '♥' : '♡';
-                    if (isFav) {
-                        btn.classList.add('card-fav-btn--active');
-                    } else {
-                        btn.classList.remove('card-fav-btn--active');
-                    }
+                    if (isFav) btn.classList.add('card-fav-btn--active');
+                    else btn.classList.remove('card-fav-btn--active');
                 }
             }
         });
     }
-    // 7. Inyección de Alto Rendimiento en el DOM (Uso de DocumentFragments)
+
+    // 7. Renderizador de Rejilla y Burbujas DivIcon en el Mapa
     function renderAppContent() {
         const gridTarget = document.getElementById('properties-grid-target');
         const counterTarget = document.getElementById('results-counter');
@@ -219,86 +230,56 @@ const AppInmobiliaria = (function() {
         gridTarget.innerHTML = '';
         clearActiveMarkers();
 
-        counterTarget.textContent = `${state.propertiesData.length} Viviendas Disponibles`;
+        counterTarget.textContent = `${state.filteredData.length} Viviendas Disponibles`;
         const documentFragment = document.createDocumentFragment();
 
-        state.propertiesData.forEach(function(property) {
+        state.filteredData.forEach(function(property) {
             const safeAddress = sanitizeHtmlString(property.direccion);
             const safePrice = Number(property.precio_base || 0).toLocaleString('es-PE');
             const compactPriceLabel = formatCompactPrice(property.precio_base);
             
+            // Creación de Tarjeta Derecha
             const card = document.createElement('div');
             card.className = 'property-card';
-
-            const carouselModule = buildSecureCarouselComponent(property);
-            card.appendChild(carouselModule);
+            card.appendChild(buildSecureCarouselComponent(property));
 
             const contentBox = document.createElement('div');
             contentBox.className = 'card-content';
-
-            const priceDiv = document.createElement('div');
-            priceDiv.className = 'prop-price';
-            priceDiv.textContent = `S/. ${safePrice}`;
-            contentBox.appendChild(priceDiv);
-
-            const specsDiv = document.createElement('div');
-            specsDiv.className = 'prop-specs';
-            specsDiv.textContent = `${property.habitaciones || 0} bd | ${property.banos || 0} ba | ${property.area_construida || 0} m²`;
-            contentBox.appendChild(specsDiv);
-
-            const addressDiv = document.createElement('div');
-            addressDiv.className = 'prop-address';
-            addressDiv.textContent = safeAddress;
-            contentBox.appendChild(addressDiv);
-
+            contentBox.innerHTML = `
+                <div>
+                    <div class="prop-price">S/. ${safePrice}</div>
+                    <div class="prop-specs">${property.habitaciones || 0} bd | ${property.banos || 0} ba | ${property.area_construida || 0} m²</div>
+                    <div class="prop-address">${safeAddress}</div>
+                </div>
+            `;
             card.appendChild(contentBox);
             documentFragment.appendChild(card);
 
-            // Inyección de Burbujas Dinámicas en el Mapa
+            // Marcadores e Inyección de Popups Interactivos a la Izquierda
             if (property.latitud && property.longitud) {
-                const isNewProperty = String(property.estado).toLowerCase() === 'nuevo';
-
-                //  CÓDIGO CORREGIDO (Centrado perfecto de la píldora)
+                const isNew = String(property.estado).toLowerCase() === 'nuevo';
                 const bubbleMarkerIcon = L.divIcon({
-                className: isNewProperty ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
-                html: `<span>${compactPriceLabel}</span>`,
-                iconSize: null, // CSS autogestiona el tamaño dinámico
-                iconAnchor: [35, 12] // Desplazamiento simétrico para centrar la píldora
-            });
+                    className: isNew ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
+                    html: `<span>${compactPriceLabel}</span>`,
+                    iconSize:,
+                    iconAnchor: [30, 12]
+                });
 
-                const popupRootContainer = document.createElement('div');
-                popupRootContainer.className = 'popup-custom-container';
+                const popupRoot = document.createElement('div');
+                popupRoot.className = 'popup-custom-container';
+                popupRoot.appendChild(buildSecureCarouselComponent(property));
 
-                const popupCarouselModule = buildSecureCarouselComponent(property);
-                const popupContentBox = document.createElement('div');
-                popupContentBox.className = 'card-content';
-
-                const pPrice = document.createElement('div');
-                pPrice.className = 'prop-price';
-                pPrice.textContent = `S/. ${safePrice}`;
-
-                const pSpecs = document.createElement('div');
-                pSpecs.className = 'prop-specs';
-                pSpecs.textContent = `${property.habitaciones || 0} bd | ${property.banos || 0} ba`;
-
-                const pAddress = document.createElement('div');
-                pAddress.className = 'prop-address';
-                pAddress.style.fontSize = '11px';
-                pAddress.textContent = safeAddress;
-
-                popupContentBox.appendChild(pPrice);
-                popupContentBox.appendChild(pSpecs);
-                popupContentBox.appendChild(pAddress);
-                
-                popupRootContainer.appendChild(popupCarouselModule);
-                popupRootContainer.appendChild(popupContentBox);
+                const popupContent = document.createElement('div');
+                popupContent.className = 'card-content';
+                popupContent.innerHTML = `
+                    <div class="prop-price" style="font-size:16px;">S/. ${safePrice}</div>
+                    <div class="prop-address" style="font-size:11px;">${safeAddress}</div>
+                `;
+                popupRoot.appendChild(popupContent);
 
                 const marker = L.marker([property.latitud, property.longitud], { icon: bubbleMarkerIcon })
                     .addTo(state.map)
-                    .bindPopup(popupRootContainer, {
-                        maxWidth: 250,
-                        minWidth: 250
-                    });
+                    .bindPopup(popupRoot, { maxWidth: 250, minWidth: 250 });
 
                 state.markersGroup.push(marker);
             }
@@ -306,7 +287,206 @@ const AppInmobiliaria = (function() {
 
         gridTarget.appendChild(documentFragment);
     }
-    // 9. Recolector de Basura Activo (Previene fugas de memoria RAM)
+    // Pipeline Analítico que procesa el cruce relacional de datos de las Sheets
+    function executeFilterEnginePipeline() {
+        const querySearch = document.getElementById('search-address').value.toLowerCase().trim();
+
+        state.filteredData = state.propertiesData.filter(function(prop) {
+            // A) Filtro de Dirección Geográfica
+            if (querySearch && !String(prop.direccion).toLowerCase().includes(querySearch)) return false;
+
+            // B) Cruce relacional Estado Publicación y Anuncio (Zillow V2 Matrix)
+            const stPub = String(prop.estado_publicacion).toLowerCase();
+            const tpAnuncio = String(prop.tipo_anuncio).toLowerCase();
+
+            if (state.activeFilters.transaccion === "venta") {
+                if (stPub !== "disponible" || tpAnuncio !== "venta") return false;
+            } else if (state.activeFilters.transaccion === "alquiler") {
+                if (stPub !== "disponible" || tpAnuncio !== "alquiler") return false;
+            } else if (state.activeFilters.transaccion === "vendida") {
+                if (stPub !== "vendida") return false;
+            }
+
+            // C) Rangos de Precios Básicos
+            const price = Number(prop.precio_base || 0);
+            if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
+            if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
+
+            // D) Reglas de Dormitorios y Coincidencia Exacta
+            const beds = Number(prop.habitaciones || 0);
+            if (state.activeFilters.beds > 0) {
+                if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
+                if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
+            }
+
+            // E) Reglas de Baños
+            const baths = Number(prop.banos || 0);
+            if (state.activeFilters.baths > 0 && baths < state.activeFilters.baths) return false;
+
+            // F) Categoría de Propiedad
+            if (state.activeFilters.types.length > 0 && !state.activeFilters.types.includes(prop.tipo_propiedad)) return false;
+
+            // G) Megapanel Extendida (Filtros Avanzados)
+            if (state.activeFilters.hoa !== "any") {
+                const hoaVal = Number(prop.cuota_mantenimiento || 0);
+                if (state.activeFilters.hoa === "0" && hoaVal > 0) return false;
+                if (state.activeFilters.hoa !== "0" && hoaVal > Number(state.activeFilters.hoa)) return false;
+            }
+
+            if (state.activeFilters.listTypes.length > 0 && !state.activeFilters.listTypes.includes(prop.situacion_propiedad)) return false;
+            if (state.activeFilters.tour3d && !prop.tour_3d) return false;
+            if (state.activeFilters.parking !== "any" && Number(prop.estacionamientos || 0) < Number(state.activeFilters.parking)) return false;
+
+            // Rangos Estructurales m²
+            const builtArea = Number(prop.area_construida || 0);
+            if (state.activeFilters.builtMin !== null && builtArea < state.activeFilters.builtMin) return false;
+            if (state.activeFilters.builtMax !== null && builtArea > state.activeFilters.builtMax) return false;
+
+            const lotArea = Number(prop.area_terreno || 0);
+            if (state.activeFilters.lotMin !== null && lotArea < state.activeFilters.lotMin) return false;
+            if (state.activeFilters.lotMax !== null && lotArea > state.activeFilters.lotMax) return false;
+
+            const yearConst = Number(prop.ano_construccion || 0);
+            if (state.activeFilters.yearMin !== null && yearConst < state.activeFilters.yearMin) return false;
+            if (state.activeFilters.yearMax !== null && yearConst > state.activeFilters.yearMax) return false;
+
+            // Booleans
+            if (state.activeFilters.basement && !prop.sotano) return false;
+            if (state.activeFilters.storage && !prop.almacen) return false;
+            if (state.activeFilters.view && !prop.vista) return false;
+
+            // Operación de Días Publicados Calculados
+            if (state.activeFilters.days !== "any" && prop.fecha_publicacion) {
+                const diffTime = Math.abs(new Date() - new Date(prop.fecha_publicacion));
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays > Number(state.activeFilters.days)) return false;
+            }
+
+            return true;
+        });
+
+        renderAppContent();
+        
+        // Auto-reubicación del mapa si existen resultados en la muestra
+        if (state.filteredData.length > 0 && state.filteredData[0].latitud) {
+            state.map.panTo([state.filteredData[0].latitud, state.filteredData[0].longitud]);
+        }
+
+        // REINICIO AUTOMÁTICO DE LOS INPUTS VISUALES (Restablecimiento post-renderizado)
+        autoResetInterfaceFormFields();
+    }
+    // Reinicia los campos visibles de la pantalla conservando las variables de estado en memoria
+    function autoResetInterfaceFormFields() {
+        document.getElementById('price-min').value = '';
+        document.getElementById('price-max').value = '1300000';
+        document.getElementById('beds-exact').checked = false;
+        document.getElementById('built-min').value = '';
+        document.getElementById('built-max').value = '';
+        document.getElementById('lot-min').value = '';
+        document.getElementById('lot-max').value = '';
+        document.getElementById('year-min').value = '';
+        document.getElementById('year-max').value = '';
+        document.getElementById('filter-tour3d').checked = false;
+        document.getElementById('feat-basement').checked = false;
+        document.getElementById('feat-storage').checked = false;
+        document.getElementById('feat-view').checked = false;
+        document.getElementById('filter-hoa').value = 'any';
+        document.getElementById('filter-parking').value = 'any';
+        document.getElementById('filter-days').value = 'any';
+    }
+
+    function attachInterfaceEventHandlers() {
+        // Gestión de apertura de menús desplegables
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const currentPanel = this.nextElementSibling;
+                document.querySelectorAll('.dropdown-content-panel').forEach(p => {
+                    if (p !== currentPanel) p.classList.remove('show');
+                });
+                if (currentPanel) currentPanel.classList.toggle('show');
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+        });
+
+        document.querySelectorAll('.dropdown-content-panel').forEach(p => {
+            p.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        // Buscador reactivo por dirección texto o distrito
+        document.getElementById('search-address').addEventListener('input', executeFilterEnginePipeline);
+
+        // Control de Transacción (Radio buttons)
+        document.getElementsByName('transaccion').forEach(radio => {
+            radio.addEventListener('change', function() {
+                state.activeFilters.transaccion = this.value;
+                document.getElementById('btn-filter-status').textContent = `${this.parentElement.textContent.trim()} ▾`;
+                executeFilterEnginePipeline();
+            });
+        });
+
+        // Botones segmentados de Camas y Baños
+        const registerSegmentedClicks = function(containerId, filterKey) {
+            document.querySelectorAll(`#${containerId} .segmented-btn`).forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.parentElement.querySelectorAll('.segmented-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    state.activeFilters[filterKey] = Number(this.dataset.val);
+                    executeFilterEnginePipeline();
+                });
+            });
+        };
+        registerSegmentedClicks('row-beds', 'beds');
+        registerSegmentedClicks('row-baths', 'baths');
+
+        document.getElementById('beds-exact').addEventListener('change', function() {
+            state.activeFilters.bedsExact = this.checked;
+            executeFilterEnginePipeline();
+        });
+
+        // Eventos para el Megapanel de Control
+        document.getElementById('master-apply-btn').addEventListener('click', function() {
+            state.activeFilters.priceMin = document.getElementById('price-min').value ? Number(document.getElementById('price-min').value) : null;
+            state.activeFilters.priceMax = document.getElementById('price-max').value ? Number(document.getElementById('price-max').value) : null;
+            state.activeFilters.hoa = document.getElementById('filter-hoa').value;
+            state.activeFilters.parking = document.getElementById('filter-parking').value;
+            state.activeFilters.tour3d = document.getElementById('filter-tour3d').checked;
+            state.activeFilters.builtMin = document.getElementById('built-min').value ? Number(document.getElementById('built-min').value) : null;
+            state.activeFilters.builtMax = document.getElementById('built-max').value ? Number(document.getElementById('built-max').value) : null;
+            state.activeFilters.lotMin = document.getElementById('lot-min').value ? Number(document.getElementById('lot-min').value) : null;
+            state.activeFilters.lotMax = document.getElementById('lot-max').value ? Number(document.getElementById('lot-max').value) : null;
+            state.activeFilters.yearMin = document.getElementById('year-min').value ? Number(document.getElementById('year-min').value) : null;
+            state.activeFilters.yearMax = document.getElementById('year-max').value ? Number(document.getElementById('year-max').value) : null;
+            state.activeFilters.basement = document.getElementById('feat-basement').checked;
+            state.activeFilters.storage = document.getElementById('feat-storage').checked;
+            state.activeFilters.view = document.getElementById('feat-view').checked;
+            state.activeFilters.days = document.getElementById('filter-days').value;
+
+            executeFilterEnginePipeline();
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+        });
+
+        document.getElementById('master-reset-btn').addEventListener('click', function() {
+            state.activeFilters.priceMin = null;
+            state.activeFilters.priceMax = 1300000;
+            state.activeFilters.beds = 0;
+            state.activeFilters.baths = 0;
+            state.activeFilters.hoa = "any";
+            state.activeFilters.parking = "any";
+            state.activeFilters.tour3d = false;
+            state.activeFilters.builtMin = null; state.activeFilters.builtMax = null;
+            state.activeFilters.lotMin = null; state.activeFilters.lotMax = null;
+            state.activeFilters.yearMin = null; state.activeFilters.yearMax = null;
+            state.activeFilters.basement = false; state.activeFilters.storage = false; state.activeFilters.view = false;
+            state.activeFilters.days = "any";
+            
+            executeFilterEnginePipeline();
+        });
+    }
+
     function clearActiveListeners() {
         state.activeListeners.forEach(listener => {
             listener.element.removeEventListener(listener.type, listener.handler);
@@ -315,13 +495,10 @@ const AppInmobiliaria = (function() {
     }
 
     function clearActiveMarkers() {
-        state.markersGroup.forEach(function(marker) {
-            state.map.removeLayer(marker);
-        });
+        state.markersGroup.forEach(marker => state.map.removeLayer(marker));
         state.markersGroup = [];
     }
 
-    // API Pública de inicialización
     return {
         initialize: function() {
             initMap();
@@ -330,7 +507,4 @@ const AppInmobiliaria = (function() {
     };
 })();
 
-// Disparo seguro al cargar por completo la ventana
-document.addEventListener("DOMContentLoaded", function() {
-    AppInmobiliaria.initialize();
-});
+document.addEventListener("DOMContentLoaded", () => AppInmobiliaria.initialize());
