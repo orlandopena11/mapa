@@ -206,7 +206,7 @@ const AppInmobiliaria = (function() {
 
         return imageBox;
     }
-    function synchronizeFavoriteInterfaceNodes(targetKey) {
+        function synchronizeFavoriteInterfaceNodes(targetKey) {
         const isFav = state.favoritosUsuario.includes(targetKey);
         document.querySelectorAll('.card-fav-btn').forEach(btn => {
             const parent = btn.closest('.property-card') || btn.closest('.popup-custom-container');
@@ -259,12 +259,12 @@ const AppInmobiliaria = (function() {
             if (property.latitud && property.longitud) {
                 const isNew = String(property.estado).toLowerCase() === 'nuevo';
                 
-                // Configuración de la burbuja con dimensiones de centrado fijas
+                // Parámetros numéricos explícitos para evitar el quiebre de sintaxis
                 const bubbleMarkerIcon = L.divIcon({
                     className: isNew ? 'marker-bubble marker-bubble--new' : 'marker-bubble',
                     html: `<span>${compactPriceLabel}</span>`,
                     iconSize:,
-                    iconAnchor: [35, 12]
+                    iconAnchor: [30, 12]
                 });
 
                 const popupRoot = document.createElement('div');
@@ -285,11 +285,11 @@ const AppInmobiliaria = (function() {
 
                 state.markersGroup.push(marker);
             }
-
         });
 
         gridTarget.appendChild(documentFragment);
     }
+
     // Pipeline Analítico que procesa el cruce relacional de datos de las Sheets
     function executeFilterEnginePipeline() {
         const querySearch = document.getElementById('search-address').value.toLowerCase().trim();
