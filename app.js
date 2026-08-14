@@ -35,7 +35,7 @@ const AppInmobiliaria = (function() {
             view: false,
             days: "any"
         },
-        cloudinaryBase: "https://cloudinary.com"
+        cloudinaryBase: "https://res.cloudinary.com/obw6ciov/image/upload/v1785207128/"
     };
 
     // 1. Inicialización de la Instancia de Leaflet + OpenStreetMap
