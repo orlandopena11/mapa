@@ -51,8 +51,7 @@ const AppInmobiliaria = (function() {
         L.control.zoom({ position: 'topright' }).addTo(state.map);
         return true;
     }
-
-    /**
+/**
  * ==========================================================================
  * PARTE: 2-5 (CONECTIVIDAD ASÍNCRONA, NORMALIZADORES Y BLINDAJE ANTI-XSS)
  * ==========================================================================
@@ -151,8 +150,7 @@ const AppInmobiliaria = (function() {
         }
         histogramBox.appendChild(fragment);
     }
-
-        // ==========================================================================
+    // ==========================================================================
     // PARTE: 3-5 (CONSTRUCTOR DE MICRO-CARRUSEL INTERACTIVO PARA DOBLE VISTA)
     // ==========================================================================
     function buildSecureCarouselComponent(property) {
@@ -316,7 +314,7 @@ const AppInmobiliaria = (function() {
                     className: bubbleClass,
                     html: '<span>' + compactPriceLabel + '</span>',
                     iconSize: [null, 30],
-                    iconAnchor: [35, 15]
+                    iconAnchor:
                 });
 
                 const popupRoot = document.createElement('div');
@@ -353,7 +351,6 @@ const AppInmobiliaria = (function() {
 
         if (gridTarget) gridTarget.appendChild(documentFragment);
     }
-
     // ==========================================================================
     // PARTE: 5-5 (PIPELINE DE FILTRADO REACTIVO, LISTENERS Y ENTRADA AL DOM)
     // ==========================================================================
@@ -361,11 +358,9 @@ const AppInmobiliaria = (function() {
         const querySearch = document.getElementById('buscador-direccion').value.toLowerCase().trim();
 
         state.filteredData = state.propertiesData.filter(function(prop) {
-            // A) Filtro Reactivo de Texto (Santiago de Surco, El Derby, etc.)
             const direccionPropiedad = String(prop.direccion || '').toLowerCase();
             if (querySearch && !direccionPropiedad.includes(querySearch)) return false;
 
-            // B) Cruce relacional Estado Publicación y Anuncio (Inmune a mayúsculas)
             const stPub = prop.estado_publicacion;
             const tpAnuncio = prop.tipo_anuncio;
 
@@ -377,19 +372,16 @@ const AppInmobiliaria = (function() {
                 if (stPub !== "vendida" && stPub !== "vendido") return false;
             }
 
-            // C) Rangos de Precios Básicos
             const price = prop.precio_base;
             if (state.activeFilters.priceMin !== null && price < state.activeFilters.priceMin) return false;
             if (state.activeFilters.priceMax !== null && price > state.activeFilters.priceMax) return false;
 
-            // D) Reglas de Dormitorios
             const beds = prop.habitaciones;
             if (state.activeFilters.beds > 0) {
                 if (state.activeFilters.bedsExact && beds !== state.activeFilters.beds) return false;
                 if (!state.activeFilters.bedsExact && beds < state.activeFilters.beds) return false;
             }
 
-            // E) Reglas de Baños
             if (state.activeFilters.baths > 0 && prop.banos < state.activeFilters.baths) return false;
 
             return true;
@@ -397,9 +389,8 @@ const AppInmobiliaria = (function() {
 
         renderAppContent();
 
-        // Auto-reubicación inteligente al primer resultado
         if (state.filteredData.length > 0) {
-            const firstCoord = state.filteredData[0];
+            const firstCoord = state.filteredData;
             if (firstCoord && firstCoord.latitud && firstCoord.longitud) {
                 state.map.setView([firstCoord.latitud, firstCoord.longitud], 14);
             }
@@ -415,10 +406,12 @@ const AppInmobiliaria = (function() {
     function attachInterfaceEventHandlers() {
         const inputBuscador = document.getElementById('buscador-direccion');
         if (inputBuscador) {
+            inputBuscador.removeAttribute('oninput');
             inputBuscador.addEventListener('input', executeFilterEnginePipeline);
         }
 
         document.getElementsByName('filtro-estado-publicacion').forEach(radio => {
+            radio.removeAttribute('onchange');
             radio.addEventListener('change', function() {
                 const val = this.value.toLowerCase();
                 if (val === 'venta') state.activeFilters.transaccion = 'venta';
@@ -442,7 +435,6 @@ const AppInmobiliaria = (function() {
         state.markersGroup = [];
     }
 
-    // Exposición de puente global seguro para que el index original reciba la consulta JSONP externa
     window.renderizarMapaZillow = function() {
         executeFilterEnginePipeline();
     };
@@ -453,13 +445,13 @@ const AppInmobiliaria = (function() {
             const mapSuccess = initMap();
             if (mapSuccess) {
                 attachInterfaceEventHandlers();
-                fetchSpreadsheetData(); // DETERMINISTA: Ejecuta la llamada inmediatamente tras validar el mapa
+                fetchSpreadsheetData(); // DETERMINISTA: Llama a los datos inmediatamente después de levantar Leaflet
             }
         }
     };
 })();
 
-// OBSERVADOR DE ELEMENTOS: Despierta la aplicación sin retardos artificiales
+// OBSERVADOR DE ELEMENTOS: Monitorea el DOM de forma reactiva y despierta el flujo de datos
 (function() {
     function verificarYDespertarAplicacion() {
         if (document.getElementById('mapa')) {
@@ -472,7 +464,7 @@ const AppInmobiliaria = (function() {
     if (!verificarYDespertarAplicacion()) {
         const supervisorDOM = new MutationObserver(function(mutations, supervisor) {
             if (verificarYDespertarAplicacion()) {
-                supervisor.disconnect(); // Liberación estricta de RAM
+                supervisor.disconnect(); // Liberación estricta de memoria RAM
             }
         });
         supervisorDOM.observe(document.body, { childList: true, subtree: true });
