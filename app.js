@@ -706,7 +706,7 @@ function renderizarFichaDetalleZillow(propiedad) {
     bloqueIzquierdo.className = 'bloque-foto-principal';
     const imgPrincipal = document.createElement('img');
     // Consumimos el arreglo unificado que ya tiene el prefijo de tu Cloudinary
-    imgPrincipal.src = propiedad.fotos[0] || propiedad.fotos;
+    imgPrincipal.src = propiedad.fotos[0] || propiedad.fotos[0];
     bloqueIzquierdo.appendChild(imgPrincipal);
     contenedorMosaico.appendChild(bloqueIzquierdo);
     
