@@ -678,11 +678,13 @@ function alternarPantallaZillow(pantalla) {
     }
 }
 
+// PARTE: 5-5 (RENDERIZADO DE DETALLE ASIMÉTRICO - REPARACIÓN DE RUTAS CLOUDINARY)
 function renderizarFichaDetalleZillow(propiedad) {
     const panelFicha = document.getElementById('contenedor-detalle-zillow');
     if (!panelFicha) return;
     panelFicha.textContent = '';
     
+    // Fila superior de navegación
     const navFicha = document.createElement('div');
     navFicha.className = 'nav-ficha-zillow';
     
@@ -696,28 +698,52 @@ function renderizarFichaDetalleZillow(propiedad) {
     logoCentro.className = 'logo-centro-zillow';
     logoCentro.textContent = 'Zillow';
     navFicha.appendChild(logoCentro);
-    
+    navFicha.appendChild(document.createElement('div')); // Espaciador derecho
     panelFicha.appendChild(navFicha);
     
+    // Contenedor del mosaico
     const contenedorMosaico = document.createElement('div');
     contenedorMosaico.className = 'mosaico-galeria-zillow';
     
+    // ==========================================
+    // 1. FOTO PRINCIPAL GRANDE (LADO IZQUIERDO)
+    // ==========================================
     const bloqueIzquierdo = document.createElement('div');
     bloqueIzquierdo.className = 'bloque-foto-principal';
     const imgPrincipal = document.createElement('img');
-    // Consumimos el arreglo unificado que ya tiene el prefijo de tu Cloudinary
-    imgPrincipal.src = propiedad.fotos[0] || propiedad.fotos[0];
+    
+    // 💡 FORCE MAJEURE: Valida e inyecta la ruta completa de Cloudinary para la foto principal
+    let fotoGrande = propiedad.fotos[0] || "Foto_1_jfz1xs.jpg";
+    if (!fotoGrande.startsWith('http://') && !fotoGrande.startsWith('https://')) {
+        fotoGrande = fotoGrande.trim().replace(/\s+/g, '_');
+        if (!fotoGrande.toLowerCase().endsWith('.jpg') && !fotoGrande.toLowerCase().endsWith('.png')) fotoGrande += '.jpg';
+        fotoGrande = "https://cloudinary.com" + fotoGrande;
+    }
+    imgPrincipal.src = fotoGrande;
     bloqueIzquierdo.appendChild(imgPrincipal);
     contenedorMosaico.appendChild(bloqueIzquierdo);
     
+    // ==========================================
+    // 2. MATRIZ 2x2 FOTOS SECUNDARIAS (LADO DERECHO)
+    // ==========================================
     const bloqueDerechoGrid = document.createElement('div');
     bloqueDerechoGrid.className = 'bloque-secundarias-grid';
+    
     for (let i = 1; i < 5; i++) {
         const cajaMinifoto = document.createElement('div');
         cajaMinifoto.className = 'caja-minifoto-item';
         const imgSec = document.createElement('img');
-        imgSec.src = propiedad.fotos[i] || propiedad.fotos[0] || propiedad.fotos;
+        
+        // 💡 FORCE MAJEURE: Valida e inyecta la ruta completa de Cloudinary para cada minifoto
+        let fotoChica = propiedad.fotos[i] || propiedad.fotos[0] || "Foto_1_jfz1xs.jpg";
+        if (!fotoChica.startsWith('http://') && !fotoChica.startsWith('https://')) {
+            fotoChica = fotoChica.trim().replace(/\s+/g, '_');
+            if (!fotoChica.toLowerCase().endsWith('.jpg') && !fotoChica.toLowerCase().endsWith('.png')) fotoChica += '.jpg';
+            fotoChica = "https://cloudinary.com" + fotoChica;
+        }
+        imgSec.src = fotoChica;
         cajaMinifoto.appendChild(imgSec);
+        
         if (i === 4) {
             const btnVerMas = document.createElement('button');
             btnVerMas.className = 'btn-ver-mas-fotos';
@@ -729,6 +755,7 @@ function renderizarFichaDetalleZillow(propiedad) {
     contenedorMosaico.appendChild(bloqueDerechoGrid);
     panelFicha.appendChild(contenedorMosaico);
     
+    // Bloque de datos de texto inferiores
     const contenedorFichaDatos = document.createElement('div');
     contenedorFichaDatos.className = 'contenedor-ficha-datos-texto';
     const filaMetricas = document.createElement('div');
