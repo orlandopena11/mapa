@@ -315,8 +315,6 @@ function renderizarCatálogoTarjetas() {
     // Reemplazo exacto dentro de renderizarMapaZillow() y renderizarCatálogoTarjetas()
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-        return state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
-    });
 
     // Inyección atómica de los nodos puros en el fragmento flotante
     filtradas.forEach(prop => {
