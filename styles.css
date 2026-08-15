@@ -454,3 +454,150 @@ div.leaflet-marker-icon.map-price-pill span {
 .zillow-custom-popup-wrapper .tarjeta-casa.popup-card .contenedor-foto {
     height: 150px;
 }
+
+
+/* Clases estructurales de transición entre Pantallas */
+.hidden-layout {
+    display: none !important;
+}
+
+.contenedor-detalle-zillow.hidden {
+    display: none;
+}
+
+.contenedor-detalle-zillow.visible-panel {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: var(--blanco);
+    padding: 30px 40px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5000;
+}
+
+/* Barra de Navegación limpia de la Ficha */
+.nav-ficha-zillow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--gris-borde);
+    margin-bottom: 16px;
+    background-color: var(--blanco);
+}
+
+.btn-volver-zillow {
+    background: none;
+    border: none;
+    color: var(--texto-secundario);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.btn-volver-zillow:hover {
+    color: var(--azul-zillow);
+}
+
+.logo-centro-zillow {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--azul-zillow);
+    letter-spacing: -1px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+/* Estructuración del Mosaico de Imágenes de Alta Fidelidad (Split 50/50) */
+.mosaico-galeria-zillow {
+    display: flex;
+    width: 100%;
+    height: 460px;
+    gap: 8px;
+    background-color: var(--blanco);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bloque-foto-principal {
+    width: 50%;
+    height: 100%;
+    position: relative;
+    background-color: var(--gris-fondo);
+}
+
+.bloque-foto-principal img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.bloque-secundarias-grid {
+    width: 50%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.caja-minifoto-item {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: var(--gris-fondo);
+}
+
+.caja-minifoto-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.btn-ver-mas-fotos {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background-color: var(--blanco);
+    color: var(--texto-principal);
+    border: 1px solid var(--gris-borde);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Bloque de Información Inferior */
+.contenedor-ficha-datos-texto {
+    margin-top: 24px;
+}
+
+.fila-metricas-zillow {
+    display: flex;
+    align-items: baseline;
+    gap: 24px;
+    margin-bottom: 6px;
+}
+
+.texto-precio-ficha {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--texto-principal);
+}
+
+.texto-specs-ficha {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--texto-secundario);
+}
+
+.fila-direccion-ficha {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--texto-secundario);
+}
