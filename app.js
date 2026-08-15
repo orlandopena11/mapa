@@ -32,58 +32,42 @@ function cargarDatosDesdeAppsScript() {
     document.body.appendChild(script);
 }
 
+
+// ==========================================================================
 // PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - VERSIÓN ULTRA ROBUSTA E INDESTRUCTIBLE)
+// ==========================================================================
 function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
-    
-    // 💡 URL de tu servidor de Cloudinary inyectado de forma estricta
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/"; 
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/";
 
     // Helper purista interno para limpiar y formatear de forma natural
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
         let texto = String(ruta).trim();
-        
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
-        
-        // Limpieza obligatoria: Reemplaza espacios por guiones bajos
+        // Limpieza obligatoria de la arquitectura: Reemplaza espacios por guiones bajos
         texto = texto.replace(/\s+/g, '_');
-        
         // Agrega la extensión si el Excel no la tiene
         if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png')) {
             texto = texto + '.jpg';
         }
-        
         return urlBaseCloudinary + texto;
     };
-    
-    // 1. FUSIÓN DE IMÁGENES
+
+    // Procesamos el arreglo de fotos puras que ya construyó el backend en el servidor
     let fotosUnificadas = [];
-    
-    if (prop.foto_principal) {
-        fotosUnificadas.push(asegurarUrlCompleta(prop.foto_principal));
-    } else if (prop.foto) {
-        fotosUnificadas.push(asegurarUrlCompleta(prop.foto));
-    }
-    
-    if (prop.ruta_imagen) {
-        fotosUnificadas.push(asegurarUrlCompleta(prop.ruta_imagen));
+    if (prop.fotos && Array.isArray(prop.fotos)) {
+        fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
     }
 
-    if (prop.imagenes_secundarias) {
-        if (Array.isArray(prop.imagenes_secundarias)) {
-            prop.imagenes_secundarias.forEach(f => f && fotosUnificadas.push(asegurarUrlCompleta(f)));
-        } else {
-            String(prop.imagenes_secundarias).split(',').forEach(f => f.trim() && fotosUnificadas.push(asegurarUrlCompleta(f.trim())));
-        }
+    // FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu URL de Cloudinary de respaldo
+    if (fotosUnificadas.length === 0) {
+        fotosUnificadas.push("https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/Foto_1_jfz1xs.jpg");
     }
 
-    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
-    const las5PrimerasFotos = fotosUnicas.slice(0, 5);
-
-    // 2. CLASIFICACIÓN DE ESTADOS RELACIONALES
+    // LÓGICA DE CLASIFICACIÓN DE ESTADOS (Mantiene compatibilidad con tu esquema actual)
     let estadoZillow = 'Venta'; 
     const publicacion = prop.tipo_publicacion ? String(prop.tipo_publicacion).trim().toLowerCase() : '';
     const anuncio = prop.tipo_anuncio ? String(prop.tipo_anuncio).trim().toLowerCase() : '';
@@ -98,18 +82,34 @@ function normalizarPropiedad(prop) {
         }
     }
 
-    // 3. RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO PARA LAS TARJETAS
+    // RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO PARA LAS TARJETAS Y POPUPS
     return {
         id: String(id),
+        anuncio_id: prop.anuncio_id || "",
         precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 350000),
         estadoListado: estadoZillow, 
         fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || 'Propiedad en Surco').trim(),
         tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
+        subtipoPropiedad: String(prop.subtipo_propiedad || '').trim(),
+        fotos: fotosUnificadas, // Array limpio listo para ser consumido por el micro-carrusel
         
-        // 💡 FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu URL de Cloudinary real
-        fotos: las5PrimerasFotos.length > 0 ? las5PrimerasFotos : [
-            "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/Foto_1_jfz1xs.jpg"
-        ],
+        // RESPALDO DE GEOLOCALIZACIÓN REQUERIDO PARA REHABILITAR EL PANE IZQUIERDO
+        latitud: parseFloat(prop.latitud || prop.lat || -12.125),
+        longitud: parseFloat(prop.longitud || prop.lng || -76.995),
+        
+        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 3),
+        banos: parseInt(prop.banos || 0),
+        area_construida: parseFloat(prop.area_construida || 0),
+        cuota_mantenimiento: parseFloat(prop.cuota_mantenimiento || 0),
+        situacion_propiedad: prop.situacion_propiedad || "",
+        sotano: prop.sotano || "no",
+        almacen: prop.almacen || "no",
+        vista: prop.vista || "Ninguna",
+        creado_por: prop.creado_por || "",
+        
+        // Nuevas columnas dinámicas inyectadas desde el backend
+        telefono: prop.telefono || "",
+        contacto_nombre: prop.contacto_nombre || "Contacto"
         
         latitud: parseFloat(prop.latitud || prop.lat || -12.125),
         longitud: parseFloat(prop.longitud || prop.lng || -76.995),
