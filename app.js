@@ -286,8 +286,8 @@ function renderizarMapaZillow() {
         });
 
         capaMarcadores.addLayer(marcador);
-    }
-}
+    });     // 👈 LÍNEA 288 aprox: Cierra limpiamente el filtradas.forEach(prop => {
+}    // 👈 LÍNEA 290 aprox: Cierra la función completa function renderizarMapaZillow() {
 
 
 // PARTE: 5-5 (REJILLA Y CONTROLADOR CORE CONFIGURADO)
