@@ -68,50 +68,62 @@ body, html {
     object-fit: contain;
 }
 
-/* Core del Split-View (Mapa Izquierda / Catálogo Derecha) */
+/* Core del Layout Dividido (Split-View) */
 .split-view {
     display: flex;
     flex: 1;
     min-height: 0;
     position: relative;
+    height: calc(100vh - 60px); /* Ajusta restando la altura de la barra superior */
+    width: 100vw;
 }
 
+/* Fuerza el renderizado geométrico del mapa a la izquierda */
 .map-wrapper {
     width: 45%;
     height: 100%;
     position: relative;
-    border-right: 1px solid var(--gris-borde);
 }
 
 #map-instance {
     width: 100%;
     height: 100%;
+    min-height: 100%;  /* 💡 OBLIGA AL PLANO DE LEAFLET A EXPANDIRSE COMPLETAMENTE */
+    display: block;
+    display: block;
     z-index: 1;
 }
 
+/* Fuerza el panel del catálogo a la derecha */
 .properties-panel {
     width: 55%;
     height: 100%;
     overflow-y: auto;
-    background-color: var(--blanco);
+    background-color: #ffffff;
     padding: 24px;
 }
 
-.panel-header {
-    margin-bottom: 20px;
-}
-
-.panel-header h1 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--texto-principal);
-}
-
-/* Rejilla Grid Responsiva Flex-Auto */
+/* Caja de inyección de las tarjetas modulares */
 .properties-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
+}
+
+/* Ocultamiento natural de los menús flotantes por defecto */
+.dropdown-content-panel {
+    display: none; /* Evita que los checkboxes se queden abiertos invadiendo la pantalla */
+    position: absolute;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    border-radius: 8px;
+    z-index: 2000;
+}
+
+/* Clase reactiva de apertura que se inyectará por JS */
+.dropdown-content-panel.show {
+    display: block;
 }
 
 /* ==========================================================================
