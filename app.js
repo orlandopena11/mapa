@@ -237,6 +237,10 @@ function crearComponenteTarjetaZillow(propiedad) {
 
 // PARTE: 4-5 (MOTOR DE MAPA Y POPUPS ENLAZADOS - REPARADO)
 function renderizarMapaZillow() {
+    // 💡 INYECCIÓN QUIRÚRGICA: Declaración formal y segura de la capa
+    if (typeof window.capaMarcadores === 'undefined') {
+        window.capaMarcadores = null;
+    }
     // Vinculación estricta al ID nativo del HTML: 'map-instance'
     if (!window.map || !document.getElementById('map-instance')) return;
 
