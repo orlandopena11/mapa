@@ -238,7 +238,7 @@ function crearComponenteTarjetaZillow(propiedad) {
             }
             
             // Suma de cadenas directa con tu servidor unificado obw6ciov
-            urlFoto = "https://cloudinary.com" + urlFoto;
+            urlFoto = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + urlFoto;
         }
         
         img.src = urlFoto; // Asignación física final blindada contra GitHub Pages
