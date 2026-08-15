@@ -32,49 +32,46 @@ function cargarDatosDesdeAppsScript() {
     document.body.appendChild(script);
 }
 
-
-// PARTE: 2-5 (NORMALIZACIÓN MAESTRA DE DATOS REALES DE GOOGLE SHEETS)
-/**
- * REGLAS DE NEGOCIO ENTRANTES AJUSTADAS A LAS COLUMNAS REALES DEL EXCEL
- * Procesa el JSON crudo del Apps Script mapeando los campos exactos de tu base de datos.
- */
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - VERSIÓN ULTRA ROBUSTA E INDESTRUCTIBLE)
 function normalizarPropiedad(prop) {
-    // 1. Captura estricta del ID único del inmueble
-    const id = prop.propiedad_id_fk || prop.propiedad_id || prop.id || String(Math.random());
+    const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // Ruta verificada de tu servidor de Cloudinary
+    // 💡 URL de tu servidor de Cloudinary inyectado de forma estricta
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/"; 
 
-    // Helper interno nativo para formatear de forma indestructible los enlaces de fotos
+    // Helper purista interno para limpiar y formatear de forma natural
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
-        let textoLimpio = String(ruta).trim();
+        let texto = String(ruta).trim();
         
-        // Si ya es una URL de internet, la dejamos pasar sin tocarla
-        if (textoLimpio.startsWith('http://') || textoLimpio.startsWith('https://')) {
-            return textoLimpio;
+        if (texto.startsWith('http://') || texto.startsWith('https://')) {
+            return texto;
         }
         
-        // CORRECCIÓN MAESTRA: Reemplaza todos los espacios por guiones bajos como exige Cloudinary
-        textoLimpio = textoLimpio.replace(/\s+/g, '_');
+        // Limpieza obligatoria: Reemplaza espacios por guiones bajos
+        texto = texto.replace(/\s+/g, '_');
         
-        // Fuerza la extensión estándar si el Sheets solo guarda el código
-        if (!textoLimpio.toLowerCase().endsWith('.jpg') && !textoLimpio.toLowerCase().endsWith('.png')) {
-            textoLimpio = textoLimpio + '.jpg';
+        // Agrega la extensión si el Excel no la tiene
+        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png')) {
+            texto = texto + '.jpg';
         }
         
-        return urlBaseCloudinary + textoLimpio;
+        return urlBaseCloudinary + texto;
     };
     
-    // 2. RECOPILACIÓN Y ACUMULACIÓN DE FOTOS DE AMBAS HOJAS (HASTA 5)
+    // 1. FUSIÓN DE IMÁGENES
     let fotosUnificadas = [];
     
-    // Captura de la foto principal o campo de foto alternativo
-    if (prop.foto_principal) fotosUnificadas.push(asegurarUrlCompleta(prop.foto_principal));
-    if (prop.foto) fotosUnificadas.push(asegurarUrlCompleta(prop.foto));
+    if (prop.foto_principal) {
+        fotosUnificadas.push(asegurarUrlCompleta(prop.foto_principal));
+    } else if (prop.foto) {
+        fotosUnificadas.push(asegurarUrlCompleta(prop.foto));
+    }
     
-    // Captura de las rutas provenientes de la pestaña 'imagen_propiedad'
-    if (prop.ruta_imagen) fotosUnificadas.push(asegurarUrlCompleta(prop.ruta_imagen));
+    if (prop.ruta_imagen) {
+        fotosUnificadas.push(asegurarUrlCompleta(prop.ruta_imagen));
+    }
+
     if (prop.imagenes_secundarias) {
         if (Array.isArray(prop.imagenes_secundarias)) {
             prop.imagenes_secundarias.forEach(f => f && fotosUnificadas.push(asegurarUrlCompleta(f)));
@@ -83,41 +80,37 @@ function normalizarPropiedad(prop) {
         }
     }
 
-    // Purgamos duplicados y recortamos estrictamente a las 5 primeras
     const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
     const las5PrimerasFotos = fotosUnicas.slice(0, 5);
 
-    // 3. CLASIFICACIÓN RIGUROSA DE ESTADOS (VENTA, ALQUILER, VENDIDO)
-    // Sincronizado exactamente con las columnas 'tipo_anuncio' y 'estado_anuncio' de tu captura
+    // 2. CLASIFICACIÓN DE ESTADOS RELACIONALES
     let estadoZillow = 'Venta'; 
-    const tipoAnuncio = String(prop.tipo_anuncio || prop.tipo_publicacion || '').trim().toLowerCase();
-    const estadoAnuncio = String(prop.estado_anuncio || prop.estado || '').trim().toLowerCase();
+    const publicacion = prop.tipo_publicacion ? String(prop.tipo_publicacion).trim().toLowerCase() : '';
+    const anuncio = prop.tipo_anuncio ? String(prop.tipo_anuncio).trim().toLowerCase() : '';
 
-    if (estadoAnuncio === 'vendida' || estadoAnuncio === 'vendido') {
+    if (publicacion === 'vendida' || publicacion === 'vendido') {
         estadoZillow = 'Vendido';
-    } else {
-        if (tipoAnuncio === 'venta') {
+    } else if (publicacion === 'disponible' || publicacion === '') {
+        if (anuncio === 'venta' || anuncio === '') {
             estadoZillow = 'Venta';
-        } else if (tipoAnuncio === 'alquiler') {
+        } else if (anuncio === 'alquiler') {
             estadoZillow = 'Alquiler';
         }
     }
 
-    // 4. RETORNO DEL OBJETO CONSOLIDADO CON VALORES POR DEFECTO SEGUROS
+    // 3. RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO PARA LAS TARJETAS
     return {
         id: String(id),
-        // Si el precio viene vacío en esa fila, evita el colapso fijando un valor base para el filtro
         precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 350000),
         estadoListado: estadoZillow, 
-        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || 'Hermosa Propiedad en Surco').trim(),
+        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || 'Propiedad en Surco').trim(),
         tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
         
-        // Si las celdas estaban vacías, inyectamos tu foto de Cloudinary verificada como respaldo
+        // 💡 FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu URL de Cloudinary real
         fotos: las5PrimerasFotos.length > 0 ? las5PrimerasFotos : [
-            'https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/Foto_1_jfz1xs.jpg'
+            "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/Foto_1_jfz1xs.jpg"
         ],
         
-        // Coordenadas geoespaciales por defecto en Surco para centrar el mapa si vienen vacías
         latitud: parseFloat(prop.latitud || prop.lat || -12.125),
         longitud: parseFloat(prop.longitud || prop.lng || -76.995),
         habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 3)
