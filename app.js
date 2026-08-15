@@ -649,6 +649,110 @@ function inicializarEventosDeFiltros() {
     }
 }
 
+// [AQUÍ TERMINAN TUS FILTROS ACTUALES DE LA PARTE 6-5]
+// ... llaves de cierre previas
+
+// 💡 PEGA EL NUEVO CÓDIGO EXACTAMENTE AQUÍ, AL FINAL DE TODO TU ARCHIVO APP.JS:
+
+// PARTE: 5-5 (NAVEGACIÓN SPA Y DETALLE ASIMÉTRICO DE PANTALLA 2)
+function alternarPantallaZillow(pantalla) {
+    const contenedorSplit = document.querySelector('.split-view');
+    let contenedorDetalle = document.getElementById('contenedor-detalle-zillow');
+    
+    if (!contenedorDetalle) {
+        contenedorDetalle = document.createElement('div');
+        contenedorDetalle.id = 'contenedor-detalle-zillow';
+        contenedorDetalle.className = 'contenedor-detalle-zillow hidden';
+        document.querySelector('.app-container').appendChild(contenedorDetalle);
+    }
+    
+    if (pantalla === 'detalle-ficha') {
+        contenedorSplit.classList.add('hidden-layout');
+        contenedorDetalle.classList.remove('hidden');
+        contenedorDetalle.classList.add('visible-panel');
+    } else {
+        contenedorSplit.classList.remove('hidden-layout');
+        contenedorDetalle.classList.remove('visible-panel');
+        contenedorDetalle.classList.add('hidden');
+        contenedorDetalle.textContent = ''; 
+    }
+}
+
+function renderizarFichaDetalleZillow(propiedad) {
+    const panelFicha = document.getElementById('contenedor-detalle-zillow');
+    if (!panelFicha) return;
+    panelFicha.textContent = '';
+    
+    const navFicha = document.createElement('div');
+    navFicha.className = 'nav-ficha-zillow';
+    
+    const btnVolver = document.createElement('button');
+    btnVolver.className = 'btn-volver-zillow';
+    btnVolver.textContent = '‹ Volver a buscar';
+    btnVolver.addEventListener('click', () => alternarPantallaZillow('split-view'));
+    navFicha.appendChild(btnVolver);
+    
+    const logoCentro = document.createElement('div');
+    logoCentro.className = 'logo-centro-zillow';
+    logoCentro.textContent = 'Zillow';
+    navFicha.appendChild(logoCentro);
+    
+    panelFicha.appendChild(navFicha);
+    
+    const contenedorMosaico = document.createElement('div');
+    contenedorMosaico.className = 'mosaico-galeria-zillow';
+    
+    const bloqueIzquierdo = document.createElement('div');
+    bloqueIzquierdo.className = 'bloque-foto-principal';
+    const imgPrincipal = document.createElement('img');
+    // Consumimos el arreglo unificado que ya tiene el prefijo de tu Cloudinary
+    imgPrincipal.src = propiedad.fotos[0] || propiedad.fotos;
+    bloqueIzquierdo.appendChild(imgPrincipal);
+    contenedorMosaico.appendChild(bloqueIzquierdo);
+    
+    const bloqueDerechoGrid = document.createElement('div');
+    bloqueDerechoGrid.className = 'bloque-secundarias-grid';
+    for (let i = 1; i < 5; i++) {
+        const cajaMinifoto = document.createElement('div');
+        cajaMinifoto.className = 'caja-minifoto-item';
+        const imgSec = document.createElement('img');
+        imgSec.src = propiedad.fotos[i] || propiedad.fotos[0] || propiedad.fotos;
+        cajaMinifoto.appendChild(imgSec);
+        if (i === 4) {
+            const btnVerMas = document.createElement('button');
+            btnVerMas.className = 'btn-ver-mas-fotos';
+            btnVerMas.textContent = `田 See all ${propiedad.fotos.length} photos`;
+            cajaMinifoto.appendChild(btnVerMas);
+        }
+        bloqueDerechoGrid.appendChild(cajaMinifoto);
+    }
+    contenedorMosaico.appendChild(bloqueDerechoGrid);
+    panelFicha.appendChild(contenedorMosaico);
+    
+    const contenedorFichaDatos = document.createElement('div');
+    contenedorFichaDatos.className = 'contenedor-ficha-datos-texto';
+    const filaMetricas = document.createElement('div');
+    filaMetricas.className = 'fila-metricas-zillow';
+    const spanPrecio = document.createElement('span');
+    spanPrecio.className = 'texto-precio-ficha';
+    spanPrecio.textContent = propiedad.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+    const spanSpecs = document.createElement('span');
+    spanSpecs.className = 'texto-specs-ficha';
+    spanSpecs.textContent = `${propiedad.habitaciones} beds  |  2 baths  |  1,850 sqft`;
+    
+    filaMetricas.appendChild(spanPrecio);
+    filaMetricas.appendChild(spanSpecs);
+    contenedorFichaDatos.appendChild(filaMetricas);
+    
+    const filaDireccion = document.createElement('div');
+    filaDireccion.className = 'fila-direccion-ficha';
+    filaDireccion.textContent = propiedad.fraseDescriptiva;
+    contenedorFichaDatos.appendChild(filaDireccion);
+    
+    panelFicha.appendChild(contenedorFichaDatos);
+}
+
+
 /**
  * Helper modular nativo para gestionar la clase active en las filas de controles segmentados
  */
