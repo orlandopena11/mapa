@@ -717,7 +717,7 @@ function renderizarFichaDetalleZillow(propiedad) {
     if (!fotoGrande.startsWith('http://') && !fotoGrande.startsWith('https://')) {
         fotoGrande = fotoGrande.trim().replace(/\s+/g, '_');
         if (!fotoGrande.toLowerCase().endsWith('.jpg') && !fotoGrande.toLowerCase().endsWith('.png')) fotoGrande += '.jpg';
-        fotoGrande = "https://cloudinary.com" + fotoGrande;
+        fotoGrande = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + fotoGrande;
     }
     imgPrincipal.src = fotoGrande;
     bloqueIzquierdo.appendChild(imgPrincipal);
@@ -739,7 +739,7 @@ function renderizarFichaDetalleZillow(propiedad) {
         if (!fotoChica.startsWith('http://') && !fotoChica.startsWith('https://')) {
             fotoChica = fotoChica.trim().replace(/\s+/g, '_');
             if (!fotoChica.toLowerCase().endsWith('.jpg') && !fotoChica.toLowerCase().endsWith('.png')) fotoChica += '.jpg';
-            fotoChica = "https://cloudinary.com" + fotoChica;
+            fotoChica = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + fotoChica;
         }
         imgSec.src = fotoChica;
         cajaMinifoto.appendChild(imgSec);
