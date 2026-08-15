@@ -37,19 +37,57 @@ function cargarDatosDesdeAppsScript() {
  * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
  * Clasifica dinámicamente las propiedades en base a 'tipo_publicacion' y 'tipo_anuncio'.
  */
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL CON FORMATEO DE CLOUDINARY)
+/**
+ * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS Y FORMATEO SEGURO DE CLOUDINARY
+ * Detecta IDs planos de imagen y los transforma en URLs web completas de Cloudinary.
+ */
 function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // 1. Unificación y limpieza de la galería de imágenes
-    let fotosUnificadas = [];
-    if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
-    if (prop.foto) fotosUnificadas.push(String(prop.foto).trim());
-    if (prop.imagenes_secundarias) {
-        fotosUnificadas.push(...String(prop.imagenes_secundarias).split(',').map(f => f.trim()));
-    }
-    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+    // 💡 CONFIGURACIÓN BASE DE CLOUDINARY: Reemplaza esto con tu cuenta real de Cloudinary
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/"; 
 
-    // 2. LÓGICA EXACTA DE CLASIFICACIÓN RELACIONAL REQUERIDA
+    // Helper modular interno para reconstruir la URL si viene solo el ID del Sheets
+    const asegurarUrlCompleta = (ruta) => {
+        if (!ruta) return "";
+        const textoLimpio = String(ruta).trim();
+        // Si ya empieza con http o https, la dejamos intacta porque ya es una URL completa
+        if (textoLimpio.startsWith('http://') || textoLimpio.startsWith('https://')) {
+            return textoLimpio;
+        }
+        // Si viene solo el nombre o código, le pegamos el prefijo de Cloudinary de forma natural
+        return `${urlBaseCloudinary}${textoLimpio}`;
+    };
+    
+    // 1. FUSIÓN RELACIONAL INTELIGENTE DE FOTOS
+    let fotosUnificadas = [];
+    
+    // Evaluamos y formateamos la foto principal
+    if (prop.foto_principal) {
+        fotosUnificadas.push(asegurarUrlCompleta(prop.foto_principal));
+    } else if (prop.foto) {
+        fotosUnificadas.push(asegurarUrlCompleta(prop.foto));
+    }
+    
+    // Evaluamos, separamos por comas y formateamos las fotos secundarias de la sheet 'imagen_propiedad'
+    if (prop.imagenes_secundarias) {
+        if (Array.isArray(prop.imagenes_secundarias)) {
+            prop.imagenes_secundarias.forEach(f => {
+                if (f) fotosUnificadas.push(asegurarUrlCompleta(f));
+            });
+        } else {
+            String(prop.imagenes_secundarias).split(',').forEach(f => {
+                if (f.trim()) fotosUnificadas.push(asegurarUrlCompleta(f.trim()));
+            });
+        }
+    }
+
+    // Eliminamos duplicados y tomamos las 5 primeras fotos de forma estricta
+    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+    const las5PrimerasFotos = fotosUnicas.slice(0, 5);
+
+    // 2. LÓGICA DE CLASIFICACIÓN RELACIONAL DE ESTADOS
     let estadoZillow = 'Venta'; 
     const publicacion = String(prop.tipo_publicacion || '').trim().toLowerCase();
     const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
@@ -64,19 +102,20 @@ function normalizarPropiedad(prop) {
         }
     }
 
-    // 3. Retorno del objeto homogeneizado listo para los filtros
+    // 3. Retorno del objeto homogeneizado listo para inyectarse en el DOM
     return {
         id: String(id),
         precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
         estadoListado: estadoZillow, 
         fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || '').trim(),
         tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
-        fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
+        fotos: las5PrimerasFotos.length > 0 ? las5PrimerasFotos : ['https://unsplash.com'],
         latitud: parseFloat(prop.latitud || prop.lat || 0),
         longitud: parseFloat(prop.longitud || prop.lng || 0),
         habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 0)
     };
 }
+
 
 function formatearPrecioCompacto(precio) {
     if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
