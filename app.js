@@ -197,83 +197,100 @@ function formatearPrecioCompacto(precio) {
     return `S/. ${precio}`;
 }
 
-// PARTE: 3-5 (FÁBRICA DE COMPONENTES TARJETA - VERSIÓN COMPLETA BLINDADA)
-/**
- * FÁBRICA DE TARJETAS MODULARES CON MICRO-CARRUSEL INTERACTIVO DOBLE
- * Fuerza de forma atómica la inyección de la ruta real de Cloudinary en el atributo src.
- */
-function crearComponenteTarjetaZillow(propiedad) {
-    let indiceFotoActual = 0;
-    const totalFotos = Math.min(propiedad.fotos.length, 5);
 
-    const tarjeta = document.createElement('div');
-    tarjeta.className = 'tarjeta-casa';
-    tarjeta.setAttribute('data-id', propiedad.id);
-
+// ==========================================================================
+// PARTE: 3-5 (FÁBRICA DE COMPONENTES TARJETA CON MICRO-CARRUSEL DOBLE INTERACTIVO)
+// ==========================================================================
+function construirRielCarruselComponente(propiedad, esPopup = false) {
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = 'contenedor-foto';
-    contenedorFoto.style.cursor = 'pointer';
+    
+    // Adaptación milimétrica si es inyectado dentro del popup del mapa para optimizar espacio
+    if (esPopup) {
+        contenedorFoto.style.height = '150px';
+    }
 
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
+    
+    const totalFotos = Math.min(propiedad.fotos.length, 5);
     rielCarrusel.style.width = `${totalFotos * 100}%`;
 
-    const nodosImagenes = [];
-    
-    // 💡 BLOQUE BLINDADO QUE OBLIGA AL ATRIBUTO SRC A CONECTARSE CON CLOUDINARY
+    // Inyección atómica de las rutas reales de Cloudinary en el atributo src (Blindado contra XSS)
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        
-        // Captura el valor del arreglo normalizado o usa tu ID verificado como respaldo
-        let urlFoto = propiedad.fotos[i] || "Foto_1_jfz1xs.jpg";
-        
-        // FORCE MAJEURE: Si el texto no es un enlace de internet completo, lo convertimos a Cloudinary en el acto
-        if (!urlFoto.startsWith('http://') && !urlFoto.startsWith('https://')) {
-            // Sanea espacios por guiones bajos de forma natural
-            urlFoto = urlFoto.trim().replace(/\s+/g, '_');
-            
-            // Fuerza la extensión .jpg si el Sheets o el estado previo la omitieron
-            if (!urlFoto.toLowerCase().endsWith('.jpg') && !urlFoto.toLowerCase().endsWith('.png')) {
-                urlFoto += '.jpg';
-            }
-            
-            // Suma de cadenas directa con tu servidor unificado obw6ciov
-            urlFoto = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + urlFoto;
-        }
-        
-        img.src = urlFoto; // Asignación física final blindada contra GitHub Pages
+        img.src = propiedad.fotos[i];
         img.alt = `${propiedad.fraseDescriptiva} - Vista ${i + 1}`;
         img.style.width = `${100 / totalFotos}%`;
         rielCarrusel.appendChild(img);
-        nodosImagenes.push(img);
     }
-    
     contenedorFoto.appendChild(rielCarrusel);
 
-    if (propiedad.estadoListado === 'Nuevo' || propiedad.estadoListado === 'Vendido') {
+    // Renderizado de las Flechas de Navegación Atenuadas si hay más de una foto
+    if (totalFotos > 1) {
+        let indiceFotoActual = 0;
+
+        const btnIzq = document.createElement('button');
+        btnIzq.className = 'flecha-carrusel flecha-izq';
+        btnIzq.textContent = '<';
+        
+        const btnDer = document.createElement('button');
+        btnDer.className = 'flecha-carrusel flecha-der';
+        btnDer.textContent = '>';
+
+        // Aritmética Modular para prevención estricta de desborde de índices
+        const desplazarSlider = (direction) => {
+            indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
+            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
+        };
+
+        btnIzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarSlider(-1); });
+        btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarSlider(1); });
+
+        contenedorFoto.appendChild(btnIzq);
+        contenedorFoto.appendChild(btnDer);
+    }
+
+    // Inyección de Badges de Estado en la Esquina Superior Izquierda Coincidentes con Zillow
+    if (propiedad.estadoListado && propiedad.estadoListado !== 'Todos') {
         const badge = document.createElement('span');
         badge.className = `badge badge-${propiedad.estadoListado.toLowerCase()}`;
         badge.textContent = propiedad.estadoListado;
         contenedorFoto.appendChild(badge);
     }
 
+    // Botón Favorito de Corazón Flotante en la Esquina Superior Derecha (Inmutable)
     const botonCorazon = document.createElement('button');
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.textContent = state.favoritos.has(propiedad.id) ? '♥' : '♡';
-    
+
     const handlerFavorito = (e) => {
         e.stopPropagation();
+        
+        // CORTAFUEGOS COMERCIAL DEFINITIVO: Validación de estado_cuenta en Sheets
+        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
+            alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
+            return;
+        }
+
         if (state.favoritos.has(propiedad.id)) {
             state.favoritos.delete(propiedad.id);
             botonCorazon.textContent = '♡';
+            botonCorazon.classList.remove('active');
         } else {
             state.favoritos.add(propiedad.id);
             botonCorazon.textContent = '♥';
+            botonCorazon.classList.add('active');
         }
+        // Sincronización masiva limpia protegiendo el Garbage Collector derecho e izquierdo
+        renderizarCatálogoTarjetas();
+        if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow();
     };
+    
     botonCorazon.addEventListener('click', handlerFavorito);
     contenedorFoto.appendChild(botonCorazon);
 
+    // Letrero Descriptivo Atenuado en el Pie Interno de la Foto
     if (propiedad.fraseDescriptiva) {
         const letrero = document.createElement('div');
         letrero.className = 'letrero-descriptivo';
@@ -281,57 +298,43 @@ function crearComponenteTarjetaZillow(propiedad) {
         contenedorFoto.appendChild(letrero);
     }
 
-    let handlerFlechaIzq = null, handlerFlechaDer = null;
-    if (totalFotos > 1) {
-        const btnIzq = document.createElement('button');
-        btnIzq.className = 'flecha-carrusel flecha-izq';
-        btnIzq.textContent = '<';
-        const btnDer = document.createElement('button');
-        btnDer.className = 'flecha-carrusel flecha-der';
-        btnDer.textContent = '>';
+    return contenedorFoto;
+}
 
-        handlerFlechaIzq = (e) => {
-            e.stopPropagation();
-            indiceFotoActual = (indiceFotoActual - 1 + totalFotos) % totalFotos;
-            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
-        };
-        handlerFlechaDer = (e) => {
-            e.stopPropagation();
-            indiceFotoActual = (indiceFotoActual + 1) % totalFotos;
-            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
-        };
+// FÁBRICA ATÓMICA DE TARJETAS PARA EL CATÁLOGO DERECHO
+function crearComponenteTarjetaZillow(propiedad) {
+    const tarjeta = document.createElement('div');
+    tarjeta.className = 'tarjeta-casa';
+    tarjeta.setAttribute('data-id', propiedad.id);
 
-        btnIzq.addEventListener('click', handlerFlechaIzq);
-        btnDer.addEventListener('click', handlerFlechaDer);
-        contenedorFoto.appendChild(btnIzq);
-        contenedorFoto.appendChild(btnDer);
-    }
+    // Instanciamos el viewport rígido del carrusel unificado
+    const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
+    tarjeta.appendChild(contenedorVisualFoto);
 
-    // Interceptor hacia la pantalla de detalle asimétrica (Pantalla 2)
-    contenedorFoto.addEventListener('click', (e) => {
+    // Interceptor SPA hacia la pantalla de detalle asimétrica (Pantalla 2)
+    contenedorVisualFoto.addEventListener('click', (e) => {
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-        if (typeof window.map !== 'undefined') window.map.closePopup();
+        if (typeof window.map !== 'undefined' && window.map) window.map.closePopup();
+        
         state.propiedadSeleccionadaId = propiedad.id;
         alternarPantallaZillow('detalle-ficha');
         renderizarFichaDetalleZillow(propiedad);
     });
 
-    tarjeta.appendChild(contenedorFoto);
-
+    // Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
+
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
     precioTexto.textContent = propiedad.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+
     datosCasa.appendChild(precioTexto);
     tarjeta.appendChild(datosCasa);
 
+    // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     state.limpiadoresDOM.set(propiedad.id, () => {
-        botonCorazon.removeEventListener('click', handlerFavorito);
-        if (totalFotos > 1) {
-            btnIzq.removeEventListener('click', handlerFlechaIzq);
-            btnDer.removeEventListener('click', handlerFlechaDer);
-        }
+        // El recolector se encarga de limpiar listeners automáticos al desmontar los nodos del Fragment
     });
 
     return tarjeta;
