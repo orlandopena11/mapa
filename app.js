@@ -548,8 +548,12 @@ function configurarSegmentado(idContenedor, callback) {
  * Filtro lógico multidimensional puro: Evalúa si un registro pasa todos los criterios activos
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // A. Filtro por Tipo de Transacción
-    const matchTransaccion = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
+    // 💡 SOLUCIÓN MAESTRA: Normaliza el texto quitando la palabra "En " y espacios
+    const estadoFiltroNormalizado = state.filtros.estado.toLowerCase().replace('en ', '').trim();
+    const estadoPropNormalizado = prop.estadoListado.toLowerCase().replace('en ', '').trim();
+
+    // A. Filtro por Tipo de Transacción tolerante y flexible
+    const matchTransaccion = state.filtros.estado === 'Todos' || estadoPropNormalizado === estadoFiltroNormalizado;
     
     // B. Filtro por Rango de Precios
     const matchPrecio = prop.precio >= state.filtros.precioMin && prop.precio <= state.filtros.precioMax;
@@ -564,11 +568,12 @@ function evaluarCriteriosDeFiltrado(prop) {
         }
     }
     
-    // D. Filtro por Tipo de Propiedad (Uso eficiente de Set.has)
+    // D. Filtro por Tipo de Propiedad
     const matchTipo = state.filtros.tiposPropiedad.size === 0 || state.filtros.tiposPropiedad.has(prop.tipoPropiedad || 'Casa');
 
     return matchTransaccion && matchPrecio && matchCamas && matchTipo;
 }
+
 
 /**
  * Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
