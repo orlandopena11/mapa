@@ -49,31 +49,56 @@ state.filtros = {
  * Sanitiza las entradas de Google Sheets y unifica los arreglos de imágenes.
  */
 
+// PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO - AJUSTE DE BACKEND REAL)
+/**
+ * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND REAL
+ * Sincroniza las columnas exactas del Google Sheets con el estado protegido de la app.
+ */
 function normalizarPropiedad(prop) {
-    const id = prop.propiedad_id || prop.id || String(Math.random());
+    // Captura limpia del ID semántico real visto en el espía (Ej: "PROP-001")
+    const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // Unificación estricta del canal de fotos del backend
+    // Unificación y sanidad estricta del arreglo de fotos
     let fotosUnificadas = [];
     if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
+    if (prop.foto) fotosUnificadas.push(String(prop.foto).trim());
+    
+    // Si tu Sheets maneja fotos secundarias en formato de texto o arreglo
     if (Array.isArray(prop.imagenes_secundarias)) {
         fotosUnificadas.push(...prop.imagenes_secundarias.map(f => String(f).trim()));
+    } else if (prop.imagenes_secundarias) {
+        fotosUnificadas.push(...String(prop.imagenes_secundarias).split(',').map(f => f.trim()));
     }
+    
     if (Array.isArray(prop.fotos)) {
         fotosUnificadas.push(...prop.fotos.map(f => String(f).trim()));
     }
-    
-    // Purga de duplicados y valores corruptos en memoria
+
+    // Purga exhaustiva de duplicados y campos vacíos en memoria RAM
     const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
     
+    // Mapeo transparente acoplado al esquema de variables directas del Sheets
     return {
         id: String(id),
-        precio: parseFloat(prop.precio_base || prop.precio || 0),
-        estadoListado: String(prop.estado_publicacion || prop.estado || 'Venta').trim(), // 'Nuevo', 'Vendido', 'Venta'
-        fraseDescriptiva: String(prop.frase_descriptiva || prop.titulo || '').trim(),
+        // Si la columna en tu Excel se llama 'precio_base', 'precio' o 'valor'
+        precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
+        
+        // Mapeo tolerante de estados: Mapea 'estado', 'estado_publicacion' o por defecto 'Nuevo'
+        estadoListado: String(prop.estado || prop.estado_publicacion || 'Nuevo').trim(), 
+        
+        // Consume el campo 'titulo' real que visualizamos en el espía de la consola
+        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || '').trim(),
+        
+        // Si en el Excel la columna es 'tipo' o 'tipo_propiedad'
+        tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
+        
         fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
-        latitud: parseFloat(prop.latitud || 0),
-        longitud: parseFloat(prop.longitud || 0),
-        habitaciones: parseInt(prop.habitaciones || prop.hab || 0)
+        
+        // Mapeo geoespacial directo en la raíz del objeto del Sheets
+        latitud: parseFloat(prop.latitud || prop.lat || prop.lat_gps || 0),
+        longitud: parseFloat(prop.longitud || prop.lng || prop.lon || prop.lon_gps || 0),
+        
+        habitaciones: parseInt(prop.habitaciones || prop.habs || prop.dormitorios || 0)
     };
 }
 
