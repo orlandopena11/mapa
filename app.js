@@ -244,10 +244,10 @@ function renderizarMapaZillow() {
     // Vinculación estricta al ID nativo del HTML: 'map-instance'
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    if (!capaMarcadores) {
-        capaMarcadores = L.layerGroup().addTo(window.map);
+    if (!window.capaMarcadores) {
+        window.capaMarcadores = L.layerGroup().addTo(window.map);
     } else {
-        capaMarcadores.clearLayers();
+        window.capaMarcadores.clearLayers();
     }
 
     // Filtrado lógico unificado mediante nuestra función de criterios avanzados
@@ -289,7 +289,7 @@ function renderizarMapaZillow() {
             }).openPopup();
         });
 
-        capaMarcadores.addLayer(marcador);
+        window.capaMarcadores.addLayer(marcador);
     });     // 👈 LÍNEA 288 aprox: Cierra limpiamente el filtradas.forEach(prop => {
 }    // 👈 LÍNEA 290 aprox: Cierra la función completa function renderizarMapaZillow() {
 
