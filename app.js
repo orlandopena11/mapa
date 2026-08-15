@@ -32,11 +32,7 @@ function cargarDatosDesdeAppsScript() {
     document.body.appendChild(script);
 }
 
-// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA)
-/**
- * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
- * Clasifica dinámicamente las propiedades en base a 'tipo_publicacion' y 'tipo_anuncio'.
- */
+
 // PARTE: 2-5 (NORMALIZACIÓN RELACIONAL CON FORMATEO DE CLOUDINARY)
 /**
  * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS Y FORMATEO SEGURO DE CLOUDINARY
