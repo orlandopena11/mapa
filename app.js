@@ -4,21 +4,25 @@
  * Centraliza el almacenamiento y protege el flujo contra variables mutables globales.
  */
 
-state.filtros = {
-    estado: 'Todos', // 💡 CAMBIO CRÍTICO: Muestra el universo completo de propiedades al arrancar la web
-    precioMin: 0,
-    precioMax: Infinity,
-    camas: 0,
-    camasExactas: false,
-    tiposPropiedad: new Set(['Casa', 'Apartamento'])
-};
-
+const state = {
+    propiedades: [],
+    favoritos: new Set(),
+    filtros: {
+        estado: 'Todos', // 💡 Muestra todo el universo de propiedades al arrancar de forma natural
+        precioMin: 0,
+        precioMax: Infinity,
+        camas: 0,
+        camasExactas: false,
+        baños: 0,
+        tiposPropiedad: new Set(['Casa', 'Apartamento'])
+    },
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     limpiadoresDOM: new Map()
 };
 
 // URL de conexión segura con el backend relacional de Google Apps Script
-const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec";
+const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbyfNpA-Zf_C-uqDxpzX1phQqREIXAhgSvFyVj2VAhWp2-h7wN_2uR44b3wkg152STAzrQ/exec
+";
 
 /**
  * Lector asíncrono seguro mediante inyección controlada de JSONP
@@ -27,6 +31,58 @@ function cargarDatosDesdeAppsScript() {
     const script = document.createElement('script');
     script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`;
     document.body.appendChild(script);
+}
+
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA)
+/**
+ * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
+ * Clasifica dinámicamente las propiedades en base a 'tipo_publicacion' y 'tipo_anuncio'.
+ */
+function normalizarPropiedad(prop) {
+    const id = prop.id || prop.propiedad_id || String(Math.random());
+    
+    // 1. Unificación y limpieza de la galería de imágenes
+    let fotosUnificadas = [];
+    if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
+    if (prop.foto) fotosUnificadas.push(String(prop.foto).trim());
+    if (prop.imagenes_secundarias) {
+        fotosUnificadas.push(...String(prop.imagenes_secundarias).split(',').map(f => f.trim()));
+    }
+    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+
+    // 2. LÓGICA EXACTA DE CLASIFICACIÓN RELACIONAL REQUERIDA
+    let estadoZillow = 'Venta'; 
+    const publicacion = String(prop.tipo_publicacion || '').trim().toLowerCase();
+    const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+
+    if (publicacion === 'vendida' || publicacion === 'vendido') {
+        estadoZillow = 'Vendido';
+    } else if (publicacion === 'disponible') {
+        if (anuncio === 'venta') {
+            estadoZillow = 'Venta';
+        } else if (anuncio === 'alquiler') {
+            estadoZillow = 'Alquiler';
+        }
+    }
+
+    // 3. Retorno del objeto homogeneizado listo para los filtros
+    return {
+        id: String(id),
+        precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
+        estadoListado: estadoZillow, 
+        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || '').trim(),
+        tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
+        fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
+        latitud: parseFloat(prop.latitud || prop.lat || 0),
+        longitud: parseFloat(prop.longitud || prop.lng || 0),
+        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 0)
+    };
+}
+
+function formatearPrecioCompacto(precio) {
+    if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
+    if (precio >= 1000) return `S/. ${(precio / 1000).toFixed(0)}K`;
+    return `S/. ${precio}`;
 }
 
 // PARTE: 1-5 (EXTENSIÓN DE CONTROL DE FILTROS EN EL ESTADO)
