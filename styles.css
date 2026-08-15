@@ -49,52 +49,109 @@ body, html {
    PARTE: 2-5 (BARRA SUPERIOR Y SPLIT-VIEW)
    Estructuración del Layout de Distribución de Pantalla Dividida
    ========================================================================== */
+/* ==========================================================================
+   PARTE: 2-5 (BARRA SUPERIOR ALINEADA EN UNA SOLA LÍNEA ESTILO ZILLOW)
+   ========================================================================== */
 
 .navbar-global {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 12px 24px;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 10px 24px;
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
     z-index: 1000;
+    width: 100vw;
+    overflow-x: auto; /* Permite scroll horizontal sutil en pantallas chicas */
+    white-space: nowrap; /* Impide terminantemente saltos de línea en los filtros */
 }
 
 .navbar-brand-logo {
-    height: 35px;
+    height: 32px;
     width: auto;
     object-fit: contain;
+    flex-shrink: 0;
 }
 
-/* Core del Layout Dividido (Split-View) */
+/* Fila de controles alineada de forma horizontal e indestructible */
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    flex-wrap: nowrap;
+}
+
+.search-input {
+    padding: 8px 14px;
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    font-size: 14px;
+    width: 220px;
+    flex-shrink: 0;
+}
+
+.filter-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Píldoras ovaladas idénticas a la interfaz oficial de Zillow */
+.filter-btn {
+    background-color: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--texto-principal);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn:hover {
+    border-color: var(--azul-zillow);
+    background-color: rgba(0, 106, 255, 0.04);
+}
+
+.filter-btn.active {
+    border-color: var(--azul-zillow);
+    background-color: rgba(0, 106, 255, 0.08);
+    color: var(--azul-zillow);
+}
+
+/* Core del Split-View */
 .split-view {
     display: flex;
     flex: 1;
     min-height: 0;
     position: relative;
-    height: calc(100vh - 60px); /* Ajusta restando la altura de la barra superior */
+    height: calc(100vh - 60px);
     width: 100vw;
 }
 
-/* Fuerza el renderizado geométrico del mapa a la izquierda */
 .map-wrapper {
     width: 45%;
     height: 100%;
     position: relative;
+    border-right: 1px solid var(--gris-borde);
 }
 
 #map-instance {
     width: 100%;
     height: 100%;
-    min-height: 100%;  /* 💡 OBLIGA AL PLANO DE LEAFLET A EXPANDIRSE COMPLETAMENTE */
-    display: block;
+    min-height: 100%;
     display: block;
     z-index: 1;
 }
 
-/* Fuerza el panel del catálogo a la derecha */
 .properties-panel {
     width: 55%;
     height: 100%;
@@ -103,28 +160,29 @@ body, html {
     padding: 24px;
 }
 
-/* Caja de inyección de las tarjetas modulares */
 .properties-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
 
-/* Ocultamiento natural de los menús flotantes por defecto */
 .dropdown-content-panel {
-    display: none; /* Evita que los checkboxes se queden abiertos invadiendo la pantalla */
+    display: none;
     position: absolute;
+    top: 100%;
+    left: 0;
     background-color: #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 16px;
     border-radius: 8px;
     z-index: 2000;
+    margin-top: 4px;
 }
 
-/* Clase reactiva de apertura que se inyectará por JS */
 .dropdown-content-panel.show {
     display: block;
 }
+
 
 /* ==========================================================================
    PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
