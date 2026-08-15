@@ -341,13 +341,14 @@ function crearComponenteTarjetaZillow(propiedad) {
 }
 
 
-// PARTE: 4-5 (MOTOR DE MAPA Y POPUPS ENLAZADOS - REPARADO)
+// ==========================================================================
+// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS EN MAPA IZQUIERDO)
+// ==========================================================================
 function renderizarMapaZillow() {
-    // 💡 INYECCIÓN QUIRÚRGICA: Declaración formal y segura de la capa
     if (typeof window.capaMarcadores === 'undefined') {
         window.capaMarcadores = null;
     }
-    // Vinculación estricta al ID nativo del HTML: 'map-instance'
+
     if (!window.map || !document.getElementById('map-instance')) return;
 
     if (!window.capaMarcadores) {
@@ -356,39 +357,58 @@ function renderizarMapaZillow() {
         window.capaMarcadores.clearLayers();
     }
 
-    // Filtrado lógico unificado mediante nuestra función de criterios avanzados
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    // Iteración nativa sobre los registros válidos para montar las píldoras
     filtradas.forEach(prop => {
         if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio);
-        // Si el estado es 'Nuevo', la píldora se pintará de rojo alerta (#d92323) automáticamente por CSS
         const esNuevo = prop.estadoListado === 'Nuevo';
-        const clasePill = esNuevo ? 'map-price-pill nuevo' : 'map-price-pill';
-
-        const htmlBurbuja = `<div class="${clasePill}"><span>${precioCompacto}</span></div>`;
+        
+        // Estructura controlada agregando texto nativo mediante inyección modular de Leaflet
+        const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({
             html: htmlBurbuja,
-            className: 'custom-leaflet-container',
+            className: `leaflet-marker-icon map-price-pill ${esNuevo ? 'nuevo' : ''}`,
             iconSize: L.point(80, 30),
             iconAnchor: L.point(40, 15)
-   });
+        });
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // Apertura interactiva del popup inyectando la misma fábrica pura de micro-carruseles circulares
+        // Apertura interactiva del popup inyectando la misma fábrica pura de micro-carruseles
         marcador.on('click', () => {
             window.map.panTo(marcador.getLatLng());
 
-            // Fabricamos la tarjeta modular con capacidad de navegación de 5 fotos nativa
-            const tarjetaPopup = crearComponenteTarjetaZillow(prop);
-            tarjetaPopup.classList.add('popup-card');
+            // Fabricamos la tarjeta adaptada con compactación vertical para optimizar espacio del mapa
+            const contenedorPopupMaster = document.createElement('div');
+            contenedorPopupMaster.className = 'tarjeta-casa popup-card';
 
-            marcador.bindPopup(tarjetaPopup, {
+            const carruselPopup = construirRielCarruselComponente(prop, true);
+            contenedorPopupMaster.appendChild(carruselPopup);
+
+            // Bloque de datos inferior interno del Popup (Blindado contra XSS)
+            const datosPopup = document.createElement('div');
+            datosPopup.className = 'datos-casa';
+
+            const pPrice = document.createElement('div');
+            pPrice.className = 'precio';
+            pPrice.textContent = prop.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+            datosPopup.appendChild(pPrice);
+            contenedorPopupMaster.appendChild(datosPopup);
+
+            // Clic en la foto del popup abre el visor SPA de Pantalla 2 de forma inmediata
+            carruselPopup.addEventListener('click', (e) => {
+                if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
+                window.map.closePopup();
+                state.propiedadSeleccionadaId = prop.id;
+                alternarPantallaZillow('detalle-ficha');
+                renderizarFichaDetalleZillow(prop);
+            });
+
+            marcador.bindPopup(contenedorPopupMaster, {
                 maxWidth: 300,
                 minWidth: 280,
                 className: 'zillow-custom-popup-wrapper'
@@ -396,11 +416,9 @@ function renderizarMapaZillow() {
         });
 
         window.capaMarcadores.addLayer(marcador);
-    });     // 👈 LÍNEA 288 aprox: Cierra limpiamente el filtradas.forEach(prop => {
-}    // 👈 LÍNEA 290 aprox: Cierra la función completa function renderizarMapaZillow() {
+    });
+}
 
-
-// PARTE: 5-5 (REJILLA Y CONTROLADOR CORE CONFIGURADO)
 /**
  * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
  * Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
@@ -480,6 +498,10 @@ function procesarDatosDelMotor(data) {
     // Ejecuta el renderizado sincronizado de las vistas
     renderizarMapaZillow();
     renderizarCatálogoTarjetas();
+    
+    // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
+interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
+
 }
 
 
@@ -681,104 +703,135 @@ function alternarPantallaZillow(pantalla) {
     }
 }
 
-// PARTE: 5-5 (RENDERIZADO DE DETALLE ASIMÉTRICO - REPARACIÓN DE RUTAS CLOUDINARY)
+// ==========================================================================
+// PARTE: 5-5 (REPARACIÓN ESTRUCTURAL DE RUTAS SECUENCIALES EN PANTALLA 2)
+// ==========================================================================
 function renderizarFichaDetalleZillow(propiedad) {
     const panelFicha = document.getElementById('contenedor-detalle-zillow');
     if (!panelFicha) return;
-    panelFicha.textContent = '';
-    
-    // Fila superior de navegación
+    panelFicha.textContent = ''; // Limpieza purista de control contra duplicados
+
+    // Fila superior de navegación limpia de la ficha Zillow SPA
     const navFicha = document.createElement('div');
     navFicha.className = 'nav-ficha-zillow';
-    
+
     const btnVolver = document.createElement('button');
     btnVolver.className = 'btn-volver-zillow';
-    btnVolver.textContent = '‹ Volver a buscar';
-    btnVolver.addEventListener('click', () => alternarPantallaZillow('split-view'));
+    btnVolver.textContent = '← Volver a buscar';
+    btnVolver.addEventListener('click', () => {
+        alternarPantallaZillow('split-view');
+        if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow();
+    });
     navFicha.appendChild(btnVolver);
-    
+
     const logoCentro = document.createElement('div');
     logoCentro.className = 'logo-centro-zillow';
     logoCentro.textContent = 'Zillow';
     navFicha.appendChild(logoCentro);
-    navFicha.appendChild(document.createElement('div')); // Espaciador derecho
+
+    navFicha.appendChild(document.createElement('div')); // Espaciador geométrico derecho
     panelFicha.appendChild(navFicha);
-    
-    // Contenedor del mosaico
+
+    // Contenedor del Mosaico de Imágenes de Alta Fidelidad (Split 50/50)
     const contenedorMosaico = document.createElement('div');
     contenedorMosaico.className = 'mosaico-galeria-zillow';
-    
-    // ==========================================
-    // 1. FOTO PRINCIPAL GRANDE (LADO IZQUIERDO)
-    // ==========================================
+
+    // 1. PANEL IZQUIERDO: FOTO PRINCIPAL GRANDE (OCUPA INDICE 0 SIN REPETICIÓN)
     const bloqueIzquierdo = document.createElement('div');
     bloqueIzquierdo.className = 'bloque-foto-principal';
     const imgPrincipal = document.createElement('img');
-    
-    // 💡 FORCE MAJEURE: Valida e inyecta la ruta completa de Cloudinary para la foto principal
-    let fotoGrande = propiedad.fotos[0] || "Foto_1_jfz1xs.jpg";
-    if (!fotoGrande.startsWith('http://') && !fotoGrande.startsWith('https://')) {
-        fotoGrande = fotoGrande.trim().replace(/\s+/g, '_');
-        if (!fotoGrande.toLowerCase().endsWith('.jpg') && !fotoGrande.toLowerCase().endsWith('.png')) fotoGrande += '.jpg';
-        fotoGrande = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + fotoGrande;
-    }
-    imgPrincipal.src = fotoGrande;
+    imgPrincipal.src = propiedad.fotos[0];
     bloqueIzquierdo.appendChild(imgPrincipal);
     contenedorMosaico.appendChild(bloqueIzquierdo);
-    
-    // ==========================================
-    // 2. MATRIZ 2x2 FOTOS SECUNDARIAS (LADO DERECHO)
-    // ==========================================
+
+    // 2. PANEL DERECHO: MATRIZ GRID 2X2 DE FOTOS SECUNDARIAS (CONSUME ÍNDICES 1 A 4 EN SECUENCIA)
     const bloqueDerechoGrid = document.createElement('div');
     bloqueDerechoGrid.className = 'bloque-secundarias-grid';
-    
+
     for (let i = 1; i < 5; i++) {
         const cajaMinifoto = document.createElement('div');
         cajaMinifoto.className = 'caja-minifoto-item';
         const imgSec = document.createElement('img');
         
-        // 💡 FORCE MAJEURE: Valida e inyecta la ruta completa de Cloudinary para cada minifoto
-        let fotoChica = propiedad.fotos[i] || propiedad.fotos[0] || "Foto_1_jfz1xs.jpg";
-        if (!fotoChica.startsWith('http://') && !fotoChica.startsWith('https://')) {
-            fotoChica = fotoChica.trim().replace(/\s+/g, '_');
-            if (!fotoChica.toLowerCase().endsWith('.jpg') && !fotoChica.toLowerCase().endsWith('.png')) fotoChica += '.jpg';
-            fotoChica = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/" + fotoChica;
-        }
-        imgSec.src = fotoChica;
+        // Indexador secuencial puro: toma la foto correspondiente o la anterior si el array es corto
+        imgSec.src = propiedad.fotos[i] || propiedad.fotos[i - 1] || propiedad.fotos[0];
         cajaMinifoto.appendChild(imgSec);
-        
+
+        // Conteo de fotos estilo Zillow en la esquina inferior derecha de la última minifoto
         if (i === 4) {
             const btnVerMas = document.createElement('button');
             btnVerMas.className = 'btn-ver-mas-fotos';
-            btnVerMas.textContent = `田 See all ${propiedad.fotos.length} photos`;
+            btnVerMas.textContent = `Ver las ${propiedad.fotos.length} fotos`;
             cajaMinifoto.appendChild(btnVerMas);
         }
         bloqueDerechoGrid.appendChild(cajaMinifoto);
     }
     contenedorMosaico.appendChild(bloqueDerechoGrid);
+    contenedorMosaico.style.display = 'flex'; // Activación fluida del layout estructurado
     panelFicha.appendChild(contenedorMosaico);
-    
-    // Bloque de datos de texto inferiores
+
+    // 3. Bloque de Información Inferior y Contacto Comercial Privilegiado
     const contenedorFichaDatos = document.createElement('div');
     contenedorFichaDatos.className = 'contenedor-ficha-datos-texto';
+
     const filaMetricas = document.createElement('div');
     filaMetricas.className = 'fila-metricas-zillow';
+
     const spanPrecio = document.createElement('span');
     spanPrecio.className = 'texto-precio-ficha';
     spanPrecio.textContent = propiedad.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+
     const spanSpecs = document.createElement('span');
     spanSpecs.className = 'texto-specs-ficha';
-    spanSpecs.textContent = `${propiedad.habitaciones} beds  |  2 baths  |  1,850 sqft`;
-    
+    spanSpecs.textContent = `${propiedad.habitaciones} Dormitorios | ${propiedad.banos} Baños | ${propiedad.area_construida} m²`;
+
     filaMetricas.appendChild(spanPrecio);
     filaMetricas.appendChild(spanSpecs);
     contenedorFichaDatos.appendChild(filaMetricas);
-    
+
     const filaDireccion = document.createElement('div');
     filaDireccion.className = 'fila-direccion-ficha';
     filaDireccion.textContent = propiedad.fraseDescriptiva;
     contenedorFichaDatos.appendChild(filaDireccion);
-    
+
+    // Bloque de Contacto Dinámico según procesó tu backend (Propietario vs Agente)
+    const bloqueContacto = document.createElement('div');
+    bloqueContacto.style.marginTop = '20px';
+    bloqueContacto.style.padding = '16px';
+    bloqueContacto.style.backgroundColor = '#f8fafc';
+    bloqueContacto.style.borderRadius = '8px';
+    bloqueContacto.style.border = '1px solid #e2e8f0';
+
+    const labelContacto = document.createElement('div');
+    labelContacto.style.fontWeight = 'bold';
+    labelContacto.style.color = '#475569';
+    labelContacto.style.fontSize = '14px';
+    labelContacto.textContent = `Contacto Comercial: ${propiedad.contacto_nombre}`;
+    bloqueContacto.appendChild(labelContacto);
+
+    const btnVerTelefono = document.createElement('button');
+    btnVerTelefono.className = 'filter-btn';
+    btnVerTelefono.style.marginTop = '10px';
+    btnVerTelefono.style.backgroundColor = '#006aff';
+    btnVerTelefono.style.color = '#ffffff';
+    btnVerTelefono.style.border = 'none';
+    btnVerTelefono.textContent = 'Ver número de teléfono';
+
+    btnVerTelefono.addEventListener('click', () => {
+        // CORTAFUEGOS COMERCIAL: Bloqueo inmediato si el estado_cuenta es suspendido
+        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
+            alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
+            return;
+        }
+        
+        // Despliega de inmediato el teléfono limpio procesado por el servidor
+        btnVerTelefono.textContent = propiedad.telefono ? propiedad.telefono : "Teléfono no disponible";
+        btnVerTelefono.style.backgroundColor = '#002e50';
+        btnVerTelefono.disabled = true;
+    });
+
+    bloqueContacto.appendChild(btnVerTelefono);
+    contenedorFichaDatos.appendChild(bloqueContacto);
     panelFicha.appendChild(contenedorFichaDatos);
 }
 
@@ -838,3 +891,44 @@ function ejecutarTuberíaSincronizada() {
     renderizarMapaZillow();
     renderizarCatálogoTarjetas();
 }
+
+// ==========================================================================
+// CORTAFUEGOS COMERCIAL: INYECTOR COMPLEMENTARIO DE SEGURIDAD (HOOK DE FIREWALL)
+// ==========================================================================
+function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioLogueado) {
+    if (!emailUsuarioLogueado || !Array.isArray(listaUsuariosBackend)) {
+        state.usuarioActual = null;
+        return;
+    }
+    
+    // Buscamos el registro exacto del usuario en la Hoja de Sheets enviada por el backend
+    const usuarioEncontrado = listaUsuariosBackend.find(u => String(u.correo || u.email).trim().toLowerCase() === String(emailUsuarioLogueado).trim().toLowerCase());
+    state.usuarioActual = usuarioEncontrado ? usuarioEncontrado : null;
+
+    // Pintamos de forma atómica el banner superior de alerta global si está suspendido
+    const idBanner = 'banner-suspension-alerta';
+    let banner = document.getElementById(idBanner);
+
+    if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = idBanner;
+            banner.className = 'banner-suspension-global';
+            banner.style.backgroundColor = '#d92323';
+            banner.style.color = '#ffffff';
+            banner.style.padding = '10px';
+            banner.style.textAlign = 'center';
+            banner.style.fontWeight = 'bold';
+            banner.style.position = 'fixed';
+            banner.style.top = '0';
+            banner.style.left = '0';
+            banner.style.right = '0';
+            banner.style.zIndex = '99999';
+            banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación. Por favor, contacte con soporte técnico.";
+            document.body.prepend(banner);
+        }
+    } else {
+        if (banner) banner.remove();
+    }
+}
+
