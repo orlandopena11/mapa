@@ -449,23 +449,44 @@ function renderizarCatálogoTarjetas() {
 /**
  * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
  */
+// PARTE: 5-5 (CALLBACK DE RED CON ESPÍA CABEZÓN ACTIVADO)
+/**
+ * CALLBACK CORE DE INTERCEPCIÓN ASÍNCRONA
+ * Inyecta un espía masivo en la consola para auditar los cambios del transformador.
+ */
 function procesarDatosDelMotor(data) {
-    console.log("[ESPÍA ESCONCOR] Intercepción de red exitosa. Datos crudos:", data);
+    // 🧲 ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
+    console.log("==================================================================");
+    console.warn("🚨 [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
+    console.log("Estructura completa entrante:", data);
+    if (data && data.propiedades) {
+        console.table(data.propiedades); // Muestra las columnas del Excel en una tabla interactiva
+    }
+    console.log("==================================================================");
     
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("[ESPÍA ESCONCOR] Formato del backend corrupto o ilegible.");
+        console.error("❌ [ESPÍA CABEZÓN] - ERROR: Estructura del backend corrupta.");
         return;
     }
 
-    // Actualización inmutable del estado central protegido
+    // Ejecuta el mapeo relacional hacia Cloudinary
     state.propiedades = data.propiedades.map(normalizarPropiedad);
     
-    // Disparo unificado y sincronizado de ambas vistas del Split-View
+    // 🧲 ESPÍA CABEZÓN 2: Inspecciona cómo quedó el estado protegido después de la limpieza
+    console.log("==================================================================");
+    console.info("💡 [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
+    console.log("Arreglo procesado final:", state.propiedades);
+    if (state.propiedades.length > 0) {
+        console.log("🔍 REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
+        console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
+    }
+    console.log("==================================================================");
+
+    // Ejecuta el renderizado sincronizado de las vistas
     renderizarMapaZillow();
     renderizarCatálogoTarjetas();
-    
-    console.log("[ESPÍA ESCONCOR] Proceso finalizado. Interfaz de usuario sincronizada perfectamente.");
 }
+
 
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
