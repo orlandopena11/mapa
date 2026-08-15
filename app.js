@@ -4,14 +4,15 @@
  * Centraliza el almacenamiento y protege el flujo contra variables mutables globales.
  */
 
-const state = {
-    propiedades: [],
-    favoritos: new Set(),
-    filtros: {
-        estado: 'Venta',
-        precioMax: 'Todos',
-        habitaciones: 'Todos'
-    },
+state.filtros = {
+    estado: 'Todos', // 💡 CAMBIO CRÍTICO: Muestra el universo completo de propiedades al arrancar la web
+    precioMin: 0,
+    precioMax: Infinity,
+    camas: 0,
+    camasExactas: false,
+    tiposPropiedad: new Set(['Casa', 'Apartamento'])
+};
+
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     limpiadoresDOM: new Map()
 };
@@ -43,71 +44,61 @@ state.filtros = {
 };
 
 
-// PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO)
-/**
- * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND
- * Sanitiza las entradas de Google Sheets y unifica los arreglos de imágenes.
- */
 
 // PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO - AJUSTE DE BACKEND REAL)
 /**
  * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND REAL
  * Sincroniza las columnas exactas del Google Sheets con el estado protegido de la app.
  */
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA)
+/**
+ * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
+ * Clasifica dinámicamente las propiedades en base a 'tipo_publicacion' y 'tipo_anuncio'.
+ */
 function normalizarPropiedad(prop) {
-    // Captura limpia del ID semántico real visto en el espía (Ej: "PROP-001")
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // Unificación y sanidad estricta del arreglo de fotos
+    // 1. Unificación y limpieza de la galería de imágenes
     let fotosUnificadas = [];
     if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
     if (prop.foto) fotosUnificadas.push(String(prop.foto).trim());
-    
-    // Si tu Sheets maneja fotos secundarias en formato de texto o arreglo
-    if (Array.isArray(prop.imagenes_secundarias)) {
-        fotosUnificadas.push(...prop.imagenes_secundarias.map(f => String(f).trim()));
-    } else if (prop.imagenes_secundarias) {
+    if (prop.imagenes_secundarias) {
         fotosUnificadas.push(...String(prop.imagenes_secundarias).split(',').map(f => f.trim()));
     }
-    
-    if (Array.isArray(prop.fotos)) {
-        fotosUnificadas.push(...prop.fotos.map(f => String(f).trim()));
+    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+
+    // 2. LOGICA EXACTA DE CLASIFICACIÓN SOLICITADA
+    let estadoZillow = 'Venta'; // Valor por defecto
+    const publicacion = String(prop.tipo_publicacion || '').trim().toLowerCase();
+    const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+
+    if (publicacion === 'vendida' || publicacion === 'vendido') {
+        estadoZillow = 'Vendido';
+    } else if (publicacion === 'disponible') {
+        if (anuncio === 'venta') {
+            estadoZillow = 'Venta';
+        } else if (anuncio === 'alquiler') {
+            estadoZillow = 'Alquiler';
+        }
     }
 
-    // Purga exhaustiva de duplicados y campos vacíos en memoria RAM
-    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
-    
-    // Mapeo transparente acoplado al esquema de variables directas del Sheets
+    // 3. Retorno del objeto homogeneizado acoplado al backend relacional
     return {
         id: String(id),
-        // Si la columna en tu Excel se llama 'precio_base', 'precio' o 'valor'
         precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
-        
-        // Mapeo tolerante de estados: Mapea 'estado', 'estado_publicacion' o por defecto 'Nuevo'
-        estadoListado: String(prop.estado || prop.estado_publicacion || 'Nuevo').trim(), 
-        
-        // Consume el campo 'titulo' real que visualizamos en el espía de la consola
+        estadoListado: estadoZillow, // Almacena estrictamente: 'Venta', 'Alquiler' o 'Vendido'
         fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || '').trim(),
-        
-        // Si en el Excel la columna es 'tipo' o 'tipo_propiedad'
         tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
-        
         fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
-        
-        // Mapeo geoespacial directo en la raíz del objeto del Sheets
-        latitud: parseFloat(prop.latitud || prop.lat || prop.lat_gps || 0),
-        longitud: parseFloat(prop.longitud || prop.lng || prop.lon || prop.lon_gps || 0),
-        
-        habitaciones: parseInt(prop.habitaciones || prop.habs || prop.dormitorios || 0)
+        latitud: parseFloat(prop.latitud || prop.lat || 0),
+        longitud: parseFloat(prop.longitud || prop.lng || 0),
+        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 0)
     };
 }
 
 function formatearPrecioCompacto(precio) {
-    if (precio >= 1000000) {
-        return `S/. ${(precio / 1000000).toFixed(2)}M`;
-    } else if (precio >= 1000) {
-        return `S/. ${(precio / 1000).toFixed(0)}K`;
-    }
+    if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
+    if (precio >= 1000) return `S/. ${(precio / 1000).toFixed(0)}K`;
     return `S/. ${precio}`;
 }
 
@@ -572,18 +563,18 @@ function configurarSegmentado(idContenedor, callback) {
 /**
  * Filtro lógico multidimensional puro: Evalúa si un registro pasa todos los criterios activos
  */
+// PARTE: 6-5 (MOTOR DE FILTRADO REACTIVO MULTIDIMENSIONAL PURE)
+/**
+ * Evalúa las propiedades en memoria RAM contra las selecciones activas de la interfaz.
+ */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 💡 SOLUCIÓN MAESTRA: Normaliza el texto quitando la palabra "En " y espacios
-    const estadoFiltroNormalizado = state.filtros.estado.toLowerCase().replace('en ', '').trim();
-    const estadoPropNormalizado = prop.estadoListado.toLowerCase().replace('en ', '').trim();
-
-    // A. Filtro por Tipo de Transacción tolerante y flexible
-    const matchTransaccion = state.filtros.estado === 'Todos' || estadoPropNormalizado === estadoFiltroNormalizado;
+    // A. Filtro por Tipo de Transacción (Si está en 'Todos' no descarta ninguna)
+    const matchTransaccion = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
     
     // B. Filtro por Rango de Precios
     const matchPrecio = prop.precio >= state.filtros.precioMin && prop.precio <= state.filtros.precioMax;
     
-    // C. Filtro por Dormitorios (Camas)
+    // C. Filtro por Dormitorios
     let matchCamas = true;
     if (state.filtros.camas > 0) {
         if (state.filtros.camasExactas) {
@@ -592,11 +583,8 @@ function evaluarCriteriosDeFiltrado(prop) {
             matchCamas = prop.habitaciones >= state.filtros.camas;
         }
     }
-    
-    // D. Filtro por Tipo de Propiedad
-    const matchTipo = state.filtros.tiposPropiedad.size === 0 || state.filtros.tiposPropiedad.has(prop.tipoPropiedad || 'Casa');
 
-    return matchTransaccion && matchPrecio && matchCamas && matchTipo;
+    return matchTransaccion && matchPrecio && matchCamas;
 }
 
 
