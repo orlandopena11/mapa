@@ -63,7 +63,7 @@ function normalizarPropiedad(prop) {
             textoLimpio = textoLimpio + '.jpg';
         }
         
-        return `${urlBaseCloudinary}${textoLimpio}`;
+        return urlBaseCloudinary + textoLimpio;
     };
     
     // 2. RECOPILACIÓN Y ACUMULACIÓN DE FOTOS DE AMBAS HOJAS (HASTA 5)
