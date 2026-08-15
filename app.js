@@ -33,40 +33,50 @@ function cargarDatosDesdeAppsScript() {
 }
 
 
-// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL CON FORMATEO DE CLOUDINARY)
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL CON FORMATEO EXACTO DE CLOUDINARY)
 /**
- * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS Y FORMATEO SEGURO DE CLOUDINARY
- * Detecta IDs planos de imagen y los transforma en URLs web completas de Cloudinary.
+ * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS Y PARSEO AUTOMÁTICO A CLOUDINARY
+ * Convierte IDs con espacios del Sheets a rutas web reales y funcionales en Cloudinary.
  */
 function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // 💡 CONFIGURACIÓN BASE DE CLOUDINARY: Reemplaza esto con tu cuenta real de Cloudinary
+    // 💡 RUTA DE TU CUENTA REAL DE CLOUDINARY SUMINISTRADA
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785206431/"; 
 
-    // Helper modular interno para reconstruir la URL si viene solo el ID del Sheets
+    // Helper purista para transformar el texto del Sheets en una URL funcional de Cloudinary
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
-        const textoLimpio = String(ruta).trim();
-        // Si ya empieza con http o https, la dejamos intacta porque ya es una URL completa
+        let textoLimpio = String(ruta).trim();
+        
+        // Si ya es una URL completa, la dejamos intacta
         if (textoLimpio.startsWith('http://') || textoLimpio.startsWith('https://')) {
             return textoLimpio;
         }
-        // Si viene solo el nombre o código, le pegamos el prefijo de Cloudinary de forma natural
+        
+        // 💡 NORMALIZACIÓN MAESTRA: Reemplaza todos los espacios por guiones bajos (Ej: "Foto 1" -> "Foto_1")
+        textoLimpio = textoLimpio.replace(/\s+/g, '_');
+        
+        // Si el texto del Sheets no viene con la extensión, se la agregamos automáticamente (.jpg)
+        if (!textoLimpio.toLowerCase().endsWith('.jpg') && !textoLimpio.toLowerCase().endsWith('.png')) {
+            textoLimpio = textoLimpio + '.jpg';
+        }
+        
+        // Retornamos la combinación limpia y acoplada a tu servidor
         return `${urlBaseCloudinary}${textoLimpio}`;
     };
     
     // 1. FUSIÓN RELACIONAL INTELIGENTE DE FOTOS
     let fotosUnificadas = [];
     
-    // Evaluamos y formateamos la foto principal
+    // Formateamos y añadimos la foto principal
     if (prop.foto_principal) {
         fotosUnificadas.push(asegurarUrlCompleta(prop.foto_principal));
     } else if (prop.foto) {
         fotosUnificadas.push(asegurarUrlCompleta(prop.foto));
     }
     
-    // Evaluamos, separamos por comas y formateamos las fotos secundarias de la sheet 'imagen_propiedad'
+    // Separamos por comas, limpiamos y formateamos las fotos secundarias de 'imagen_propiedad'
     if (prop.imagenes_secundarias) {
         if (Array.isArray(prop.imagenes_secundarias)) {
             prop.imagenes_secundarias.forEach(f => {
@@ -79,7 +89,7 @@ function normalizarPropiedad(prop) {
         }
     }
 
-    // Eliminamos duplicados y tomamos las 5 primeras fotos de forma estricta
+    // Purgamos duplicados y recortamos estrictamente a las 5 primeras imágenes de la propiedad
     const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
     const las5PrimerasFotos = fotosUnicas.slice(0, 5);
 
@@ -98,7 +108,7 @@ function normalizarPropiedad(prop) {
         }
     }
 
-    // 3. Retorno del objeto homogeneizado listo para inyectarse en el DOM
+    // 3. Retorno del objeto inmutable homogeneizado
     return {
         id: String(id),
         precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
