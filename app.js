@@ -33,41 +33,36 @@ function cargarDatosDesdeAppsScript() {
 }
 
 // ==========================================================================
-// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - SOLUCIÓN DEFINITIVA DE IMÁGENES CLOUDINARY)
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - CONEXIÓN CON MOTOR BACKEND V2)
 // ==========================================================================
 function normalizarPropiedad(prop) {
-    const id = prop.id || prop.propiedad_id || String(Math.random());
-    
-    // URL base de tu servidor real de Cloudinary
+    const id = prop.id || String(Math.random());
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
 
-        // Helper purista definitivo con blindaje forzado para nombres sin extensión
+    // Helper purista interno para limpiar, quitar espacios y forzar la URL absoluta de Cloudinary
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
         
         let texto = String(ruta).trim();
         
-        // 1. Si ya viene con el dominio completo de internet, la dejamos pasar intacta
+        // Si ya viene con el enlace completo de internet (como Unsplash), la dejamos pasar intacta
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
         
-        // 2. Limpieza de arquitectura: Reemplaza cualquier espacio por guión bajo
+        // Limpieza de arquitectura: Reemplaza espacios intermedios por guiones bajos
         texto = texto.replace(/\s+/g, '_');
         
-        // 3. 💡 FORCE MAJEURE INTEGRAL: Si el texto no termina con ninguna extensión válida,
-        // le inyectamos de forma obligatoria el formato ".jpg" aquí mismo en el navegador
-        const textoMinuscula = texto.toLowerCase();
-        if (!textoMinuscula.endsWith('.jpg') && !textoMinuscula.endsWith('.png') && !textoMinuscula.endsWith('.webp') && !textoMinuscula.endsWith('.jpeg')) {
+        // Fuerza la extensión si el string no cuenta con ella
+        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && !texto.toLowerCase().endsWith('.webp') && !texto.toLowerCase().endsWith('.jpeg')) {
             texto = texto + '.jpg';
         }
         
-        // 4. CONCATENACIÓN ABSOLUTA FORZADA PARA COMBATIR EL ERROR 404 LOCAL
+        // CONCATENACIÓN ABSOLUTA OBLIGATORIA: Evita que el navegador busque de forma local en GitHub Pages
         return urlBaseCloudinary + texto;
     };
 
-
-    // Procesamos el arreglo de fotos puras que ya construyó el backend en el servidor de Google
+    // 💡 LEER EXACTAMENTE EL ARREGLO 'fotos' QUE ENVIÓ TU NUEVO BACKEND UNIFICADO
     let fotosUnificadas = [];
     if (prop.fotos && Array.isArray(prop.fotos)) {
         fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
@@ -78,40 +73,25 @@ function normalizarPropiedad(prop) {
         fotosUnificadas.push("https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/Foto15_havrr3.webp");
     }
 
-    // LÓGICA DE CLASIFICACIÓN DE ESTADOS (Mantiene compatibilidad con tu esquema actual)
-    let estadoZillow = 'Venta'; 
-    const publicacion = prop.tipo_publicacion ? String(prop.tipo_publicacion).trim().toLowerCase() : '';
-    const anuncio = prop.tipo_anuncio ? String(prop.tipo_anuncio).trim().toLowerCase() : '';
-
-    if (publicacion === 'vendida' || publicacion === 'vendido') {
-        estadoZillow = 'Vendido';
-    } else if (publicacion === 'disponible' || publicacion === '') {
-        if (anuncio === 'venta' || anuncio === '') {
-            estadoZillow = 'Venta';
-        } else if (anuncio === 'alquiler') {
-            estadoZillow = 'Alquiler';
-        }
-    }
-
-    // RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO PARA LAS TARJETAS Y POPUPS (COORDINADO Y SIN DUPLICADOS)
+    // RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO ACOPLADO AL JSON REAL DE TU CONSOLA
     return {
         id: String(id),
         anuncio_id: prop.anuncio_id || "",
-        precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 350000),
-        estadoListado: estadoZillow, 
-        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || 'Propiedad en Surco').trim(),
-        tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
+        precio: parseFloat(prop.precio_base || 350000), // Mapeado a precio_base del backend
+        estadoListado: prop.estado_publicacion || "Venta", // Mapeado a estado_publicacion del backend
+        fraseDescriptiva: String(prop.titulo || 'Propiedad Premium').trim(), // Mapeado a titulo del backend
+        tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
         subtipoPropiedad: String(prop.subtipo_propiedad || '').trim(),
-        fotos: fotosUnificadas, // Array limpio con URLs absolutas hacia Cloudinary listo para producción
+        fotos: fotosUnificadas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
         
-        // GEOLOCALIZACIÓN INTEGRAL ASIGNADA UNA SOLA VEZ PARA EL PANEL IZQUIERDO
-        latitud: parseFloat(prop.latitud || prop.lat || -12.125),
-        longitud: parseFloat(prop.longitud || prop.lng || -76.995),
+        // GEOLOCALIZACIÓN INTEGRAL ASIGNADA DESDE LAS LLAVES REALES DEL BACKEND
+        latitud: parseFloat(prop.latitud || -12.125),
+        longitud: parseFloat(prop.longitud || -76.995),
         
-        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 3),
-        banos: parseInt(prop.banos || 0),
-        area_construida: parseFloat(prop.area_construida || 0),
-        cuota_mantenimiento: parseFloat(prop.cuota_mantenimiento || 0),
+        // Datos técnicos del sub-objeto specs o mapeados directamente
+        habitaciones: parseInt(prop.specs && prop.specs.habitaciones ? prop.specs.habitaciones : (prop.habitaciones || 3)),
+        banos: parseInt(prop.specs && prop.specs.banos ? prop.specs.banos : (prop.banos || 2)),
+        area_construida: parseFloat(prop.specs && prop.specs.area_construida ? prop.specs.area_construida : (prop.area_construida || 0)),
         situacion_propiedad: prop.situacion_propiedad || "",
         sotano: prop.sotano || "no",
         almacen: prop.almacen || "no",
