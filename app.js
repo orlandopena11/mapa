@@ -37,7 +37,7 @@ function cargarDatosDesdeAppsScript() {
 // ==========================================================================
 function normalizarPropiedad(prop) {
     const id = prop.id || String(Math.random());
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     // Helper purista interno para limpiar, quitar espacios y forzar la URL absoluta de Cloudinary
     const asegurarUrlCompleta = (ruta) => {
