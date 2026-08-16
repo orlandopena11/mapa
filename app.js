@@ -109,11 +109,9 @@ function normalizarPropiedad(prop) {
         
         // Nuevas columnas dinámicas inyectadas desde el backend
         telefono: prop.telefono || "",
-        contacto_nombre: prop.contacto_nombre || "Contacto",
+        contacto_nombre: prop.contacto_nombre || "Contacto"
         
-        latitud: parseFloat(prop.latitud || prop.lat || -12.125),
-        longitud: parseFloat(prop.longitud || prop.lng || -76.995),
-        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 3)
+
     };
 }
 
