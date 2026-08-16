@@ -300,40 +300,44 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
     return contenedorFoto;
 }
 
-// FÁBRICA ATÓMICA DE TARJETAS PARA EL CATÁLOGO DERECHO
+// FÁBRICA ATÓMICA DE TARJETAS PARA EL CATÁLOGO DERECHO (SRE PRODUCTION)
 function crearComponenteTarjetaZillow(propiedad) {
     const tarjeta = document.createElement('div');
     tarjeta.className = 'tarjeta-casa';
     tarjeta.setAttribute('data-id', propiedad.id);
 
-    // Instanciamos el viewport rígido del carrusel unificado
+    // 1. Instanciamos el viewport rígido del carrusel unificado de Cloudinary
     const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    // Interceptor SPA hacia la pantalla de detalle asimétrica (Pantalla 2)
-    contenedorVisualFoto.addEventListener('click', (e) => {
+    // 2. Interceptor SPA inmutable hacia la Ficha de Detalle (Pantalla 2)
+    const clickSPAHandler = (e) => {
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-        if (typeof window.map !== 'undefined' && window.map) window.map.closePopup();
+        
+        // Cerramos popups activos consumiendo el estado encapsulado seguro
+        if (state.mapa) state.mapa.closePopup();
         
         state.propiedadSeleccionadaId = propiedad.id;
         alternarPantallaZillow('detalle-ficha');
         renderizarFichaDetalleZillow(propiedad);
-    });
+    };
+    contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
-    // Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
+    // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
 
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
-    precioTexto.textContent = propiedad.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
-
+    // Mapeo simétrico en Dólares USD de acuerdo a tu Sheets real
+    precioTexto.textContent = propiedad.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     datosCasa.appendChild(precioTexto);
+    
     tarjeta.appendChild(datosCasa);
 
-    // Registro interno para la remoción explícita de Listeners (Garbage Collector)
+    // 4. Registro en el Garbage Collector interno para evitar Memory Leaks
     state.limpiadoresDOM.set(propiedad.id, () => {
-        // El recolector se encarga de limpiar listeners automáticos al desmontar los nodos del Fragment
+        contenedorVisualFoto.removeEventListener('click', clickSPAHandler);
     });
 
     return tarjeta;
