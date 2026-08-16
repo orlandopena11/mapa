@@ -718,3 +718,15 @@ div.leaflet-marker-icon.map-price-pill span {
     border-radius: 3px;
     z-index: 8;
 }
+
+/* --- Desplazamiento del Riel controlado por Atributos de Datos --- */
+.carrusel-imagenes[data-foto-activa="0"] { transform: translateX(0%); }
+.carrusel-imagenes[data-foto-activa="1"] { transform: translateX(-100%); }
+.carrusel-imagenes[data-foto-activa="2"] { transform: translateX(-200%); }
+.carrusel-imagenes[data-foto-activa="3"] { transform: translateX(-300%); }
+.carrusel-imagenes[data-foto-activa="4"] { transform: translateX(-400%); }
+
+/* --- Altura del carrusel en el contexto del Popup del Mapa --- */
+.popup-carrusel-context {
+    height: 150px;
+}
