@@ -186,40 +186,33 @@ function formatearPrecioCompacto(precio) {
 }
 
 // ==========================================================================
-// PARTE: 3-5 (FÁBRICA DE COMPONENTES CARRUSEL CON BLINDAJE ABSOLUTO DE URL)
+// PARTE: 3-5 (FÁBRICA INDESTRUCTIBLE DE MICRO-CARRUSELES CON NAVEGACIÓN EN INFINITO)
 // ==========================================================================
 function construirRielCarruselComponente(propiedad, esPopup = false) {
-    // ==========================================================================
-    // 🧲 ESPÍA DE DIAGNÓSTICO EN CALIENTE: AUDITORÍA DE FOTOS EN RENDERIZADO
-    // ==========================================================================
-    console.warn(`[ESPÍA REJILLA] - Construyendo carrusel para ID: ${propiedad.id}`);
-    console.log(`¿Cuántas fotos tiene el objeto propiedad en este microsegundo?:`, propiedad.fotos);
-    // ==========================================================================
-
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = 'contenedor-foto';
     
+    // Ajuste geométrico vertical para compactar la etiqueta dentro del mapa izquierdo
     if (esPopup) {
         contenedorFoto.style.height = '150px';
     }
 
-
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     
-    // Consensuamos las fotos normalizadas del objeto state
-    const fotosAUsar = propiedad.fotos && propiedad.fotos.length > 0 ? propiedad.fotos : ["Foto_1_jfz1xs.jpg"];
-    const totalFotos = Math.min(fotosAUsar.length, 5);
+    // Consumimos directamente el array de imágenes que purificó tu nuevo backend unificado
+    const fotosColeccion = propiedad.fotos && propiedad.fotos.length > 0 ? propiedad.fotos : ["Foto_1_jfz1xs.jpg"];
+    const totalFotos = Math.min(fotosColeccion.length, 5);
     rielCarrusel.style.width = `${totalFotos * 100}%`;
 
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
 
-    // Inyección atómica con validación forzada en tiempo de renderizado
+    // Inyección nativa de las 5 imágenes en el DOM (Blindado contra XSS)
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        let rutaFinal = String(fotosAUsar[i]).trim();
+        let rutaFinal = String(fotosColeccion[i]).trim();
 
-        // 💡 CONTROL MAESTRO: Si por algún motivo la URL no arranca con http, le soldamos Cloudinary y la extensión aquí mismo
+        // Si la URL no es absoluta (no arranca con http), le soldamos el dominio de Cloudinary y la extensión
         if (!rutaFinal.startsWith('http://') && !rutaFinal.startsWith('https://')) {
             rutaFinal = rutaFinal.replace(/\s+/g, '_');
             if (!rutaFinal.toLowerCase().endsWith('.jpg') && !rutaFinal.toLowerCase().endsWith('.png') && !rutaFinal.toLowerCase().endsWith('.webp') && !rutaFinal.toLowerCase().endsWith('.jpeg')) {
@@ -231,12 +224,14 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         img.src = rutaFinal;
         img.alt = `${propiedad.fraseDescriptiva || 'Inmueble'} - Vista ${i + 1}`;
         img.style.width = `${100 / totalFotos}%`;
-        img.loading = 'lazy';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.flexShrink = '0';
         rielCarrusel.appendChild(img);
     }
     contenedorFoto.appendChild(rielCarrusel);
 
-    // Renderizado de las Flechas de Navegación Atenuadas (Aritmética Modular)
+    // ACTIVACIÓN AUTOMÁTICA DE FLECHAS SI EL INMUEBLE TIENE MÁS DE UNA IMAGEN EN SHEETS
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
 
@@ -248,19 +243,20 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         btnDer.className = 'flecha-carrusel flecha-der';
         btnDer.textContent = '>';
 
-        const desplazarSlider = (direction) => {
+        // Aritmética Modular para prevención estricta de desbordes de índices
+        const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
         };
 
-        btnIzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarSlider(-1); });
-        btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarSlider(1); });
+        btnIzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
+        btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(1); });
 
         contenedorFoto.appendChild(btnIzq);
         contenedorFoto.appendChild(btnDer);
     }
 
-    // Inyección de Badges de Estado
+    // Inyección de Badges de Estado en la Esquina Superior Izquierda
     if (propiedad.estadoListado && propiedad.estadoListado !== 'Todos') {
         const badge = document.createElement('span');
         badge.className = `badge badge-${propiedad.estadoListado.toLowerCase()}`;
@@ -268,7 +264,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         contenedorFoto.appendChild(badge);
     }
 
-    // Botón Favorito de Corazón Flotante
+    // Botón Favorito de Corazón Flotante en la Esquina Superior Derecha (Inmutable)
     const botonCorazon = document.createElement('button');
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.textContent = state.favoritos.has(propiedad.id) ? '♥' : '♡';
@@ -291,7 +287,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
     });
     contenedorFoto.appendChild(botonCorazon);
 
-    // Letrero Descriptivo Atenuado
+    // Letrero Descriptivo Atenuado en el Pie Interno de la Foto
     if (propiedad.fraseDescriptiva) {
         const letrero = document.createElement('div');
         letrero.className = 'letrero-descriptivo';
@@ -301,7 +297,6 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
 
     return contenedorFoto;
 }
-
 
 // FÁBRICA ATÓMICA DE TARJETAS PARA EL CATÁLOGO DERECHO
 function crearComponenteTarjetaZillow(propiedad) {
