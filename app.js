@@ -355,7 +355,7 @@ function crearComponenteTarjetaZillow(propiedad) {
 }
 
 // ==========================================================================
-// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS EN MAPA IZQUIERDO - FIJADO)
+// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS NATIVAS EN MAPA)
 // ==========================================================================
 function renderizarMapaZillow() {
     if (typeof window.capaMarcadores === 'undefined') {
@@ -389,49 +389,57 @@ function renderizarMapaZillow() {
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // 💡 FIJADO ARQUITECTÓNICO: Creación diferida del contenedor para evitar el colapso de Leaflet
-        marcador.on('click', () => {
-            window.map.panTo(marcador.getLatLng());
+        // 1. FABRICAMOS EL CONTENEDOR MODULAR ASILADO PARA EL POPUP
+        const contenedorPopupMaster = document.createElement('div');
+        contenedorPopupMaster.className = 'tarjeta-casa popup-card';
+        contenedorPopupMaster.style.width = '260px';
 
-            // 1. Fabricamos el contenedor maestro aislado para el Popup
-            const contenedorPopupMaster = document.createElement('div');
-            contenedorPopupMaster.className = 'tarjeta-casa popup-card';
-            contenedorPopupMaster.style.width = '260px';
+        // 2. INSTANCIAMOS EL MICRO-CARRUSEL DOBLE INTERACTIVO
+        const carruselPopup = construirRielCarruselComponente(prop, true);
+        contenedorPopupMaster.appendChild(carruselPopup);
 
-            // 2. Instanciamos el micro-carrusel doble interactivo
-            const carruselPopup = construirRielCarruselComponente(prop, true);
-            contenedorPopupMaster.appendChild(carruselPopup);
+        // 3. BLOQUE DE DATOS INFERIOR INTERNO DEL POPUP (BLINDADO CONTRA XSS)
+        const datosPopup = document.createElement('div');
+        datosPopup.className = 'datos-casa';
+        datosPopup.style.padding = '8px';
 
-            // 3. Bloque de datos inferior interno del Popup (Blindado contra XSS)
-            const datosPopup = document.createElement('div');
-            datosPopup.className = 'datos-casa';
-            datosPopup.style.padding = '8px';
+        const pPrice = document.createElement('div');
+        pPrice.className = 'precio';
+        pPrice.style.fontSize = '16px';
+        pPrice.style.fontWeight = 'bold';
+        pPrice.style.color = '#002E50';
+        pPrice.textContent = prop.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+        
+        datosPopup.appendChild(pPrice);
+        contenedorPopupMaster.appendChild(datosPopup);
 
-            const pPrice = document.createElement('div');
-            pPrice.className = 'precio';
-            pPrice.style.fontSize = '16px';
-            pPrice.style.fontWeight = 'bold';
-            pPrice.style.color = '#002E50';
-            pPrice.textContent = prop.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
-            
-            datosPopup.appendChild(pPrice);
-            contenedorPopupMaster.appendChild(datosPopup);
+        // 4. INTERCEPTOR SPA PARA SALTAR A LA SEGUNDA PANTALLA AL HACER CLIC EN LA FOTO
+        carruselPopup.addEventListener('click', (e) => {
+            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
+            window.map.closePopup();
+            state.propiedadSeleccionadaId = prop.id;
+            alternarPantallaZillow('detalle-ficha');
+            renderizarFichaDetalleZillow(prop);
+        });
 
-            // 4. Interceptor SPA para saltar a la Segunda Pantalla al hacer clic en la foto
-            carruselPopup.addEventListener('click', (e) => {
-                if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-                window.map.closePopup();
-                state.propiedadSeleccionadaId = prop.id;
-                alternarPantallaZillow('detalle-ficha');
-                renderizarFichaDetalleZillow(prop);
-            });
+        // 5. 💡 ENLAZAMOS EL POPUP DE FORMA NATIVA DIRECTA (SIN MARCADOR.ON CLICK)
+        // Esto elimina la colisión de eventos y sana el error de Leaflet de raíz
+        marcador.bindPopup(contenedorPopupMaster, {
+            maxWidth: 300,
+            minWidth: 260,
+            className: 'zillow-custom-popup-wrapper',
+            autoPan: true
+        });
 
-            // 5. Enlazamos el Popup y lo abrimos de manera atómica para que Leaflet calcule el layerPoint a tiempo
-            marcador.bindPopup(contenedorPopupMaster, {
-                maxWidth: 300,
-                minWidth: 260,
-                className: 'zillow-custom-popup-wrapper'
-            }).openPopup();
+        // 6. ADICIONAL: Sincronización bidireccional al abrir el popup
+        marcador.on('popupopen', () => {
+            // Realiza scroll automático en el catálogo derecho para destacar esta propiedad
+            const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+            if (tarjetaDerecha) {
+                tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tarjetaDerecha.style.outline = '2px solid #006aff';
+                setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2000);
+            }
         });
 
         window.capaMarcadores.addLayer(marcador);
