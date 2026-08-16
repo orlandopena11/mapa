@@ -187,114 +187,75 @@ function formatearPrecioCompacto(precio) {
     return `S/. ${precio}`;
 }
 
-// ==========================================================================
-// PARTE: 3-5 (FÁBRICA INDESTRUCTIBLE DE MICRO-CARRUSELES CON NAVEGACIÓN EN INFINITO)
-// ==========================================================================
+// CONSTRUCTOR SEMÁNTICO DEL MICRO-CARRUSEL (SRE PRODUCTION - CERO ESTILOS EN JS)
 function construirRielCarruselComponente(propiedad, esPopup = false) {
     const contenedorFoto = document.createElement('div');
-    contenedorFoto.className = 'contenedor-foto';
-    
-    // Ajuste geométrico vertical para compactar la etiqueta dentro del mapa izquierdo
-    if (esPopup) {
-        contenedorFoto.style.height = '150px';
-    }
+    contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
 
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
-    
-    // Consumimos directamente el array de imágenes que purificó tu nuevo backend unificado
-    const fotosColeccion = propiedad.fotos && propiedad.fotos.length > 0 ? propiedad.fotos : ["Foto_1_jfz1xs.jpg"];
-    const totalFotos = Math.min(fotosColeccion.length, 5);
-    rielCarrusel.style.width = `${totalFotos * 100}%`;
-
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
-
-    // Inyección nativa de las 5 imágenes en el DOM (Blindado contra XSS)
-    for (let i = 0; i < totalFotos; i++) {
-        const img = document.createElement('img');
-        let rutaFinal = String(fotosColeccion[i]).trim();
-
-        // Si la URL no es absoluta (no arranca con http), le soldamos el dominio de Cloudinary y la extensión
-        if (!rutaFinal.startsWith('http://') && !rutaFinal.startsWith('https://')) {
-            rutaFinal = rutaFinal.replace(/\s+/g, '_');
-            if (!rutaFinal.toLowerCase().endsWith('.jpg') && !rutaFinal.toLowerCase().endsWith('.png') && !rutaFinal.toLowerCase().endsWith('.webp') && !rutaFinal.toLowerCase().endsWith('.jpeg')) {
-                rutaFinal += ".jpg";
-            }
-            rutaFinal = urlBaseCloudinary + rutaFinal;
-        }
-
-        img.src = rutaFinal;
-        img.alt = `${propiedad.fraseDescriptiva || 'Inmueble'} - Vista ${i + 1}`;
-        img.style.width = `${100 / totalFotos}%`;
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.flexShrink = '0';
-        rielCarrusel.appendChild(img);
-    }
+    // Establecemos el estado inicial del índice mediante un atributo de datos nativo
+    rielCarrusel.setAttribute('data-foto-activa', '0');
     contenedorFoto.appendChild(rielCarrusel);
 
-    // ACTIVACIÓN AUTOMÁTICA DE FLECHAS SI EL INMUEBLE TIENE MÁS DE UNA IMAGEN EN SHEETS
+    const totalFotos = Math.min(propiedad.fotos.length, 5);
+    const dotsArray = [];
+
+    const contenedorDots = document.createElement('div');
+    contenedorDots.className = 'indicadores-carrusel';
+
+    for (let i = 0; i < totalFotos; i++) {
+        const img = document.createElement('img');
+        img.src = propiedad.fotos[i];
+        img.alt = `${propiedad.titulo} - Vista ${i + 1}`;
+        rielCarrusel.appendChild(img);
+
+        const dot = document.createElement('span');
+        dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
+        contenedorDots.appendChild(dot);
+        dotsArray.push(dot);
+    }
+    contenedorFoto.appendChild(contenedorDots);
+
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
 
         const btnIzq = document.createElement('button');
         btnIzq.className = 'flecha-carrusel flecha-izq';
         btnIzq.textContent = '<';
-        
+
         const btnDer = document.createElement('button');
         btnDer.className = 'flecha-carrusel flecha-der';
         btnDer.textContent = '>';
 
-        // Aritmética Modular para prevención estricta de desbordes de índices
         const desplazarRiel = (direction) => {
+            // Aritmética modular para navegación circular infinita
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
-            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
+            
+            // Pasamos el control al CSS: actualizamos el atributo sin inyectar estilos en línea
+            rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
+            
+            // Sincronizar los puntos indicadores (dots) cambiando clases semánticas
+            dotsArray.forEach((d, idx) => {
+                if (idx === indiceFotoActual) d.classList.add('activo');
+                else d.classList.remove('activo');
+            });
         };
 
-        btnIzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
-        btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(1); });
+        const clickIzq = (e) => { e.stopPropagation(); desplazarRiel(-1); };
+        const clickDer = (e) => { e.stopPropagation(); desplazarRiel(1); };
+
+        btnIzq.addEventListener('click', clickIzq);
+        btnDer.addEventListener('click', clickDer);
+
+        // Registro explícito en el Garbage Collector para evitar fugas de memoria
+        state.limpiadoresDOM.set(`${propiedad.id}_arrows`, () => {
+            btnIzq.removeEventListener('click', clickIzq);
+            btnDer.removeEventListener('click', clickDer);
+        });
 
         contenedorFoto.appendChild(btnIzq);
         contenedorFoto.appendChild(btnDer);
-    }
-
-    // Inyección de Badges de Estado en la Esquina Superior Izquierda
-    if (propiedad.estadoListado && propiedad.estadoListado !== 'Todos') {
-        const badge = document.createElement('span');
-        badge.className = `badge badge-${propiedad.estadoListado.toLowerCase()}`;
-        badge.textContent = propiedad.estadoListado;
-        contenedorFoto.appendChild(badge);
-    }
-
-    // Botón Favorito de Corazón Flotante en la Esquina Superior Derecha (Inmutable)
-    const botonCorazon = document.createElement('button');
-    botonCorazon.className = 'corazon-favorito';
-    botonCorazon.textContent = state.favoritos.has(propiedad.id) ? '♥' : '♡';
-
-    botonCorazon.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
-            alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
-            return;
-        }
-        if (state.favoritos.has(propiedad.id)) {
-            state.favoritos.delete(propiedad.id);
-            botonCorazon.textContent = '♡';
-        } else {
-            state.favoritos.add(propiedad.id);
-            botonCorazon.textContent = '♥';
-        }
-        renderizarCatálogoTarjetas();
-        if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow();
-    });
-    contenedorFoto.appendChild(botonCorazon);
-
-    // Letrero Descriptivo Atenuado en el Pie Interno de la Foto
-    if (propiedad.fraseDescriptiva) {
-        const letrero = document.createElement('div');
-        letrero.className = 'letrero-descriptivo';
-        letrero.textContent = propiedad.fraseDescriptiva;
-        contenedorFoto.appendChild(letrero);
     }
 
     return contenedorFoto;
