@@ -205,15 +205,13 @@ function formatearPrecioCompacto(precio) {
     return `S/. ${precio}`;
 }
 
-
 // ==========================================================================
-// PARTE: 3-5 (FÁBRICA DE COMPONENTES TARJETA CON MICRO-CARRUSEL DOBLE INTERACTIVO)
+// PARTE: 3-5 (FÁBRICA DE COMPONENTES CARRUSEL CON BLINDAJE ABSOLUTO DE URL)
 // ==========================================================================
 function construirRielCarruselComponente(propiedad, esPopup = false) {
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = 'contenedor-foto';
     
-    // Adaptación milimétrica si es inyectado dentro del popup del mapa para optimizar espacio
     if (esPopup) {
         contenedorFoto.style.height = '150px';
     }
@@ -221,20 +219,36 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     
-    const totalFotos = Math.min(propiedad.fotos.length, 5);
+    // Consensuamos las fotos normalizadas del objeto state
+    const fotosAUsar = propiedad.fotos && propiedad.fotos.length > 0 ? propiedad.fotos : ["Foto_1_jfz1xs.jpg"];
+    const totalFotos = Math.min(fotosAUsar.length, 5);
     rielCarrusel.style.width = `${totalFotos * 100}%`;
 
-    // Inyección atómica de las rutas reales de Cloudinary en el atributo src (Blindado contra XSS)
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
+
+    // Inyección atómica con validación forzada en tiempo de renderizado
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        img.src = propiedad.fotos[i];
-        img.alt = `${propiedad.fraseDescriptiva} - Vista ${i + 1}`;
+        let rutaFinal = String(fotosAUsar[i]).trim();
+
+        // 💡 CONTROL MAESTRO: Si por algún motivo la URL no arranca con http, le soldamos Cloudinary y la extensión aquí mismo
+        if (!rutaFinal.startsWith('http://') && !rutaFinal.startsWith('https://')) {
+            rutaFinal = rutaFinal.replace(/\s+/g, '_');
+            if (!rutaFinal.toLowerCase().endsWith('.jpg') && !rutaFinal.toLowerCase().endsWith('.png') && !rutaFinal.toLowerCase().endsWith('.webp') && !rutaFinal.toLowerCase().endsWith('.jpeg')) {
+                rutaFinal += ".jpg";
+            }
+            rutaFinal = urlBaseCloudinary + rutaFinal;
+        }
+
+        img.src = rutaFinal;
+        img.alt = `${propiedad.fraseDescriptiva || 'Inmueble'} - Vista ${i + 1}`;
         img.style.width = `${100 / totalFotos}%`;
+        img.loading = 'lazy';
         rielCarrusel.appendChild(img);
     }
     contenedorFoto.appendChild(rielCarrusel);
 
-    // Renderizado de las Flechas de Navegación Atenuadas si hay más de una foto
+    // Renderizado de las Flechas de Navegación Atenuadas (Aritmética Modular)
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
 
@@ -246,7 +260,6 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         btnDer.className = 'flecha-carrusel flecha-der';
         btnDer.textContent = '>';
 
-        // Aritmética Modular para prevención estricta de desborde de índices
         const desplazarSlider = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.style.transform = `translateX(-${indiceFotoActual * (100 / totalFotos)}%)`;
@@ -259,7 +272,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         contenedorFoto.appendChild(btnDer);
     }
 
-    // Inyección de Badges de Estado en la Esquina Superior Izquierda Coincidentes con Zillow
+    // Inyección de Badges de Estado
     if (propiedad.estadoListado && propiedad.estadoListado !== 'Todos') {
         const badge = document.createElement('span');
         badge.className = `badge badge-${propiedad.estadoListado.toLowerCase()}`;
@@ -267,38 +280,30 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
         contenedorFoto.appendChild(badge);
     }
 
-    // Botón Favorito de Corazón Flotante en la Esquina Superior Derecha (Inmutable)
+    // Botón Favorito de Corazón Flotante
     const botonCorazon = document.createElement('button');
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.textContent = state.favoritos.has(propiedad.id) ? '♥' : '♡';
 
-    const handlerFavorito = (e) => {
+    botonCorazon.addEventListener('click', (e) => {
         e.stopPropagation();
-        
-        // CORTAFUEGOS COMERCIAL DEFINITIVO: Validación de estado_cuenta en Sheets
         if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
             alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
             return;
         }
-
         if (state.favoritos.has(propiedad.id)) {
             state.favoritos.delete(propiedad.id);
             botonCorazon.textContent = '♡';
-            botonCorazon.classList.remove('active');
         } else {
             state.favoritos.add(propiedad.id);
             botonCorazon.textContent = '♥';
-            botonCorazon.classList.add('active');
         }
-        // Sincronización masiva limpia protegiendo el Garbage Collector derecho e izquierdo
         renderizarCatálogoTarjetas();
         if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow();
-    };
-    
-    botonCorazon.addEventListener('click', handlerFavorito);
+    });
     contenedorFoto.appendChild(botonCorazon);
 
-    // Letrero Descriptivo Atenuado en el Pie Interno de la Foto
+    // Letrero Descriptivo Atenuado
     if (propiedad.fraseDescriptiva) {
         const letrero = document.createElement('div');
         letrero.className = 'letrero-descriptivo';
@@ -308,6 +313,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
 
     return contenedorFoto;
 }
+
 
 // FÁBRICA ATÓMICA DE TARJETAS PARA EL CATÁLOGO DERECHO
 function crearComponenteTarjetaZillow(propiedad) {
