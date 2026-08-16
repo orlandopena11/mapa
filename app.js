@@ -32,33 +32,36 @@ function cargarDatosDesdeAppsScript() {
     document.body.appendChild(script);
 }
 
-
 // ==========================================================================
-// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - VERSIÓN ULTRA ROBUSTA E INDESTRUCTIBLE)
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL - SOLUCIÓN DEFINITIVA DE IMÁGENES CLOUDINARY)
 // ==========================================================================
 function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
+    
+    // URL base de tu servidor real de Cloudinary
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
 
-    // Helper purista interno para limpiar, recortar espacios en blanco y formatear de forma natural
+    // Helper purista interno para limpiar, quitar espacios y forzar la URL absoluta de Cloudinary
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
         
-        // CORRECCIÓN CLAVE: Saneamos rigurosamente cualquier espacio en blanco al inicio o al final antes de evaluar
+        // Saneamos rigurosamente cualquier espacio en blanco al inicio o al final
         let texto = String(ruta).trim();
         
+        // Si ya viene con el enlace completo de internet, la dejamos pasar intacta
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
         
-        // Limpieza obligatoria de la arquitectura: Reemplaza espacios intermedios por guiones bajos
+        // Limpieza de arquitectura: Reemplaza espacios intermedios por guiones bajos
         texto = texto.replace(/\s+/g, '_');
         
-        // Agrega la extensión si el Excel o la base de datos no la tiene
+        // Fuerza la extensión si el string no cuenta con ella
         if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && !texto.toLowerCase().endsWith('.webp')) {
             texto = texto + '.jpg';
         }
         
+        // CONCATENACIÓN ABSOLUTA OBLIGATORIA: Evita que el navegador busque de forma local en GitHub Pages
         return urlBaseCloudinary + texto;
     };
 
@@ -68,7 +71,7 @@ function normalizarPropiedad(prop) {
         fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
     }
 
-    // FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu URL de Cloudinary de respaldo
+    // FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu foto de Cloudinary de respaldo
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push("https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/Foto15_havrr3.webp");
     }
@@ -97,7 +100,7 @@ function normalizarPropiedad(prop) {
         fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || 'Propiedad en Surco').trim(),
         tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
         subtipoPropiedad: String(prop.subtipo_propiedad || '').trim(),
-        fotos: fotosUnificadas, // Array limpio indexado secuencialmente por Cloudinary
+        fotos: fotosUnificadas, // Array limpio con URLs absolutas hacia Cloudinary listo para producción
         
         // GEOLOCALIZACIÓN INTEGRAL ASIGNADA UNA SOLA VEZ PARA EL PANEL IZQUIERDO
         latitud: parseFloat(prop.latitud || prop.lat || -12.125),
@@ -113,11 +116,12 @@ function normalizarPropiedad(prop) {
         vista: prop.vista || "Ninguna",
         creado_por: prop.creado_por || "",
         
-        // Nuevas columnas dinámicas inyectadas desde el backend
+        // Columnas dinámicas inyectadas desde el backend
         telefono: prop.telefono || "",
         contacto_nombre: prop.contacto_nombre || "Contacto"
     };
 }
+
 
 
 function formatearPrecioCompacto(precio) {
