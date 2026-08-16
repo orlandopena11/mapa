@@ -21,7 +21,7 @@ const state = {
 };
 
 // URL de conexión segura con el backend relacional de Google Apps Script
-const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbzELgIsDQA1Sl7yAUiOrtpss4PyyLUx8_BWMjYzvIRMM3hVQEAxyZwy_Y42qDFY3rtjPQ/exec";
+const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbxU08AYdS0RCbLTd4noNMWJG6wGglQe_s-EjeJwXpTWWSo4yEQqsb44MGIhAOgNJTBeEg/exec";
 
 /**
  * Lector asíncrono seguro mediante inyección controlada de JSONP
