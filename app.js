@@ -833,31 +833,46 @@ function configurarSegmentado(idContenedor, callback) {
     });
 }
 
+// PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL RELACIONAL COMPLETO)
 /**
- * Filtro lógico multidimensional puro: Evalúa si un registro pasa todos los criterios activos
- */
-// PARTE: 6-5 (MOTOR DE FILTRADO REACTIVO MULTIDIMENSIONAL PURE)
-/**
- * Evalúa las propiedades en memoria RAM contra las selecciones activas de la interfaz.
+ * REGLA DE NEGOCIO INQUEBRANTABLE PARA FILTRADO DE PROPIEDADES
+ * Cruza las columnas 'estado_publicacion' y 'tipo_anuncio' con el selector superior.
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // A. Filtro por Tipo de Transacción (Si está en 'Todos' no descarta ninguna)
-    const matchTransaccion = state.filtros.estado === 'Todos' || prop.estadoListado === state.filtros.estado;
-    
-    // B. Filtro por Rango de Precios
-    const matchPrecio = prop.precio >= state.filtros.precioMin && prop.precio <= state.filtros.precioMax;
-    
-    // C. Filtro por Dormitorios
-    let matchCamas = true;
-    if (state.filtros.camas > 0) {
-        if (state.filtros.camasExactas) {
-            matchCamas = prop.habitaciones === state.filtros.camas;
-        } else {
-            matchCamas = prop.habitaciones >= state.filtros.camas;
+    // 1. FILTRO DE TRANSACCIÓN RELACIONAL (Tu regla de negocio exacta)
+    const publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
+    const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+    const filtroActivo = state.filtros.estado; // 'Todos', 'Venta', 'Alquiler', 'Vendido'
+
+    if (filtroActivo !== 'Todos') {
+        if (filtroActivo === 'Venta') {
+            // Muestra "En venta" si es disponible y el anuncio es Venta
+            if (!(publicacion === 'disponible' && anuncio === 'venta')) return false;
+        } else if (filtroActivo === 'Alquiler') {
+            // Muestra "Para el alquiler" si es disponible y el anuncio es Alquiler
+            if (!(publicacion === 'disponible' && anuncio === 'alquiler')) return false;
+        } else if (filtroActivo === 'Vendido') {
+            // Muestra "Vendida" si la publicación es vendida o vendido
+            if (!(publicacion === 'vendida' || publicacion === 'vendido')) return false;
         }
     }
 
-    return matchTransaccion && matchPrecio && matchCamas;
+    // 2. FILTRO DE RANGO DE PRECIOS
+    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
+        return false;
+    }
+
+    // 3. FILTRO DE DORMITORIOS (Sincronizado con el sub-objeto .specs del backend)
+    if (state.filtros.camas > 0) {
+        const habitacionesInmueble = parseInt(prop.specs?.habitaciones || 0);
+        if (state.filtros.camasExactas) {
+            if (habitacionesInmueble !== state.filtros.camas) return false;
+        } else {
+            if (habitacionesInmueble < state.filtros.camas) return false;
+        }
+    }
+
+    return true;
 }
 
 
