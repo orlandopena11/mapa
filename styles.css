@@ -603,108 +603,118 @@ div.leaflet-marker-icon.map-price-pill span {
 }
 
 /* ==========================================================================
-   SOPORTE ESTRUCTURAL DE PRODUCCIÓN: MICRO-CARRUSEL INMOBIILARIO ZILLOW V2
+   PARTE: 4-5 (COMPONENTE AVANZADO: MICRO-CARRUSEL INTERACTIVO DOBLE - CLEAN)
    ========================================================================== */
 
-/* 1. Viewport del Carrusel (Forzamos la máscara para ocultar desbordes) */
-.contenedor-foto {
-    position: relative !important;
-    width: 100% !important;
-    overflow: hidden !important;
-    background-color: #eaeaea;
-}
-
-/* 2. Riel de Imágenes (Obligamos a que las 5 fotos se alineen en una fila horizontal) */
-.carrusel-imagenes {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    height: 100% !important;
+/* 1. MÁSCARA DEL VISOR (Aplica tanto a las tarjetas de la derecha como a los popups) */
+.tarjeta-casa .contenedor-foto,
+.zillow-custom-popup-wrapper .contenedor-foto {
+    position: relative;
     width: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1) !important;
+    overflow: hidden;
+    background-color: #f1f5f9;
 }
 
-/* Ajuste geométrico rígido para cada una de las 5 imágenes dentro del riel flex */
-.carrusel-imagenes img {
-    height: 100% !important;
-    object-fit: cover !important;
-    flex-shrink: 0 !important;
-    display: block !important;
+/* 2. RIEL DE IMÁGENES (FLEXBOX PURO): Fuerza la alineación horizontal de las 5 fotos en una fila */
+.tarjeta-casa .carrusel-imagenes,
+.zillow-custom-popup-wrapper .carrusel-imagenes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 3. Controles Interactivos Flotantes (Flechas laterales < y >) */
-.flecha-carrusel {
-    position: absolute !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    background-color: rgba(255, 255, 255, 0.85) !important;
-    color: #2a2a2a !important;
-    border: 1px solid rgba(0, 0, 0, 0.2) !important;
-    width: 30px !important;
-    height: 30px !important;
-    border-radius: 50% !important;
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    font-weight: 800 !important;
-    font-size: 13px !important;
-    z-index: 99 !important; /* Las eleva por encima de la foto de Cloudinary */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
-    transition: background-color 0.2s ease, color 0.2s ease !important;
+/* Reducción estricta y colapsado de cada una de las 5 fotos dentro del flex row */
+.tarjeta-casa .carrusel-imagenes img,
+.zillow-custom-popup-wrapper .carrusel-imagenes img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
 }
 
-.flecha-carrusel:hover {
-    background-color: #ffffff !important;
-    color: #006aff !important;
+/* 3. CONTROLES INTERACTIVOS FLOTANTES (Flechas laterales < y > en capas superiores) */
+.tarjeta-casa .flecha-carrusel,
+.zillow-custom-popup-wrapper .flecha-carrusel {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #1e293b;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    z-index: 10; /* Eleva las flechas limpiamente por encima de la foto de Cloudinary */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s, color 0.2s;
 }
 
-/* Posicionamiento milimétrico en los extremos laterales de la imagen */
-.flecha-izq { left: 8px !important; }
-.flecha-der { right: 8px !important; }
-
-/* 4. Letrero Descriptivo e Indicadores Flotantes Superiores */
-.letrero-descriptivo {
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85)) !important;
-    color: #ffffff !important;
-    padding: 20px 12px 6px 12px !important;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    z-index: 10 !important;
-    pointer-events: none !important;
+.tarjeta-casa .flecha-carrusel:hover,
+.zillow-custom-popup-wrapper .flecha-carrusel:hover {
+    background-color: #ffffff;
+    color: #006aff;
 }
 
-.corazon-favorito {
-    position: absolute !important;
-    top: 10px !important;
-    right: 10px !important;
-    background: none !important;
-    border: none !important;
-    color: #d92323 !important;
-    font-size: 22px !important;
-    cursor: pointer !important;
-    z-index: 20 !important;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+.tarjeta-casa .flecha-izq, .zillow-custom-popup-wrapper .flecha-izq { left: 8px; }
+.tarjeta-casa .flecha-der, .zillow-custom-popup-wrapper .flecha-der { right: 8px; }
+
+/* 4. COMPONENTES FLOTANTES ACCESORIOS (Letreros descriptivos, Corazones y Badges) */
+.tarjeta-casa .letrero-descriptivo,
+.zillow-custom-popup-wrapper .letrero-descriptivo {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+    color: #ffffff;
+    padding: 24px 12px 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 5;
+    pointer-events: none;
 }
 
-.badge {
-    position: absolute !important;
-    top: 10px !important;
-    left: 10px !important;
-    color: #ffffff !important;
-    padding: 3px 8px !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    border-radius: 3px !important;
-    z-index: 20 !important;
+.tarjeta-casa .corazon-favorito,
+.zillow-custom-popup-wrapper .corazon-favorito {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #d92323;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 8;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    padding: 0;
+    line-height: 1;
+}
+
+.tarjeta-casa .badge,
+.zillow-custom-popup-wrapper .badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: #ffffff;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 3px;
+    z-index: 8;
 }
