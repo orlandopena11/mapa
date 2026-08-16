@@ -128,56 +128,59 @@ state.filtros = {
 
 
 
-// PARTE: 2-5 (NORMALIZACIÓN Y FORMATEO - AJUSTE DE BACKEND REAL)
-/**
- * MOTOR DE PROCESAMIENTO Y HOMOGENEIZACIÓN DE DATOS DEL BACKEND REAL
- * Sincroniza las columnas exactas del Google Sheets con el estado protegido de la app.
- */
+
 // PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA)
 /**
  * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
  * Clasifica dinámicamente las propiedades en base a 'tipo_publicacion' y 'tipo_anuncio'.
  */
+// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA DE PRODUCCIÓN)
+/**
+ * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
+ * Consume el arreglo unificado 'fotos' y el sub-objeto 'specs' directamente desde el backend.
+ */
 function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
-    // 1. Unificación y limpieza de la galería de imágenes
-    let fotosUnificadas = [];
-    if (prop.foto_principal) fotosUnificadas.push(String(prop.foto_principal).trim());
-    if (prop.foto) fotosUnificadas.push(String(prop.foto).trim());
-    if (prop.imagenes_secundarias) {
-        fotosUnificadas.push(...String(prop.imagenes_secundarias).split(',').map(f => f.trim()));
-    }
-    const fotosUnicas = [...new Set(fotosUnificadas.filter(Boolean))];
+    // 1. Extraer la galería unificada que ya viene procesada con éxito desde Código.gs
+    const fotosUnicas = Array.isArray(prop.fotos) && prop.fotos.length > 0 ? prop.fotos : ['https://res.cloudinary.com/obw6ciov/image/upload/v1785206440/'];
 
-    // 2. LOGICA EXACTA DE CLASIFICACIÓN SOLICITADA
-    let estadoZillow = 'Venta'; // Valor por defecto
-    const publicacion = String(prop.tipo_publicacion || '').trim().toLowerCase();
-    const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+    // 2. Clasificación exacta basada en las columnas de las Sheets
+    let estadoZillow = 'Venta';
+    const publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
 
     if (publicacion === 'vendida' || publicacion === 'vendido') {
         estadoZillow = 'Vendido';
-    } else if (publicacion === 'disponible') {
-        if (anuncio === 'venta') {
-            estadoZillow = 'Venta';
-        } else if (anuncio === 'alquiler') {
-            estadoZillow = 'Alquiler';
-        }
+    } else if (publicacion === 'alquiler') {
+        estadoZillow = 'Alquiler';
+    } else if (publicacion === 'venta') {
+        estadoZillow = 'Venta';
     }
 
-    // 3. Retorno del objeto homogeneizado acoplado al backend relacional
+    // 3. Retorno simétrico inmutable acoplado al Join de tu backend relacional
     return {
         id: String(id),
-        precio: parseFloat(prop.precio_base || prop.precio || prop.valor || 0),
-        estadoListado: estadoZillow, // Almacena estrictamente: 'Venta', 'Alquiler' o 'Vendido'
-        fraseDescriptiva: String(prop.titulo || prop.frase_descriptiva || '').trim(),
-        tipoPropiedad: String(prop.tipo || prop.tipo_propiedad || 'Casa').trim(),
-        fotos: fotosUnicas.length > 0 ? fotosUnicas : ['https://unsplash.com'],
-        latitud: parseFloat(prop.latitud || prop.lat || 0),
-        longitud: parseFloat(prop.longitud || prop.lng || 0),
-        habitaciones: parseInt(prop.habitaciones || prop.dormitorios || 0)
+        anuncio_id: String(prop.anuncio_id || ''),
+        titulo: String(prop.titulo || 'Inmueble Premium').trim(),
+        precio_base: parseFloat(prop.precio_base || 0),
+        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
+        estado_publicacion: estadoZillow, 
+        fotos: fotosUnicas,
+        latitud: parseFloat(prop.latitud || -12.125),
+        longitud: parseFloat(prop.longitud || -76.995),
+        telefono: String(prop.telefono || '').trim(),
+        contacto_nombre: String(prop.contacto_nombre || 'Contacto').trim(),
+        specs: {
+            habitaciones: parseInt(prop.specs?.habitaciones || 3),
+            banos: parseFloat(prop.specs?.banos || 2),
+            area_construida: parseFloat(prop.specs?.area_construida || 120),
+            sotano: String(prop.specs?.sotano || 'no'),
+            almacen: String(prop.specs?.almacen || 'no'),
+            vista: String(prop.specs?.vista || 'Interna')
+        }
     };
 }
+
 
 function formatearPrecioCompacto(precio) {
     if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
