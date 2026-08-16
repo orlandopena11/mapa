@@ -104,13 +104,12 @@ function normalizarPropiedad(prop) {
     };
 }
 
-
-
-function formatearPrecioCompacto(precio) {
-    if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
-    if (precio >= 1000) return `S/. ${(precio / 1000).toFixed(0)}K`;
-    return `S/. ${precio}`;
+function formatearPrecioCompleto(precio) {
+    const num = parseFloat(precio);
+    if (isNaN(num) || num === 0) return 'Consultar';
+    return num.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 }
+
 
 // PARTE: 1-5 (EXTENSIÓN DE CONTROL DE FILTROS EN EL ESTADO)
 /**
