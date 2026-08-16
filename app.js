@@ -70,7 +70,7 @@ function normalizarPropiedad(prop) {
 
     // FORCE MAJEURE: Si por algún motivo el arreglo quedó vacío, forzamos tu foto de Cloudinary de respaldo
     if (fotosUnificadas.length === 0) {
-        fotosUnificadas.push("https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/Foto15_havrr3.webp");
+        fotosUnificadas.push("https://res.cloudinary.com/obw6ciov/image/upload/Foto15_havrr3.webp");
     }
 
     // RETORNO CON BLINDAJE DE SEGURIDAD ABSOLUTO ACOPLADO AL JSON REAL DE TU CONSOLA
@@ -143,7 +143,7 @@ function normalizarPropiedad(prop) {
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
     // 1. Extraer la galería unificada que ya viene procesada con éxito desde Código.gs
-    const fotosUnicas = Array.isArray(prop.fotos) && prop.fotos.length > 0 ? prop.fotos : ['https://res.cloudinary.com/obw6ciov/image/upload/v1785206440/'];
+    const fotosUnicas = Array.isArray(prop.fotos) && prop.fotos.length > 0 ? prop.fotos : ['https://res.cloudinary.com/obw6ciov/image/upload/'];
 
     // 2. Clasificación exacta basada en las columnas de las Sheets
     let estadoZillow = 'Venta';
@@ -208,7 +208,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false) {
     const totalFotos = Math.min(fotosColeccion.length, 5);
     rielCarrusel.style.width = `${totalFotos * 100}%`;
 
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     // Inyección nativa de las 5 imágenes en el DOM (Blindado contra XSS)
     for (let i = 0; i < totalFotos; i++) {
