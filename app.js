@@ -354,9 +354,8 @@ function crearComponenteTarjetaZillow(propiedad) {
     return tarjeta;
 }
 
-
 // ==========================================================================
-// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS EN MAPA IZQUIERDO)
+// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS EN MAPA IZQUIERDO - FIJADO)
 // ==========================================================================
 function renderizarMapaZillow() {
     if (typeof window.capaMarcadores === 'undefined') {
@@ -378,8 +377,6 @@ function renderizarMapaZillow() {
 
         const precioCompacto = formatearPrecioCompacto(prop.precio);
         const esNuevo = prop.estadoListado === 'Nuevo';
-        
-        // Estructura controlada agregando texto nativo mediante inyección modular de Leaflet
         const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
@@ -392,28 +389,35 @@ function renderizarMapaZillow() {
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // Apertura interactiva del popup inyectando la misma fábrica pura de micro-carruseles
+        // 💡 FIJADO ARQUITECTÓNICO: Creación diferida del contenedor para evitar el colapso de Leaflet
         marcador.on('click', () => {
             window.map.panTo(marcador.getLatLng());
 
-            // Fabricamos la tarjeta adaptada con compactación vertical para optimizar espacio del mapa
+            // 1. Fabricamos el contenedor maestro aislado para el Popup
             const contenedorPopupMaster = document.createElement('div');
             contenedorPopupMaster.className = 'tarjeta-casa popup-card';
+            contenedorPopupMaster.style.width = '260px';
 
+            // 2. Instanciamos el micro-carrusel doble interactivo
             const carruselPopup = construirRielCarruselComponente(prop, true);
             contenedorPopupMaster.appendChild(carruselPopup);
 
-            // Bloque de datos inferior interno del Popup (Blindado contra XSS)
+            // 3. Bloque de datos inferior interno del Popup (Blindado contra XSS)
             const datosPopup = document.createElement('div');
             datosPopup.className = 'datos-casa';
+            datosPopup.style.padding = '8px';
 
             const pPrice = document.createElement('div');
             pPrice.className = 'precio';
+            pPrice.style.fontSize = '16px';
+            pPrice.style.fontWeight = 'bold';
+            pPrice.style.color = '#002E50';
             pPrice.textContent = prop.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+            
             datosPopup.appendChild(pPrice);
             contenedorPopupMaster.appendChild(datosPopup);
 
-            // Clic en la foto del popup abre el visor SPA de Pantalla 2 de forma inmediata
+            // 4. Interceptor SPA para saltar a la Segunda Pantalla al hacer clic en la foto
             carruselPopup.addEventListener('click', (e) => {
                 if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
                 window.map.closePopup();
@@ -422,9 +426,10 @@ function renderizarMapaZillow() {
                 renderizarFichaDetalleZillow(prop);
             });
 
+            // 5. Enlazamos el Popup y lo abrimos de manera atómica para que Leaflet calcule el layerPoint a tiempo
             marcador.bindPopup(contenedorPopupMaster, {
                 maxWidth: 300,
-                minWidth: 280,
+                minWidth: 260,
                 className: 'zillow-custom-popup-wrapper'
             }).openPopup();
         });
@@ -432,6 +437,7 @@ function renderizarMapaZillow() {
         window.capaMarcadores.addLayer(marcador);
     });
 }
+
 
 /**
  * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
