@@ -41,29 +41,31 @@ function normalizarPropiedad(prop) {
     // URL base de tu servidor real de Cloudinary
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/v1785955755/";
 
-    // Helper purista interno para limpiar, quitar espacios y forzar la URL absoluta de Cloudinary
+        // Helper purista definitivo con blindaje forzado para nombres sin extensión
     const asegurarUrlCompleta = (ruta) => {
         if (!ruta) return "";
         
-        // Saneamos rigurosamente cualquier espacio en blanco al inicio o al final
         let texto = String(ruta).trim();
         
-        // Si ya viene con el enlace completo de internet, la dejamos pasar intacta
+        // 1. Si ya viene con el dominio completo de internet, la dejamos pasar intacta
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
         
-        // Limpieza de arquitectura: Reemplaza espacios intermedios por guiones bajos
+        // 2. Limpieza de arquitectura: Reemplaza cualquier espacio por guión bajo
         texto = texto.replace(/\s+/g, '_');
         
-        // Fuerza la extensión si el string no cuenta con ella
-        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && !texto.toLowerCase().endsWith('.webp')) {
+        // 3. 💡 FORCE MAJEURE INTEGRAL: Si el texto no termina con ninguna extensión válida,
+        // le inyectamos de forma obligatoria el formato ".jpg" aquí mismo en el navegador
+        const textoMinuscula = texto.toLowerCase();
+        if (!textoMinuscula.endsWith('.jpg') && !textoMinuscula.endsWith('.png') && !textoMinuscula.endsWith('.webp') && !textoMinuscula.endsWith('.jpeg')) {
             texto = texto + '.jpg';
         }
         
-        // CONCATENACIÓN ABSOLUTA OBLIGATORIA: Evita que el navegador busque de forma local en GitHub Pages
+        // 4. CONCATENACIÓN ABSOLUTA FORZADA PARA COMBATIR EL ERROR 404 LOCAL
         return urlBaseCloudinary + texto;
     };
+
 
     // Procesamos el arreglo de fotos puras que ya construyó el backend en el servidor de Google
     let fotosUnificadas = [];
