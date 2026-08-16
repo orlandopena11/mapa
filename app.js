@@ -209,12 +209,20 @@ function formatearPrecioCompacto(precio) {
 // PARTE: 3-5 (FÁBRICA DE COMPONENTES CARRUSEL CON BLINDAJE ABSOLUTO DE URL)
 // ==========================================================================
 function construirRielCarruselComponente(propiedad, esPopup = false) {
+    // ==========================================================================
+    // 🧲 ESPÍA DE DIAGNÓSTICO EN CALIENTE: AUDITORÍA DE FOTOS EN RENDERIZADO
+    // ==========================================================================
+    console.warn(`[ESPÍA REJILLA] - Construyendo carrusel para ID: ${propiedad.id}`);
+    console.log(`¿Cuántas fotos tiene el objeto propiedad en este microsegundo?:`, propiedad.fotos);
+    // ==========================================================================
+
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = 'contenedor-foto';
     
     if (esPopup) {
         contenedorFoto.style.height = '150px';
     }
+
 
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
