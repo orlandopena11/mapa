@@ -839,10 +839,10 @@ function configurarSegmentado(idContenedor, callback) {
  * Cruza los valores unificados de las hojas 'propiedad' y 'anuncio' con la Navbar superior.
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 1. Captura inmutable del filtro seleccionado en la barra superior (Por defecto: Venta)
+    // 1. Captura de los filtros activos en la barra superior (Por defecto: Venta)
     const filtroTransaccion = state.filtros.estado || "Venta"; 
     
-    // Captura segura del input de texto de localidad o avenidas
+    // Captura segura del input de texto de localidad, avenidas o calles
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
@@ -874,9 +874,9 @@ function evaluarCriteriosDeFiltrado(prop) {
         console.log(`%c👉 PASÓ REGLA 'PARA EL ALQUILER' -> ID: ${prop.id}`, "color: #ffaa00; font-weight: bold;");
 
     } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // VENDIDO: estado_publicacion="vendida"
-        if (!(columna_estado_publicacion === "vendida" || columna_estado_publicacion === "vendido")) {
-            console.log(`❌ RECHAZADO EN REGLA 'VENDIDO': ID: ${prop.id} requiere que estado_publicacion sea "vendida"`);
+        // VENDIDO: estado_publicacion=estrictamente "vendida"
+        if (columna_estado_publicacion !== "vendida") {
+            console.log(`❌ RECHAZADO EN REGLA 'VENDIDO': ID: ${prop.id} requiere que estado_publicacion sea exactamente "vendida"`);
             return false;
         }
         console.log(`%c👉 PASÓ REGLA 'VENDIDO' -> ID: ${prop.id}`, "color: #d92323; font-weight: bold;");
@@ -906,30 +906,6 @@ function evaluarCriteriosDeFiltrado(prop) {
     return true;
 }
 
-
-    // ==========================================
-    // REGLA DEL PRIMER FILTRO (LOCALIDAD / CALLE / AV)
-    // ==========================================
-    if (textoBuscarDireccion !== "") {
-        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
-            console.log(`❌ RECHAZADO EN REGLA 'LOCALIDAD': El término "${textoBuscarDireccion}" no coincide con el título.`);
-            return false;
-        }
-        console.log(`%c👉 PASÓ REGLA 'LOCALIDAD' -> ID: ${prop.id} coincide con "${textoBuscarDireccion}"`, "color: #008000;");
-    }
-
-    // ==========================================
-    // REGLAS COMPLEMENTARIAS (RANGO DE PRECIOS)
-    // ==========================================
-    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
-        console.log(`❌ RECHAZADO EN REGLA 'PRECIO': Valor $${prop.precio_base} USD fuera de rango.`);
-        return false;
-    }
-
-    // 🕵️‍♂️ ESPÍA CONTROLADO 2: Canta victoria absoluta si pasa todos los coladores
-    console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} se enviará al catálogo y mapa.`, "color: #008000; font-weight: bold; font-size: 11px;");
-    return true;
-}
 
 /**
  * Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
