@@ -833,19 +833,20 @@ function configurarSegmentado(idContenedor, callback) {
     });
 }
 
-// PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL RELACIONAL INDESTRUCTIBLE CON ESPÍAS)
+// PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL RELACIONAL CON CLARIDAD SRE)
 /**
  * REGLA DE NEGOCIO STRICT DE GOOGLE SHEETS
- * Cruza los valores literales de las tablas 'propiedad' y 'anuncio' con la Navbar superior.
+ * Cruza los valores unificados de las hojas 'propiedad' y 'anuncio' con la Navbar superior.
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 1. Captura de los selectores activos en el estado de la aplicación
-    const filtroTransaccion = state.filtros.estado || "Venta"; // Por defecto arranca en 'Venta'
+    // 1. Captura inmutable del filtro seleccionado en la barra superior (Por defecto: Venta)
+    const filtroTransaccion = state.filtros.estado || "Venta"; 
     
+    // Captura segura del input de texto de localidad o avenidas
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // LECTURA DIRECTA DE LAS COLUMNAS CRUDAS DEL SHEET (Sin intermediarios)
+    // LECTURA DIRECTA DE LAS COLUMNAS CRUDAS DEL SHEET
     const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
     const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
     const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
@@ -873,13 +874,38 @@ function evaluarCriteriosDeFiltrado(prop) {
         console.log(`%c👉 PASÓ REGLA 'PARA EL ALQUILER' -> ID: ${prop.id}`, "color: #ffaa00; font-weight: bold;");
 
     } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // VENDIDO: estado_publicacion="vendida" (o vendido por seguridad de digitación)
+        // VENDIDO: estado_publicacion="vendida"
         if (!(columna_estado_publicacion === "vendida" || columna_estado_publicacion === "vendido")) {
             console.log(`❌ RECHAZADO EN REGLA 'VENDIDO': ID: ${prop.id} requiere que estado_publicacion sea "vendida"`);
             return false;
         }
         console.log(`%c👉 PASÓ REGLA 'VENDIDO' -> ID: ${prop.id}`, "color: #d92323; font-weight: bold;");
     }
+
+    // ==========================================
+    // REGLA DEL PRIMER FILTRO (LOCALIDAD / CALLE / AV)
+    // ==========================================
+    if (textoBuscarDireccion !== "") {
+        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
+            console.log(`❌ RECHAZADO EN REGLA 'LOCALIDAD': El término "${textoBuscarDireccion}" no coincide con el título.`);
+            return false;
+        }
+        console.log(`%c👉 PASÓ REGLA 'LOCALIDAD' -> ID: ${prop.id} coincide con "${textoBuscarDireccion}"`, "color: #008000;");
+    }
+
+    // ==========================================
+    // REGLAS COMPLEMENTARIAS (RANGO DE PRECIOS)
+    // ==========================================
+    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
+        console.log(`❌ RECHAZADO EN REGLA 'PRECIO': Valor $${prop.precio_base} USD fuera de rango.`);
+        return false;
+    }
+
+    // 🕵️‍♂️ ESPÍA CONTROLADO 2: Canta victoria absoluta si pasa todos los coladores
+    console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} se enviará al catálogo y mapa.`, "color: #008000; font-weight: bold; font-size: 11px;");
+    return true;
+}
+
 
     // ==========================================
     // REGLA DEL PRIMER FILTRO (LOCALIDAD / CALLE / AV)
