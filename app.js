@@ -835,19 +835,19 @@ function configurarSegmentado(idContenedor, callback) {
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 /**
- * REGLA DE NEGOCIO RELACIONAL AJUSTADA ESTRICTAMENTE A TUS SHEETS (SRE REFACTOR)
- * Cruza las columnas puros 'estado_publicacion' y 'tipo_anuncio' bajo las reglas fijas de tu negocio.
- * Filtra las propiedades de acuerdo a la opción seleccionada en la barra superior.
+ * LÓGICA DE FILTRADO RELACIONAL SIN MUTACIONES (SRE DEFINITIVO)
+ * Evalúa las propiedades cruzando 'estado_publicacion' y 'tipo_anuncio' con la barra superior.
+ * Reglas fijas: Disponible + Venta ("En Venta") | Disponible + Alquiler ("Para el alquiler") | Vendida ("Vendido").
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 1. Captura del filtro seleccionado por el usuario en la barra superior (Por defecto: Venta)
-    const filtroTransaccion = state.filtros.estado || "Venta"; 
+    // 1. Captura del filtro seleccionado en la barra superior pasándolo a minúsculas para unificación total
+    const estadoFiltroActivo = String(state.filtros.estado || "venta").trim().toLowerCase(); 
     
     // Captura segura del texto del buscador por calles o avenidas (Filtro 1)
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // NORMALIZACIÓN DE SEGURIDAD CONTRA ARTRITIS DE DATOS: Pasamos a minúsculas solo para comparar sin fallas de tipeo
+    // NORMALIZACIÓN PARA COMPARACIONES: Extrae los valores puros enviados por tu backend limpio
     const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
     const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
     const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
@@ -858,17 +858,17 @@ function evaluarCriteriosDeFiltrado(prop) {
     // ==========================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL FIJA DE TU NEGOCIO
     // ==========================================
-    if (filtroTransaccion === "Venta") {
+    if (estadoFiltroActivo === "venta" || estadoFiltroActivo === "en venta") {
         // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'venta'
         if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "venta" || columna_tipo_anuncio === "vender"))) {
             return false;
         }
-    } else if (filtroTransaccion === "Alquiler") {
+    } else if (estadoFiltroActivo === "alquiler" || estadoFiltroActivo === "para el alquiler") {
         // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'alquiler'
         if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "alquiler" || columna_tipo_anuncio === "renta"))) {
             return false;
         }
-    } else if (filtroTransaccion === "Vendido") {
+    } else if (estadoFiltroActivo === "vendido" || estadoFiltroActivo === "vendidas") {
         // REGLA: estado_publicacion debe ser estrictamente 'vendida' o 'vendido'
         if (columna_estado_publicacion !== "vendida" && columna_estado_publicacion !== "vendido") {
             return false;
@@ -896,7 +896,8 @@ function evaluarCriteriosDeFiltrado(prop) {
     return true;
 }
 
- /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
+ 
+/* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
  */
 function ejecutarTuberíaSincronizada() {
     // Redirigimos el renderizado del mapa para que consuma la lógica unificada
