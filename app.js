@@ -835,19 +835,19 @@ function configurarSegmentado(idContenedor, callback) {
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 /**
- * LÓGICA DE FILTRADO RELACIONAL SIN MUTACIONES (SRE DEFINITIVO)
- * Evalúa las propiedades cruzando 'estado_publicacion' y 'tipo_anuncio' con la barra superior.
- * Reglas fijas: Disponible + Venta ("En Venta") | Disponible + Alquiler ("Para el alquiler") | Vendida ("Vendido").
+ * REGLA DE NEGOCIO RELACIONAL FIJA DE TU NEGOCIO (SRE REFACTOR)
+ * Cruza las columnas puros 'estado_publicacion' y 'tipo_anuncio' bajo tus especificaciones estrictas.
+ * Valores válidos de la Sheet propiedad analizados: 'disponible' y 'vendida'.
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 1. Captura del filtro seleccionado en la barra superior pasándolo a minúsculas para unificación total
-    const estadoFiltroActivo = String(state.filtros.estado || "venta").trim().toLowerCase(); 
+    // 1. Captura del filtro seleccionado por el usuario en la barra superior (Por defecto: Venta)
+    const filtroTransaccion = state.filtros.estado || "Venta"; 
     
     // Captura segura del texto del buscador por calles o avenidas (Filtro 1)
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // NORMALIZACIÓN PARA COMPARACIONES: Extrae los valores puros enviados por tu backend limpio
+    // NORMALIZACIÓN DE SEGURIDAD: Pasamos a minúsculas solo para comparar de forma segura sin fallas de tipeo
     const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
     const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
     const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
@@ -856,21 +856,21 @@ function evaluarCriteriosDeFiltrado(prop) {
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}" | tipo_anuncio = "${columna_tipo_anuncio}"`);
 
     // ==========================================
-    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL FIJA DE TU NEGOCIO
+    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL EXTRACTA DE TU NEGOCIO
     // ==========================================
-    if (estadoFiltroActivo === "venta" || estadoFiltroActivo === "en venta") {
-        // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'venta'
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
+        // EN VENTA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'venta'
         if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "venta" || columna_tipo_anuncio === "vender"))) {
             return false;
         }
-    } else if (estadoFiltroActivo === "alquiler" || estadoFiltroActivo === "para el alquiler") {
-        // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'alquiler'
+    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        // PARA EL ALQUILER: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'alquiler'
         if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "alquiler" || columna_tipo_anuncio === "renta"))) {
             return false;
         }
-    } else if (estadoFiltroActivo === "vendido" || estadoFiltroActivo === "vendidas") {
-        // REGLA: estado_publicacion debe ser estrictamente 'vendida' o 'vendido'
-        if (columna_estado_publicacion !== "vendida" && columna_estado_publicacion !== "vendido") {
+    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        // VENDIDO: estado_publicacion debe ser estrictamente la palabra 'vendida'
+        if (columna_estado_publicacion !== "vendida") {
             return false;
         }
     }
@@ -895,7 +895,6 @@ function evaluarCriteriosDeFiltrado(prop) {
     console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 }
-
  
 /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
  */
