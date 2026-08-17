@@ -358,7 +358,7 @@ function renderizarMapaZillow() {
         pPrice.style.fontSize = '16px';
         pPrice.style.fontWeight = 'bold';
         pPrice.style.color = '#002E50';
-        pPrice.textContent = prop.precio.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+        pPrice.textContent = prop.precio_base.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
         
         datosPopup.appendChild(pPrice);
         contenedorPopupMaster.appendChild(datosPopup);
