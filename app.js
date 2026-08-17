@@ -325,7 +325,7 @@ function renderizarMapaZillow() {
     filtradas.forEach(prop => {
         if (!prop.latitud || !prop.longitud) return;
 
-        const precioCompacto = formatearPrecioCompacto(prop.precio);
+        const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         const esNuevo = prop.estadoListado === 'Nuevo';
         const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
