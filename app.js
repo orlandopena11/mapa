@@ -833,48 +833,77 @@ function configurarSegmentado(idContenedor, callback) {
     });
 }
 
-// PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL RELACIONAL COMPLETO)
+// PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL RELACIONAL INDESTRUCTIBLE CON ESPÍAS)
 /**
- * REGLA DE NEGOCIO INQUEBRANTABLE PARA FILTRADO DE PROPIEDADES
- * Cruza las columnas 'estado_publicacion' y 'tipo_anuncio' con el selector superior.
+ * REGLA DE NEGOCIO STRICT DE GOOGLE SHEETS
+ * Cruza los valores literales de las tablas 'propiedad' y 'anuncio' con la Navbar superior.
  */
 function evaluarCriteriosDeFiltrado(prop) {
-    // 1. FILTRO DE TRANSACCIÓN RELACIONAL (Tu regla de negocio exacta)
-    const publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
-    const anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
-    const filtroActivo = state.filtros.estado; // 'Todos', 'Venta', 'Alquiler', 'Vendido'
+    // 1. Captura de los selectores activos en el estado de la aplicación
+    const filtroTransaccion = state.filtros.estado || "Venta"; // Por defecto arranca en 'Venta'
+    
+    const inputDireccionNode = document.getElementById('search-address');
+    const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    if (filtroActivo !== 'Todos') {
-        if (filtroActivo === 'Venta') {
-            // Muestra "En venta" si es disponible y el anuncio es Venta
-            if (!(publicacion === 'disponible' && anuncio === 'venta')) return false;
-        } else if (filtroActivo === 'Alquiler') {
-            // Muestra "Para el alquiler" si es disponible y el anuncio es Alquiler
-            if (!(publicacion === 'disponible' && anuncio === 'alquiler')) return false;
-        } else if (filtroActivo === 'Vendido') {
-            // Muestra "Vendida" si la publicación es vendida o vendido
-            if (!(publicacion === 'vendida' || publicacion === 'vendido')) return false;
+    // LECTURA DIRECTA DE LAS COLUMNAS CRUDAS DEL SHEET (Sin intermediarios)
+    const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
+    const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+    const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
+
+    // 🕵️‍♂️ ESPÍA CONTROLADO 1: Reporta el estado de entrada de la propiedad en las Sheets
+    console.warn(`[FILTRO DIAGNOSTIC] Evaluando Inmueble ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}" | tipo_anuncio = "${columna_tipo_anuncio}"`);
+
+    // ==========================================
+    // REGLA DE NEGOCIO DEL SEGUNDO FILTRO (TRANSACCIÓN RELACIONAL)
+    // ==========================================
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
+        // EN VENTA: estado_publicacion="disponible" Y tipo_anuncio="Venta"
+        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "venta" || columna_tipo_anuncio.includes("venta")))) {
+            console.log(`❌ RECHAZADO EN REGLA 'EN VENTA': ID: ${prop.id} no cumple la combinación (disponible + Venta)`);
+            return false;
         }
+        console.log(`%c👉 PASÓ REGLA 'EN VENTA' -> ID: ${prop.id}`, "color: #006aff; font-weight: bold;");
+
+    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        // PARA EL ALQUILER: estado_publicacion="disponible" Y tipo_anuncio="Alquiler"
+        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "alquiler" || columna_tipo_anuncio.includes("alquiler")))) {
+            console.log(`❌ RECHAZADO EN REGLA 'PARA EL ALQUILER': ID: ${prop.id} no cumple la combinación (disponible + Alquiler)`);
+            return false;
+        }
+        console.log(`%c👉 PASÓ REGLA 'PARA EL ALQUILER' -> ID: ${prop.id}`, "color: #ffaa00; font-weight: bold;");
+
+    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        // VENDIDO: estado_publicacion="vendida" (o vendido por seguridad de digitación)
+        if (!(columna_estado_publicacion === "vendida" || columna_estado_publicacion === "vendido")) {
+            console.log(`❌ RECHAZADO EN REGLA 'VENDIDO': ID: ${prop.id} requiere que estado_publicacion sea "vendida"`);
+            return false;
+        }
+        console.log(`%c👉 PASÓ REGLA 'VENDIDO' -> ID: ${prop.id}`, "color: #d92323; font-weight: bold;");
     }
 
-    // 2. FILTRO DE RANGO DE PRECIOS
+    // ==========================================
+    // REGLA DEL PRIMER FILTRO (LOCALIDAD / CALLE / AV)
+    // ==========================================
+    if (textoBuscarDireccion !== "") {
+        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
+            console.log(`❌ RECHAZADO EN REGLA 'LOCALIDAD': El término "${textoBuscarDireccion}" no coincide con el título.`);
+            return false;
+        }
+        console.log(`%c👉 PASÓ REGLA 'LOCALIDAD' -> ID: ${prop.id} coincide con "${textoBuscarDireccion}"`, "color: #008000;");
+    }
+
+    // ==========================================
+    // REGLAS COMPLEMENTARIAS (RANGO DE PRECIOS)
+    // ==========================================
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
+        console.log(`❌ RECHAZADO EN REGLA 'PRECIO': Valor $${prop.precio_base} USD fuera de rango.`);
         return false;
     }
 
-    // 3. FILTRO DE DORMITORIOS (Sincronizado con el sub-objeto .specs del backend)
-    if (state.filtros.camas > 0) {
-        const habitacionesInmueble = parseInt(prop.specs?.habitaciones || 0);
-        if (state.filtros.camasExactas) {
-            if (habitacionesInmueble !== state.filtros.camas) return false;
-        } else {
-            if (habitacionesInmueble < state.filtros.camas) return false;
-        }
-    }
-
+    // 🕵️‍♂️ ESPÍA CONTROLADO 2: Canta victoria absoluta si pasa todos los coladores
+    console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} se enviará al catálogo y mapa.`, "color: #008000; font-weight: bold; font-size: 11px;");
     return true;
 }
-
 
 /**
  * Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
