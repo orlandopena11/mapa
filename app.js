@@ -835,47 +835,48 @@ function configurarSegmentado(idContenedor, callback) {
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 /**
- * REGLA DE NEGOCIO RELACIONAL AJUSTADA A TUS SHEETS
- * Evalúa las condiciones relacionales de transacción sin bloquear el catálogo por minúsculas.
+ * REGLA DE NEGOCIO RELACIONAL AJUSTADA ESTRICTAMENTE A TUS SHEETS (SRE REFACTOR)
+ * Cruza las columnas puros 'estado_publicacion' y 'tipo_anuncio' bajo las reglas fijas de tu negocio.
+ * Filtra las propiedades de acuerdo a la opción seleccionada en la barra superior.
  */
 function evaluarCriteriosDeFiltrado(prop) {
     // 1. Captura del filtro seleccionado por el usuario en la barra superior (Por defecto: Venta)
     const filtroTransaccion = state.filtros.estado || "Venta"; 
     
-    // Captura segura del texto del buscador por calles o avenidas
+    // Captura segura del texto del buscador por calles o avenidas (Filtro 1)
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // NORMALIZACIÓN DE SEGURIDAD CONTRA ARTRITIS DE DATOS (Tolera mayúsculas y minúsculas crudas)
+    // NORMALIZACIÓN DE SEGURIDAD CONTRA ARTRITIS DE DATOS: Pasamos a minúsculas solo para comparar sin fallas de tipeo
     const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
     const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
     const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
 
-    // 🕵️‍♂️ ESPÍA RECOLECTOR: Reporta en vivo las variables normalizadas para auditoría
+    // 🕵️‍♂️ ESPÍA RECOLECTOR: Reporta en vivo las variables en consola para tu auditoría (Preservado intacto)
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}" | tipo_anuncio = "${columna_tipo_anuncio}"`);
 
     // ==========================================
-    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL ADAPTATIVA
+    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL FIJA DE TU NEGOCIO
     // ==========================================
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-        // EN VENTA: Pasa si dice "disponible" o si el backend forzó la palabra "venta"
-        if (!(columna_estado_publicacion === "disponible" || columna_estado_publicacion === "venta")) {
+    if (filtroTransaccion === "Venta") {
+        // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'venta'
+        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "venta" || columna_tipo_anuncio === "vender"))) {
             return false;
         }
-    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // PARA EL ALQUILER: Pasa si dice "disponible" y el anuncio es alquiler, o si el estado es alquiler
-        if (!(columna_estado_publicacion === "disponible" || columna_estado_publicacion === "alquiler")) {
+    } else if (filtroTransaccion === "Alquiler") {
+        // REGLA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'alquiler'
+        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "alquiler" || columna_tipo_anuncio === "renta"))) {
             return false;
         }
-    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // VENDIDO: Pasa si dice estrictamente "vendida" o "vendido" en tu Sheet propiedad
-        if (!(columna_estado_publicacion === "vendida" || columna_estado_publicacion === "vendido")) {
+    } else if (filtroTransaccion === "Vendido") {
+        // REGLA: estado_publicacion debe ser estrictamente 'vendida' o 'vendido'
+        if (columna_estado_publicacion !== "vendida" && columna_estado_publicacion !== "vendido") {
             return false;
         }
     }
 
     // ==========================================
-    // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV)
+    // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV) - PRESERVADO INTACTO
     // ==========================================
     if (textoBuscarDireccion !== "") {
         if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
@@ -884,19 +885,18 @@ function evaluarCriteriosDeFiltrado(prop) {
     }
 
     // ==========================================
-    // REGLA COMPLEMENTARIA (RANGO DE PRECIOS EN USD)
+    // REGLA COMPLEMENTARIA (RANGO DE PRECIOS EN USD) - PRESERVADO INTACTO
     // ==========================================
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
         return false;
     }
 
-    // 🕵️‍♂️ ESPÍA EXITOSO: Canta victoria si la propiedad superó el pipeline con éxito
+    // 🕵️‍♂️ ESPÍA EXITOSO: Reporta si la propiedad superó todos los filtros con éxito (Preservado intacto)
     console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 }
 
-/**
- * Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
+ /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
  */
 function ejecutarTuberíaSincronizada() {
     // Redirigimos el renderizado del mapa para que consuma la lógica unificada
