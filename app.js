@@ -1007,9 +1007,6 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
             banner.style.zIndex = '99999';
             banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación. Por favor, contacte con soporte técnico.";
             document.body.prepend(banner);
-        }
-        } else {
-            if (banner) banner.remove();
-        }
+        if (banner) banner.remove();
     });
 }
