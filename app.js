@@ -228,7 +228,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
     { // -->Aqui inicia Ciclo for renderizar fotos e indicadores
         const img = document.createElement('img');
         img.src = propiedad.fotos[i];
-        img.alt = `\${propiedad.titulo} - Vista \${i + 1}`;
+        img.alt = `${propiedad.titulo} - Vista ${i + 1}`;
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
@@ -484,7 +484,7 @@ function renderizarCatálogoTarjetas()
     const contador = document.getElementById('results-counter');
     if (contador) 
     { // -->Aqui inicia Condicional actualizar contador en pantalla
-        contador.textContent = `\${filtradas.length} resultados disponibles`;
+        contador.textContent = `${filtradas.length} resultados disponibles`;
     } // <--Aqui finaliza Condicional actualizar contador en pantalla
 } // <--Aqui finaliza Función renderizarCatálogoTarjetas
 
@@ -518,13 +518,13 @@ function procesarDatosDelMotor(data)
     console.log("====================================================");
     console.info(" [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
     console.log("Arreglo procesado final:", state.propiedades);
-    
+
     if (state.propiedades.length > 0) 
     { // -->Aqui inicia Condicional comprobar fotos del primer índice
         console.log(" REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
         console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
     } // <--Aqui finaliza Condicional comprobar fotos del primer índice
-    console.log("====================================================");
+
 
     // Ejecuta el renderizado sincronizado de las vistas
     renderizarMapaZillow();
@@ -810,7 +810,7 @@ function renderizarFichaDetalleZillow(propiedad)
         { // -->Aqui inicia Condicional inyectar botón ver más fotos
             const btnVerMas = document.createElement('button');
             btnVerMas.className = 'btn-ver-mas-fotos';
-            btnVerMas.textContent = `Ver las \${propiedad.fotos.length} fotos`;
+            btnVerMas.textContent = `Ver las ${propiedad.fotos.length} fotos`;
             cajaMinifoto.appendChild(btnVerMas);
         } // <--Aqui finaliza Condicional inyectar botón ver más fotos
         bloqueDerechoGrid.appendChild(cajaMinifoto);
@@ -833,7 +833,7 @@ function renderizarFichaDetalleZillow(propiedad)
 
     const spanSpecs = document.createElement('span');
     spanSpecs.className = 'texto-specs-ficha';
-    spanSpecs.textContent = `\${propiedad.habitaciones || 3} Dormitorios | \${propiedad.banos || 2} Baños | \${propiedad.area_construida || 0} m²`;
+    spanSpecs.textContent = `${propiedad.habitaciones || 3} Dormitorios | ${propiedad.banos || 2} Baños | ${propiedad.area_construida || 0} m²`;
 
     filaMetricas.appendChild(spanPrecio);
     filaMetricas.appendChild(spanSpecs);
@@ -910,7 +910,7 @@ function evaluarCriteriosDeFiltrado(prop)
     const columna_tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
     const columna_titulo_direccion = String(prop.fraseDescriptiva || "").trim();
 
-    console.warn(`[FILTRO DIAGNOSTIC] ID: \${prop.id} | estado_publicacion = "\${columna_estado_publicacion}"`);
+    console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}"`);
 
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
     { // -->Aqui inicia Condicional validar paso en canal de venta
