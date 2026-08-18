@@ -704,18 +704,19 @@ function inicializarEventosDeFiltros() {
         });
     }
 
-    const btnApply = document.getElementById('master-apply-btn');
-    if (btnApply) {
-        btnApply.addEventListener('click', () => {
-        // Cerramos el mega panel de filtros al presionar Aplicar (SRE REFACTOR)
-        document.querySelectorAll('.dropdown-content-panel').forEach(p => {
-            p.classList.remove('show');
-        });
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            b.classList.remove('active');
-        });
-    });
-}
+        const btnApply = document.getElementById('master-apply-btn');
+        if (btnApply) {
+            btnApply.addEventListener('click', () => {
+                // Cerramos el mega panel de filtros al presionar Aplicar (SRE REFACTOR)
+                document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                
+                // Ejecutamos el refresco unificado de la pantalla
+                if (typeof ejecutarTuberíaSincronizada === 'function') {
+                    ejecutarTuberíaSincronizada();
+                }
+            });
+        }
 
 
 // [AQUÍ TERMINAN TUS FILTROS ACTUALES DE LA PARTE 6-5]
