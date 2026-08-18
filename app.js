@@ -89,11 +89,20 @@ function normalizarPropiedad(prop)
         id: String(id),
         anuncio_id: prop.anuncio_id || "",
         precio: parseFloat(prop.precio_base || 350000), // Mapeado a precio_base del backend
+        
+        // ---------------------------------------------------------------------
+        // COLUMNAS REALES DE TUS EXCEL (HOJA "anuncio" Y HOJA "propiedad")
+        // Captura directa y estricta sin toLowerCase() para no deformar tus datos
+        // ---------------------------------------------------------------------
+        estado_publicacion: String(prop.estado_publicacion || "").trim(), // Almacena estrictamente "disponible" o "vendida"
+        tipo_anuncio: String(prop.tipo_anuncio || "").trim(),             // Almacena estrictamente "Venta" o "Alquiler"
+        // ---------------------------------------------------------------------
+
         estadoListado: prop.estado_publicacion || "Venta", // Mapeado a estado_publicacion del backend
-        fraseDescriptiva: String(prop.titulo || 'Propiedad Premium').trim(), // Mapeado a titulo del backend
+        fraseDescriptiva: String(prop.titulo || '').trim(), // Mantiene tu título original limpio
         tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
         subtipoPropiedad: String(prop.subtipo_propiedad || "").trim(),
-        fotos: fotosUnificadas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
+        fotos: fotosUnicas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
         
         // GEOLOCALIZACIÓN INTEGRAL ASIGNADA DESDE LAS LLAVES REALES DEL BACKEND
         latitud: parseFloat(prop.latitud || -12.125),
@@ -111,8 +120,8 @@ function normalizarPropiedad(prop)
         telefono: prop.telefono || "",
         contacto_nombre: prop.contacto_nombre || "Contacto"
     }; // <--Aqui finaliza Objeto de retorno normalizarPropiedad
-} // <--Aqui finaliza Función normalizarPropiedad
-
+    
+    
 function formatearPrecioCompleto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompleto
     const num = parseFloat(precio);
@@ -362,21 +371,21 @@ function renderizarMapaZillow()
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
         const estadoPub = String(prop.estado_publicacion || "").trim();
         const tipoAnuncio = String(prop.tipo_anuncio || "").trim();
+
+        // ---------------------------------------------------------------------
+        // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (ESTRICTO SIN MINÚSCULAS)
+        // ---------------------------------------------------------------------
         let claseColorBurbuja = "";
 
-        if (estadoPub === 'vendida') 
-        { // -->Aqui inicia Condicional si está vendida
-            claseColorBurbuja = 'vendido-dorado'; // Burbuja Dorada
-        } // <--Aqui finaliza Condicional si está vendida
-        else if (estadoPub === 'disponible' && (tipoAnuncio === 'alquiler' || tipoAnuncio === 'renta')) 
-        { // -->Aqui inicia Condicional si es alquiler disponible
-            claseColorBurbuja = 'alquiler-naranja'; // Burbuja Naranja
-        } // <--Aqui finaliza Condicional si es alquiler disponible
-        else 
-        { // -->Aqui inicia Bloque else por defecto en venta
-            claseColorBurbuja = 'venta-azul'; // Burbuja Azul Base para En Venta
-        } // <--Aqui finaliza Bloque else por defecto en venta
-
+        if (prop.estado_publicacion === 'vendida') {
+            claseColorBurbuja = 'vendido-dorado'; // Burbuja Dorada para históricas
+        } else if (prop.estado_publicacion === 'disponible' && prop.tipo_anuncio === 'Alquiler') {
+            claseColorBurbuja = 'alquiler-naranja'; // Burbuja Naranja para alquileres
+        } else {
+            claseColorBurbuja = 'venta-azul'; // Burbuja Azul por defecto para ventas disponibles
+        }
+        // ---------------------------------------------------------------------
+     
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({ // -->Aqui inicia Configuración objeto divIcon Leaflet
             html: htmlBurbuja,
@@ -912,28 +921,33 @@ function evaluarCriteriosDeFiltrado(prop)
 
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}"`);
 
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
-    { // -->Aqui inicia Condicional validar paso en canal de venta
-        if (columna_estado_publicacion !== "Venta" && !(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Venta")) 
-        { // -->Aqui inicia Escape falso venta
+    // =========================================================================
+    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
+    // =========================================================================
+    
+    // Si el usuario hace clic en "Venta" o "En venta" en la interfaz de la web
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") { 
+        // Pasa únicamente si tipo_anuncio es EXACTAMENTE "Venta" Y estado_publicacion es EXACTAMENTE "disponible"
+        if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") { 
             return false;
-        } // <--Aqui finaliza Escape falso venta
-    } // <--Aqui finaliza Condicional validar paso en canal de venta
-    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
-    { // -->Aqui inicia Condicional validar paso en canal de alquiler
-        if (columna_estado_publicacion !== "Alquiler" && !(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Alquiler")) 
-        { // -->Aqui inicia Escape falso alquiler
+        } 
+    } 
+    // Si el usuario hace clic en "Alquiler" o "Para el alquiler" en la interfaz de la web
+    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        // Pasa únicamente si tipo_anuncio es EXACTAMENTE "Alquiler" Y estado_publicacion es EXACTAMENTE "disponible"
+        if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") {
             return false;
-        } // <--Aqui finaliza Escape falso alquiler
-    } // <--Aqui finaliza Condicional validar paso en canal de alquiler
-    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
-    { // -->Aqui inicia Condicional validar paso en canal de histórico
-        if (columna_estado_publicacion !== "Vendido" && columna_estado_publicacion !== "vendida") 
-        { // -->Aqui inicia Escape falso histórico
+        }
+    } 
+    // Si el usuario hace clic en "Vendido" o "Vendidas" en la interfaz de la web
+    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        // Pasa únicamente si el estado_publicacion es EXACTAMENTE "vendida"
+        if (prop.estado_publicacion !== "vendida") {
             return false;
-        } // <--Aqui finaliza Escape falso histórico
-    } // <--Aqui finaliza Condicional validar paso en canal de histórico
+        }
+    }
 
+    
     if (textoBuscarDireccion !== "") 
     { // -->Aqui inicia Condicional verificar barra de dirección
         if (!columna_titulo_direccion.toLowerCase().includes(textoBuscarDireccion)) 
