@@ -847,9 +847,9 @@ function configurarSegmentado(idContenedor, callback) {
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 /**
- * REGLA DE NEGOCIO RELACIONAL FIJA DE TU NEGOCIO (SRE REFACTOR)
- * Cruza las columnas puros 'estado_publicacion' y 'tipo_anuncio' bajo tus especificaciones estrictas.
- * Valores válidos de la Sheet propiedad analizados: 'disponible' y 'vendida'.
+ * REGLA DE NEGOCIO RELACIONAL FIJA SINCRO CON EXCEL (SRE REFACTOR DEFINITIVO)
+ * Evalúa las condiciones exactas cruzando las mayúsculas y minúsculas reales de tus Sheets.
+ * Mapeo estricto verificado en RAM: 'Venta' -> disponible + Venta | 'Alquiler' -> disponible + Alquiler | 'Vendido' -> vendida.
  */
 function evaluarCriteriosDeFiltrado(prop) {
     // 1. Captura del filtro seleccionado por el usuario en la barra superior (Por defecto: Venta)
@@ -859,25 +859,25 @@ function evaluarCriteriosDeFiltrado(prop) {
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // NORMALIZACIÓN DE SEGURIDAD: Pasamos a minúsculas solo para comparar de forma segura sin fallas de tipeo
-    const columna_estado_publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
-    const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+    // EXTRACTOR PURO SIN MUTACIONES: Captura las cadenas de texto exactas validadas en la consola
+    const columna_estado_publicacion = String(prop.estado_publicacion || '').trim();
+    const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim();
     const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
 
     // 🕵️‍♂️ ESPÍA RECOLECTOR: Reporta en vivo las variables en consola para tu auditoría (Preservado intacto)
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}" | tipo_anuncio = "${columna_tipo_anuncio}"`);
 
-    // ==========================================
-    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL EXTRACTA DE TU NEGOCIO
-    // ==========================================
+    // ==========================================================================
+    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL FIJA DE TU NEGOCIO
+    // ==========================================================================
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-        // EN VENTA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'venta'
-        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "venta" || columna_tipo_anuncio === "vender"))) {
+        // EN VENTA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'Venta' (Con V mayúscula)
+        if (!(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Venta")) {
             return false;
         }
     } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // PARA EL ALQUILER: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'alquiler'
-        if (!(columna_estado_publicacion === "disponible" && (columna_tipo_anuncio === "alquiler" || columna_tipo_anuncio === "renta"))) {
+        // PARA EL ALQUILER: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'Alquiler' (Con A mayúscula)
+        if (!(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Alquiler")) {
             return false;
         }
     } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
@@ -887,18 +887,18 @@ function evaluarCriteriosDeFiltrado(prop) {
         }
     }
 
-    // ==========================================
+    // ==========================================================================
     // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV) - PRESERVADO INTACTO
-    // ==========================================
+    // ==========================================================================
     if (textoBuscarDireccion !== "") {
         if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
             return false;
         }
     }
 
-    // ==========================================
+    // ==========================================================================
     // REGLA COMPLEMENTARIA (RANGO DE PRECIOS EN USD) - PRESERVADO INTACTO
-    // ==========================================
+    // ==========================================================================
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) {
         return false;
     }
@@ -907,6 +907,7 @@ function evaluarCriteriosDeFiltrado(prop) {
     console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 }
+
  
 /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
  */
