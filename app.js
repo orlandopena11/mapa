@@ -597,7 +597,8 @@ function inicializarEventosDeFiltros() {
             });
 
     // ==========================================================================
-    // 3. FILTRO 3: CAPTURA DEL RANGO DE PRECIOS (INPUTS NUMÉRICOS) - PRESERVADO INTACTO
+    // 3. FILTRO 3: CAPTURA DEL RANGO DE PRECIOS (INPUTS NUMÉRICOS - SRE REFACTOR)
+    // Sincroniza y valida los rangos de precio en USD con la tubería del mapa.
     // ==========================================================================
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
@@ -609,35 +610,43 @@ function inicializarEventosDeFiltros() {
             ejecutarTuberíaSincronizada();
         }
     };
-
             
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
 
-    // 4. FILTRO 4: Control Segmentado de Camas y Baños (Botones)
-    configurarSegmentado('row-beds', (valor) => {
-        state.filtros.camas = parseInt(valor);
-        ejecutarTuberíaSincronizada();
-    });
+    // ==========================================================================
+    // 4. FILTRO 4: CONTROL SEGMENTADO DE CAMAS Y BAÑOS (BOTONES - SRE REFACTOR)
+    // Preservado intacto unificando la ortografía de la tubería central.
+    // ==========================================================================
+    if (typeof configurarSegmentado === 'function') {
+        configurarSegmentado('row-beds', (valor) => {
+            state.filtros.camas = parseInt(valor) || 0;
+            if (typeof ejecutarTuberíaSincronizada === 'function') ejecutarTuberíaSincronizada();
+        });
 
-    configurarSegmentado('row-baths', (valor) => {
-        state.filtros.baños = parseFloat(valor);
-        ejecutarTuberíaSincronizada();
-    });
+        configurarSegmentado('row-baths', (valor) => {
+            state.filtros.baños = parseFloat(valor) || 0;
+            if (typeof ejecutarTuberíaSincronizada === 'function') ejecutarTuberíaSincronizada();
+        });
+    }
 
     const checkCamasExactas = document.getElementById('beds-exact');
     if (checkCamasExactas) {
         checkCamasExactas.addEventListener('change', (e) => {
             state.filtros.camasExactas = e.target.checked;
-            ejecutarTuberíaSincronizada();
+            if (typeof ejecutarTuberíaSincronizada === 'function') ejecutarTuberíaSincronizada();
         });
     }
 
-    // 5. FILTRO 5: Tipo de Propiedad (Checkboxes Multiselect)
+    // ==========================================================================
+    // 5. FILTRO 5: TIPO DE PROPIEDAD (CHECKBOXES MULTISELECT - SRE REFACTOR)
+    // ==========================================================================
     const checkSelectAll = document.getElementById('type-select-all');
     const checkboxesTipo = document.querySelectorAll('.type-cb');
 
     if (checkSelectAll) {
+           
+            
         checkSelectAll.addEventListener('change', (e) => {
             checkboxesTipo.forEach(cb => {
                 cb.checked = e.target.checked;
