@@ -102,7 +102,7 @@ function normalizarPropiedad(prop)
         fraseDescriptiva: String(prop.titulo || '').trim(), // Mantiene tu título original limpio
         tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
         subtipoPropiedad: String(prop.subtipo_propiedad || "").trim(),
-        fotos: fotosUnicas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
+        fotos: fotosUnificadas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
         
         // GEOLOCALIZACIÓN INTEGRAL ASIGNADA DESDE LAS LLAVES REALES DEL BACKEND
         latitud: parseFloat(prop.latitud || -12.125),
