@@ -120,7 +120,7 @@ function normalizarPropiedad(prop)
         telefono: prop.telefono || "",
         contacto_nombre: prop.contacto_nombre || "Contacto"
     }; // <--Aqui finaliza Objeto de retorno normalizarPropiedad
-    
+   } 
     
 function formatearPrecioCompleto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompleto
