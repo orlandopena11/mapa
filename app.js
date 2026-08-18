@@ -28,10 +28,10 @@ const urlMiScriptGoogle ="https://script.google.com/macros/s/AKfycbwxQRdh1mg7E1O
 /**
 * Lector asíncrono seguro mediante inyección controlada de JSONP
 */
-function cargarDatosDesdeAppsScript() 
-{ // -->Aqui inicia Función cargarDatosDesdeAppsScript
+function cargarDatosDesdeAppsScript() {
     const script = document.createElement('script');
-    script.src = `\${urlMiScriptGoogle}?callback=procesarDatosDelMotor`;
+    //  ¡Corregido! Ahora lee correctamente la variable global
+    script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`; 
     document.body.appendChild(script);
 } // <--Aqui finaliza Función cargarDatosDesdeAppsScript
 // PARTE: 1-5 (ESTADO Y CONFIGURACIONES)
