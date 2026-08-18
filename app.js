@@ -1011,4 +1011,4 @@ if (!banner) {
     banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
     banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
     document.body.prepend(banner);
-});
+}
