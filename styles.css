@@ -737,3 +737,26 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
     color: #111827;
     border: 1.5px solid #ffffff;
 }
+
+/**
+ * REGLAS DE DISEÑO DE BURBUJAS DE MAPA (SRE REFACTOR)
+ * Mapea los tres colores de transacción requeridos usando los códigos hexadecimales exactos.
+ * Se añade al final de styles.css para respetar la cascada nativa sin sobreescribir código base.
+ */
+.leaflet-marker-icon.map-price-pill.venta-azul {
+    background-color: #062E48;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+}
+
+.leaflet-marker-icon.map-price-pill.alquiler-naranja {
+    background-color: #FC6318;
+    color: #ffffff;
+    border: 1.5px solid #ffffff;
+}
+
+.leaflet-marker-icon.map-price-pill.vendido-dorado {
+    background-color: #ECA816;
+    color: #111827;
+    border: 1.5px solid #ffffff;
+}
