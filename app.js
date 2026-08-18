@@ -556,18 +556,47 @@ function inicializarEventosDeFiltros() {
         panel.addEventListener('click', (e) => e.stopPropagation());
     });
 
-    // 2. FILTRO 2: Captura del Tipo de Transacción (Radio Buttons)
-    const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
-    radiosTransaccion.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            state.filtros.estado = e.target.value;
-            
-            // Actualizamos dinámicamente el letrero del botón principal
-            const btnStatus = document.getElementById('btn-filter-status');
-            if (btnStatus) btnStatus.textContent = `${e.target.parentElement.textContent.trim()} ▾`;
-            
-            ejecutarTuberíaSincronizada();
+            // ==========================================================================
+        // 2. FILTRO 2: CAPTURA REACTIVA DEL TIPO DE TRANSACCIÓN (SRE REFACTOR)
+        // Sincroniza la selección de los radio buttons actualizando el estado y refrescando el mapa en vivo.
+        // ==========================================================================
+        const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
+        radiosTransaccion.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                // Mutación del pipeline inmutable guardando el value puro ("Venta", "Alquiler" o "Vendido")
+                state.filtros.estado = e.target.value;
+
+                // Actualizamos dinámicamente el letrero del botón principal de forma segura (Texto Plano Limpio)
+                const btnStatus = document.getElementById('btn-filter-status');
+                if (btnStatus) {
+                    if (e.target.value === "Venta") {
+                        btnStatus.textContent = "En venta ▾";
+                    } else if (e.target.value === "Alquiler") {
+                        btnStatus.textContent = "Para el alquiler ▾";
+                    } else if (e.target.value === "Vendido") {
+                        btnStatus.textContent = "Vendidas ▾";
+                    }
+                }
+
+                // Cierra el desplegable automáticamente tras la selección para mejorar la experiencia de usuario
+                const panelDropdown = document.getElementById('dropdown-status');
+                if (panelDropdown) {
+                    panelDropdown.classList.remove('show', 'active');
+                }
+
+                // Ejecución nativa del refresco para redibujar catálogo y aplicar burbujas de colores
+                if (typeof ejecutarTuberíaSincronizada === 'function') {
+                    ejecutarTuberíaSincronizada();
+                } else if (typeof renderizarMapaZillow === 'function') {
+                    // Fallback de seguridad directo al motor del mapa y la rejilla si la tubería está en otro módulo
+                    renderizarMapaZillow();
+                    if (typeof renderizarCatalogoPropiedades === 'function') {
+                        renderizarCatalogoPropiedades();
+                    }
+                }
+            });
         });
+
     });
 
     // 3. FILTRO 3: Captura del Rango de Precios (Inputs Numéricos)
