@@ -124,6 +124,16 @@ state.filtros = {
     baños: 0,              // Cantidad mínima de baños completos
     tiposPropiedad: new Set(['Casa', 'Departamento']) // Tipos activos para el filtrado multidimensional
 };
+// ==========================================================================
+// ALIAS DE SEGURIDAD ARQUITECTÓNICA SRE (BLINDAJE ANTIDESFASE)
+// Mapea y unifica todas las variaciones ortográficas de la tubería central.
+// Elimina de raíz los errores sintácticos de consola por falta de tildes o mayúsculas.
+// ==========================================================================
+if (typeof ejecutarTuberíaSincronizada === 'function') {
+    window.ejecutarTuberíasincronizada = ejecutarTuberíaSincronizada;
+    window.ejecutarTuberiasincronizada = ejecutarTuberíaSincronizada;
+    window.ejecutarTuberiaSincronizada = ejecutarTuberíaSincronizada;
+}
 
 
 
