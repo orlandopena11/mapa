@@ -305,7 +305,8 @@ function crearComponenteTarjetaZillow(propiedad) {
 }
 
 // ==========================================================================
-// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS NATIVAS EN MAPA)
+// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS NATIVAS EN MAPA - SRE REFACTOR)
+// Mapea dinámicamente el color de los marcadores según tus estados reales: Azul, Naranja o Dorado.
 // ==========================================================================
 function renderizarMapaZillow() {
     if (typeof window.capaMarcadores === 'undefined') {
@@ -326,29 +327,41 @@ function renderizarMapaZillow() {
         if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
-        const esNuevo = prop.estadoListado === 'Nuevo';
         const htmlBurbuja = `<span>${precioCompacto}</span>`;
+
+        // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
+        const estadoPub = String(prop.estado_publicacion || '').trim().toLowerCase();
+        const tipoAnuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+        
+        let claseColorBurbuja = '';
+        if (estadoPub === 'vendida') {
+            claseColorBurbuja = 'vendido-dorado'; // Burbuja Dorada
+        } else if (estadoPub === 'disponible' && (tipoAnuncio === 'alquiler' || tipoAnuncio === 'renta')) {
+            claseColorBurbuja = 'alquiler-naranja'; // Burbuja Naranja
+        } else {
+            claseColorBurbuja = 'venta-azul'; // Burbuja Azul Base para En Venta
+        }
 
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({
             html: htmlBurbuja,
-            className: `leaflet-marker-icon map-price-pill ${esNuevo ? 'nuevo' : ''}`,
+            className: `leaflet-marker-icon map-price-pill ${claseColorBurbuja}`,
             iconSize: L.point(80, 30),
             iconAnchor: L.point(40, 15)
         });
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // 1. FABRICAMOS EL CONTENEDOR MODULAR ASILADO PARA EL POPUP
+        // 1. FABRICAMOS EL CONTENEDOR MODULAR ASILADO PARA EL POPUP (Preservado intacto)
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card';
         contenedorPopupMaster.style.width = '260px';
 
-        // 2. INSTANCIAMOS EL MICRO-CARRUSEL DOBLE INTERACTIVO
+        // 2. INSTANCIAMOS EL MICRO-CARRUSEL DOBLE INTERACTIVO (Preservado intacto)
         const carruselPopup = construirRielCarruselComponente(prop, true);
         contenedorPopupMaster.appendChild(carruselPopup);
 
-        // 3. BLOQUE DE DATOS INFERIOR INTERNO DEL POPUP (BLINDADO CONTRA XSS)
+        // 3. BLOQUE DE DATOS INFERIOR INTERNO DEL POPUP (BLINDADO CONTRA XSS - Preservado intacto)
         const datosPopup = document.createElement('div');
         datosPopup.className = 'datos-casa';
         datosPopup.style.padding = '8px';
@@ -358,12 +371,13 @@ function renderizarMapaZillow() {
         pPrice.style.fontSize = '16px';
         pPrice.style.fontWeight = 'bold';
         pPrice.style.color = '#002E50';
-        pPrice.textContent = prop.precio_base.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 });
+                // FORMATEO MONETARIO FIEL (SRE REFACTOR): Configura el valor en Dólares Americanos ($ USD) alineado al Excel
+        pPrice.textContent = prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
         
         datosPopup.appendChild(pPrice);
         contenedorPopupMaster.appendChild(datosPopup);
 
-        // 4. INTERCEPTOR SPA PARA SALTAR A LA SEGUNDA PANTALLA AL HACER CLIC EN LA FOTO
+        // 4. INTERCEPTOR SPA PARA SALTAR A LA SEGUNDA PANTALLA (Preservado intacto)
         carruselPopup.addEventListener('click', (e) => {
             if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
             window.map.closePopup();
@@ -372,8 +386,7 @@ function renderizarMapaZillow() {
             renderizarFichaDetalleZillow(prop);
         });
 
-        // 5. 💡 ENLAZAMOS EL POPUP DE FORMA NATIVA DIRECTA (SIN MARCADOR.ON CLICK)
-        // Esto elimina la colisión de eventos y sana el error de Leaflet de raíz
+        // 5. ENLAZAMOS EL POPUP DE FORMA NATIVA DIRECTA (Preservado intacto)
         marcador.bindPopup(contenedorPopupMaster, {
             maxWidth: 300,
             minWidth: 260,
@@ -381,9 +394,8 @@ function renderizarMapaZillow() {
             autoPan: true
         });
 
-        // 6. ADICIONAL: Sincronización bidireccional al abrir el popup
+        // 6. ADICIONAL: Sincronización bidireccional al abrir el popup (Preservado intacto)
         marcador.on('popupopen', () => {
-            // Realiza scroll automático en el catálogo derecho para destacar esta propiedad
             const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
             if (tarjetaDerecha) {
                 tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'center' });
