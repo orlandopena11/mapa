@@ -504,7 +504,7 @@ function procesarDatosDelMotor(data) {
 interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
 
 }
-}
+
 
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
@@ -1010,6 +1010,6 @@ if (!banner) {
     banner.style.right = '0';
     banner.style.zIndex = '99999';
     banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
-    banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
     document.body.prepend(banner);
+  }
 }
