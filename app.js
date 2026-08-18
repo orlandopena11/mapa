@@ -14,7 +14,7 @@ const state = {
         camas: 0,
         camasExactas: false,
         baños: 0,
-        tiposPropiedad: new Set(['Casa', 'Apartamento'])
+        tiposPropiedad: new Set(['Casa', 'Departamento'])
     },
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     limpiadoresDOM: new Map()
