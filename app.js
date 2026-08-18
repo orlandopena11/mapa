@@ -326,7 +326,7 @@ function crearComponenteTarjetaZillow(propiedad)
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
     // Mapeo simétrico en Dólares USD de acuerdo a tu Sheets real
-    precioTexto.textContent = propiedad.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    precioTexto.textContent = propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     datosCasa.appendChild(precioTexto);
 
     tarjeta.appendChild(datosCasa);
