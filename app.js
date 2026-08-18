@@ -137,11 +137,12 @@ state.filtros =
 { // -->Aqui inicia Objeto state.filtros reestructurado
     estado: 'Venta', // Tipo de Transacción (Radio: Venta, Alquiler, Vendido)
     precioMin: 0, // Rango de precio mínimo
-    precioMax: 1300000, // Rango de precio máximo
+    precioMax: Infinity, // Rango de precio máximo
     camas: 0, // Cantidad mínima de dormitorios (0 = Cualquiera)
     camasExactas: false, // Switch de coincidencia exacta para dormitorios
     baños: 0, // Cantidad mínima de baños completos
-    tiposPropiedad: new Set(['Casa', 'Departamento']) // Tipos activos para el filtrado multidimensional
+    //  ¡Corregido! Incluimos TODOS los tipos reales de tu catálogo LOV_tipo_propiedad
+    tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']) 
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
 
 // ALIAS DE SEGURIDAD ARQUITECTÓNICA SRE (BLINDAJE ANTIDESFASE)
@@ -365,7 +366,7 @@ function renderizarMapaZillow()
     { // -->Aqui inicia Callback forEach de propiedades filtradas en mapa
         if (!prop.latitud || !prop.longitud) return;
 
-        const precioCompacto = formatearPrecioCompacto(prop.precio_base);
+        const precioCompacto = formatearPrecioCompacto(prop.precio);
         const htmlBurbuja = `<span>\${precioCompacto}</span>`;
 
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
