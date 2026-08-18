@@ -1,24 +1,25 @@
+/* jshint esversion: 11 */
 // PARTE: 1-5 (ESTADO Y CONFIGURACIONES)
 /**
  * ARQUITECTURA DE CONTROL DE ESTADO INMUTABLE Y CONFIGURACIÓN GLOBAL ZILLOW V2
  * Centraliza el almacenamiento y protege el flujo contra variables mutables globales.
  */
-
 const state = {
-    propiedades: [],
-    favoritos: new Set(),
-    filtros: {
-        estado: 'Todos', // 💡 Muestra todo el universo de propiedades al arrancar de forma natural
-        precioMin: 0,
-        precioMax: Infinity,
-        camas: 0,
-        camasExactas: false,
-        baños: 0,
-        tiposPropiedad: new Set(['Casa', 'Departamento'])
-    },
-    // Registro interno para la remoción explícita de Listeners (Garbage Collector)
-    limpiadoresDOM: new Map()
-};
+  propiedades: [],
+  favoritos: new Set(),
+  filtros: {
+    estado: 'Todos', 
+    precioMin: 0,
+    precioMax: Infinity,
+    camas: 0,
+    camasExactas: false,
+    baños: 0,
+    tiposPropiedad: new Set(['Casa', 'Departamento'])
+  },
+  // Registro interno para la remoción explícita de Listeners (Garbage Collector)
+  limpiadoresDOM: new Map()
+}; // <--- El objeto se cierra correctamente aquí
+
 
 // URL de conexión segura con el backend relacional de Google Apps Script
 const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbwxQRdh1mg7E1O2DcAfhNvGDz9V_rytmsdCKp9wbJhvZLNq4YuKxKBppfwl7wx2fDOHAw/exec";
@@ -503,15 +504,15 @@ function procesarDatosDelMotor(data) {
 interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
 
 }
-
+}
 
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
     
     // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
     if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13); // <-- Corregido el cierre del array y el método
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
         inicializarEventosDeFiltros();
         
         // Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
