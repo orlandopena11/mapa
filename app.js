@@ -965,7 +965,8 @@ function evaluarCriteriosDeFiltrado(prop) {
 }
 
 
- 
+
+                                  
 /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
  */
 function ejecutarTuberíaSincronizada() {
@@ -986,7 +987,7 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
     // Buscamos el registro exacto del usuario en la Hoja de Sheets enviada por el backend
     const usuarioEncontrado = listaUsuariosBackend.find(u => String(u.correo || u.email).trim().toLowerCase() === String(emailUsuarioLogueado).trim().toLowerCase());
     state.usuarioActual = usuarioEncontrado ? usuarioEncontrado : null;
-
+}
     // Pintamos de forma atómica el banner superior de alerta global si está suspendido
 // ==========================================================================
 // CONTROL DE CIERRE DE APLICACIÓN Y BANNER INFORMATIVO (SRE REFACTOR)
@@ -1012,4 +1013,4 @@ if (!banner) {
     banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
     document.body.prepend(banner);
   }
-}
+
