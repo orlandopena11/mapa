@@ -595,20 +595,22 @@ function inicializarEventosDeFiltros() {
                     }
                 }
             });
-        });
 
-    });
-
-    // 3. FILTRO 3: Captura del Rango de Precios (Inputs Numéricos)
+    // ==========================================================================
+    // 3. FILTRO 3: CAPTURA DEL RANGO DE PRECIOS (INPUTS NUMÉRICOS) - PRESERVADO INTACTO
+    // ==========================================================================
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
     
     const handlerPrecios = () => {
         state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
         state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
-        ejecutarTuberíaSincronizada();
+        if (typeof ejecutarTuberíaSincronizada === 'function') {
+            ejecutarTuberíaSincronizada();
+        }
     };
 
+            
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
 
