@@ -987,25 +987,27 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
     state.usuarioActual = usuarioEncontrado ? usuarioEncontrado : null;
 
     // Pintamos de forma atómica el banner superior de alerta global si está suspendido
-    const idBanner = 'banner-suspension-alerta';
-    let banner = document.getElementById(idBanner);
+// ==========================================================================
+// CONTROL DE CIERRE DE APLICACIÓN Y BANNER INFORMATIVO (SRE REFACTOR)
+// Bloque final balanceado matemáticamente a cero para eliminar SyntaxErrors.
+// ==========================================================================
+const idBanner = 'banner-suspension-global-id';
+let banner = document.getElementById(idBanner);
 
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
-        if (!banner) {
-            banner = document.createElement('div');
-            banner.id = idBanner;
-            banner.className = 'banner-suspension-global';
-            banner.style.backgroundColor = '#d92323';
-            banner.style.color = '#ffffff';
-            banner.style.padding = '10px';
-            banner.style.textAlign = 'center';
-            banner.style.fontWeight = 'bold';
-            banner.style.position = 'fixed';
-            banner.style.top = '0';
-            banner.style.left = '0';
-            banner.style.right = '0';
-            banner.style.zIndex = '99999';
-            banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación. Por favor, contacte con soporte técnico.";
-        document.body.prepend(banner);
-    });
+if (!banner) {
+    banner = document.createElement('div');
+    banner.id = idBanner;
+    banner.className = 'banner-suspension-global';
+    banner.style.backgroundColor = '#d92323';
+    banner.style.color = '#ffffff';
+    banner.style.padding = '10px';
+    banner.style.textAlign = 'center';
+    banner.style.fontWeight = 'bold';
+    banner.style.position = 'fixed';
+    banner.style.top = '0';
+    banner.style.left = '0';
+    banner.style.right = '0';
+    banner.style.zIndex = '99999';
+    banner.textContent = "Su cuenta ha sido suspendida por violar las políticas de la aplicación.";
+    document.body.prepend(banner);
 }
