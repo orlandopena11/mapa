@@ -146,7 +146,7 @@ function normalizarPropiedad(prop) {
 
     // 2. Clasificación exacta basada en las columnas de las Sheets
     let estadoZillow = 'Venta';
-    const publicacion = String(prop.estado_publicacion || '').trim().toLowerCase();
+    const publicacion = String(prop.estado_publicacion || '').trim();
 
     if (publicacion === 'vendida' || publicacion === 'vendido') {
         estadoZillow = 'Vendido';
@@ -330,8 +330,8 @@ function renderizarMapaZillow() {
         const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
-        const estadoPub = String(prop.estado_publicacion || '').trim().toLowerCase();
-        const tipoAnuncio = String(prop.tipo_anuncio || '').trim().toLowerCase();
+        const estadoPub = String(prop.estado_publicacion || '').trim();
+        const tipoAnuncio = String(prop.tipo_anuncio || '').trim();
         
         let claseColorBurbuja = '';
         if (estadoPub === 'vendida') {
@@ -847,9 +847,9 @@ function configurarSegmentado(idContenedor, callback) {
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 /**
- * REGLA DE NEGOCIO RELACIONAL FIJA SINCRO CON EXCEL (SRE REFACTOR DEFINITIVO)
- * Evalúa las condiciones exactas cruzando las mayúsculas y minúsculas reales de tus Sheets.
- * Mapeo estricto verificado en RAM: 'Venta' -> disponible + Venta | 'Alquiler' -> disponible + Alquiler | 'Vendido' -> vendida.
+ * REGLA DE NEGOCIO ADAPTATIVA ALINEADA CON LA RAM DE TU CONSOLA (SRE REFACTOR)
+ * Intercepta los valores transformados por el frontend para evitar que el catálogo se quede en blanco.
+ * Mapeo directo verificado en tu pantalla: "Venta" -> En Venta | "Alquiler" -> Alquiler | "Vendido" -> Vendida.
  */
 function evaluarCriteriosDeFiltrado(prop) {
     // 1. Captura del filtro seleccionado por el usuario en la barra superior (Por defecto: Venta)
@@ -859,39 +859,39 @@ function evaluarCriteriosDeFiltrado(prop) {
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
 
-    // EXTRACTOR PURO SIN MUTACIONES: Captura las cadenas de texto exactas validadas en la consola
+    // EXTRACTOR PURO SIN MUTACIONES PERMANENTES: Mantiene las mayúsculas y minúsculas originales de tu base de datos
     const columna_estado_publicacion = String(prop.estado_publicacion || '').trim();
     const columna_tipo_anuncio = String(prop.tipo_anuncio || '').trim();
-    const columna_titulo_direccion = String(prop.titulo || '').trim().toLowerCase();
+    const columna_titulo_direccion = String(prop.titulo || '').trim();
 
     // 🕵️‍♂️ ESPÍA RECOLECTOR: Reporta en vivo las variables en consola para tu auditoría (Preservado intacto)
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}" | tipo_anuncio = "${columna_tipo_anuncio}"`);
 
     // ==========================================================================
-    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN RELACIONAL FIJA DE TU NEGOCIO
+    // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN ADAPTADA A LOS VALORES EN VIVO DE TU RAM
     // ==========================================================================
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-        // EN VENTA: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'Venta' (Con V mayúscula)
-        if (!(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Venta")) {
+        // EN VENTA: Pasa si tu consola reporta directamente la palabra "Venta" en estado_publicacion
+        if (columna_estado_publicacion !== "Venta" && !(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Venta")) {
             return false;
         }
     } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // PARA EL ALQUILER: estado_publicacion debe ser 'disponible' Y tipo_anuncio debe ser 'Alquiler' (Con A mayúscula)
-        if (!(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Alquiler")) {
+        // PARA EL ALQUILER: Pasa si tu consola reporta directamente la palabra "Alquiler" en estado_publicacion
+        if (columna_estado_publicacion !== "Alquiler" && !(columna_estado_publicacion === "disponible" && columna_tipo_anuncio === "Alquiler")) {
             return false;
         }
     } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // VENDIDO: estado_publicacion debe ser estrictamente la palabra 'vendida'
-        if (columna_estado_publicacion !== "vendida") {
+        // VENDIDO: Pasa si tu consola reporta directamente la palabra "Vendido" o "vendida"
+        if (columna_estado_publicacion !== "Vendido" && columna_estado_publicacion !== "vendida") {
             return false;
         }
     }
 
     // ==========================================================================
-    // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV) - PRESERVADO INTACTO
+    // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV) - COMPARACIÓN TEMPORAL SEGURA
     // ==========================================================================
     if (textoBuscarDireccion !== "") {
-        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
+        if (!columna_titulo_direccion.toLowerCase().includes(textoBuscarDireccion)) {
             return false;
         }
     }
@@ -907,6 +907,7 @@ function evaluarCriteriosDeFiltrado(prop) {
     console.log(`%c✅ ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 }
+
 
  
 /* Tubería centralizada (Pipeline): Orquesta el re-renderizado síncrono y limpio de ambas vistas
