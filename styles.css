@@ -176,7 +176,7 @@ body, html {
     border-radius: 8px;
     padding: 16px;
     margin-top: 4px;
-    z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
+    /*z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
     /* 🛑 AÑADE ESTAS TRES LÍNEAS NATIVAS AQUÍ: */
     display: flex;
     flex-direction: column;
