@@ -871,7 +871,8 @@ function inicializarEventosDeFiltros()
                 window.ultimaDireccionBuscada = direccionTexto;
                 
                 console.log("🔍 [MOTOR GEOCODING] Buscando ubicación para:", direccionTexto);
-                const urlNominatim = "https://nominatim.openstreetmap.org" + encodeURIComponent(direccionTexto) + "&countrycodes=pe&limit=1";
+                const urlNominatim = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(direccionTexto) + "&countrycodes=pe&limit=1";
+                
                 
                 fetch(urlNominatim)
                     .then(res => res.json())
