@@ -810,27 +810,36 @@ function inicializarEventosDeFiltros()
     }); // <--Aqui finaliza Callback forEach enlaces individuales multiselect
 
     // 6. BOTONES DE ACCIÓN: Limpiador maestro y aplicador del menú expandido
+    // =========================================================================
+    // 6. REINICIALIZACIÓN SIMÉTRICA Y LIMPIEZA MAESTRA DE FILTROS (CORREGIDO)
+    // =========================================================================
     const btnReset = document.getElementById('master-reset-btn');
-    if (btnReset) 
-    { // -->Aqui inicia Condicional listener restaurar filtros
-        btnReset.addEventListener('click', () => 
-        { // -->Aqui inicia Callback click botón reset maestro
-            inputMinPrecio.value = "";
-            inputMaxPrecio.value = "1300000"; // 🛑 Corregido: Se agregó el cero faltante
+    if (btnReset) {
+        btnReset.addEventListener('click', () => {
+            // Restablecemos los componentes visuales del HTML de forma limpia
+            if (inputMinPrecio) inputMinPrecio.value = "";
+            if (inputMaxPrecio) inputMaxPrecio.value = ""; // Vaciamos para que asuma cualquier monto
             if (checkSelectAll) checkSelectAll.checked = true;
             
-            checkboxesTipo.forEach(cb => 
-            { // -->Aqui inicia Callback forEach restablecer checkboxes a verdadero
-                cb.checked = true;
-                state.filtros.tiposPropiedad.add(cb.value);
-            }); // <--Aqui finaliza Callback forEach restablecer checkboxes a verdadero
-            
-            state.filtros.precioMin = 0;
-            state.filtros.precioMax = 1300000;
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
-        }); // <--Aqui finaliza Callback click botón reset maestro
-    } // <--Aqui finaliza Condicional listener restaurar filtros
+            if (checkboxesTipo) {
+                checkboxesTipo.forEach(cb => {
+                    cb.checked = true;
+                    state.filtros.tiposPropiedad.add(cb.value);
+                });
+            }
 
+            // Inicializamos la memoria RAM liberando los topes monetarios fijos
+            state.filtros.precioMin = 0;
+            state.filtros.precioMax = Infinity; // Permite que cualquier propiedad pase el filtro sin trabarse
+            
+            // Forzamos el redibujado instantáneo de la rejilla y marcadores
+            if (typeof ejecutarTuberiaSincronizada === 'function') {
+                ejecutarTuberiaSincronizada();
+            }
+        });
+    }
+
+    
     const btnApply = document.getElementById('master-apply-btn');
     if (btnApply) 
     { // -->Aqui inicia Condicional listener cerrar panel interactivo
