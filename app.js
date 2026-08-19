@@ -482,38 +482,72 @@ function renderizarMapaZillow()
 
         contenedorPopupMaster.appendChild(datosPopup);
 
-        // 4. INTERCEPTOR SPA PARA SALTAR A LA SEGUNDA PANTALLA (Preservado intacto)
-        carruselPopup.addEventListener('click', (e) => 
-        { // -->Aqui inicia Callback de redirección SPA desde popup
-                //  ¡LÍNEA CLAVE! Evita que el clic se propague al mapa y lo cierre por error
-            e.stopPropagation(); 
-            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-            window.map.closePopup();
-            state.propiedadSeleccionadald = prop.id;
-            alternarPantallaZillow('detalle-ficha');
-            renderizarFichaDetalleZillow(prop);
-        }); // <--Aqui finaliza Callback de redirección SPA desde popup
-
-        // 5. ENLAZAMOS EL POPUP DE FORMA NATIVA DIRECTA (Preservado intacto)
-        marcador.bindPopup(contenedorPopupMaster, { // -->Aqui inicia Configuración opciones popup
+        // =====================================================================
+        // [SRE REFACTOR] - INTERCEPTOR ESTABLE Y ORDENAMIENTO EN VIVO EN RAM
+        // =====================================================================
+        
+        // 1. Enlace nativo directo del Popup (Estabilizado sin inyecciones visuales en JS)
+        marcador.bindPopup(contenedorPopupMaster, {
             maxWidth: 300,
             minWidth: 260,
             className: 'zillow-custom-popup-wrapper',
             autoPan: true
-        }); // <--Aqui finaliza Configuración opciones popup
+        });
 
-        // 6. ADICIONAL: Sincronización bidireccional al abrir el popup (Preservado intacto)
-        marcador.on('popupopen', () => 
-        { // -->Aqui inicia Callback al abrir popup en el mapa
-            const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="\${prop.id}"]`);
-            if (tarjetaDerecha) 
-            { // -->Aqui inicia Condicional enfocar tarjeta del catálogo
-                tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                tarjetaDerecha.style.outline = '2px solid #006aff';
-                setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2000);
-            } // <--Aqui finaliza Condicional enfocar tarjeta del catálogo
-        }); // <--Aqui finaliza Callback al abrir popup en el mapa
+        // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
+        marcador.on('click', (e) => {
+            // Evitamos nativamente que Leaflet cierre el popup por efecto de rebote
+            L.DomEvent.stopPropagation(e);
 
+            // Mover la propiedad seleccionada al primer lugar (Índice 0) del arreglo inmutable
+            const indicePropiedad = state.propiedades.findIndex(p => p.id === prop.id);
+            
+            if (indicePropiedad !== -1) {
+                // Extraemos el inmueble seleccionado de su posición original
+                const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
+                // Lo empujamos al inicio de la memoria RAM (Top de la lista)
+                state.propiedades.unshift(propiedadSeleccionada);
+                
+                // Forzamos el refresco inmediato del catálogo derecho sin alterar el mapa
+                renderizarCatálogoTarjetas();
+            }
+
+            // Desplazamiento visual controlado hacia la cabecera de la lista reorganizada
+            setTimeout(() => {
+                const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+                if (tarjetaDerecha) {
+                    // Mueve el scroll del catálogo sutilmente hacia el tope
+                    tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Resalte visual temporal limpio nativo usando la variable oficial
+                    tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
+                    tarjetaDerecha.style.borderRadius = '12px';
+                    // Removemos el contorno al finalizar la transición
+                    setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2500);
+                }
+            }, 100);
+        });
+
+        // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
+        marcador.on('popupopen', (e) => {
+            const popupElement = marcador.getPopup().getElement();
+            if (popupElement) {
+                // Detiene nativamente que el avance de fotos o toques cierren el marcador
+                L.DomEvent.disableClickPropagation(popupElement);
+                L.DomEvent.disableScrollPropagation(popupElement);
+            }
+        });
+
+        // 4. Redirección hacia la pantalla de detalle (Pantalla 3) al presionar la foto
+        carruselPopup.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
+            window.map.closePopup();
+            state.propiedadSeleccionadaId = prop.id;
+            alternarPantallaZillow('detalle-ficha');
+            renderizarFichaDetalleZillow(prop);
+        });
+
+        
         window.capaMarcadores.addLayer(marcador);
     }); // <--Aqui finaliza Callback forEach de propiedades filtradas en mapa
 } // <--Aqui finaliza Función renderizarMapaZillow
