@@ -1082,8 +1082,7 @@ function evaluarCriteriosDeFiltrado(prop)
 { // -->Aqui inicia Función evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
     const inputDireccionNode = document.getElementById('search-address');
-    //const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim() : "";
-
+   
     // =========================================================================
     // BUENAS PRÁCTICAS SRE: CORTOCIRCUITO TOTAL PARA BUSCADOR DE MAPAS
     // =========================================================================
@@ -1091,52 +1090,7 @@ function evaluarCriteriosDeFiltrado(prop)
     // Al forzar esta variable como vacía para la evaluación de datos, anulamos por completo
     // el filtro estricto de texto en la base de datos de RAM, permitiendo que las burbujas sigan vivas.
     const textoBuscarDireccion = ""; 
-    // =========================================================================
-    // =========================================================================
-    // BUENAS PRÁCTICAS SRE: DISCRIMINADOR DE DIRECIONES VS PALABRAS CLAVE
-    // =========================================================================
-    // Si el texto incluye indicadores claros de ser una dirección física para el mapa (como números, Av, Calle, Jr, Ca),
-    // limpiamos el filtro de texto local. Así evitamos que oculte las propiedades de la RAM.
-    //const esDireccionFisica = /\d/.test(textoBuscarDireccion) || 
-    //                          /^(av|avenida|calle|ca|jr|jiron|pjs|pasaje)/i.test(textoBuscarDireccion);
     
-    //if (esDireccionFisica) {
-    //    textoBuscarDireccion = ""; // Al vaciarlo aquí localmente, anula el filtro estricto de texto pero mantiene el movimiento del mapa abajo.
-    //}
-    // =========================================================================
-
-
-    // =========================================================================
-    // EXTENSIÓN DEL FILTRO 1: REDIRECCIÓN AUTOMÁTICA DEL MAPA (GEOCODIFICACIÓN)
-    // =========================================================================
-    // Creamos un temporizador global en el objeto window para no interferir con la RAM del estado
-    //if (textoBuscarDireccion.length >= 4) {
-    //    clearTimeout(window.timerGeocodingFiltro);
-    //    window.timerGeocodingFiltro = setTimeout(() => {
-    //        // Guardamos la última dirección buscada para evitar peticiones duplicadas idénticas
-    //        if (window.ultimaDireccionBuscada === textoBuscarDireccion) return;
-    //       window.ultimaDireccionBuscada = textoBuscarDireccion;
-
-    //        console.log(`🔍 [FILTRO 1] Buscando coordenadas en mapa para: ${textoBuscarDireccion}`);
-    //        const urlNominatim = "https://nominatim.openstreetmap.org" + encodeURIComponent(textoBuscarDireccion) + "&countrycodes=pe&limit=1";
-
-    //        fetch(urlNominatim)
-    //            .then(res => res.json())
-    //            .then(resultados => {
-    //                if (resultados && resultados.length > 0) {
-    //                    const lugar = resultados[0];
-    //                    const lat = parseFloat(lugar.lat);
-    //                    const lon = parseFloat(lugar.lon);
-
-    //                    if (window.map) {
-    //                        console.log(`📍 [FILTRO 1] Redirigiendo mapa a: Lat ${lat} | Lon ${lon}`);
-    //                        window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
-    //                    }
-    //                }
-    //            })
-    //            .catch(err => console.error("Error en geocodificación del filtro:", err)); 
-        //}, 800); // 800ms de espera para que el mapa se mueva solo cuando termines de escribir la calle
-    //  }
     // =========================================================================
 
     const columna_estado_publicacion = String(prop.estadoListado || "").trim();
