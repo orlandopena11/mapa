@@ -163,30 +163,27 @@ body, html {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
-/*  Busca esta clase en tu styles.css y edítala para forzar el diseño vertical */
+/* 1. Oculta todos los paneles de opciones por defecto al cargar la página */
 .dropdown-content-panel {
     display: none; 
     position: absolute;
     top: 100%; 
     left: 0;
-    z-index: 9999; 
+    z-index: 9999; /* Prioridad por encima de los marcadores del mapa Leaflet */
     background-color: #ffffff;
     min-width: 200px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     padding: 16px;
     margin-top: 4px;
-    /*z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
-    /* 🛑 AÑADE ESTAS TRES LÍNEAS NATIVAS AQUÍ: */
+}
+    
+/* 2. Muestra el panel en formato de lista vertical ÚNICAMENTE cuando haces clic */
+.dropdown-content-panel.show {
     display: flex;
     flex-direction: column;
     gap: 10px; /* Espaciado uniforme entre En venta, Alquiler y Vendida */
 }
-    
-.dropdown-content-panel.show {
-    display: block;
-}
-
 
 /* ==========================================================================
    PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
