@@ -210,9 +210,9 @@ function normalizarPropiedadProduccion(prop)
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
-    if (precio >= 1000000) return `S/. \${(precio / 1000000).toFixed(2)}M`;
-    if (precio >= 1000) return `S/. \${(precio / 1000).toFixed(0)}K`;
-    return `S/. \${precio}`;
+    if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
+    if (precio >= 1000) return `S/. ${(precio / 1000).toFixed(0)}K`;
+    return `S/. ${precio}`;
 } // <--Aqui finaliza Función formatearPrecioCompacto
 
 
