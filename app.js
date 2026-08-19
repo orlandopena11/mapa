@@ -1049,7 +1049,7 @@ function evaluarCriteriosDeFiltrado(prop)
             window.ultimaDireccionBuscada = textoBuscarDireccion;
 
             console.log(`🔍 [FILTRO 1] Buscando coordenadas en mapa para: ${textoBuscarDireccion}`);
-            const urlNominatim = `https://openstreetmap.org{encodeURIComponent(textoBuscarDireccion)}&countrycodes=pe&limit=1`;
+            const urlNominatim = "https://openstreetmap.org" + encodeURIComponent(textoBuscarDireccion) + "&countrycodes=pe&limit=1";
 
             fetch(urlNominatim)
                 .then(res => res.json())
