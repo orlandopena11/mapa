@@ -54,7 +54,6 @@ body, html {
    ========================================================================== */
 
 .navbar-global {
-    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -63,10 +62,9 @@ body, html {
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
-    z-index: 1000;
+    z-index: 1010; /*  Prioridad sobre el visor del mapa */
     width: 100vw;
-    overflow-x: auto; /* Permite scroll horizontal sutil en pantallas chicas */
-    white-space: nowrap; /* Impide terminantemente saltos de línea en los filtros */
+    white-space: nowrap;
 }
 
 .navbar-brand-logo {
@@ -175,7 +173,7 @@ body, html {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 16px;
     border-radius: 8px;
-    z-index: 2000;
+    z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
     margin-top: 4px;
 }
 
