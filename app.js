@@ -639,24 +639,8 @@ document.addEventListener("DOMContentLoaded", () =>
 function inicializarEventosDeFiltros() 
 { // -->Aqui inicia Función inicializarEventosDeFiltros
 
-    //  ¡BUENAS PRÁCTICAS SRE! Forzar que el contenedor flote por encima del mapa Leaflet
-    // Reemplaza '.filter-dropdown-wrapper' o el contenedor principal de tus radios por su ID o clase real:
-    const contenedorFiltrosMenu = document.querySelector('.filter-dropdown-wrapper') || document.querySelector('[name="transaccion"]')?.parentElement;
-    
-    if (contenedorFiltrosMenu) {
-        contenedorFiltrosMenu.style.position = 'absolute';
-        contenedorFiltrosMenu.style.top = '20px';
-        contenedorFiltrosMenu.style.left = '60px';
-        contenedorFiltrosMenu.style.zIndex = '1000'; // Prioridad absoluta sobre las capas de Leaflet
-        contenedorFiltrosMenu.style.backgroundColor = '#ffffff';
-        contenedorFiltrosMenu.style.padding = '10px 16px';
-        contenedorFiltrosMenu.style.borderRadius = '8px';
-        contenedorFiltrosMenu.style.boxShadow = '0 2px 10px rgba(0,0,0,0.15)';
-    }
-
     // 1. Control de apertura/cierre de los paneles desplegables (Dropdowns)
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
-    // ... (El resto de tu lógica de listeners de radios "change" e inputs se mantiene idéntica abajo)
     
     wrappers.forEach(wrapper => 
     { // -->Aqui inicia Callback forEach selectores de dropdowns
@@ -667,6 +651,7 @@ function inicializarEventosDeFiltros()
         boton.addEventListener('click', (e) => 
         { // -->Aqui inicia Callback click en botón del filtro
             e.stopPropagation();
+            
             // Cerramos todos los demás paneles para evitar colisiones visuales
             document.querySelectorAll('.dropdown-content-panel').forEach(p => 
             { // -->Aqui inicia Callback forEach cerrar paneles inactivos
@@ -678,11 +663,12 @@ function inicializarEventosDeFiltros()
                 if (b !== boton) b.classList.remove('active');
             }); // <--Aqui finaliza Callback forEach limpiar estilos de botones
 
-            // Alternamos el estado del panel actual
+            // Alternamos el estado de visualización mediante la clase CSS controlada
             panel.classList.toggle('show');
             boton.classList.toggle('active');
         }); // <--Aqui finaliza Callback click en botón del filtro
     }); // <--Aqui finaliza Callback forEach selectores de dropdowns
+
 
     // Cierre natural al hacer clic en cualquier zona vacía de la pantalla
     document.addEventListener('click', () => 
