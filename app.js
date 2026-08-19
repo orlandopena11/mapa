@@ -1112,7 +1112,7 @@ function evaluarCriteriosDeFiltrado(prop)
     //                }
     //            })
     //            .catch(err => console.error("Error en geocodificación del filtro:", err)); 
-        }, 800); // 800ms de espera para que el mapa se mueva solo cuando termines de escribir la calle
+        //}, 800); // 800ms de espera para que el mapa se mueva solo cuando termines de escribir la calle
     //  }
     // =========================================================================
 
