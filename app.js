@@ -367,7 +367,7 @@ function renderizarMapaZillow()
         if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio);
-        const htmlBurbuja = `<span>\${precioCompacto}</span>`;
+        const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
         const estadoPub = String(prop.estado_publicacion || "").trim();
@@ -576,8 +576,25 @@ document.addEventListener("DOMContentLoaded", () =>
 // PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
 function inicializarEventosDeFiltros() 
 { // -->Aqui inicia Función inicializarEventosDeFiltros
+
+    //  ¡BUENAS PRÁCTICAS SRE! Forzar que el contenedor flote por encima del mapa Leaflet
+    // Reemplaza '.filter-dropdown-wrapper' o el contenedor principal de tus radios por su ID o clase real:
+    const contenedorFiltrosMenu = document.querySelector('.filter-dropdown-wrapper') || document.querySelector('[name="transaccion"]')?.parentElement;
+    
+    if (contenedorFiltrosMenu) {
+        contenedorFiltrosMenu.style.position = 'absolute';
+        contenedorFiltrosMenu.style.top = '20px';
+        contenedorFiltrosMenu.style.left = '60px';
+        contenedorFiltrosMenu.style.zIndex = '1000'; // Prioridad absoluta sobre las capas de Leaflet
+        contenedorFiltrosMenu.style.backgroundColor = '#ffffff';
+        contenedorFiltrosMenu.style.padding = '10px 16px';
+        contenedorFiltrosMenu.style.borderRadius = '8px';
+        contenedorFiltrosMenu.style.boxShadow = '0 2px 10px rgba(0,0,0,0.15)';
+    }
+
     // 1. Control de apertura/cierre de los paneles desplegables (Dropdowns)
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
+    // ... (El resto de tu lógica de listeners de radios "change" e inputs se mantiene idéntica abajo)
     
     wrappers.forEach(wrapper => 
     { // -->Aqui inicia Callback forEach selectores de dropdowns
