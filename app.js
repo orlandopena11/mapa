@@ -1085,6 +1085,20 @@ function evaluarCriteriosDeFiltrado(prop)
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim() : "";
 
     // =========================================================================
+    // BUENAS PRÁCTICAS SRE: DISCRIMINADOR DE DIRECIONES VS PALABRAS CLAVE
+    // =========================================================================
+    // Si el texto incluye indicadores claros de ser una dirección física para el mapa (como números, Av, Calle, Jr, Ca),
+    // limpiamos el filtro de texto local. Así evitamos que oculte las propiedades de la RAM.
+    const esDireccionFisica = /\d/.test(textoBuscarDireccion) || 
+                              /^(av|avenida|calle|ca|jr|jiron|pjs|pasaje)/i.test(textoBuscarDireccion);
+    
+    if (esDireccionFisica) {
+        textoBuscarDireccion = ""; // Al vaciarlo aquí localmente, anula el filtro estricto de texto pero mantiene el movimiento del mapa abajo.
+    }
+    // =========================================================================
+
+
+    // =========================================================================
     // EXTENSIÓN DEL FILTRO 1: REDIRECCIÓN AUTOMÁTICA DEL MAPA (GEOCODIFICACIÓN)
     // =========================================================================
     // Creamos un temporizador global en el objeto window para no interferir con la RAM del estado
