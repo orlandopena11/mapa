@@ -16,95 +16,94 @@
 <body>
     <div class="app-container">
         <!-- Barra Superior Global (Navbar & Filtros Avanzados) -->
-        <header class="navbar-global">
-            <img src="logo.jpg" alt="Logo Zillow" class="navbar-brand-logo" id="app-main-logo">
-            
-            <div class="search-controls">
-                <!-- Filtro 1: Buscador de Dirección -->
-                <input type="text" class="search-input" id="search-address" placeholder="Dirección, ciudad o distrito...">
-                
-                <!-- ========================================================================== -->
-                <!-- Filtro 2: Tipo de Transacción Unificado con el Motor de Filtrado (SRE REFACTOR) -->
-                <!-- Sincroniza los valores de los radio buttons con las variables exactas de app.js -->
-                <!-- ========================================================================== -->
-                <div class="filter-dropdown-wrapper">
-                    <button class="filter-btn" id="btn-filter-status">En venta ▾</button>
-                    <div class="dropdown-content-panel" id="dropdown-status">
-                        <div class="filter-group-options">
-                            <label class="filter-checkbox-label">
-                                <input type="radio" name="transaccion" value="Venta" checked> En venta
-                            </label>
-                            <label class="filter-checkbox-label">
-                                <input type="radio" name="transaccion" value="Alquiler"> Para el alquiler
-                            </label>
-                            <label class="filter-checkbox-label">
-                                <input type="radio" name="transaccion" value="Vendido"> Vendida
-                            </label>
-                        </div>
-                    </div>
-                </div>
+    <!-- Barra Superior Global (Navbar & Filtros Avanzados) -->
+    <header class="navbar-global">
+        <img src="logo.jpg" alt="Logo Zillow" class="navbar-brand-logo" id="app-main-logo">
+        
+        <!-- 1. BUSCADOR DE DIRECCIÓN AISLADO (CORREGIDO Y CERRADO) -->
+        <div class="search-controls">
+            <input type="text" class="search-input" id="search-address" placeholder="Dirección, ciudad o distrito...">
+        </div> <!--  ¡LÍNEA CLAVE! Cerramos el contenedor aquí para que no arrastre a los demás filtros -->
 
-                <!-- Filtro 3: Rango de Precios -->
-                <div class="filter-dropdown-wrapper">
-                    <button class="filter-btn" id="btn-filter-price">Precio ▾</button>
-                    <div class="dropdown-content-panel" id="dropdown-price">
-                        <div class="filter-section-title">Rango de precios</div>
-                        <div class="histogram-visual-container" id="price-histogram-box"></div>
-                        <div class="range-inputs-inputs-row">
-                            <input type="number" class="range-box-input" id="price-min" placeholder="No Min">
-                            <span>-</span>
-                            <input type="number" class="range-box-input" id="price-max" placeholder="No Max" value="1300000">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filtro 4: Camas y Baños -->
-                <div class="filter-dropdown-wrapper">
-                    <button class="filter-btn" id="btn-filter-specs">Camas y baños ▾</button>
-                    <div class="dropdown-content-panel" id="dropdown-specs">
-                        <div class="filter-section-title">Dormitorios</div>
-                        <div class="segmented-control-row" id="row-beds">
-                            <button class="segmented-btn active" data-val="0">Cualquiera</button>
-                            <button class="segmented-btn" data-val="1">1+</button>
-                            <button class="segmented-btn" data-val="2">2+</button>
-                            <button class="segmented-btn" data-val="3">3+</button>
-                            <button class="segmented-btn" data-val="4">4+</button>
-                            <button class="segmented-btn" data-val="5">5+</button>
-                        </div>
-                        <label class="filter-checkbox-label" style="margin-bottom: 12px;">
-                            <input type="checkbox" id="beds-exact"> Coincidencia exacta
-                        </label>
-                        <div class="filter-section-title">Baños</div>
-                        <div class="segmented-control-row" id="row-baths">
-                            <button class="segmented-btn active" data-val="0">Cualquiera</button>
-                            <button class="segmented-btn" data-val="1">1+</button>
-                            <button class="segmented-btn" data-val="1.5">1.5+</button>
-                            <button class="segmented-btn" data-val="2">2+</button>
-                            <button class="segmented-btn" data-val="3">3+</button>
-                            <button class="segmented-btn" data-val="4">4+</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filtro 5: Tipo de Propiedad -->
-                <div class="filter-dropdown-wrapper">
-                    <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
-                    <div class="dropdown-content-panel" id="dropdown-type">
-                        <div class="filter-group-options">
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" id="type-select-all" checked> Seleccione Todos
-                            </label>
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" class="type-cb" value="Casa" checked> Casas
-                            </label>
-                            <label class="filter-checkbox-label">
-                                <input type="checkbox" class="type-cb" value="Apartamento" checked> Apartamentos
-                            </label>
-                        </div>
-                    </div>
+        <!-- 2. FILTRO DE TRANSACCIÓN (ESTADO) -->
+        <div class="filter-dropdown-wrapper">
+            <button class="filter-btn" id="btn-filter-status">En venta ▾</button>
+            <div class="dropdown-content-panel" id="dropdown-status">
+                <div class="filter-group-options">
+                    <label class="filter-checkbox-label">
+                        <input type="radio" name="transaccion" value="Venta" checked> En venta
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="radio" name="transaccion" value="Alquiler"> Para el alquiler
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="radio" name="transaccion" value="Vendido"> Vendida
+                    </label>
                 </div>
             </div>
-        </header>
+        </div>
+
+        <!-- 3. FILTRO DE RANGO DE PRECIOS -->
+        <div class="filter-dropdown-wrapper">
+            <button class="filter-btn" id="btn-filter-price">Precio ▾</button>
+            <div class="dropdown-content-panel" id="dropdown-price">
+                <div class="filter-section-title">Rango de precios</div>
+                <div class="histogram-visual-container" id="price-histogram-box"></div>
+                <div class="range-inputs-inputs-row">
+                    <input type="number" class="range-box-input" id="price-min" placeholder="No Min">
+                    <span>-</span>
+                    <input type="number" class="range-box-input" id="price-max" placeholder="No Max">
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. FILTRO DE CAMAS Y BAÑOS -->
+        <div class="filter-dropdown-wrapper">
+            <button class="filter-btn" id="btn-filter-specs">Camas y baños ▾</button>
+            <div class="dropdown-content-panel" id="dropdown-specs">
+                <div class="filter-section-title">Dormitorios</div>
+                <div class="segmented-control-row" id="row-beds">
+                    <button class="segmented-btn active" data-val="0">Cualquiera</button>
+                    <button class="segmented-btn" data-val="1">1+</button>
+                    <button class="segmented-btn" data-val="2">2+</button>
+                    <button class="segmented-btn" data-val="3">3+</button>
+                    <button class="segmented-btn" data-val="4">4+</button>
+                    <button class="segmented-btn" data-val="5">5+</button>
+                </div>
+                <label class="filter-checkbox-label" style="margin-bottom: 12px;">
+                    <input type="checkbox" id="beds-exact"> Coincidencia exacta
+                </label>
+                <div class="filter-section-title">Baños</div>
+                <div class="segmented-control-row" id="row-baths">
+                    <button class="segmented-btn active" data-val="0">Cualquiera</button>
+                    <button class="segmented-btn" data-val="1">1+</button>
+                    <button class="segmented-btn" data-val="1.5">1.5+</button>
+                    <button class="segmented-btn" data-val="2">2+</button>
+                    <button class="segmented-btn" data-val="3">3+</button>
+                    <button class="segmented-btn" data-val="4">4+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. FILTRO DE TIPO DE PROPIEDAD -->
+        <div class="filter-dropdown-wrapper">
+            <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
+            <div class="dropdown-content-panel" id="dropdown-type">
+                <div class="filter-group-options">
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" id="type-select-all" checked> Seleccione Todos
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" class="type-cb" value="Casa" checked> Casas
+                    </label>
+                    <label class="filter-checkbox-label">
+                        <input type="checkbox" class="type-cb" value="Apartamento" checked> Apartamentos
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </header> <!--  ¡Cierre limpio del Navbar alineado a una sola línea! -->
 
         <!-- Contenedor Principal Split-View Respetando IDs Nativos -->
         <main class="split-view">
