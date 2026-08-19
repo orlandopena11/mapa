@@ -547,21 +547,31 @@ function procesarDatosDelMotor(data)
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => 
 { // -->Aqui inicia Callback principal DOMContentLoaded
-    // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
-    if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
-    { // -->Aqui inicia Condicional inicializar mapa Leaflet
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-    } // <--Aqui finaliza Condicional inicializar mapa Leaflet
+        // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
+        if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
+        { // -->Aqui inicia Condicional inicializar mapa Leaflet
+            window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        } // <--Aqui finaliza Condicional inicializar mapa Leaflet
 
-    inicializarEventosDeFiltros();
-    
-    // Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
-    if (window.map) window.map.on('moveend', renderizarMapaZillow);
-    
-    // Disparo inicial asíncronizado de red
-    cargarDatosDesdeAppsScript();
-}); // <--Aqui finaliza Callback principal DOMContentLoaded
+        //  ¡BUENAS PRÁCTICAS SRE! Retardo controlado para asegurar que el DOM y el Mapa estén listos
+        setTimeout(() => {
+            console.log("⏱️ [SRE] Inicializando eventos y listeners del ecosistema...");
+            
+            // 1. Enlazamos los eventos de los menús desplegables (Dropdowns)
+            inicializarEventosDeFiltros();
+            
+            // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
+            if (window.map) {
+                window.map.on('moveend', renderizarMapaZillow);
+            }
+            
+            // 3. Disparo inicial asincronizado de red para traer los datos del Excel
+            cargarDatosDesdeAppsScript();
+            
+        }, 100);
+
+    }); // <--Aqui finaliza Callback principal DOMContentLoaded
 
 // PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
 function inicializarEventosDeFiltros() 
