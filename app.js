@@ -355,9 +355,9 @@ function crearComponenteTarjetaZillow(propiedad)
 
     // 4. Frase Descriptiva / Título
     const tituloTexto = document.createElement('div');
-    tituloTexto.style.fontSize = '13px';
+    tituloTexto.style.fontSize = '14px';
     tituloTexto.style.color = '#1e293b';
-    tituloTexto.style.fontWeight = '500';
+    tituloTexto.style.fontWeight = '600';
     tituloTexto.style.marginTop = '4px';
     tituloTexto.textContent = propiedad.fraseDescriptiva;
     datosCasa.appendChild(tituloTexto);
