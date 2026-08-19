@@ -17,13 +17,14 @@
     <div class="app-container">
         <!-- Barra Superior Global (Navbar & Filtros Avanzados) -->
     <!-- Barra Superior Global (Navbar & Filtros Avanzados) -->
+    <!-- Barra Superior Global (Navbar & Filtros Avanzados) -->
     <header class="navbar-global">
         <img src="logo.jpg" alt="Logo Zillow" class="navbar-brand-logo" id="app-main-logo">
         
-        <!-- 1. BUSCADOR DE DIRECCIÓN AISLADO (CORREGIDO Y CERRADO) -->
+        <!-- 1. BUSCADOR DE DIRECCIÓN AISLADO -->
         <div class="search-controls">
             <input type="text" class="search-input" id="search-address" placeholder="Dirección, ciudad o distrito...">
-        </div> <!--  ¡LÍNEA CLAVE! Cerramos el contenedor aquí para que no arrastre a los demás filtros -->
+        </div>
 
         <!-- 2. FILTRO DE TRANSACCIÓN (ESTADO) -->
         <div class="filter-dropdown-wrapper">
@@ -37,7 +38,7 @@
                         <input type="radio" name="transaccion" value="Alquiler"> Para el alquiler
                     </label>
                     <label class="filter-checkbox-label">
-                        <input type="radio" name="transaccion" value="Vendido"> Vendida
+                        <input type="radio" name="transaccion" value="Vendido"> Vendidas
                     </label>
                 </div>
             </div>
@@ -85,7 +86,7 @@
             </div>
         </div>
 
-        <!-- 5. FILTRO DE TIPO DE PROPIEDAD (CON CATÁLOGO REAL COMPLETO) -->
+        <!-- 5. FILTRO DE TIPO DE PROPIEDAD -->
         <div class="filter-dropdown-wrapper">
             <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
             <div class="dropdown-content-panel" id="dropdown-type">
@@ -117,16 +118,13 @@
                 </div>
             </div>
         </div>
-        
 
-        <!-- ========================================================================= -->
-        <!-- FILTRO 6: FILTROS AVANZADOS (MÁS FILTROS) -->
-        <!-- ========================================================================= -->
+        <!-- 6. FILTRO MAESTRO DE FILTROS AVANZADOS -->
         <div class="filter-dropdown-wrapper">
             <button class="filter-btn" id="btn-filter-more">Filtros ▾</button>
-            <div class="dropdown-content-panel" id="dropdown-more-filters" style="min-width: 260px;">
-                <div class="filter-section-title" style="font-weight: bold; margin-bottom: 8px; color: #1e293b;">Tipo de listado</div>
-                <div class="filter-group-options" style="display: flex; flex-direction: column; gap: 8px;">
+            <div class="dropdown-content-panel" id="dropdown-more-filters">
+                <div class="filter-section-title">Tipo de listado</div>
+                <div class="filter-group-options">
                     <label class="filter-checkbox-label">
                         <input type="checkbox" class="more-filter-cb" value="propietario" checked> Propietario publicado
                     </label>
@@ -146,7 +144,7 @@
             </div>
         </div>
 
-    </header> <!--  ¡Cierre limpio del Navbar alineado a una sola línea! -->
+    </header>
 
         <!-- Contenedor Principal Split-View Respetando IDs Nativos -->
         <main class="split-view">
