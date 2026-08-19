@@ -505,7 +505,7 @@ function renderizarMapaZillow()
         pAdicionales.style.fontSize = '11px';
         pAdicionales.style.color = '#64748b';
         pAdicionales.style.marginTop = '2px';
-        pAdicionales.textContent = `${propiedad.subtipoPropiedad} | Estacionamientos: ${propiedad.estacionamientos} | Año: ${propiedad.ano_construccion} | Estado: ${propiedad.estado_propiedad}`;
+        pAdicionales.textContent = `${prop.subtipoPropiedad} | Estacionamientos: ${prop.estacionamientos} | Año: ${prop.ano_construccion} | Estado: ${prop.estado_propiedad}`;
      
         //  AGREGAR AQUÍ: Inyección del título / dirección de la propiedad
         const pDireccion = document.createElement('div');
