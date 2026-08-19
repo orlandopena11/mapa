@@ -185,6 +185,35 @@ body, html {
     gap: 10px; /* Espaciado uniforme entre En venta, Alquiler y Vendida */
 }
 
+/* =========================================================================
+   ALINEACIÓN VERTICAL NATIVA PARA CONTENIDOS INTERNOS DE FILTROS
+   ========================================================================= */
+
+/* 1. Fuerza a que los grupos de opciones (radios y checkboxes) se listen uno debajo del otro */
+div.dropdown-content-panel div.filter-group-options {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px; /* Espaciado uniforme y elegante entre cada opción */
+    width: 100%;
+}
+
+/* 2. Asegura que las etiquetas de texto no se encimen ni se corten horizontalmente */
+label.filter-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap; /* Evita que el texto salte de línea de forma desordenada */
+    cursor: pointer;
+    font-size: 14px;
+    color: #334155;
+}
+
+/* 3. Ampliamos sutilmente el ancho de los menús complejos para albergar textos largos */
+#dropdown-status, #dropdown-more-filters, #dropdown-type {
+    min-width: 240px; /* Le da el espacio necesario a "Nueva construcción" o "Para el alquiler" */
+}
+
 /* ==========================================================================
    PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
    Arquitectura del Riel del Deslizador y Animaciones de Transición Fluida
