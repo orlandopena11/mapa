@@ -849,6 +849,52 @@ function inicializarEventosDeFiltros()
             if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
         }); // <--Aqui finaliza Callback click botón aplicar
     } // <--Aqui finaliza Condicional listener cerrar panel interactivo
+   
+    // =========================================================================
+    // BUENAS PRÁCTICAS SRE: MOTOR ÚNICO DE REDIRECCIÓN CARTOGRÁFICA POR FILTRO
+    // =========================================================================
+    const inputDireccionNode = document.getElementById('search-address');
+    
+    if (inputDireccionNode) {
+        let debounceTimer;
+        
+        inputDireccionNode.addEventListener('input', (e) => {
+            const direccionTexto = e.target.value.trim();
+            clearTimeout(debounceTimer);
+            
+            // Filtro de seguridad inicial: evita consultas innecesarias con textos cortos
+            if (direccionTexto.length < 4) return;
+            
+            // Debounce de 800ms: espera a que el usuario termine de escribir antes de consultar la API
+            debounceTimer = setTimeout(() => {
+                if (window.ultimaDireccionBuscada === direccionTexto) return;
+                window.ultimaDireccionBuscada = direccionTexto;
+                
+                console.log("🔍 [MOTOR GEOCODING] Buscando ubicación para:", direccionTexto);
+                const urlNominatim = "https://openstreetmap.org" + encodeURIComponent(direccionTexto) + "&countrycodes=pe&limit=1";
+                
+                fetch(urlNominatim)
+                    .then(res => res.json())
+                    .then(resultados => {
+                        // Verificación estricta de la estructura del arreglo devuelto por OpenStreetMap
+                        if (resultados && resultados.length > 0) {
+                            const lugar = resultados[0]; // Extrae limpiamente el primer resultado válido
+                            const lat = parseFloat(lugar.lat);
+                            const lon = parseFloat(lugar.lon);
+                            
+                            if (window.map) {
+                                console.log("📍 [MOTOR GEOCODING] Redirigiendo mapa a con éxito:", lat, lon);
+                                window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
+                            }
+                        } else {
+                            console.warn("⚠️ [MOTOR GEOCODING] No se encontraron coordenadas para esta dirección.");
+                        }
+                    })
+                    .catch(err => console.error("❌ [MOTOR GEOCODING] Error de conexión con el servidor cartográfico:", err));
+            }, 800);
+        });
+    }
+    
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
 // =========================================================================
@@ -1041,31 +1087,31 @@ function evaluarCriteriosDeFiltrado(prop)
     // EXTENSIÓN DEL FILTRO 1: REDIRECCIÓN AUTOMÁTICA DEL MAPA (GEOCODIFICACIÓN)
     // =========================================================================
     // Creamos un temporizador global en el objeto window para no interferir con la RAM del estado
-    if (textoBuscarDireccion.length >= 4) {
-        clearTimeout(window.timerGeocodingFiltro);
-        window.timerGeocodingFiltro = setTimeout(() => {
-            // Guardamos la última dirección buscada para evitar peticiones duplicadas idénticas
-            if (window.ultimaDireccionBuscada === textoBuscarDireccion) return;
-            window.ultimaDireccionBuscada = textoBuscarDireccion;
+    //if (textoBuscarDireccion.length >= 4) {
+    //    clearTimeout(window.timerGeocodingFiltro);
+    //    window.timerGeocodingFiltro = setTimeout(() => {
+    //        // Guardamos la última dirección buscada para evitar peticiones duplicadas idénticas
+    //        if (window.ultimaDireccionBuscada === textoBuscarDireccion) return;
+    //       window.ultimaDireccionBuscada = textoBuscarDireccion;
 
-            console.log(`🔍 [FILTRO 1] Buscando coordenadas en mapa para: ${textoBuscarDireccion}`);
-            const urlNominatim = "https://nominatim.openstreetmap.org" + encodeURIComponent(textoBuscarDireccion) + "&countrycodes=pe&limit=1";
+    //        console.log(`🔍 [FILTRO 1] Buscando coordenadas en mapa para: ${textoBuscarDireccion}`);
+    //        const urlNominatim = "https://nominatim.openstreetmap.org" + encodeURIComponent(textoBuscarDireccion) + "&countrycodes=pe&limit=1";
 
-            fetch(urlNominatim)
-                .then(res => res.json())
-                .then(resultados => {
-                    if (resultados && resultados.length > 0) {
-                        const lugar = resultados[0];
-                        const lat = parseFloat(lugar.lat);
-                        const lon = parseFloat(lugar.lon);
+    //        fetch(urlNominatim)
+    //            .then(res => res.json())
+    //            .then(resultados => {
+    //                if (resultados && resultados.length > 0) {
+    //                    const lugar = resultados[0];
+    //                    const lat = parseFloat(lugar.lat);
+    //                    const lon = parseFloat(lugar.lon);
 
-                        if (window.map) {
-                            console.log(`📍 [FILTRO 1] Redirigiendo mapa a: Lat ${lat} | Lon ${lon}`);
-                            window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
-                        }
-                    }
-                })
-                .catch(err => console.error("Error en geocodificación del filtro:", err));
+    //                    if (window.map) {
+    //                        console.log(`📍 [FILTRO 1] Redirigiendo mapa a: Lat ${lat} | Lon ${lon}`);
+    //                        window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
+    //                    }
+    //                }
+    //            })
+    //            .catch(err => console.error("Error en geocodificación del filtro:", err)); 
         }, 800); // 800ms de espera para que el mapa se mueva solo cuando termines de escribir la calle
     }
     // =========================================================================
