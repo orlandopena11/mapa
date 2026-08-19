@@ -1031,18 +1031,51 @@ function configurarSegmentado(idContenedor, callback)
 } // <--Aqui finaliza Función configurarSegmentado
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
-function evaluarCriteriosDeFiltrado(prop) 
+function evaluarCriteriosDeFiltrado(prop)
 { // -->Aqui inicia Función evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
     const inputDireccionNode = document.getElementById('search-address');
     const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim() : "";
 
+    // =========================================================================
+    // EXTENSIÓN DEL FILTRO 1: REDIRECCIÓN AUTOMÁTICA DEL MAPA (GEOCODIFICACIÓN)
+    // =========================================================================
+    // Creamos un temporizador global en el objeto window para no interferir con la RAM del estado
+    if (textoBuscarDireccion.length >= 4) {
+        clearTimeout(window.timerGeocodingFiltro);
+        window.timerGeocodingFiltro = setTimeout(() => {
+            // Guardamos la última dirección buscada para evitar peticiones duplicadas idénticas
+            if (window.ultimaDireccionBuscada === textoBuscarDireccion) return;
+            window.ultimaDireccionBuscada = textoBuscarDireccion;
+
+            console.log(`🔍 [FILTRO 1] Buscando coordenadas en mapa para: ${textoBuscarDireccion}`);
+            const urlNominatim = `https://openstreetmap.org{encodeURIComponent(textoBuscarDireccion)}&countrycodes=pe&limit=1`;
+
+            fetch(urlNominatim)
+                .then(res => res.json())
+                .then(resultados => {
+                    if (resultados && resultados.length > 0) {
+                        const lugar = resultados[0];
+                        const lat = parseFloat(lugar.lat);
+                        const lon = parseFloat(lugar.lon);
+
+                        if (window.map) {
+                            console.log(`📍 [FILTRO 1] Redirigiendo mapa a: Lat ${lat} | Lon ${lon}`);
+                            window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
+                        }
+                    }
+                })
+                .catch(err => console.error("Error en geocodificación del filtro:", err));
+        }, 800); // 800ms de espera para que el mapa se mueva solo cuando termines de escribir la calle
+    }
+    // =========================================================================
 
     const columna_estado_publicacion = String(prop.estadoListado || "").trim();
     const columna_tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
     const columna_titulo_direccion = String(prop.fraseDescriptiva || "").trim();
 
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}"`);
+
 
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
