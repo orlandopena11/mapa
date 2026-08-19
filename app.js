@@ -102,6 +102,10 @@ function normalizarPropiedad(prop)
         fraseDescriptiva: String(prop.titulo || '').trim(), // Mantiene tu título original limpio
         tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
         subtipoPropiedad: String(prop.subtipo_propiedad || "").trim(),
+        area_terreno: parseFloat(prop.area_terreno || 0),
+        estacionamientos: parseInt(prop.estacionamientos || 0),
+        ano_construccion: parseInt(prop.ano_construccion || 0),
+        estado_propiedad: String(prop.estado_propiedad || "").trim(),
         fotos: fotosUnificadas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
         
         // GEOLOCALIZACIÓN INTEGRAL ASIGNADA DESDE LAS LLAVES REALES DEL BACKEND
@@ -210,9 +214,9 @@ function normalizarPropiedadProduccion(prop)
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
-    if (precio >= 1000000) return `S/. ${(precio / 1000000).toFixed(2)}M`;
-    if (precio >= 1000) return `S/. ${(precio / 1000).toFixed(0)}K`;
-    return `S/. ${precio}`;
+    if (precio >= 1000000) return `$. ${(precio / 1000000).toFixed(2)}M`;
+    if (precio >= 1000) return `$. ${(precio / 1000).toFixed(0)}K`;
+    return `$. ${precio}`;
 } // <--Aqui finaliza Función formatearPrecioCompacto
 
 
@@ -322,12 +326,41 @@ function crearComponenteTarjetaZillow(propiedad)
     // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
-
+    datosCasa.style.padding = '12px';
+    
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
+    precioTexto.style.fontSize = '18px';
+    precioTexto.style.fontWeight = 'bold';
     // Mapeo simétrico en Dólares USD de acuerdo a tu Sheets real
     precioTexto.textContent = propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
     datosCasa.appendChild(precioTexto);
+
+        // 2. Especificaciones de Habitaciones, Baños y Terrenos
+    const specsTexto = document.createElement('div');
+    specsTexto.style.fontSize = '13px';
+    specsTexto.style.color = '#475569';
+    specsTexto.style.marginTop = '4px';
+    specsTexto.textContent = `${propiedad.habitaciones} Dorm | ${propiedad.banos} Baños | AC: ${propiedad.area_construida} m² | AT: ${propiedad.area_terreno} m²`;
+    datosCasa.appendChild(specsTexto);
+
+    // 3. Nuevos Campos complementarios
+    const adicionalesTexto = document.createElement('div');
+    adicionalesTexto.style.fontSize = '12px';
+    adicionalesTexto.style.color = '#64748b';
+    adicionalesTexto.style.marginTop = '2px';
+    adicionalesTexto.textContent = `${propiedad.subtipoPropiedad} | Cochera: ${propiedad.estacionamientos} | Año: ${propiedad.ano_construccion} | Estado: ${propiedad.estado_propiedad}`;
+    datosCasa.appendChild(adicionalesTexto);
+
+    // 4. Frase Descriptiva / Título
+    const tituloTexto = document.createElement('div');
+    tituloTexto.style.fontSize = '13px';
+    tituloTexto.style.color = '#1e293b';
+    tituloTexto.style.fontWeight = '500';
+    tituloTexto.style.marginTop = '4px';
+    tituloTexto.textContent = propiedad.fraseDescriptiva;
+    datosCasa.appendChild(tituloTexto);
+
 
     tarjeta.appendChild(datosCasa);
 
@@ -425,8 +458,18 @@ function renderizarMapaZillow()
         pSpecs.className = 'specs-popup';
         pSpecs.style.fontSize = '12px';
         pSpecs.style.color = '#475569';
+        pSpecs.style.marginTop = '4px';
         pSpecs.textContent = `${prop.habitaciones} Dorm | ${prop.banos} Baños | ${prop.area_construida} m²`;
         datosPopup.appendChild(pSpecs);
+
+        // 3. Fila de Datos Adicionales: Subtipo, Estacionamientos, Año y Estado del Inmueble
+        const pAdicionales = document.createElement('div');
+        pAdicionales.style.fontSize = '11px';
+        pAdicionales.style.color = '#64748b';
+        pAdicionales.style.marginTop = '2px';
+        pAdicionales.textContent = `${prop.subtipoPropiedad} | Cochera: ${prop.estacionamientos} | Año: ${prop.ano_construccion} | Condición: ${prop.estado_propiedad}`;
+        datosPopup.appendChild(pAdicionales);
+        
 
         //  AGREGAR AQUÍ: Inyección del título / dirección de la propiedad
         const pDireccion = document.createElement('div');
