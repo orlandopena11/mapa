@@ -1035,7 +1035,8 @@ function evaluarCriteriosDeFiltrado(prop)
 { // -->Aqui inicia Función evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
     const inputDireccionNode = document.getElementById('search-address');
-    const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim().toLowerCase() : "";
+    const textoBuscarDireccion = inputDireccionNode ? inputDireccionNode.value.trim() : "";
+
 
     const columna_estado_publicacion = String(prop.estadoListado || "").trim();
     const columna_tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
@@ -1070,13 +1071,15 @@ function evaluarCriteriosDeFiltrado(prop)
     }
 
     
-    if (textoBuscarDireccion !== "") 
-    { // -->Aqui inicia Condicional verificar barra de dirección
-        if (!columna_titulo_direccion.toLowerCase().includes(textoBuscarDireccion)) 
-        { // -->Aqui inicia Escape falso string de dirección
+    // =========================================================================
+    // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV / DISTRITO) - SOLUCIÓN NATIVA
+    // =========================================================================
+    if (textoBuscarDireccion !== "") {
+        // Compara de manera natural si el título del Excel contiene la palabra escrita por el usuario
+        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
             return false;
-        } // <--Aqui finaliza Escape falso string de dirección
-    } // <--Aqui finaliza Condicional verificar barra de dirección
+        }
+    }
 
     if (prop.precio < state.filtros.precioMin || prop.precio > state.filtros.precioMax) 
     { // -->Aqui inicia Escape falso rango límite de precios
