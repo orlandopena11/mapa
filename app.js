@@ -420,11 +420,30 @@ function renderizarMapaZillow()
         // FORMATEO MONETARIO FIEL (SRE REFACTOR): Configura el valor en Dólares Americanos ($ USD) alineado al Excel
         pPrice.textContent = prop.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
         datosPopup.appendChild(pPrice);
+                //  AGREGAR AQUÍ: Inyección de especificaciones técnicas (Dormitorios / Baños)
+        const pSpecs = document.createElement('div');
+        pSpecs.className = 'specs-popup';
+        pSpecs.style.fontSize = '12px';
+        pSpecs.style.color = '#475569';
+        pSpecs.textContent = `${prop.habitaciones} Dorm | ${prop.banos} Baños | ${prop.area_construida} m²`;
+        datosPopup.appendChild(pSpecs);
+
+        //  AGREGAR AQUÍ: Inyección del título / dirección de la propiedad
+        const pDireccion = document.createElement('div');
+        pDireccion.className = 'direccion-popup';
+        pDireccion.style.fontSize = '12px';
+        pDireccion.style.color = '#1e293b';
+        pDireccion.style.fontWeight = '500';
+        pDireccion.textContent = prop.fraseDescriptiva; // Tu columna de título unificada
+        datosPopup.appendChild(pDireccion);
+
         contenedorPopupMaster.appendChild(datosPopup);
 
         // 4. INTERCEPTOR SPA PARA SALTAR A LA SEGUNDA PANTALLA (Preservado intacto)
         carruselPopup.addEventListener('click', (e) => 
         { // -->Aqui inicia Callback de redirección SPA desde popup
+                //  ¡LÍNEA CLAVE! Evita que el clic se propague al mapa y lo cierre por error
+            e.stopPropagation(); 
             if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
             window.map.closePopup();
             state.propiedadSeleccionadald = prop.id;
@@ -805,11 +824,15 @@ function renderizarFichaDetalleZillow(propiedad)
     const btnVolver = document.createElement('button');
     btnVolver.className = 'btn-volver-zillow';
     btnVolver.textContent = '← Volver a buscar';
-    btnVolver.addEventListener('click', () => 
-    { // -->Aqui inicia Callback retornar a la vista principal
+    btnVolver.addEventListener('click', () => {
         alternarPantallaZillow('split-view');
-        if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow();
-    }); // <--Aqui finaliza Callback retornar a la vista principal
+        
+        //  ¡Corregido! Primero forzamos la limpieza de capas y luego redibujamos todo de golpe
+        if (window.capaMarcadores) window.capaMarcadores.clearLayers();
+        if (typeof ejecutarTuberiaSincronizada === 'function') {
+            ejecutarTuberiaSincronizada();
+        }
+    });
 
     navFicha.appendChild(btnVolver);
     const logoCentro = document.createElement('div');
