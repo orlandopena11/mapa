@@ -163,20 +163,26 @@ body, html {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
-
+/*  Busca esta clase en tu styles.css y edítala para forzar el diseño vertical */
 .dropdown-content-panel {
-    display: none;
+    display: none; 
     position: absolute;
-    top: 100%;
+    top: 100%; 
     left: 0;
+    z-index: 9999; 
     background-color: #ffffff;
+    min-width: 200px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    padding: 16px;
     border-radius: 8px;
-    z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
+    padding: 16px;
     margin-top: 4px;
+    z-index: 9999; /*  Prioridad absoluta al frente de la pantalla */
+    /* 🛑 AÑADE ESTAS TRES LÍNEAS NATIVAS AQUÍ: */
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado uniforme entre En venta, Alquiler y Vendida */
 }
-
+    
 .dropdown-content-panel.show {
     display: block;
 }
