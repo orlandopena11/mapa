@@ -248,6 +248,43 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
         const dot = document.createElement('span');
         dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
         contenedorDots.appendChild(dot);
+        // =========================================================================
+        // BUENAS PRÁCTICAS SRE: BOTÓN DE CORAZÓN "ME GUSTA" INTEGRADO AL CONTENEDOR
+        // =========================================================================
+        contenedorFoto.style.position = 'relative';
+
+        const botonCorazon = document.createElement('button');
+        botonCorazon.innerHTML = '🤍';
+        botonCorazon.style.position = 'absolute';
+        botonCorazon.style.top = '12px';
+        botonCorazon.style.right = '12px';
+        botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
+        botonCorazon.style.border = 'none';
+        botonCorazon.style.borderRadius = '50%';
+        botonCorazon.style.width = '30px';
+        botonCorazon.style.height = '30px';
+        botonCorazon.style.cursor = 'pointer';
+        botonCorazon.style.fontSize = '15px';
+        botonCorazon.style.display = 'flex';
+        botonCorazon.style.alignItems = 'center';
+        botonCorazon.style.justifyContent = 'center';
+        botonCorazon.style.zIndex = '10';
+        botonCorazon.style.transition = 'background 0.2s, transform 0.1s';
+
+        // Evento interactivo para cambiar el estado del corazón al hacer clic
+        botonCorazon.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evita clics no deseados hacia la tarjeta base
+            if (botonCorazon.innerHTML === '🤍') {
+                botonCorazon.innerHTML = '❤️';
+                botonCorazon.style.background = 'rgba(255, 255, 255, 0.9)';
+            } else {
+                botonCorazon.innerHTML = '🤍';
+                botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
+            }
+        });
+
+        contenedorFoto.appendChild(botonCorazon);
+
         dotsArray.push(dot);
     } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
     contenedorFoto.appendChild(contenedorDots);
