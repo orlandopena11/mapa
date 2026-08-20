@@ -982,29 +982,70 @@ function renderizarFichaDetalleZillow(propiedad)
     if (!panelFicha) return;
     panelFicha.textContent = ""; // Limpieza purista de control contra duplicados
 
-    // Fila superior de navegación limpia de la ficha Zillow SPA
+    
+    // Fila superior de navegación limpia de la ficha Zillow SPA (REFACTORIZACIÓN FIJA)
     const navFicha = document.createElement('div');
     navFicha.className = 'nav-ficha-zillow';
 
+    // 1. Componente Izquierdo: Botón Volver
     const btnVolver = document.createElement('button');
     btnVolver.className = 'btn-volver-zillow';
     btnVolver.textContent = '← Volver a buscar';
     btnVolver.addEventListener('click', () => {
         alternarPantallaZillow('split-view');
-        
-        //  ¡Corregido! Primero forzamos la limpieza de capas y luego redibujamos todo de golpe
         if (window.capaMarcadores) window.capaMarcadores.clearLayers();
         if (typeof ejecutarTuberiaSincronizada === 'function') {
             ejecutarTuberiaSincronizada();
         }
     });
-
     navFicha.appendChild(btnVolver);
-    const logoCentro = document.createElement('div');
-    logoCentro.className = 'logo-centro-zillow';
-    logoCentro.textContent = 'Zillow';
+
+    // 2. Componente Central: Inyección de tu Logo Oficial (Quitamos el de Zillow)
+    const logoCentro = document.createElement('img');
+    logoCentro.src = 'logo.jpg'; // Tu logo real consumido localmente
+    logoCentro.alt = 'Logo Inmobiliaria';
+    logoCentro.className = 'logo-centro-ficha';
     navFicha.appendChild(logoCentro);
-    navFicha.appendChild(document.createElement('div'));
+
+    // 3. Componente Derecho: Caja de Botones de Interacción Comercial
+    const accionesDerecha = document.createElement('div');
+    accionesDerecha.className = 'acciones-nav-ficha';
+
+    // Botón Compartir
+    const btnCompartir = document.createElement('button');
+    btnCompartir.className = 'btn-nav-accion';
+    btnCompartir.innerHTML = '➦ <span>Compartir</span>';
+    btnCompartir.addEventListener('click', () => {
+        navigator.clipboard.writeText(window.location.href);
+        alert('¡Enlace de la propiedad copiado al portapapeles!');
+    });
+
+    // Botón Me Gusta (Integrado al Set de Favoritos de tu state global)
+    const btnMeGusta = document.createElement('button');
+    btnMeGusta.className = 'btn-nav-accion btn-corazon-ficha';
+    
+    // Verificación de estado inmutable inicial
+    const esFavorito = state.favoritos.has(propiedad.id);
+    btnMeGusta.innerHTML = esFavorito ? '❤️ <span>Ahorrado</span>' : '♡ <span>Ahorrar</span>';
+    if (esFavorito) btnMeGusta.classList.add('activo');
+
+    btnMeGusta.addEventListener('click', () => {
+        if (state.favoritos.has(propiedad.id)) {
+            state.favoritos.delete(propiedad.id);
+            btnMeGusta.innerHTML = '♡ <span>Ahorrar</span>';
+            btnMeGusta.classList.remove('activo');
+        } else {
+            state.favoritos.add(propiedad.id);
+            btnMeGusta.innerHTML = '❤️ <span>Ahorrado</span>';
+            btnMeGusta.classList.add('activo');
+        }
+    });
+
+    accionesDerecha.appendChild(btnCompartir);
+    accionesDerecha.appendChild(btnMeGusta);
+    navFicha.appendChild(accionesDerecha);
+
+    // Inyección atómica al contenedor principal
     panelFicha.appendChild(navFicha);
 
     // Contenedor del Mosaico de Imágenes de Alta Fidelidad (Split 50/50)
