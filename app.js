@@ -1236,147 +1236,181 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
 } // <--Aqui finaliza Función interceptarFirewallSeguridadUsuario
 
 /**
- * =======================================================================
+ * ========================================================================
  * MÓDULO SRE: CONTROLADOR DE POPUPS COMERCIALES DE ACCIÓN (PRODUCCIÓN)
- * Arquitectura modular y blindada para evitar fugas de memoria y NaN.
- * =======================================================================
+ * Conexión asíncrona directa con la pestaña "visita" de Google Sheets.
+ * ========================================================================
  */
-/**
- * FUNCIÓN: inicializarEventosPopups
- * DESCRIPCIÓN: Enlaza eventos de clic de forma correcta usando funciones flecha para evitar ejecuciones automáticas.
- * APERTURA LLAVE GLOBAL: {
- */
+
 function inicializarEventosPopups() {
-  const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
-  const btnAgenteGaleria = document.getElementById("btn-contactar-agent-galeria");
+    const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
+    const btnAgenteGaleria = document.getElementById("btn-contactar-agente-galeria");
 
-  // Listener correcto para apertura de Tour
-  if (btnTourGaleria) {
-    btnTourGaleria.addEventListener("click", () => {
-      mostrarPopupAccion("popup-solicitar-tour");
-    }); // Cierre del callback de click de tour
-  } // Cierre condición de tour
+    if (btnTourGaleria) {
+        btnTourGaleria.addEventListener("click", () => {
+            const hoy = new Date();
+            hoy.setDate(hoy.getDate() + 1);
+            const inputFecha = document.getElementById("tour-fecha");
+            if (inputFecha) inputFecha.min = hoy.toISOString().split('T');
+            mostrarPopupAccion("modal-tour-comercial");
+        });
+    }
 
-  // Listener correcto para apertura de Agente con inyección de metadata comercial
-  if (btnAgenteGaleria) {
-    btnAgenteGaleria.addEventListener("click", () => {
-      mostrarPopupAccion("popup-contactar-agent");
-      inyectarDatosPropiedadAlMensaje();
-    }); // Cierre del callback de click de agente
-  } // Cierre condición de agente
+    if (btnAgenteGaleria) {
+        btnAgenteGaleria.addEventListener("click", () => {
+            mostrarPopupAccion("modal-agente-comercial");
+            inyectarDatosPropiedadAlMensaje();
+        });
+    }
 
-  // DELEGACIÓN NATIVA PARA BOTONES DE CIERRE (Buenas prácticas SRE)
-  const botonesCerrar = document.querySelectorAll(".btn-cerrar-popup");
-  
-  botonesCerrar.forEach((boton) => {
-    boton.addEventListener("click", (e) => {
-      // Leemos el atributo data-target del botón que fue presionado
-      const idObjetivo = e.target.getAttribute("data-target");
-      if (idObjetivo) {
-        cerrarPopupAccion(idObjetivo);
-      }
-    }); // Cierre del callback del click de cierre
-  }); // Cierre del ciclo formativo forEach
+    const botonesCerrar = document.querySelectorAll(".modal-accion-overlay .btn-cerrar-popup");
+    botonesCerrar.forEach((boton) => {
+        boton.addEventListener("click", (e) => {
+            const overlayAncestro = e.target.closest(".modal-accion-overlay");
+            if (overlayAncestro) cerrarPopupAccion(overlayAncestro.id);
+        });
+    });
+
+    window.addEventListener("click", (e) => {
+        if (e.target === document.getElementById("modal-tour-comercial")) cerrarPopupAccion("modal-tour-comercial");
+        if (e.target === document.getElementById("modal-agente-comercial")) cerrarPopupAccion("modal-agente-comercial");
+    });
+
+    window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            cerrarPopupAccion("modal-tour-comercial");
+            cerrarPopupAccion("modal-agente-comercial");
+        }
+    });
+
+    const formTour = document.getElementById("form-solicitar-tour");
+    const formAgente = document.getElementById("form-contactar-agente");
+
+    if (formTour) formTour.addEventListener("submit", (e) => { procesarFormularioTour(e); });
+    if (formAgente) formAgente.addEventListener("submit", (e) => { procesarFormularioAgente(e); });
 }
-/**
- * } CIERRE LLAVE GLOBAL: inicializarEventosPopups
- */
 
-
-/**
- * FUNCIÓN: mostrarPopupAccion
- * DESCRIPCIÓN: Remueve la clase semántica .oculta para visibilizar el popup.
- * APERTURA LLAVE GLOBAL: {
- */
 function mostrarPopupAccion(idPopup) {
-  const popupElemento = document.getElementById(idPopup);
-  if (popupElemento) {
-    popupElemento.classList.remove("oculta");
-  } // Cierre condición validación de nodo existente
-} 
-/**
- * } CIERRE LLAVE GLOBAL: mostrarPopupAccion
- */
+    const popupElemento = document.getElementById(idPopup);
+    if (popupElemento) {
+        popupElemento.classList.add("modal-activo");
+        popupElemento.setAttribute("aria-hidden", "false");
+    }
+}
 
-
-/**
- * FUNCIÓN: cerrarPopupAccion
- * DESCRIPCIÓN: Reinyecta la clase .oculta para esconder la capa overlay.
- * APERTURA LLAVE GLOBAL: {
- */
 function cerrarPopupAccion(idPopup) {
-  const popupElemento = document.getElementById(idPopup);
-  if (popupElemento) {
-    popupElemento.classList.add("oculta");
-  } // Cierre condición validación de nodo existente
-} 
-/**
- * } CIERRE LLAVE GLOBAL: cerrarPopupAccion
- */
+    const popupElemento = document.getElementById(idPopup);
+    if (popupElemento) {
+        popupElemento.classList.remove("modal-activo");
+        popupElemento.setAttribute("aria-hidden", "true");
+    }
+}
 
-
-/**
- * FUNCIÓN: inyectarDatosPropiedadAlMensaje
- * DESCRIPCIÓN: Extrae la metadata de la propiedad activa y personaliza el formulario.
- * APERTURA LLAVE GLOBAL: {
- */
 function inyectarDatosPropiedadAlMensaje() {
-  const areaTextoMensaje = document.getElementById("contacto-mensaje-usuario");
-  
-  // Validamos que exista tanto el campo en el DOM como una propiedad en caché visual
-  if (areaTextoMensaje && vistaActualPropiedad) {
-    // Formateo numérico seguro basado en el precio purificado de la raíz
-    const precioFormateado = parseInt(vistaActualPropiedad.precio_base || 0, 10).toLocaleString();
-    const tituloPropiedad = vistaActualPropiedad.titulo || "Inmueble Premium";
-    
-    // Inyección de texto plano dinámico
-    areaTextoMensaje.value = `Hola, estoy interesado en recibir más información sobre la propiedad "${tituloPropiedad}" de S/ ${precioFormateado}. Quedo atento a su respuesta.`;
-  } // Cierre condición de validación estructural
-} 
-/**
- * } CIERRE LLAVE GLOBAL: inyectarDatosPropiedadAlMensaje
- */
-
+    const areaTextoMensaje = document.getElementById("agente-mensaje");
+    if (areaTextoMensaje && state?.propiedades && state.propiedadSeleccionadald) {
+        const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+        if (propiedadActiva) {
+            const precioFormateado = propiedadActiva.precio_base 
+                ? Number(propiedadActiva.precio_base).toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }) 
+                : 'Precio a consultar';
+            areaTextoMensaje.value = `Hola, estoy interesado en recibir más información sobre la propiedad "${propiedadActiva.titulo || 'Inmueble'}" con precio base de ${precioFormateado}. Quedo atento a su respuesta.`;
+        }
+    }
+}
 
 /**
- * FUNCIÓN: procesarFormularioTour
- * DESCRIPCIÓN: Intercepta el submit de visitas, procesa la data y resetea el formulario.
- * APERTURA LLAVE GLOBAL: {
+ * PROCESAMIENTO ASÍNCRONO: FORMULARIO DE TOUR GUIADO
  */
 function procesarFormularioTour(event) {
-  event.preventDefault(); // Cortocircuito nativo para evitar recarga de página (SPA behavior)
-  
-  const campoFecha = document.getElementById("tour-fecha").value;
-  const campoHora = document.getElementById("tour-hora").value;
-  const campoTipo = document.getElementById("tour-tipo").value;
+    event.preventDefault();
 
-  alert(`¡Solicitud procesada con éxito!\nTu visita guiada de tipo [${campoTipo.toUpperCase()}] ha sido enviada para el día ${campoFecha} a las ${campoHora}. Un asesor se pondrá en contacto.`);
-  
-  cerrarPopupAccion("popup-solicitar-tour");
-  document.getElementById("form-solicitar-tour").reset(); // Limpieza de los campos del formulario
-} 
+    if (!state.propiedadSeleccionadald) return;
+    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+
+    const campoFecha = document.getElementById("tour-fecha").value;
+    const campoHora = document.getElementById("tour-hora").value;
+    const campoTipo = document.getElementById("tour-tipo").value;
+
+    // Construcción del Payload emparejado estrictamente con las columnas de tu Sheets
+    const payloadVisita = {
+        target_sheet: "visita", // Identificador para que tu Codigo.gs sepa a qué pestaña apuntar
+        action: "insertar",
+        usuario_id_fk: state.usuarioActual?.id || "anonimo-uid",
+        propiedad_id_fk: state.propiedadSeleccionadald,
+        anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
+        fecha_visita: `${campoFecha} ${campoHora}`, // Formato unificado "26/07/2026 15:30" idéntico a tu captura
+        tipo_visita: campoTipo.toLowerCase(), // "presencial" o "virtual"
+        estado_visita: "pendiente",
+        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com"
+    };
+
+    ejecutarEnvioAppsScript(payloadVisita, "modal-tour-comercial", "form-solicitar-tour");
+}
+
 /**
- * } CIERRE LLAVE GLOBAL: procesarFormularioTour
- */
-
-
-/**
- * FUNCIÓN: procesarFormularioAgente
- * DESCRIPCIÓN: Intercepta el submit de contacto, procesa variables y limpia el nodo.
- * APERTURA LLAVE GLOBAL: {
+ * PROCESAMIENTO ASÍNCRONO: FORMULARIO DE CONTACTAR AGENTE
  */
 function procesarFormularioAgente(event) {
-  event.preventDefault(); // Bloqueo estricto del método GET por defecto en formularios HTML
-  
-  const campoNombre = document.getElementById("contacto-nombre-usuario").value;
-  const campoTelefono = document.getElementById("contacto-telefono-usuario").value;
+    event.preventDefault();
 
-  alert(`¡Mensaje enviado!\nMuchas gracias ${campoNombre}. Hemos registrado tu teléfono (${campoTelefono}). El agente asignado te escribirá de inmediato por WhatsApp.`);
-  
-  cerrarPopupAccion("popup-contactar-agente");
-  document.getElementById("form-contactar-agente").reset(); // Reset sintáctico
-} 
+    if (!state.propiedadSeleccionadald) return;
+    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+
+    const campoMensaje = document.getElementById("agente-mensaje").value;
+    const campoTelefono = document.getElementById("agente-telefono").value;
+
+    // Estructuración relacional para la persistencia en la misma tabla de visitas
+    const payloadVisitaAgente = {
+        target_sheet: "visita",
+        action: "insertar",
+        usuario_id_fk: state.usuarioActual?.id || "anonimo-uid",
+        propiedad_id_fk: state.propiedadSeleccionadald,
+        anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
+        fecha_visita: new Date().toLocaleString('es-PE'), // Fecha y hora actual del contacto
+        tipo_visita: "agente", // Clasificación directa solicitada para diferenciarlo en el Sheets
+        estado_visita: "pendiente",
+        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com",
+        // Metadatos adicionales que tu Apps Script puede capturar o procesar opcionalmente
+        metadata_mensaje: campoMensaje,
+        metadata_telefono: campoTelefono
+    };
+
+    ejecutarEnvioAppsScript(payloadVisitaAgente, "modal-agente-comercial", "form-contactar-agente");
+}
+
 /**
- * } CIERRE LLAVE GLOBAL: procesarFormularioAgente
+ * HELPER PURISTA DE TRANSMISIÓN DE DATOS VIA FETCH (CERO RELOADS)
  */
+function ejecutarEnvioAppsScript(payload, idModal, idForm) {
+    // URL nativa segura leída desde la raíz de tu Página 1 de app.js
+    if (typeof urlMiScriptGoogle === "undefined") {
+        alert("Error: La URL del servidor de Google Apps Script no está definida.");
+        return;
+    }
 
+    console.log(`Iniciando transmisión hacia la pestaña "visita"...`, payload);
+
+    // Petición asíncrona robusta con manejo de errores
+    fetch(urlMiScriptGoogle, {
+        method: "POST",
+        mode: "no-cors", // Requerido por Google Apps Script al no retornar cabeceras CORS estándar
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        // Al usar 'no-cors', la respuesta siempre será opaca. Asumimos éxito si no cae en el catch.
+        alert("¡Registro completado de forma exitosa en el servidor inmobiliario!");
+        
+        // Cierre y limpieza limpia de componentes visuales en caliente
+        cerrarPopupAccion(idModal);
+        const formulario = document.getElementById(idForm);
+        if (formulario) formulario.reset();
+    })
+    .catch(error => {
+        console.error("Fallo crítico en la tubería de red Apps Script:", error);
+        alert("Hubo un error de conexión con el servidor. Por favor, intente nuevamente.");
+    });
+}
