@@ -697,7 +697,7 @@ document.addEventListener("DOMContentLoaded", () =>
             // ===================================================================
             // ENLACE AGREGADO: Inicializa los listeners de tus nuevos popups
             // ===================================================================
-            inicializarEventosPopups();
+            //inicializarEventosPopups();
             
             // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
             if (window.map) {
