@@ -145,6 +145,24 @@
         </div>
 
     </header>
+<!-- ========================================================================
+     NUEVA INSERCIÓN: ENCABEZADO GLOBAL COMPARTIDO (PANTALLAS 2 Y 3)
+     Ubicación semántica externa para evitar mutaciones de herencia en split-view
+     ======================================================================== -->
+<header id="header-ficha-global" class="nav-ficha-zillow oculta-global">
+    <button type="button" class="btn-volver-zillow" id="btn-volver-global-atras">← Volver a la lista</button>
+    
+    <img src="logo.jpg" alt="Logo Principal" class="logo-centro-ficha">
+    
+    <div class="acciones-nav-ficha">
+        <button type="button" class="btn-nav-accion" id="btn-compartir-global">
+            ➦ Compartir
+        </button>
+        <button type="button" class="btn-nav-accion" id="btn-favorito-global">
+            <span id="icon-corazon-global">♡</span> <span id="text-favorito-global">Ahorrar</span>
+        </button>
+    </div>
+</header>
 
         <!-- Contenedor Principal Split-View Respetando IDs Nativos -->
         <main class="split-view">
