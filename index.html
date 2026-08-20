@@ -200,65 +200,6 @@
 
   </div>
 
-  <!-- ======================================================================= -->
-  <!-- MODALES FLOTANTES (POPUP) PARA LOS BOTONES DE ACCIÓN COMPERCIAL -->
-  <!-- ======================================================================= -->
-
-  <!-- POPUP 1: SOLICITAR UN TOUR -->
-  <div id="popup-solicitar-tour" class="modal-accion-overlay hidden">
-    <div class="modal-accion-contenido">
-<!-- POPUP 1: SOLICITAR UN TOUR (Línea de la "X" limpia) -->
-<button class="btn-cerrar-popup" data-target="popup-solicitar-tour">&times;</button>
-      <h3>Agendar una Visita Guiada</h3>
-      <p class="modal-subtitulo-info">Elige el día y la hora de tu preferencia para conocer esta propiedad.</p>
-      
-      <form id="form-solicitar-tour" onsubmit="procesarFormularioTour(event)">
-        <div class="campo-formulario">
-          <label for="tour-fecha">Fecha sugerida:</label>
-          <input type="date" id="tour-fecha" required>
-        </div>
-        <div class="campo-formulario">
-          <label for="tour-hora">Hora sugerida:</label>
-          <input type="time" id="tour-hora" required>
-        </div>
-        <div class="campo-formulario">
-          <label for="tour-tipo">Tipo de Tour:</label>
-          <select id="tour-tipo">
-            <option value="presencial">Presencial (En persona)</option>
-            <option value="virtual">Videollamada Virtual</option>
-          </select>
-        </div>
-        <button type="submit" class="btn-enviar-formulario">Confirmar Solicitud de Tour</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- POPUP 2: CONTACTAR CON UN AGENTE -->
-  <div id="popup-contactar-agente" class="modal-accion-overlay hidden">
-    <div class="modal-accion-contenido">
-<!-- POPUP 2: CONTACTAR CON UN AGENTE (Línea de la "X" limpia) -->
-<button class="btn-cerrar-popup" data-target="popup-contactar-agent">&times;</button>
-      <h3>Enviar Mensaje al Agente</h3>
-      <p class="modal-subtitulo-info">Completa tus datos para que un asesor inmobiliario se comunique contigo de inmediato.</p>
-      
-      <form id="form-contactar-agente" onsubmit="procesarFormularioAgente(event)">
-        <div class="campo-formulario">
-          <label for="contacto-nombre-usuario">Tu Nombre:</label>
-          <input type="text" id="contacto-nombre-usuario" placeholder="Ej. Orlando Peña" required>
-        </div>
-        <div class="campo-formulario">
-          <label for="contacto-telefono-usuario">Número de Teléfono/WhatsApp:</label>
-          <input type="tel" id="contacto-telefono-usuario" placeholder="Ej. 987654321" required>
-        </div>
-        <div class="campo-formulario">
-          <label for="contacto-mensaje-usuario">Mensaje:</label>
-          <textarea id="contacto-mensaje-usuario" rows="4" required>Hola, estoy interesado en recibir más información sobre la propiedad de S/ </textarea>
-        </div>
-        <button type="submit" class="btn-enviar-formulario">Enviar Información de Contacto</button>
-      </form>
-    </div>
-  </div>
-
     <!-- Carga de Motores JavaScript en el Cierre del Body -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="app.js"></script>
