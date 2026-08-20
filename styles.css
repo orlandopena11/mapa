@@ -818,7 +818,7 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
   font-family: inherit;
 }
 
-/* BOTÓN DE CIERRE EN LA ESQUINA (X) */
+/* BOTÓN DE CIERRE EN LA ESQUINA (X) - DISEÑO PURISTA NATIVO */
 .btn-cerrar-popup {
   position: absolute;
   top: 12px;
@@ -830,11 +830,13 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
   cursor: pointer;
   padding: 0;
   line-height: 1;
+  z-index: 10; /* Control de ejes limpio basado en el contenedor padre */
 }
 
 .btn-cerrar-popup:hover {
   color: #333333;
 }
+
 
 /* TIPOGRAFÍAS DE LOS POPUPS */
 .modal-accion-contenido h3 {
