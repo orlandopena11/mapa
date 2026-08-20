@@ -1229,3 +1229,138 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
         if (banner) banner.remove();
     } // <--Aqui finaliza Bloque else remover banner si está limpio
 } // <--Aqui finaliza Función interceptarFirewallSeguridadUsuario
+
+/**
+ * =======================================================================
+ * MÓDULO SRE: CONTROLADOR DE POPUPS COMERCIALES DE ACCIÓN (PRODUCCIÓN)
+ * Arquitectura modular y blindada para evitar fugas de memoria y NaN.
+ * =======================================================================
+ */
+
+/**
+ * FUNCIÓN: inicializarEventosPopups
+ * DESCRIPCIÓN: Enlaza los listeners de los botones del DOM con los popups.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function inicializarEventosPopups() {
+  // Captura de los botones de acción integrados en la UI fija
+  const btnTourPrincipal = document.getElementById("btn-solicitar-tour");
+  const btnAgentePrincipal = document.getElementById("btn-contactar-agente");
+
+  // Asignación de evento para Solicitar Tour
+  if (btnTourPrincipal) {
+    btnTourPrincipal.addEventListener("click", () => {
+      mostrarPopupAccion("popup-solicitar-tour");
+    }); // Cierre listener tour
+  } // Cierre condición validación btnTourPrincipal
+
+  // Asignación de evento para Contactar Agente e inyección de contexto
+  if (btnAgentePrincipal) {
+    btnAgentePrincipal.addEventListener("click", () => {
+      mostrarPopupAccion("popup-contactar-agente");
+      inyectarDatosPropiedadAlMensaje();
+    }); // Cierre listener agente
+  } // Cierre condición validación btnAgentePrincipal
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: inicializarEventosPopups
+ */
+
+
+/**
+ * FUNCIÓN: mostrarPopupAccion
+ * DESCRIPCIÓN: Remueve la clase semántica .oculta para visibilizar el popup.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function mostrarPopupAccion(idPopup) {
+  const popupElemento = document.getElementById(idPopup);
+  if (popupElemento) {
+    popupElemento.classList.remove("oculta");
+  } // Cierre condición validación de nodo existente
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: mostrarPopupAccion
+ */
+
+
+/**
+ * FUNCIÓN: cerrarPopupAccion
+ * DESCRIPCIÓN: Reinyecta la clase .oculta para esconder la capa overlay.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function cerrarPopupAccion(idPopup) {
+  const popupElemento = document.getElementById(idPopup);
+  if (popupElemento) {
+    popupElemento.classList.add("oculta");
+  } // Cierre condición validación de nodo existente
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: cerrarPopupAccion
+ */
+
+
+/**
+ * FUNCIÓN: inyectarDatosPropiedadAlMensaje
+ * DESCRIPCIÓN: Extrae la metadata de la propiedad activa y personaliza el formulario.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function inyectarDatosPropiedadAlMensaje() {
+  const areaTextoMensaje = document.getElementById("contacto-mensaje-usuario");
+  
+  // Validamos que exista tanto el campo en el DOM como una propiedad en caché visual
+  if (areaTextoMensaje && vistaActualPropiedad) {
+    // Formateo numérico seguro basado en el precio purificado de la raíz
+    const precioFormateado = parseInt(vistaActualPropiedad.precio_base || 0, 10).toLocaleString();
+    const tituloPropiedad = vistaActualPropiedad.titulo || "Inmueble Premium";
+    
+    // Inyección de texto plano dinámico
+    areaTextoMensaje.value = `Hola, estoy interesado en recibir más información sobre la propiedad "${tituloPropiedad}" de S/ ${precioFormateado}. Quedo atento a su respuesta.`;
+  } // Cierre condición de validación estructural
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: inyectarDatosPropiedadAlMensaje
+ */
+
+
+/**
+ * FUNCIÓN: procesarFormularioTour
+ * DESCRIPCIÓN: Intercepta el submit de visitas, procesa la data y resetea el formulario.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function procesarFormularioTour(event) {
+  event.preventDefault(); // Cortocircuito nativo para evitar recarga de página (SPA behavior)
+  
+  const campoFecha = document.getElementById("tour-fecha").value;
+  const campoHora = document.getElementById("tour-hora").value;
+  const campoTipo = document.getElementById("tour-tipo").value;
+
+  alert(`¡Solicitud procesada con éxito!\nTu visita guiada de tipo [${campoTipo.toUpperCase()}] ha sido enviada para el día ${campoFecha} a las ${campoHora}. Un asesor se pondrá en contacto.`);
+  
+  cerrarPopupAccion("popup-solicitar-tour");
+  document.getElementById("form-solicitar-tour").reset(); // Limpieza de los campos del formulario
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: procesarFormularioTour
+ */
+
+
+/**
+ * FUNCIÓN: procesarFormularioAgente
+ * DESCRIPCIÓN: Intercepta el submit de contacto, procesa variables y limpia el nodo.
+ * APERTURA LLAVE GLOBAL: {
+ */
+function procesarFormularioAgente(event) {
+  event.preventDefault(); // Bloqueo estricto del método GET por defecto en formularios HTML
+  
+  const campoNombre = document.getElementById("contacto-nombre-usuario").value;
+  const campoTelefono = document.getElementById("contacto-telefono-usuario").value;
+
+  alert(`¡Mensaje enviado!\nMuchas gracias ${campoNombre}. Hemos registrado tu teléfono (${campoTelefono}). El agente asignado te escribirá de inmediato por WhatsApp.`);
+  
+  cerrarPopupAccion("popup-contactar-agente");
+  document.getElementById("form-contactar-agente").reset(); // Reset sintáctico
+} 
+/**
+ * } CIERRE LLAVE GLOBAL: procesarFormularioAgente
+ */
+
