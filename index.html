@@ -200,6 +200,66 @@
 
   </div>
 
+<!-- ========================================================================
+     MODALES FLOTANTES DE ACCIÓN COMERCIAL (INSERCIÓN COMPATIBLE V2)
+     Ubicados fuera del flujo SPA para evitar rupturas del layout e indexación
+     ======================================================================== -->
+
+<!-- INTERFAZ FLOTANTE: SOLICITAR UN TOUR -->
+<div id="modal-tour-comercial" class="modal-accion-overlay" aria-hidden="true" role="dialog" aria-labelledby="titulo-modal-tour">
+    <div class="modal-accion-contenido">
+        <button type="button" class="btn-cerrar-popup" aria-label="Cerrar modal">&times;</button>
+        <h3 id="titulo-modal-tour">Programar Visita</h3>
+        <p class="modal-subtitulo-info">Seleccione el horario de su preferencia para coordinar con un asesor.</p>
+        
+        <form id="form-solicitar-tour">
+            <div class="campo-formulario">
+                <label for="tour-fecha">Fecha Sugerida</label>
+                <input type="date" id="tour-fecha" required>
+            </div>
+            
+            <div class="campo-formulario">
+                <label for="tour-hora">Hora Sugerida</label>
+                <input type="time" id="tour-hora" min="08:00" max="18:00" required>
+            </div>
+
+            <div class="campo-formulario">
+                <label>Tipo de Visita</label>
+                <select id="tour-tipo" required>
+                    <option value="Presencial" selected>Presencial (En el inmueble)</option>
+                    <option value="Virtual">Virtual (Videollamada guiada)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-enviar-formulario">Confirmar mi Solicitud</button>
+        </form>
+    </div>
+</div>
+
+<!-- INTERFAZ FLOTANTE: CONTACTE CON UN AGENTE -->
+<div id="modal-agente-comercial" class="modal-accion-overlay" aria-hidden="true" role="dialog" aria-labelledby="titulo-modal-agente">
+    <div class="modal-accion-contenido">
+        <button type="button" class="btn-cerrar-popup" aria-label="Cerrar modal">&times;</button>
+        <h3 id="titulo-modal-agente">Contactar Agente</h3>
+        <p class="modal-subtitulo-info">Envíe un mensaje directo para recibir información detallada del inmueble.</p>
+        
+        <form id="form-contactar-agente">
+            <div class="campo-formulario">
+                <label for="agente-mensaje">Mensaje</label>
+                <textarea id="agente-mensaje" rows="5" required></textarea>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="agente-telefono">Tu Teléfono Celular</label>
+                <input type="tel" id="agente-telefono" placeholder="Ej. +51 999 888 777" required>
+            </div>
+
+            <button type="submit" class="btn-enviar-formulario">Enviar Mensaje de Interés</button>
+        </form>
+    </div>
+</div>
+
+    
     <!-- Carga de Motores JavaScript en el Cierre del Body -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="app.js"></script>
