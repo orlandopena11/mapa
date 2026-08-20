@@ -1241,33 +1241,31 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
  * Arquitectura modular y blindada para evitar fugas de memoria y NaN.
  * =======================================================================
  */
-
-/**
 /**
  * FUNCIÓN: inicializarEventosPopups
- * DESCRIPCIÓN: Enlaza eventos a los botones de apertura y cierre de forma desacoplada del HTML.
+ * DESCRIPCIÓN: Enlaza eventos de clic de forma correcta usando funciones flecha para evitar ejecuciones automáticas.
  * APERTURA LLAVE GLOBAL: {
  */
 function inicializarEventosPopups() {
   const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
   const btnAgenteGaleria = document.getElementById("btn-contactar-agent-galeria");
 
-  // Listener para apertura de Tour
+  // Listener correcto para apertura de Tour
   if (btnTourGaleria) {
     btnTourGaleria.addEventListener("click", () => {
       mostrarPopupAccion("popup-solicitar-tour");
-    });
-  }
+    }); // Cierre del callback de click de tour
+  } // Cierre condición de tour
 
-  // Listener para apertura de Agente con inyección de metadata comercial
+  // Listener correcto para apertura de Agente con inyección de metadata comercial
   if (btnAgenteGaleria) {
     btnAgenteGaleria.addEventListener("click", () => {
       mostrarPopupAccion("popup-contactar-agent");
       inyectarDatosPropiedadAlMensaje();
-    });
-  }
+    }); // Cierre del callback de click de agente
+  } // Cierre condición de agente
 
-  // DELEGACIÓN NATIIVA PARA BOTONES DE CIERRE (Buenas prácticas SRE)
+  // DELEGACIÓN NATIVA PARA BOTONES DE CIERRE (Buenas prácticas SRE)
   const botonesCerrar = document.querySelectorAll(".btn-cerrar-popup");
   
   botonesCerrar.forEach((boton) => {
@@ -1283,6 +1281,7 @@ function inicializarEventosPopups() {
 /**
  * } CIERRE LLAVE GLOBAL: inicializarEventosPopups
  */
+
 
 /**
  * FUNCIÓN: mostrarPopupAccion
