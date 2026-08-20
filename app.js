@@ -528,7 +528,8 @@ function renderizarMapaZillow()
             maxWidth: 300,
             minWidth: 260,
             className: 'zillow-custom-popup-wrapper',
-            autoPan: true
+            autoPan: true,
+            closeOnClick: false // <--- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
         });
 
 // ========================================================================
@@ -538,40 +539,27 @@ function renderizarMapaZillow()
 
 // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
 marcador.on('click', (e) => {
-    // Detiene la propagación para que el mapa no interprete clics fantasmas en el fondo
     L.DomEvent.stopPropagation(e);
 
     const idPropiedadActual = prop.id;
 
-    // ESTABILIZADOR SRE: Retardamos el ordenamiento para que Leaflet termine de animar el popup primero
     setTimeout(() => {
         const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
         
-        // Si la propiedad ya está en el índice 0 (al tope), evitamos redibujar para que no parpadee
         if (indicePropiedad > 0) {
-            // Extraemos el inmueble seleccionado de su posición original
             const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
-            
-            // Lo empujamos al inicio de la lista de RAM
             state.propiedades.unshift(propiedadSeleccionada);
-            
-            // Refrescamos las tarjetas derechas de forma segura una vez fijado el popup
             renderizarCatálogoTarjetas();
         }
 
-        // Desplazamiento visual controlado hacia la cabecera de la lista reorganizada
         const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
         if (tarjetaDerecha) {
             tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            // Resalte visual temporal limpio nativo usando la variable oficial
             tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
             tarjetaDerecha.style.borderRadius = '12px';
-            
-            // Removemos el contorno al finalizar la transición
             setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2500);
         }
-    }, 300); // 300ms es el tiempo ideal para que la animación de Leaflet quede fija y no se cierre
+    }, 50); // Bajado a 50ms para una experiencia de usuario inmediata y fluida
 });
         
         // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
