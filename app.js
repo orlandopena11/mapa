@@ -539,29 +539,27 @@ function renderizarMapaZillow()
 // Reorganiza el catálogo derecho ÚNICAMENTE cuando el popup ya se encuentra abierto y fijo
 // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
 marcador.on('click', (e) => {
-    // Forzamos nativamente la apertura de la etiqueta al primer impacto
-    marcador.openPopup();
-    
-    // Evitamos rebotes de eventos en el mapa
+    // Evitamos nativamente que Leaflet cierre el popup por efecto de rebote o propagación
     L.DomEvent.stopPropagation(e);
 
     // Mover la propiedad seleccionada al primer lugar (Índice 0) del arreglo inmutable
-    const indicePropiedad = state.propiedades.findIndex(p => p.id === prop.id);
+    const idPropiedadActual = prop.id;
+    const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
     
     if (indicePropiedad !== -1) {
-        // Extraemos el inmueble seleccionado de su posición original
+        // Extraemos el inmueble seleccionado de su posición original en la memoria RAM
         const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
         
-        // Lo empujamos al inicio de la memoria RAM (Top de la lista)
+        // Lo empujamos al inicio de la lista de forma inmutable (Top de la lista)
         state.propiedades.unshift(propiedadSeleccionada);
         
-        // Forzamos el refresco inmediato del catálogo derecho sin alterar el mapa
+        // Forzamos el refresco inmediato del catálogo derecho
         renderizarCatálogoTarjetas();
     }
 
     // Desplazamiento visual controlado hacia la cabecera de la lista reorganizada
     setTimeout(() => {
-        const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+        const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
         if (tarjetaDerecha) {
             // Mueve el scroll del catálogo sutilmente hacia el tope
             tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
