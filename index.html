@@ -159,12 +159,49 @@
                 <!-- Punto de Inyección Sincronizado del Catálogo -->
                 <div class="properties-grid" id="properties-grid-target"></div>
             </div>
-        </main>
-    </div>
+    <!-- ... Código anterior de tu archivo (Filtros, Mapa y Catálogo) ... -->
+    </main>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- INSERCIÓN COMPATIBLE: TERCERA PANTALLA (GALERÍA EXPANDIDA ESTILO ZILLOW)-->
+  <!-- ======================================================================= -->
+  <div id="vista-galeria-expandida" class="galeria-tercera-pantalla oculta">
+    
+    <!-- Bloque Dinámico Izquierdo con Scroll Independiente -->
+    <main id="mosaico-imagenes-scroll" class="columna-fotos-mosaico">
+      <!-- Inyección dinámica de etiquetas <img> vía JS -->
+    </main>
+    
+    <!-- Bloque Fijo Derecho de Información Comercial -->
+    <aside class="columna-informacion-fija">
+      <div class="cabecera-navegacion">
+        <button id="btn-volver-detalle" class="btn-regresar">← Volver al detalle</button>
+      </div>
+      
+      <div class="bloque-comercial-contenido">
+        <h2 id="galeria-precio" class="texto-precio"></h2>
+        <p id="galeria-specs-principales" class="texto-specs"></p>
+        
+        <div class="bloque-direccion">
+          <p id="galeria-direccion-linea1" class="direccion-primaria"></p>
+          <p id="galeria-direccion-linea2" class="direccion-secundaria"></p>
+        </div>
+        
+        <!-- Contenedor de Botones de Acción -->
+        <div class="acciones-galeria-contenedor">
+          <button id="btn-solicitar-tour" class="btn-accion-primario">Solicitar un tour</button>
+          <button id="btn-contactar-agente" class="btn-accion-secundario">Contacte con un agente</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
 
     <!-- Carga de Motores JavaScript en el Cierre del Body -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
+
 
