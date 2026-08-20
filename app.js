@@ -693,6 +693,11 @@ document.addEventListener("DOMContentLoaded", () =>
             
             // 1. Enlazamos los eventos de los menús desplegables (Dropdowns)
             inicializarEventosDeFiltros();
+
+            // ===================================================================
+            // ENLACE AGREGADO: Inicializa los listeners de tus nuevos popups
+            // ===================================================================
+            inicializarEventosPopups();
             
             // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
             if (window.map) {
