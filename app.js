@@ -103,8 +103,8 @@ function normalizarPropiedad(prop)
         tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
         subtipoPropiedad: String(prop.subtipo_propiedad || "").trim(),
         area_terreno: parseFloat(prop.area_terreno || 0),
-        estacionamientos: parseInt(prop.estacionamientos || 0),
-        ano_construccion: parseInt(prop.ano_construccion || 0),
+        estacionamientos: parseInt(prop.estacionamientos, 10) || 0,
+        ano_construccion: parseInt(prop.ano_construccion, 10) || 0,
         estado_propiedad: String(prop.estado_propiedad || "").trim(),
         fotos: fotosUnificadas, // Array purificado con URLs absolutas hacia Cloudinary listo para el carrusel
         
