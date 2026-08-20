@@ -1244,32 +1244,33 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
 
 /**
  * FUNCIÓN: inicializarEventosPopups
- * DESCRIPCIÓN: Enlaza los listeners de los botones del DOM con los popups.
+ * DESCRIPCIÓN: Enlaza los clics exclusivamente a los botones nuevos de la galería.
  * APERTURA LLAVE GLOBAL: {
  */
 function inicializarEventosPopups() {
-  // Captura de los botones de acción integrados en la UI fija
-  const btnTourPrincipal = document.getElementById("btn-solicitar-tour");
-  const btnAgentePrincipal = document.getElementById("btn-contactar-agente");
+  // Aquí usamos los nombres nuevos exactos con "-galeria"
+  const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
+  const btnAgenteGaleria = document.getElementById("btn-contactar-agente-galeria");
 
-  // Asignación de evento para Solicitar Tour
-  if (btnTourPrincipal) {
-    btnTourPrincipal.addEventListener("click", () => {
+  // Si encuentra el botón de tour de la galería, le activa el clic
+  if (btnTourGaleria) {
+    btnTourGaleria.addEventListener("click", () => {
       mostrarPopupAccion("popup-solicitar-tour");
-    }); // Cierre listener tour
-  } // Cierre condición validación btnTourPrincipal
+    }); // Cierre del clic de tour
+  } // Cierre de la condición de tour
 
-  // Asignación de evento para Contactar Agente e inyección de contexto
-  if (btnAgentePrincipal) {
-    btnAgentePrincipal.addEventListener("click", () => {
+  // Si encuentra el botón de agente de la galería, le activa el clic
+  if (btnAgenteGaleria) {
+    btnAgenteGaleria.addEventListener("click", () => {
       mostrarPopupAccion("popup-contactar-agente");
-      inyectarDatosPropiedadAlMensaje();
-    }); // Cierre listener agente
-  } // Cierre condición validación btnAgentePrincipal
-} 
+      inyectarDatosPropiedadAlMensaje(); // Pone el precio de la casa en el texto
+    }); // Cierre del clic de agente
+  } // Cierre de la condición de agente
+}
 /**
  * } CIERRE LLAVE GLOBAL: inicializarEventosPopups
  */
+
 
 
 /**
