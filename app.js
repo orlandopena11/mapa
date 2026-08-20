@@ -1243,35 +1243,46 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
  */
 
 /**
+/**
  * FUNCIÓN: inicializarEventosPopups
- * DESCRIPCIÓN: Enlaza los clics exclusivamente a los botones nuevos de la galería.
+ * DESCRIPCIÓN: Enlaza eventos a los botones de apertura y cierre de forma desacoplada del HTML.
  * APERTURA LLAVE GLOBAL: {
  */
 function inicializarEventosPopups() {
-  // Aquí usamos los nombres nuevos exactos con "-galeria"
   const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
-  const btnAgenteGaleria = document.getElementById("btn-contactar-agente-galeria");
+  const btnAgenteGaleria = document.getElementById("btn-contactar-agent-galeria");
 
-  // Si encuentra el botón de tour de la galería, le activa el clic
+  // Listener para apertura de Tour
   if (btnTourGaleria) {
     btnTourGaleria.addEventListener("click", () => {
       mostrarPopupAccion("popup-solicitar-tour");
-    }); // Cierre del clic de tour
-  } // Cierre de la condición de tour
+    });
+  }
 
-  // Si encuentra el botón de agente de la galería, le activa el clic
+  // Listener para apertura de Agente con inyección de metadata comercial
   if (btnAgenteGaleria) {
     btnAgenteGaleria.addEventListener("click", () => {
-      mostrarPopupAccion("popup-contactar-agente");
-      inyectarDatosPropiedadAlMensaje(); // Pone el precio de la casa en el texto
-    }); // Cierre del clic de agente
-  } // Cierre de la condición de agente
+      mostrarPopupAccion("popup-contactar-agent");
+      inyectarDatosPropiedadAlMensaje();
+    });
+  }
+
+  // DELEGACIÓN NATIIVA PARA BOTONES DE CIERRE (Buenas prácticas SRE)
+  const botonesCerrar = document.querySelectorAll(".btn-cerrar-popup");
+  
+  botonesCerrar.forEach((boton) => {
+    boton.addEventListener("click", (e) => {
+      // Leemos el atributo data-target del botón que fue presionado
+      const idObjetivo = e.target.getAttribute("data-target");
+      if (idObjetivo) {
+        cerrarPopupAccion(idObjetivo);
+      }
+    }); // Cierre del callback del click de cierre
+  }); // Cierre del ciclo formativo forEach
 }
 /**
  * } CIERRE LLAVE GLOBAL: inicializarEventosPopups
  */
-
-
 
 /**
  * FUNCIÓN: mostrarPopupAccion
