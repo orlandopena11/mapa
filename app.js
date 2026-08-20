@@ -1333,19 +1333,20 @@ function procesarFormularioTour(event) {
     const campoTipo = document.getElementById("tour-tipo").value;
 
     // Construcción del Payload emparejado estrictamente con las columnas de tu Sheets
-    const payloadVisita = {
-        target_sheet: "visita", // Identificador para que tu Codigo.gs sepa a qué pestaña apuntar
-        action: "insertar",
-        usuario_id_fk: state.usuarioActual?.id || "anonimo-uid",
+    // Ejemplo de estructura para el formulario de Tour
+    const payloadTour = {
+        target_sheet: "visita", // <--- Esta bandera activa el desvío seguro en tu doPost
+        usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
         propiedad_id_fk: state.propiedadSeleccionadald,
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
-        fecha_visita: `${campoFecha} ${campoHora}`, // Formato unificado "26/07/2026 15:30" idéntico a tu captura
-        tipo_visita: campoTipo.toLowerCase(), // "presencial" o "virtual"
+        fecha_visita: fechaFormateada, 
+        tipo_visita: campoTipo.toLowerCase(), 
         estado_visita: "pendiente",
         creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com"
     };
 
-    ejecutarEnvioAppsScript(payloadVisita, "modal-tour-comercial", "form-solicitar-tour");
+
+    ejecutarEnvioAppsScript(payloadTour, "modal-tour-comercial", "form-solicitar-tour");
 }
 
 /**
@@ -1360,23 +1361,30 @@ function procesarFormularioAgente(event) {
     const campoMensaje = document.getElementById("agente-mensaje").value;
     const campoTelefono = document.getElementById("agente-telefono").value;
 
-    // Estructuración relacional para la persistencia en la misma tabla de visitas
-    const payloadVisitaAgente = {
-        target_sheet: "visita",
-        action: "insertar",
-        usuario_id_fk: state.usuarioActual?.id || "anonimo-uid",
+    // Captura inmediata del momento del contacto en formato legible para tu Sheet (DD/MM/AAAA HH:MM)
+    const fechaAhora = new Date();
+    const fechaFormateadaAhora = String(fechaAhora.getDate()).padStart(2, '0') + '/' + 
+                                 String(fechaAhora.getMonth() + 1).padStart(2, '0') + '/' + 
+                                 fechaAhora.getFullYear() + ' ' + 
+                                 String(fechaAhora.getHours()).padStart(2, '0') + ':' + 
+                                 String(fechaAhora.getMinutes()).padStart(2, '0');
+
+    // PAYLOAD DEL AGENTE INMOBILIARIO EN ESTRICTA SIMETRÍA RELACIONAL
+    const payloadContacto = {
+        target_sheet: "visita",              // Mismo destino controlado por el interceptor
+        usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
         propiedad_id_fk: state.propiedadSeleccionadald,
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
-        fecha_visita: new Date().toLocaleString('es-PE'), // Fecha y hora actual del contacto
-        tipo_visita: "agente", // Clasificación directa solicitada para diferenciarlo en el Sheets
+        fecha_visita: fechaFormateadaAhora,  // Fecha y hora del envío del mensaje
+        tipo_visita: "agente",               // Clasificación directa solicitada para tu columna
         estado_visita: "pendiente",
         creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com",
-        // Metadatos adicionales que tu Apps Script puede capturar o procesar opcionalmente
-        metadata_mensaje: campoMensaje,
-        metadata_telefono: campoTelefono
+        // Parámetros adicionales que tu función 'registrarVisitaComercialAislada' guardará en columnas extras si existen
+        mensaje_usuario: campoMensaje,
+        telefono_usuario: campoTelefono
     };
 
-    ejecutarEnvioAppsScript(payloadVisitaAgente, "modal-agente-comercial", "form-contactar-agente");
+    ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente");
 }
 
 /**
