@@ -792,33 +792,55 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
 }
 
 
-/* CAPA OSCURA DE FONDO (OVERLAY) */
+/* ========================================================================
+   MODULOS DE ACCIÓN COMERCIAL (REFACTORIZACIÓN DE SEGURIDAD SRE)
+   Control purista de visibilidad mediante opacidad, transiciones nativas y z-index
+   ======================================================================== */
+
+/* CAPA OSCURA DE FONDO (OVERLAY) - Modificado para iniciar oculto de forma segura */
 .modal-accion-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); /* Fondo oscuro translúcido */
+  background-color: rgba(0, 0, 0, 0.6); /* Incrementado sutilmente el contraste */
+  backdrop-filter: blur(3px); /* Acabado estético premium estilo Zillow */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* Asegura que se sitúe por encima de cualquier mapa o galería */
+  z-index: 6000; /* Prioridad absoluta sobre Leaflet y layouts de la galería */
+  opacity: 0; /* Inicia invisible de forma nativa */
+  pointer-events: none; /* Bloquea clics accidentales mientras está oculto */
+  transition: opacity 0.25s ease-in-out; /* Animación fluida de desvanecimiento */
 }
 
-/* CAJA CENTRAL DEL POPUP */
+/* ESTADO ACTIVO: Gatillado limpiamente por JavaScript agregando esta clase */
+.modal-accion-overlay.modal-activo {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* CAJA CENTRAL DEL POPUP - Con animación de escalado integrada */
 .modal-accion-contenido {
   background-color: #ffffff;
   width: 90%;
-  max-width: 420px; /* Tamaño compacto estilo Zillow */
+  max-width: 420px; 
   padding: 24px;
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); /* Sombra suavizada para mayor realismo */
   position: relative;
   font-family: inherit;
+  transform: scale(0.93); /* Efecto pop-up inicial */
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* BOTÓN DE CIERRE EN LA ESQUINA (X) - DISEÑO PURISTA NATIVO */
+/* Transición fluida de la caja al activarse el overlay */
+.modal-accion-overlay.modal-activo .modal-accion-contenido {
+  transform: scale(1);
+}
+
+/* BOTÓN DE CIERRE EN LA ESQUINA (X) - PRESERVADO INTACTO */
 .btn-cerrar-popup {
   position: absolute;
   top: 12px;
@@ -830,11 +852,12 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
   cursor: pointer;
   padding: 0;
   line-height: 1;
-  z-index: 10; /* Control de ejes limpio basado en el contenedor padre */
+  z-index: 10; 
+  transition: color 0.15s ease;
 }
 
 .btn-cerrar-popup:hover {
-  color: #333333;
+  color: #111111; /* Mayor contraste al pasar el mouse */
 }
 
 
