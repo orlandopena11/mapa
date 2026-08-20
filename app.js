@@ -539,27 +539,34 @@ function renderizarMapaZillow()
 
 // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
 marcador.on('click', (e) => {
+    // Detiene la propagación para evitar clics fantasmas en las capas traseras del mapa
     L.DomEvent.stopPropagation(e);
 
     const idPropiedadActual = prop.id;
 
-    setTimeout(() => {
-        const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
-        
-        if (indicePropiedad > 0) {
-            const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
-            state.propiedades.unshift(propiedadSeleccionada);
-            renderizarCatálogoTarjetas();
-        }
+    // 1. Modificamos el orden en la memoria RAM sin destruir el HTML en este instante
+    const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
+    if (indicePropiedad > 0) {
+        const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
+        state.propiedades.unshift(propiedadSeleccionada);
+        // OJO: Retiramos la función renderizarCatálogoTarjetas() de aquí para que Leaflet no parpadee y borre la etiqueta
+    }
 
-        const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
-        if (tarjetaDerecha) {
-            tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
-            tarjetaDerecha.style.borderRadius = '12px';
-            setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2500);
-        }
-    }, 50); // Bajado a 50ms para una experiencia de usuario inmediata y fluida
+    // 2. Ejecutamos el desplazamiento visual inmediato hacia la tarjeta derecha existente
+    const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
+    if (tarjetaDerecha) {
+        // Desplazamiento sutil hacia la cabecera lateral [11]
+        tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Aplicamos el borde azul oficial de Zillow [11]
+        tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
+        tarjetaDerecha.style.borderRadius = '12px';
+        
+        // Removemos el contorno limpio al finalizar la transición de enfoque [11]
+        setTimeout(() => { 
+            tarjetaDerecha.style.outline = 'none'; 
+        }, 2000);
+    }
 });
         
         // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
