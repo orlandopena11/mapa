@@ -536,32 +536,32 @@ function renderizarMapaZillow()
 // Elimina el parpadeo y asegura la permanencia visual desde el primer clic
 // ========================================================================
 
-// Reorganiza el catálogo derecho ÚNICAMENTE cuando el popup ya se encuentra abierto y fijo
 // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
 marcador.on('click', (e) => {
-    // Evitamos nativamente que Leaflet cierre el popup por efecto de rebote o propagación
+    // Detiene la propagación para que el mapa no interprete clics fantasmas en el fondo
     L.DomEvent.stopPropagation(e);
 
-    // Mover la propiedad seleccionada al primer lugar (Índice 0) del arreglo inmutable
     const idPropiedadActual = prop.id;
-    const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
-    
-    if (indicePropiedad !== -1) {
-        // Extraemos el inmueble seleccionado de su posición original en la memoria RAM
-        const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
-        
-        // Lo empujamos al inicio de la lista de forma inmutable (Top de la lista)
-        state.propiedades.unshift(propiedadSeleccionada);
-        
-        // Forzamos el refresco inmediato del catálogo derecho
-        renderizarCatálogoTarjetas();
-    }
 
-    // Desplazamiento visual controlado hacia la cabecera de la lista reorganizada
+    // ESTABILIZADOR SRE: Retardamos el ordenamiento para que Leaflet termine de animar el popup primero
     setTimeout(() => {
+        const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
+        
+        // Si la propiedad ya está en el índice 0 (al tope), evitamos redibujar para que no parpadee
+        if (indicePropiedad > 0) {
+            // Extraemos el inmueble seleccionado de su posición original
+            const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
+            
+            // Lo empujamos al inicio de la lista de RAM
+            state.propiedades.unshift(propiedadSeleccionada);
+            
+            // Refrescamos las tarjetas derechas de forma segura una vez fijado el popup
+            renderizarCatálogoTarjetas();
+        }
+
+        // Desplazamiento visual controlado hacia la cabecera de la lista reorganizada
         const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
         if (tarjetaDerecha) {
-            // Mueve el scroll del catálogo sutilmente hacia el tope
             tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
             
             // Resalte visual temporal limpio nativo usando la variable oficial
@@ -571,9 +571,8 @@ marcador.on('click', (e) => {
             // Removemos el contorno al finalizar la transición
             setTimeout(() => { tarjetaDerecha.style.outline = 'none'; }, 2500);
         }
-    }, 100);
+    }, 300); // 300ms es el tiempo ideal para que la animación de Leaflet quede fija y no se cierre
 });
-
         
         // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
         marcador.on('popupopen', (e) => {
