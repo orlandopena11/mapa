@@ -362,39 +362,29 @@ function crearComponenteTarjetaZillow(propiedad)
         
         const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
         if (panelFichaDetalle) {
-            panelFichaDetalle.innerHTML = "";
-            renderizarFichaDetalleZillow(propiedad);
-        }
-    }; // Cierre clickSPAHandler
-
-    if (panelFichaDetalle) {
-        panelFichaDetalle.innerHTML = "";
-        // Invocación unificada apuntando al constructor real de tu Página 19
-        renderizarFichaDetalleZillow(propiedad);
-    }
-}; // <--Aqui finaliza Callback clickSPAHandler de la tarjeta
-
+            
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
     // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
     datosCasa.style.padding = '12px';
-    
+
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
-    // Mapeo simétrico en Dólares USD de acuerdo a tu Sheets real
-    precioTexto.textContent = propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+    
+    // Mapeo simétrico de acuerdo a tu Sheets real usando la variable 'precio'
+    precioTexto.textContent = propiedad.precio ? propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : "Consultar";
     datosCasa.appendChild(precioTexto);
 
-        // 2. Especificaciones de Habitaciones, Baños y Terrenos
+    // 2. Especificaciones de Habitaciones, Baños y Terrenos
     const specsTexto = document.createElement('div');
     specsTexto.style.fontSize = '13px';
     specsTexto.style.color = '#475569';
     specsTexto.style.marginTop = '4px';
-    specsTexto.textContent = `${propiedad.habitaciones} Dorm | ${propiedad.banos} Baños | AC: ${propiedad.area_construida} m² | AT: ${propiedad.area_terreno} m²`;
+    specsTexto.textContent = `${propiedad.habitaciones || 3} Dorm | ${propiedad.banos || 2} Baños | AC: ${propiedad.area_construida || 0} m² | AT: ${propiedad.area_terreno || 0} m²`;
     datosCasa.appendChild(specsTexto);
 
     // 3. Nuevos Campos complementarios
@@ -402,8 +392,7 @@ function crearComponenteTarjetaZillow(propiedad)
     adicionalesTexto.style.fontSize = '12px';
     adicionalesTexto.style.color = '#64748b';
     adicionalesTexto.style.marginTop = '2px';
-    adicionalesTexto.textContent = `${propiedad.subtipoPropiedad} | Estacionamientos: ${propiedad.estacionamientos} | Año: ${propiedad.ano_construccion} | Estado: ${propiedad.estado_propiedad}`;
-
+    adicionalesTexto.textContent = `${propiedad.subtipoPropiedad || 'Inmueble'} | Estacionamientos: ${propiedad.estacionamientos || 0} | Año: ${propiedad.ano_construccion || 0} | Estado: ${propiedad.estado_propiedad || 'Disponible'}`;
     datosCasa.appendChild(adicionalesTexto);
 
     // 4. Frase Descriptiva / Título
@@ -412,22 +401,20 @@ function crearComponenteTarjetaZillow(propiedad)
     tituloTexto.style.color = '#1e293b';
     tituloTexto.style.fontWeight = '600';
     tituloTexto.style.marginTop = '4px';
-    tituloTexto.textContent = propiedad.fraseDescriptiva;
+    tituloTexto.textContent = propiedad.fraseDescriptiva || "Propiedad Premium";
     datosCasa.appendChild(tituloTexto);
-
 
     tarjeta.appendChild(datosCasa);
 
     // 4. Registro en el Garbage Collector interno para evitar Memory Leaks
-    state.limpiadoresDOM.set(propiedad.id, () => 
-    { // -->Aqui inicia Callback Garbage Collector de la tarjeta entera
+    state.limpiadoresDOM.set(propiedad.id, () => {
         contenedorVisualFoto.removeEventListener('click', clickSPAHandler);
-    }); // <--Aqui finaliza Callback Garbage Collector de la tarjeta entera
+    });
 
     return tarjeta;
 } // <--Aqui finaliza Función crearComponenteTarjetaZillow
 
-// PARTE: 5-5 (MOTOR DE BURBUJAS DE PRECIO DINÁMICAS NATIVAS EN MAPA - SRE REFACTOR)
+        
 // Mapea dinámicamente el color de los marcadores según tus estados reales: Azul, Naranja o Dorado.
 function renderizarMapaZillow() 
 { // -->Aqui inicia Función renderizarMapaZillow
