@@ -362,7 +362,11 @@ function crearComponenteTarjetaZillow(propiedad)
         
         const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
         if (panelFichaDetalle) {
-            
+            panelFichaDetalle.innerHTML = "";
+            renderizarFichaDetalleZillow(propiedad);
+        }
+    }; // <--- AQUÍ ESTÁ LA LLAVE DE CIERRE QUE FALTABA PARA LA LÍNEA 351
+
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
     // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
@@ -375,7 +379,6 @@ function crearComponenteTarjetaZillow(propiedad)
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
     
-    // Mapeo simétrico de acuerdo a tu Sheets real usando la variable 'precio'
     precioTexto.textContent = propiedad.precio ? propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : "Consultar";
     datosCasa.appendChild(precioTexto);
 
@@ -412,7 +415,7 @@ function crearComponenteTarjetaZillow(propiedad)
     });
 
     return tarjeta;
-} // <--Aqui finaliza Función crearComponenteTarjetaZillow
+} // Cierre definitivo de la función crearComponenteTarjetaZillow
 
         
 // Mapea dinámicamente el color de los marcadores según tus estados reales: Azul, Naranja o Dorado.
