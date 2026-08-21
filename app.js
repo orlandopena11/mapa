@@ -972,53 +972,41 @@ function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
     const vistaGaleria = document.getElementById('vista-galeria-expandida');
     const headerGlobal = document.getElementById('header-ficha-global'); 
 
-    // CASO 1: ACTIVAR SEGUNDA O TERCERA PANTALLA
-    if (pantalla === 'galeria-expandida' || pantalla === 'detalle-ficha') { // Apertura IF Principal
-        
-        // Encendemos de inmediato la cabecera fija superior global
-        if (headerGlobal) { // Apertura if (headerGlobal)
-            headerGlobal.classList.remove('oculta-global');
-        } // Cierre if (headerGlobal)
-        
-        // Transición específica a la... Tercera Pantalla (Galería en Mosaico)
-        if (pantalla === 'galeria-expandida') { // Apertura IF Galería
-            if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
-            if (contenedorDetalle) contenedorDetalle.classList.add('hidden');
-            if (vistaGaleria) vistaGaleria.classList.remove('oculta');
-        } // Cierre IF Galería
-        // Transición específica a la... Segunda Pantalla (Ficha Detalle SPA)
-        else { // Apertura ELSE Detalle
-            if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
-            if (contenedorDetalle) { // Apertura IF Detalle Panel
-                contenedorDetalle.classList.remove('hidden');
-                contenedorDetalle.classList.add('visible-panel');
-                
-                // Compensación milimétrica para pasar por debajo del encabezado fijo de 60px
-                contenedorDetalle.style.paddingTop = "60px"; 
-            } // Cierre IF Detalle Panel
-            if (vistaGaleria) vistaGaleria.classList.add('oculta');
-        } // Cierre ELSE Detalle
+    // Reset de seguridad: Ocultamos todas las vistas usando la clase unificada del CSS
+    if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
+    if (contenedorDetalle) {
+        contenedorDetalle.classList.add('hidden-layout');
+        contenedorDetalle.classList.remove('visible-panel');
+    }
+    if (vistaGaleria) {
+        vistaGaleria.classList.add('hidden-layout');
+        vistaGaleria.classList.remove('visible-panel');
+    }
+    if (headerGlobal) headerGlobal.classList.add('oculta-global');
 
-    } // Cierre IF Principal
-    // CASO 2: RETORNO AL MAPA BASE (Primera Pantalla)
+    // CASO 1: ACTIVAR SEGUNDA PANTALLA (Ficha Detalle SPA)
+    if (pantalla === 'detalle-ficha') { // Apertura IF Detalle
+        if (headerGlobal) headerGlobal.classList.remove('oculta-global');
+        if (contenedorDetalle) {
+            contenedorDetalle.classList.remove('hidden-layout');
+            contenedorDetalle.classList.add('visible-panel');
+        }
+    } // Cierre IF Detalle
+    
+    // CASO 2: ACTIVAR TERCERA PANTALLA (Galería Expandida Estilo Zillow)
+    else if (pantalla === 'galeria-expandida') { // Apertura ELSE IF Galería
+        if (vistaGaleria) {
+            vistaGaleria.classList.remove('hidden-layout');
+            vistaGaleria.classList.add('visible-panel');
+        }
+    } // Cierre ELSE IF Galería
+    
+    // CASO 3: RETORNO AL MAPA BASE (Primera Pantalla)
     else { // Apertura ELSE Retorno Mapa
-        
-        // Apagamos firmemente la cabecera comercial para que no tape los filtros del buscador inicial
-        if (headerGlobal) { // Apertura if (headerGlobal)
-            headerGlobal.classList.add('oculta-global');
-        } // Cierre if (headerGlobal)
-        
-        // Restauramos los paneles iniciales del mapa de Leaflet
         if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
-        if (contenedorDetalle) { // Apertura IF Ocultar Panel Detalle
-            contenedorDetalle.classList.add('hidden');
-            contenedorDetalle.classList.remove('visible-panel');
-            contenedorDetalle.style.paddingTop = "0px";
-        } // Cierre IF Ocultar Panel Detalle
-        if (vistaGaleria) vistaGaleria.classList.add('oculta');
-
     } // Cierre ELSE Retorno Mapa
 } // Cierre definitivo alternarPantallaZillow
+
 
 /**
  * FUNCIÓN: renderizarFichaDetalleZillow (ESTANDARIZADA DE PRODUCCIÓN)
