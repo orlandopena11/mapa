@@ -356,16 +356,19 @@ function crearComponenteTarjetaZillow(propiedad)
         if (state.mapa) {
             state.mapa.closePopup();
         }
+
+        // SRE FIX: Persistencia utilizando la variable nativa 'prop' detectada en la auditoría
+        state.propiedadSeleccionadaId = prop.id;
         
-        state.propiedadSeleccionadald = propiedad.id;
-        alternarPantallaZillow('detalle-ficha');
-        
+        // Ejecución de la transición SPA pasando el objeto 'prop' purista
+        alternarPantallaZillow(prop);
+
         const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
         if (panelFichaDetalle) {
             panelFichaDetalle.innerHTML = "";
-            renderizarFichaDetalleZillow(propiedad);
+            renderizarFichaDetalleZillow(prop);
         }
-    }; // <--- Cierre de clickSPAHandler que repara el error de la línea 351
+    }; // Cierre de clickSPAHandler que repara el error de la línea 351
 
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
