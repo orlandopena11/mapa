@@ -1023,26 +1023,28 @@ function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
 } // Cierre definitivo alternarPantallaZillow
 
 /**
- * FUNCIÓN: renderizarFichaDetalleZillow (ESTANDARIZADA SRE)
- * DESCRIPCIÓN: Construye dinámicamente el layout de imágenes y la metadata comercial
- *              utilizando únicamente la variable estandarizada 'prop' alineada al Sheets.
+ * FUNCIÓN: renderizarFichaDetalleZillow (ESTANDARIZADA DE PRODUCCIÓN)
+ * DESCRIPCIÓN: Construye el mosaico de imágenes y metadata comercial consumiendo las
+ *              variables directamente desde la raíz del objeto 'prop' purificado.
  */
-function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalleZillow con variable unificada 'prop'
-    // Captura estricta del contenedor SPA oficial de la segunda pantalla
+function renderizarFichaDetalleZillow(prop) { // Apertura de la función con variable estandarizada 'prop'
     const panelFicha = document.getElementById('contenedor-detalle-zillow');
     if (!panelFicha) return;
     
-    // Limpieza purista total para recibir el nuevo inmueble seleccionado
+    // Limpiamos el lienzo gris para asegurar un renderizado limpio desde cero
     panelFicha.innerHTML = ""; 
 
-    // 1. SINCRONIZACIÓN INMEDIATA DE LOS BOTONES DE LA CABECERA GLOBAL FIJA
+    // ========================================================================
+    // 1. ACTIVACIÓN Y VINCULACIÓN OPERATIVA DE TU CABECERA GLOBAL HTML
+    // ========================================================================
+    const btnVolverAtras = document.getElementById("btn-volver-global-atras");
     const btnCompartirGlobal = document.getElementById("btn-compartir-global");
     const btnFavoritoGlobal = document.getElementById("btn-favorito-global");
     const iconCorazonGlobal = document.getElementById("icon-corazon-global");
     const textFavoritoGlobal = document.getElementById("text-favorito-global");
 
-    // Seteamos el estado visual inicial del corazón basado en la RAM
-    if (state && state.favoritos && iconCorazonGlobal && textFavoritoGlobal) { // Apertura validación favoritos
+    // Sincronizamos el estado visual del corazón con el Set inmutable de favoritos en RAM
+    if (state && state.favoritos && iconCorazonGlobal && textFavoritoGlobal) { // Apertura control favoritos
         const esFavoritoActivo = state.favoritos.has(prop.id);
         if (iconCorazonGlobal) iconCorazonGlobal.textContent = esFavoritoActivo ? "❤️" : "♡";
         if (textFavoritoGlobal) textFavoritoGlobal.textContent = esFavoritoActivo ? "Ahorrado" : "Ahorrar";
@@ -1050,13 +1052,61 @@ function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalle
             if (esFavoritoActivo) btnFavoritoGlobal.classList.add("favorito-salvado");
             else btnFavoritoGlobal.classList.remove("favorito-salvado");
         }
-    } // Cierre validación favoritos
+    } // Cierre control favoritos
 
-    // 2. CONSTRUCCIÓN DEL MOSAICO DE IMÁGENES (SPLIT 50/50)
+        // REGRESO COMPARTIDO: Escucha el botón nativo del HTML para desmontar las pantallas
+    if (btnVolverAtras) { // Apertura listener volver
+        // Removemos oyentes viejos para evitar duplicación de llamadas en caliente
+        const clonVolver = btnVolverAtras.cloneNode(true);
+        btnVolverAtras.parentNode.replaceChild(clonVolver, btnVolverAtras);
+        
+        clonVolver.addEventListener("click", () => { // Apertura click volver
+            const vistaGaleria = document.getElementById('vista-galeria-expandida');
+            // Si está en la 3ra pantalla (galería), lo regresa a la 2da pantalla (detalle)
+            if (vistaGaleria && !vistaGaleria.classList.contains('oculta')) {
+                alternarPantallaZillow('detalle-ficha');
+                renderizarFichaDetalleZillow(prop);
+            } else {
+                // Si está en la 2da pantalla, lo regresa al mapa e inicia la tubería
+                alternarPantallaZillow('split-view');
+                if (typeof ejecutarTuberiaSincronizada === 'function') {
+                    ejecutarTuberiaSincronizada();
+                }
+            }
+        }); // Cierre click volver
+    } // Cierre listener volver
+
+    // ACCIONES COMERCIALES DE LA CABECERA GLOBAL
+    if (btnCompartirGlobal) {
+        btnCompartirGlobal.onclick = () => {
+            navigator.clipboard.writeText(window.location.href);
+            alert("¡Enlace exclusivo de la propiedad copiado con éxito!");
+        };
+    }
+
+    if (btnFavoritoGlobal) {
+        btnFavoritoGlobal.onclick = () => {
+            if (state.favoritos.has(prop.id)) {
+                state.favoritos.delete(prop.id);
+                if (iconCorazonGlobal) iconCorazonGlobal.textContent = "♡";
+                if (textFavoritoGlobal) textFavoritoGlobal.textContent = "Ahorrar";
+                btnFavoritoGlobal.classList.remove("favorito-salvado");
+            } else {
+                state.favoritos.add(prop.id);
+                if (iconCorazonGlobal) iconCorazonGlobal.textContent = "❤️";
+                if (textFavoritoGlobal) textFavoritoGlobal.textContent = "Ahorrado";
+                btnFavoritoGlobal.classList.add("favorito-salvado");
+            }
+        };
+    }
+
+    // ========================================================================
+    // 2. CONSTRUCCIÓN DEL MOSAICO DE IMÁGENES (SPLIT 50/50 NATIVO)
+    // ========================================================================
     const contenedorMosaico = document.createElement('div');
     contenedorMosaico.className = 'mosaico-galeria-zillow';
 
-    // Panel Izquierdo: Foto Principal Grande
+    // Panel Izquierdo: Foto Principal Grande (Índice 0)
     const bloquelzquierdo = document.createElement('div');
     bloquelzquierdo.className = 'bloque-foto-principal';
     const imgPrincipal = document.createElement('img');
@@ -1065,83 +1115,83 @@ function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalle
     bloquelzquierdo.appendChild(imgPrincipal);
     contenedorMosaico.appendChild(bloquelzquierdo);
 
-    // Panel Derecho: Matriz Grid 2x2 para Miniaturas
+    // Panel Derecho: Matriz Grid 2x2 para las 4 Miniaturas
     const bloqueDerechoGrid = document.createElement('div');
     bloqueDerechoGrid.className = 'bloque-secundarias-grid';
 
-    // Bucle unificado para rellenar las 4 fotos secundarias fijas
-    for (let i = 1; i < 5; i++) { // Apertura ciclo fotos secundarias
+    for (let i = 1; i < 5; i++) { // Apertura ciclo miniaturas derecho
         const cajaMinifoto = document.createElement('div');
         cajaMinifoto.className = 'caja-minifoto-item';
         
         const imgSec = document.createElement('img');
-        // Consumimos el arreglo plano 'prop.fotos' estandarizado de Cloudinary
         imgSec.src = prop.fotos && prop.fotos[i] ? prop.fotos[i] : (prop.fotos && prop.fotos[0] ? prop.fotos[0] : "https://cloudinary.com");
         imgSec.alt = `Vista secundaria ${i}`;
         cajaMinifoto.appendChild(imgSec);
 
-        // Inyección atómica del botón interactivo comercial en la última celda del grid (Índice 4 del bucle)
+        // Inyección del botón interactivo sobre la cuarta foto del catálogo
         if (i === 4) { // Apertura inyección botón ver más
             const btnVerMas = document.createElement('button');
             btnVerMas.className = 'btn-ver-mas-fotos';
             btnVerMas.textContent = `Ver las ${prop.fotos ? prop.fotos.length : 0} fotos`;
             
-            // Listener blindado para saltar a la Tercera Pantalla
-            btnVerMas.addEventListener('click', (e) => { // Apertura clic ver más fotos
+            btnVerMas.addEventListener('click', (e) => { // Apertura clic saltar a tercera pantalla
                 e.stopPropagation();
                 state.propiedadSeleccionadald = prop.id;
                 alternarPantallaZillow('galeria-expandida');
                 
                 const contenedorMosaico3ra = document.getElementById("mosaico-imagenes-scroll");
-                if (contenedorMosaico3ra && prop.fotos) { // Apertura llenado 3ra pantalla
+                if (contenedorMosaico3ra && prop.fotos) { // Apertura inyección 3ra pantalla
                     contenedorMosaico3ra.innerHTML = ""; 
                     prop.fotos.forEach((urlFoto, idx) => {
                         const nodoImg = document.createElement('img');
                         nodoImg.src = urlFoto;
-                        nodoImg.alt = `Foto de galería extendida ${idx + 1}`;
+                        nodoImg.alt = `Foto extendida ${idx + 1}`;
                         contenedorMosaico3ra.appendChild(nodoImg);
                     });
-                } // Cierre llenado 3ra pantalla
-            }); // Cierre clic ver más fotos
+                } // Cierre inyección 3ra pantalla
+            }); // Cierre clic saltar a tercera pantalla
             cajaMinifoto.appendChild(btnVerMas);
         } // Cierre inyección botón ver más
 
         bloqueDerechoGrid.appendChild(cajaMinifoto);
-    } // Cierre ciclo fotos secundarias
+    } // Cierre ciclo miniaturas derecho
 
     contenedorMosaico.appendChild(bloqueDerechoGrid);
     panelFicha.appendChild(contenedorMosaico);
 
-    // 3. BLOQUE DE INFORMACIÓN INFERIOR Y TEXTOS COMERCIALES
+
+    // ========================================================================
+    // 3. BLOQUE DE INFORMACIÓN INFERIOR (READ DIRECTAMENTE DESDE LA RAÍZ REAL)
+    // ========================================================================
     const contenedorFichaDatos = document.createElement('div');
     contenedorFichaDatos.className = 'contenedor-ficha-datos-texto';
 
     const filaMetricas = document.createElement('div');
     filaMetricas.className = 'fila-metricas-zillow';
 
-    // Inyección de precio basado en la raíz limpia (precio_base) de tu Sheets
+    // Lectura limpia de la variable de precio unificada de la raíz
     const spanPrecio = document.createElement('span');
     spanPrecio.className = 'texto-precio-ficha';
-    spanPrecio.textContent = prop.precio_base 
-        ? Number(prop.precio_base).toLocaleString('es-PE', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) 
+    spanPrecio.textContent = prop.precio 
+        ? Number(prop.precio).toLocaleString('es-PE', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) 
         : 'Precio a consultar';
 
-    // Inyección de especificaciones técnicas directo de la raíz purificada
+    // SEGUNDO ENGRANE CRÍTICO: Leemos las variables directas de la raíz sin pasar por .specs
     const spanSpecs = document.createElement('span');
     spanSpecs.className = 'texto-specs-ficha';
-    spanSpecs.textContent = `${prop.specs?.habitaciones || 3} Dormitorios | ${prop.specs?.banos || 2} Baños | AC: ${prop.specs?.area_construida || 0} m²`;
+    spanSpecs.textContent = `${prop.habitaciones || 3} Dorm | ${prop.banos || 2} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
 
     filaMetricas.appendChild(spanPrecio);
     filaMetricas.appendChild(spanSpecs);
     contenedorFichaDatos.appendChild(filaMetricas);
 
-    // Fila de Dirección / Título
+    // Fila de Dirección y Título descriptivo
     const filaDireccion = document.createElement('div');
     filaDireccion.className = 'fila-direccion-ficha';
-    filaDireccion.textContent = prop.titulo || "Inmueble Premium en Surco";
+    filaDireccion.textContent = prop.fraseDescriptiva || "Inmueble de Lujo Premium";
     contenedorFichaDatos.appendChild(filaDireccion);
 
-    // Tarjeta estática de contacto con el agente
+    // Componente estático de contacto comercial con el Asesor encargado
     const bloqueContacto = document.createElement('div');
     bloqueContacto.className = 'bloque-contacto-ficha';
     bloqueContacto.style.marginTop = '20px';
@@ -1157,7 +1207,6 @@ function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalle
     labelContacto.textContent = `Contacto Comercial: ${prop.contacto_nombre || 'Asesor Asignado'}`;
     bloqueContacto.appendChild(labelContacto);
 
-    // Botón interactivo para ver teléfono con validador de Supabase integrado
     const btnVerTelefono = document.createElement('button');
     btnVerTelefono.className = 'filter-btn';
     btnVerTelefono.style.marginTop = '10px';
@@ -1169,16 +1218,15 @@ function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalle
     btnVerTelefono.style.cursor = 'pointer';
     btnVerTelefono.textContent = 'Ver número de teléfono';
 
-    btnVerTelefono.addEventListener('click', () => { // Apertura clic verificar teléfono
-        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') { // Apertura bloqueo cuenta
-            alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
+    btnVerTelefono.addEventListener('click', () => { // Apertura click teléfono
+        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') {
+            alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación.");
             return;
-        } // Cierre bloqueo cuenta
-
+        }
         btnVerTelefono.textContent = prop.telefono ? prop.telefono : "Teléfono no disponible";
         btnVerTelefono.style.backgroundColor = '#002e50';
         btnVerTelefono.disabled = true;
-    }); // Cierre clic verificar teléfono
+    }); // Cierre click teléfono
 
     bloqueContacto.appendChild(btnVerTelefono);
     contenedorFichaDatos.appendChild(bloqueContacto);
@@ -1187,6 +1235,9 @@ function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalle
 } // Cierre definitivo de la función renderizarFichaDetalleZillow
 
 
+    
+    
+    
 function configurarSegmentado(idContenedor, callback) 
 { // -->Aqui inicia Función configurarSegmentado
     const contenedor = document.getElementById(idContenedor);
