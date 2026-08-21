@@ -508,20 +508,30 @@ div.leaflet-marker-icon.map-price-pill span {
     z-index: 5000;
 }
 
-/* Barra de Navegación limpia de la Ficha - FIJA AL SCROLL */
+/* ========================================================================
+   [SRE FIX] CONTROL DE VISIBILIDAD DE LA CABECERA COMPARTIDA
+   Asegura que el header comercial no colisione con el menú de filtros inicial
+   ======================================================================== */
+
 .nav-ficha-zillow {
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 60px;
+    background-color: var(--blanco, #ffffff);
+    border-bottom: 1px solid var(--gris-borde, #e2e2e2);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 24px;
-    border-bottom: 1px solid var(--gris-borde);
-    background-color: var(--blanco);
-    position: sticky; /* Se congela en el tope de la pantalla de forma nativa */
-    top: 0;
-    left: 0;
-    z-index: 5500; /* Por encima del mosaico de fotos inferior */
-    width: 100%;
+    padding: 0 24px;
     box-sizing: border-box;
+    z-index: 5500; 
+}
+
+/* Clase utilitaria de ocultamiento absoluto por defecto */
+.nav-ficha-zillow.oculta-global {
+    display: none !important; /* Forzado exclusivamente aquí para evitar parpadeos en el inicio */
 }
 
 /* Ajuste del contenedor de la ficha para permitir el scroll inferior interno */
