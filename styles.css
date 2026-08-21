@@ -45,15 +45,17 @@ body, html {
     width: 100vw;
 }
 
-/* ==========================================================================
-   PARTE: 2-5 (BARRA SUPERIOR Y SPLIT-VIEW)
-   Estructuración del Layout de Distribución de Pantalla Dividida
-   ========================================================================== */
+
 /* ==========================================================================
    PARTE: 2-5 (BARRA SUPERIOR ALINEADA EN UNA SOLA LÍNEA ESTILO ZILLOW)
    ========================================================================== */
 
 .navbar-global {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    width: 100vw;
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -62,10 +64,17 @@ body, html {
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
-    z-index: 1010; /*  Prioridad sobre el visor del mapa */
-    width: 100vw;
+    z-index: 2000; /* Prioridad sobre Leaflet (1000) y paneles SPA (5000 al activarse) */
     white-space: nowrap;
+    box-sizing: border-box;
+    pointer-events: none; /* Hace invisible la barra para que los clics pasen directo al mapa */
 }
+
+/* Permitimos que solo los elementos hijos interactivos (filtros, inputs y botones) escuchen clics */
+.navbar-global > * {
+    pointer-events: auto;
+}
+
 
 .navbar-brand-logo {
     height: 32px;
