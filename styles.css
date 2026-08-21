@@ -953,20 +953,25 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
 
 /* CAPA OSCURA DE FONDO (OVERLAY) - Modificado para iniciar oculto de forma segura */
 .modal-accion-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6); /* Incrementado sutilmente el contraste */
-  backdrop-filter: blur(3px); /* Acabado estético premium estilo Zillow */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 6000; /* Prioridad absoluta sobre Leaflet y layouts de la galería */
-  opacity: 0; /* Inicia invisible de forma nativa */
-  pointer-events: none; /* Bloquea clics accidentales mientras está oculto */
-  transition: opacity 0.25s ease-in-out; /* Animación fluida de desvanecimiento */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    display: none; /* SRE FIX: Apagado absoluto por defecto para liberar el catálogo */
+    align-items: center;
+    justify-content: center;
+    z-index: 6000;
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+
+/* Nueva clase controladora para encender los modales solo cuando sea necesario */
+.modal-accion-overlay.modal-activo {
+    display: flex !important;
+    opacity: 1;
 }
 
 /* ESTADO ACTIVO: Gatillado limpiamente por JavaScript agregando esta clase */
