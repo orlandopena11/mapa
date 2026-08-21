@@ -579,31 +579,20 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
 // 4. Redirección hacia la pantalla de detalle (Pantalla 3) al presionar la foto
 carruselPopup.addEventListener('click', (e) => { // Apertura carruselPopup click
     e.stopPropagation();
+    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
     
-    // Si el usuario toca las flechas del carrusel o el corazón, no saltamos de pantalla
-    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura escape
-        return; 
-    } // Cierre escape
+    if (window.map) window.map.closePopup();
     
-    // Cerramos el popup flotante de Leaflet de forma segura
-    if (window.map) { // Apertura comprobación mapa
-        window.map.closePopup();
-    } // Cierre comprobación mapa
-    
-    // 1. Sincronizamos el puntero inmutable en la RAM global
+    // Estandarización de puntero SRE
     state.propiedadSeleccionadald = prop.id;
-    
-    // 2. Activamos la navegación visual SPA ocultando la vista del mapa
     alternarPantallaZillow('detalle-ficha');
     
-    // 3. RECONEXIÓN DE LA TUBERÍA DE DATOS CON VACIADO PREVENTIVO CONTRA PANTALLAS EN BLANCO
     const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-    if (panelFichaDetalle) { // Apertura panelFichaDetalle
-        panelFichaDetalle.innerHTML = ""; // Barremos residuos previos para limpiar el lienzo gris
-        
-        // Invocación corregida: pasamos el objeto 'prop' mapeado al constructor nativo
+    if (panelFichaDetalle) { // Apertura validación de panel
+        panelFichaDetalle.innerHTML = ""; 
+        // PASO CLAVE: Invocamos pasando 'prop' de forma idéntica a tu bucle mapeador
         renderizarFichaDetalleZillow(prop); 
-    } // Cierre panelFichaDetalle
+    } // Cierre validación de panel
 }); // Cierre definitivo carruselPopup click
 
         
