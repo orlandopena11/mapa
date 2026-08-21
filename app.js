@@ -945,10 +945,11 @@ function inicializarEventosDeFiltros()
     
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
+
 /**
- * FUNCIÓN: alternarPantallaZillow
- * DESCRIPCIÓN: Controlador de estados SPA. Gestiona la visibilidad y compensación de padding
- *              para que las fotos pasen por debajo del encabezado fijo de forma simétrica.
+ * FUNCIÓN: alternarPantallaZillow (VERSION CORREGIDA SRE SINCRO)
+ * DESCRIPCIÓN: Controlador maestro de navegación SPA. Administra clases de visibilidad
+ *              y asegura que los contenedores queden limpios y listos para el renderizado.
  */
 function alternarPantallaZillow(pantalla) {
     const contenedorSplit = document.querySelector('.split-view');
@@ -956,33 +957,52 @@ function alternarPantallaZillow(pantalla) {
     const vistaGaleria = document.getElementById('vista-galeria-expandida');
     const headerGlobal = document.getElementById('header-ficha-global'); 
 
-    // CASO A: El usuario entra a la Segunda Pantalla (Detalle) o Tercera Pantalla (Galería)
+    // CASO 1: ACTIVAR SEGUNDA O TERCERA PANTALLA
     if (pantalla === 'galeria-expandida' || pantalla === 'detalle-ficha') {
         
-        // 1. Mostramos la cabecera compartida removiendo la clase utilitaria
+        // Encendemos de inmediato la cabecera fija superior global
         if (headerGlobal) {
             headerGlobal.classList.remove('oculta-global');
         }
         
-        // 2. Transición hacia la Tercera Pantalla (Mosaico Completo)
+        // Transición específica a la Tercera Pantalla (Galería en Mosaico)
         if (pantalla === 'galeria-expandida') {
             if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
             if (contenedorDetalle) contenedorDetalle.classList.add('hidden');
             if (vistaGaleria) vistaGaleria.classList.remove('oculta');
         } 
-        // 3. Transición hacia la Segunda Pantalla (Ficha Detalle SPA)
+        // Transición específica a la Segunda Pantalla (Ficha Detalle SPA)
         else {
             if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
             if (contenedorDetalle) {
                 contenedorDetalle.classList.remove('hidden');
                 contenedorDetalle.classList.add('visible-panel');
                 
-                // Compensación de 60px para que los datos no se queden escondidos detrás del header fijo
+                // Compensación milimétrica para pasar por debajo del encabezado fijo
                 contenedorDetalle.style.paddingTop = "60px"; 
             }
             if (vistaGaleria) vistaGaleria.classList.add('oculta');
         }
     } 
+    // CASO 2: RETORNO AL MAPA BASE (Primera Pantalla)
+    else {
+        // Apagamos firmemente la cabecera comercial para que no tape los filtros del buscador
+        if (headerGlobal) {
+            headerGlobal.classList.add('oculta-global');
+        }
+        
+        // Restauramos los paneles iniciales del mapa de Leaflet
+        if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
+        if (contenedorDetalle) {
+            contenedorDetalle.classList.add('hidden');
+            contenedorDetalle.classList.remove('visible-panel');
+            contenedorDetalle.style.paddingTop = "0px";
+            // OJO: Retiramos el vaciado destructivo directo de aquí para evitar pantallas en blanco
+        }
+        if (vistaGaleria) vistaGaleria.classList.add('oculta');
+    }
+}
+
     // CASO B: ESTADO INICIAL / VUELTA AL MAPA (Primera Pantalla)
     else {
         // 1. Apagamos de forma contundente el header comercial para que no tape los filtros
