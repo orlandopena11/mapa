@@ -1022,142 +1022,128 @@ function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
     } // Cierre ELSE Retorno Mapa
 } // Cierre definitivo alternarPantallaZillow
 
-
-function renderizarFichaDetalleZillow(propiedad) 
-{ // -->Aqui inicia Función renderizarFichaDetalleZillow
+/**
+ * FUNCIÓN: renderizarFichaDetalleZillow (ESTANDARIZADA SRE)
+ * DESCRIPCIÓN: Construye dinámicamente el layout de imágenes y la metadata comercial
+ *              utilizando únicamente la variable estandarizada 'prop' alineada al Sheets.
+ */
+function renderizarFichaDetalleZillow(prop) { // Apertura renderizarFichaDetalleZillow con variable unificada 'prop'
+    // Captura estricta del contenedor SPA oficial de la segunda pantalla
     const panelFicha = document.getElementById('contenedor-detalle-zillow');
     if (!panelFicha) return;
-    panelFicha.textContent = ""; // Limpieza purista de control contra duplicados
-
     
-    // Fila superior de navegación limpia de la ficha Zillow SPA (REFACTORIZACIÓN FIJA)
-    const navFicha = document.createElement('div');
-    navFicha.className = 'nav-ficha-zillow';
+    // Limpieza purista total para recibir el nuevo inmueble seleccionado
+    panelFicha.innerHTML = ""; 
 
-    // 1. Componente Izquierdo: Botón Volver
-    const btnVolver = document.createElement('button');
-    btnVolver.className = 'btn-volver-zillow';
-    btnVolver.textContent = '← Volver a buscar';
-    btnVolver.addEventListener('click', () => {
-        alternarPantallaZillow('split-view');
-        if (window.capaMarcadores) window.capaMarcadores.clearLayers();
-        if (typeof ejecutarTuberiaSincronizada === 'function') {
-            ejecutarTuberiaSincronizada();
+    // 1. SINCRONIZACIÓN INMEDIATA DE LOS BOTONES DE LA CABECERA GLOBAL FIJA
+    const btnCompartirGlobal = document.getElementById("btn-compartir-global");
+    const btnFavoritoGlobal = document.getElementById("btn-favorito-global");
+    const iconCorazonGlobal = document.getElementById("icon-corazon-global");
+    const textFavoritoGlobal = document.getElementById("text-favorito-global");
+
+    // Seteamos el estado visual inicial del corazón basado en la RAM
+    if (state && state.favoritos && iconCorazonGlobal && textFavoritoGlobal) { // Apertura validación favoritos
+        const esFavoritoActivo = state.favoritos.has(prop.id);
+        if (iconCorazonGlobal) iconCorazonGlobal.textContent = esFavoritoActivo ? "❤️" : "♡";
+        if (textFavoritoGlobal) textFavoritoGlobal.textContent = esFavoritoActivo ? "Ahorrado" : "Ahorrar";
+        if (btnFavoritoGlobal) {
+            if (esFavoritoActivo) btnFavoritoGlobal.classList.add("favorito-salvado");
+            else btnFavoritoGlobal.classList.remove("favorito-salvado");
         }
-    });
-    navFicha.appendChild(btnVolver);
+    } // Cierre validación favoritos
 
-    // 2. Componente Central: Inyección de tu Logo Oficial (Quitamos el de Zillow)
-    const logoCentro = document.createElement('img');
-    logoCentro.src = 'logo.jpg'; // Tu logo real consumido localmente
-    logoCentro.alt = 'Logo Inmobiliaria';
-    logoCentro.className = 'logo-centro-ficha';
-    navFicha.appendChild(logoCentro);
-
-    // 3. Componente Derecho: Caja de Botones de Interacción Comercial
-    const accionesDerecha = document.createElement('div');
-    accionesDerecha.className = 'acciones-nav-ficha';
-
-    // Botón Compartir
-    const btnCompartir = document.createElement('button');
-    btnCompartir.className = 'btn-nav-accion';
-    btnCompartir.innerHTML = '➦ <span>Compartir</span>';
-    btnCompartir.addEventListener('click', () => {
-        navigator.clipboard.writeText(window.location.href);
-        alert('¡Enlace de la propiedad copiado al portapapeles!');
-    });
-
-    // Botón Me Gusta (Integrado al Set de Favoritos de tu state global)
-    const btnMeGusta = document.createElement('button');
-    btnMeGusta.className = 'btn-nav-accion btn-corazon-ficha';
-    
-    // Verificación de estado inmutable inicial
-    const esFavorito = state.favoritos.has(propiedad.id);
-    btnMeGusta.innerHTML = esFavorito ? '❤️ <span>Ahorrado</span>' : '♡ <span>Ahorrar</span>';
-    if (esFavorito) btnMeGusta.classList.add('activo');
-
-    btnMeGusta.addEventListener('click', () => {
-        if (state.favoritos.has(propiedad.id)) {
-            state.favoritos.delete(propiedad.id);
-            btnMeGusta.innerHTML = '♡ <span>Ahorrar</span>';
-            btnMeGusta.classList.remove('activo');
-        } else {
-            state.favoritos.add(propiedad.id);
-            btnMeGusta.innerHTML = '❤️ <span>Ahorrado</span>';
-            btnMeGusta.classList.add('activo');
-        }
-    });
-
-    accionesDerecha.appendChild(btnCompartir);
-    accionesDerecha.appendChild(btnMeGusta);
-    navFicha.appendChild(accionesDerecha);
-
-    // Inyección atómica al contenedor principal
-    panelFicha.appendChild(navFicha);
-
-    // Contenedor del Mosaico de Imágenes de Alta Fidelidad (Split 50/50)
+    // 2. CONSTRUCCIÓN DEL MOSAICO DE IMÁGENES (SPLIT 50/50)
     const contenedorMosaico = document.createElement('div');
     contenedorMosaico.className = 'mosaico-galeria-zillow';
 
-    // 1. PANEL IZQUIERDO: FOTO PRINCIPAL GRANDE
-    const bloqueIzquierdo = document.createElement('div');
-    bloqueIzquierdo.className = 'bloque-foto-principal';
+    // Panel Izquierdo: Foto Principal Grande
+    const bloquelzquierdo = document.createElement('div');
+    bloquelzquierdo.className = 'bloque-foto-principal';
     const imgPrincipal = document.createElement('img');
-    imgPrincipal.src = propiedad.fotos[0] || "https://cloudinary.com";
-    bloqueIzquierdo.appendChild(imgPrincipal);
-    contenedorMosaico.appendChild(bloqueIzquierdo);
+    imgPrincipal.src = prop.fotos && prop.fotos[0] ? prop.fotos[0] : "https://cloudinary.com";
+    imgPrincipal.alt = prop.titulo || "Inmueble Principal";
+    bloquelzquierdo.appendChild(imgPrincipal);
+    contenedorMosaico.appendChild(bloquelzquierdo);
 
-    // 2. PANEL DERECHO: MATRIZ GRID 2X2
+    // Panel Derecho: Matriz Grid 2x2 para Miniaturas
     const bloqueDerechoGrid = document.createElement('div');
     bloqueDerechoGrid.className = 'bloque-secundarias-grid';
 
-    for (let i = 1; i < 5; i++) 
-    { // -->Aqui inicia Ciclo for pintar fotos del mosaico lateral
+    // Bucle unificado para rellenar las 4 fotos secundarias fijas
+    for (let i = 1; i < 5; i++) { // Apertura ciclo fotos secundarias
         const cajaMinifoto = document.createElement('div');
         cajaMinifoto.className = 'caja-minifoto-item';
+        
         const imgSec = document.createElement('img');
-        imgSec.src = propiedad.fotos[i] || propiedad.fotos[i - 1] || propiedad.fotos[0];
+        // Consumimos el arreglo plano 'prop.fotos' estandarizado de Cloudinary
+        imgSec.src = prop.fotos && prop.fotos[i] ? prop.fotos[i] : (prop.fotos && prop.fotos[0] ? prop.fotos[0] : "https://cloudinary.com");
+        imgSec.alt = `Vista secundaria ${i}`;
         cajaMinifoto.appendChild(imgSec);
 
-        if (i === 4) 
-        { // -->Aqui inicia Condicional inyectar botón ver más fotos
+        // Inyección atómica del botón interactivo comercial en la última celda del grid (Índice 4 del bucle)
+        if (i === 4) { // Apertura inyección botón ver más
             const btnVerMas = document.createElement('button');
             btnVerMas.className = 'btn-ver-mas-fotos';
-            btnVerMas.textContent = `Ver las ${propiedad.fotos.length} fotos`;
+            btnVerMas.textContent = `Ver las ${prop.fotos ? prop.fotos.length : 0} fotos`;
+            
+            // Listener blindado para saltar a la Tercera Pantalla
+            btnVerMas.addEventListener('click', (e) => { // Apertura clic ver más fotos
+                e.stopPropagation();
+                state.propiedadSeleccionadald = prop.id;
+                alternarPantallaZillow('galeria-expandida');
+                
+                const contenedorMosaico3ra = document.getElementById("mosaico-imagenes-scroll");
+                if (contenedorMosaico3ra && prop.fotos) { // Apertura llenado 3ra pantalla
+                    contenedorMosaico3ra.innerHTML = ""; 
+                    prop.fotos.forEach((urlFoto, idx) => {
+                        const nodoImg = document.createElement('img');
+                        nodoImg.src = urlFoto;
+                        nodoImg.alt = `Foto de galería extendida ${idx + 1}`;
+                        contenedorMosaico3ra.appendChild(nodoImg);
+                    });
+                } // Cierre llenado 3ra pantalla
+            }); // Cierre clic ver más fotos
             cajaMinifoto.appendChild(btnVerMas);
-        } // <--Aqui finaliza Condicional inyectar botón ver más fotos
+        } // Cierre inyección botón ver más
+
         bloqueDerechoGrid.appendChild(cajaMinifoto);
-    } // <--Aqui finaliza Ciclo for pintar fotos del mosaico lateral
+    } // Cierre ciclo fotos secundarias
 
     contenedorMosaico.appendChild(bloqueDerechoGrid);
-    contenedorMosaico.style.display = 'flex';
     panelFicha.appendChild(contenedorMosaico);
 
-    // 3. Bloque de Información Inferior y Contacto Comercial Privilegiado
+    // 3. BLOQUE DE INFORMACIÓN INFERIOR Y TEXTOS COMERCIALES
     const contenedorFichaDatos = document.createElement('div');
     contenedorFichaDatos.className = 'contenedor-ficha-datos-texto';
 
     const filaMetricas = document.createElement('div');
     filaMetricas.className = 'fila-metricas-zillow';
 
+    // Inyección de precio basado en la raíz limpia (precio_base) de tu Sheets
     const spanPrecio = document.createElement('span');
     spanPrecio.className = 'texto-precio-ficha';
-    spanPrecio.textContent = propiedad.precio?.toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }) || "Consultar";
+    spanPrecio.textContent = prop.precio_base 
+        ? Number(prop.precio_base).toLocaleString('es-PE', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) 
+        : 'Precio a consultar';
 
+    // Inyección de especificaciones técnicas directo de la raíz purificada
     const spanSpecs = document.createElement('span');
     spanSpecs.className = 'texto-specs-ficha';
-    spanSpecs.textContent = `${propiedad.habitaciones || 3} Dormitorios | ${propiedad.banos || 2} Baños | ${propiedad.area_construida || 0} m²`;
+    spanSpecs.textContent = `${prop.specs?.habitaciones || 3} Dormitorios | ${prop.specs?.banos || 2} Baños | AC: ${prop.specs?.area_construida || 0} m²`;
 
     filaMetricas.appendChild(spanPrecio);
     filaMetricas.appendChild(spanSpecs);
     contenedorFichaDatos.appendChild(filaMetricas);
 
+    // Fila de Dirección / Título
     const filaDireccion = document.createElement('div');
     filaDireccion.className = 'fila-direccion-ficha';
-    filaDireccion.textContent = propiedad.fraseDescriptiva;
+    filaDireccion.textContent = prop.titulo || "Inmueble Premium en Surco";
     contenedorFichaDatos.appendChild(filaDireccion);
 
+    // Tarjeta estática de contacto con el agente
     const bloqueContacto = document.createElement('div');
+    bloqueContacto.className = 'bloque-contacto-ficha';
     bloqueContacto.style.marginTop = '20px';
     bloqueContacto.style.padding = '16px';
     bloqueContacto.style.backgroundColor = '#f8fafc';
@@ -1168,34 +1154,38 @@ function renderizarFichaDetalleZillow(propiedad)
     labelContacto.style.fontWeight = 'bold';
     labelContacto.style.color = '#475569';
     labelContacto.style.fontSize = '14px';
-    labelContacto.textContent = `Contacto Comercial: \${propiedad.contacto_nombre}`;
+    labelContacto.textContent = `Contacto Comercial: ${prop.contacto_nombre || 'Asesor Asignado'}`;
     bloqueContacto.appendChild(labelContacto);
 
+    // Botón interactivo para ver teléfono con validador de Supabase integrado
     const btnVerTelefono = document.createElement('button');
     btnVerTelefono.className = 'filter-btn';
     btnVerTelefono.style.marginTop = '10px';
     btnVerTelefono.style.backgroundColor = '#006aff';
     btnVerTelefono.style.color = '#ffffff';
     btnVerTelefono.style.border = 'none';
+    btnVerTelefono.style.padding = '8px 16px';
+    btnVerTelefono.style.borderRadius = '4px';
+    btnVerTelefono.style.cursor = 'pointer';
     btnVerTelefono.textContent = 'Ver número de teléfono';
 
-    btnVerTelefono.addEventListener('click', () => 
-    { // -->Aqui inicia Callback click para validar estado de cuenta del cliente
-        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') 
-        { // -->Aqui inicia Condicional alertar bloqueo de seguridad
+    btnVerTelefono.addEventListener('click', () => { // Apertura clic verificar teléfono
+        if (state.usuarioActual && state.usuarioActual.estado_cuenta === 'suspendido') { // Apertura bloqueo cuenta
             alert("Su cuenta ha sido suspendida por incumplir con las políticas de la aplicación. Por favor, contacte con soporte técnico.");
             return;
-        } // <--Aqui finaliza Condicional alertar bloqueo de seguridad
+        } // Cierre bloqueo cuenta
 
-        btnVerTelefono.textContent = propiedad.telefono ? propiedad.telefono : "Teléfono no disponible";
+        btnVerTelefono.textContent = prop.telefono ? prop.telefono : "Teléfono no disponible";
         btnVerTelefono.style.backgroundColor = '#002e50';
         btnVerTelefono.disabled = true;
-    }); // <--Aqui finaliza Callback click para validar estado de cuenta del cliente
+    }); // Cierre clic verificar teléfono
 
     bloqueContacto.appendChild(btnVerTelefono);
     contenedorFichaDatos.appendChild(bloqueContacto);
     panelFicha.appendChild(contenedorFichaDatos);
-} // <--Aqui finaliza Función renderizarFichaDetalleZillow
+
+} // Cierre definitivo de la función renderizarFichaDetalleZillow
+
 
 function configurarSegmentado(idContenedor, callback) 
 { // -->Aqui inicia Función configurarSegmentado
