@@ -576,15 +576,35 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
             }
         });
 
-        // 4. Redirección hacia la pantalla de detalle (Pantalla 3) al presionar la foto
-        carruselPopup.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-            window.map.closePopup();
-            state.propiedadSeleccionadaId = prop.id;
-            alternarPantallaZillow('detalle-ficha');
-            renderizarFichaDetalleZillow(prop);
-        });
+// 4. Redirección hacia la pantalla de detalle (Pantalla 3) al presionar la foto
+carruselPopup.addEventListener('click', (e) => { // Apertura carruselPopup click
+    e.stopPropagation();
+    
+    // Si el usuario toca las flechas del carrusel o el corazón, no saltamos de pantalla
+    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura escape
+        return; 
+    } // Cierre escape
+    
+    // Cerramos el popup flotante de Leaflet de forma segura
+    if (window.map) { // Apertura comprobación mapa
+        window.map.closePopup();
+    } // Cierre comprobación mapa
+    
+    // 1. Sincronizamos el puntero inmutable en la RAM global
+    state.propiedadSeleccionadald = prop.id;
+    
+    // 2. Activamos la navegación visual SPA ocultando la vista del mapa
+    alternarPantallaZillow('detalle-ficha');
+    
+    // 3. RECONEXIÓN DE LA TUBERÍA DE DATOS CON VACIADO PREVENTIVO CONTRA PANTALLAS EN BLANCO
+    const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
+    if (panelFichaDetalle) { // Apertura panelFichaDetalle
+        panelFichaDetalle.innerHTML = ""; // Barremos residuos previos para limpiar el lienzo gris
+        
+        // Invocación corregida: pasamos el objeto 'prop' mapeado al constructor nativo
+        renderizarFichaDetalleZillow(prop); 
+    } // Cierre panelFichaDetalle
+}); // Cierre definitivo carruselPopup click
 
         
         window.capaMarcadores.addLayer(marcador);
