@@ -486,8 +486,7 @@ div.leaflet-marker-icon.map-price-pill span {
 }
 
 
-/* Clases estructurales de transición entre Pantallas */
-.hidden-layout {
+.hidden-layout, .oculta-global {
     display: none !important;
 }
 
@@ -496,16 +495,44 @@ div.leaflet-marker-icon.map-price-pill span {
 }
 
 .contenedor-detalle-zillow.visible-panel {
-    display: block;
+    display: block !important;
     width: 100vw;
     height: 100vh;
     overflow-y: auto;
     background-color: var(--blanco);
     padding: 30px 40px;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 5000;
+}
+
+/* Nuevas clases estructurales para la Pantalla 3 de Galería Expandida */
+.galeria-split-zillow {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+.galeria-izquierda-mosaico {
+    width: 65%;
+    height: 100%;
+    overflow-y: scroll;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.panel-derecho-comercial {
+    width: 35%;
+    height: 100%;
+    background-color: var(--blanco);
+    border-left: 1px solid var(--gris-borde);
+    padding: 24px;
+    box-sizing: border-box;
+    position: sticky;
+    top: 0;
 }
 
 /* ========================================================================
