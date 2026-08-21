@@ -349,14 +349,25 @@ function crearComponenteTarjetaZillow(propiedad)
 
     // 2. Interceptor SPA inmutable hacia la Ficha de Detalle (Pantalla 2)
     const clickSPAHandler = (e) => 
-    { // -->Aqui inicia Callback clickSPAHandler de la tarjeta
-        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-        // Cerramos popups activos consumiendo el estado encapsulado seguro
-        if (state.mapa) state.mapa.closePopup();
-        state.propiedadSeleccionadald = propiedad.id;
-        alternarPantallaZillow('detalle-ficha');
+    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
+    
+    // Cerramos el popup flotante del mapa de forma nativa
+    if (state.mapa) state.mapa.closePopup();
+    
+    // Sincronización inmutable del puntero en la RAM
+    state.propiedadSeleccionadald = propiedad.id;
+    
+    // Cambiamos visualmente a la segunda pantalla
+    alternarPantallaZillow('detalle-ficha');
+    
+    // Limpieza de control estricta del lienzo para evitar la pantalla gris vacía
+    const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
+    if (panelFichaDetalle) {
+        panelFichaDetalle.innerHTML = "";
+        // Invocación unificada apuntando al constructor real de tu Página 19
         renderizarFichaDetalleZillow(propiedad);
-    }; // <--Aqui finaliza Callback clickSPAHandler de la tarjeta
+    }
+}; // <--Aqui finaliza Callback clickSPAHandler de la tarjeta
 
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
