@@ -323,7 +323,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
         btnDer.addEventListener('click', clickDer);
 
         // Registro explícito en el Garbage Collector para evitar fugas de memoria
-        state.limpiadoresDOM.set(`\${propiedad.id}_arrows`, () => 
+        state.limpiadoresDOM.set(`${propiedad.id}_arrows`, () => 
         { // -->Aqui inicia Callback Garbage Collector flechas carrusel
             btnlzq.removeEventListener('click', clicklzq);
             btnDer.removeEventListener('click', clickDer);
@@ -502,7 +502,7 @@ function renderizarMapaZillow()
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({ // -->Aqui inicia Configuración objeto divIcon Leaflet
             html: htmlBurbuja,
-            className: `leaflet-marker-icon map-price-pill \${claseColorBurbuja}`,
+            className: `leaflet-marker-icon map-price-pill ${claseColorBurbuja}`,
             iconSize: L.point(80, 30),
             iconAnchor: L.point(40, 15)
         }); // <--Aqui finaliza Configuración objeto divIcon Leaflet
@@ -1336,7 +1336,7 @@ function evaluarCriteriosDeFiltrado(prop)
         return false;
     } // <--Aqui finaliza Escape falso rango límite de precios
 
-    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: \${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
+    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 } // <--Aqui finaliza Función evaluarCriteriosDeFiltrado
 
