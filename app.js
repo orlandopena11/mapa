@@ -347,67 +347,59 @@ function crearComponenteTarjetaZillow(propiedad)
     const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    const clickSPAHandler = (e) => { // Apertura clickSPAHandler
-        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
-            return;
-        }
+const clickSPAHandler = (e) => { // Apertura clickSPAHandler
+    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+        return;
+    }
 
-        if (state.mapa) {
-            state.mapa.closePopup();
-        }
+    // 🕵️‍♂️ ESPÍA 1: Validar si la tarjeta tiene acceso al objeto 'prop' antes de saltar
+    console.log("%c🕵️‍♂️ [ESPÍA SRE] Clic detectado en tarjeta. Estado del objeto 'prop':", "background: #006aff; color: white; padding: 4px;", prop);
 
-        state.propiedadSeleccionadaId = prop.id;
-        alternarPantallaZillow('detalle-ficha');
+    if (!prop || !prop.id) {
+        console.error("%c🚨 [ERROR] El objeto 'prop' llegó VACÍO o corrupto al hacer clic.", "background: red; color: white; padding: 4px;");
+        return;
+    }
 
-        const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-        if (panelFichaDetalle) { // Apertura panelFichaDetalle
-            panelFichaDetalle.innerHTML = `
-                <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
-                    <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver a la lista</button>
-                    <div style="font-weight: bold; color: #006aff;">FICHA DETALLE</div>
-                    <div style="width: 100px;"></div>
-                </div>
-                <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
-                    <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${prop.imagenes && prop.imagenes[0] ? prop.imagenes[0] : prop.imagen}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
-                    <div style="display: flex; gap: 30px;">
-                        <div style="flex: 2;">
-                            <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
-                            <p style="font-size: 18px; color: #555;">${prop.direccion || ''}</p>
-                            <p style="margin-top: 15px;">Estado: <strong>${prop.estado_publicacion || 'Disponible'}</strong></p>
-                        </div>
-                        <div style="flex: 1; background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; height: fit-content;">
-                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Solicitar un tour</button>
-                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
-                        </div>
+    if (state.mapa) {
+        state.mapa.closePopup();
+    }
+
+    state.propiedadSeleccionadaId = prop.id;
+    
+    // Cambiamos a la pantalla pasándole el objeto unificado
+    alternarPantallaZillow('detalle-ficha');
+
+    const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
+    if (panelFichaDetalle) { // Apertura panelFichaDetalle
+        
+        // 🕵️‍♂️ ESPÍA 2: Validar la inyección del DOM con los datos reales
+        console.log(`%c🎨 [ESPÍA RENDER] Inyectando Pantalla 2 para la propiedad: ${prop.direccion}`, "background: green; color: white; padding: 4px;");
+
+        panelFichaDetalle.innerHTML = `
+            <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box; pointer-events: auto;">
+                <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer;">← Volver a la lista</button>
+                <div style="font-weight: bold; color: #006aff;">FICHA DETALLE: ${prop.id}</div>
+                <div style="width: 100px;"></div>
+            </div>
+            <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
+                <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${prop.imagenes && prop.imagenes[0] ? prop.imagenes[0] : prop.imagen}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
+                <div style="display: flex; gap: 30px;">
+                    <div style="flex: 2;">
+                        <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
+                        <p style="font-size: 18px; color: #555;">${prop.direccion || ''}</p>
                     </div>
                 </div>
-            `;
-            
-            const vistaGaleria = document.getElementById('vista-galeria-expandida');
-            if (vistaGaleria) { // Apertura vistaGaleria
-                vistaGaleria.innerHTML = `
-                    <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
-                        <button class="btn-nav-accion" id="btn-regresar-p2" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver al detalle</button>
-                    </div>
-                    <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
-                        <div class="galeria-izquierda-mosaico" style="width: 65%; height: 100%; overflow-y: scroll; padding: 20px; box-sizing: border-box; background: #111;">
-                            ${(prop.imagenes || [prop.imagen]).map(img => `<img src="${img}" style="width: 100%; max-height: 80vh; object-fit: contain; margin-bottom: 15px; border-radius: 4px;">`).join('')}
-                        </div>
-                        <div class="panel-derecho-comercial" style="width: 35%; height: 100%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto;">
-                            <h2 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
-                            <p style="color: #666; margin-bottom: 20px;">${prop.direccion || ''}</p>
-                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
-                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
-                        </div>
-                    </div>
-                `;
-            } // Cierre vistaGaleria
+            </div>
+        `;
 
-            document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
-            document.getElementById('btn-regresar-p2')?.addEventListener('click', () => alternarPantallaZillow('detalle-ficha'));
-            document.getElementById('foto-principal-click')?.addEventListener('click', () => alternarPantallaZillow('galeria-expandida'));
-        } // Cierre panelFichaDetalle
-    }; // Cierre clickSPAHandler
+        document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
+        document.getElementById('foto-principal-click')?.addEventListener('click', () => {
+            console.log("%c📸 [ESPÍA NAV] Saltando a Pantalla 3 (Galería Expandida)", "background: purple; color: white; padding: 4px;");
+            alternarPantallaZillow('galeria-expandida');
+        });
+    } // Cierre panelFichaDetalle
+}; // Cierre clickSPAHandler
+
 
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
