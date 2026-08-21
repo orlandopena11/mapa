@@ -967,80 +967,63 @@ function inicializarEventosDeFiltros()
 
 
 /**
- * FUNCIÓN: alternarPantallaZillow (VERSION CORREGIDA SRE SINCRO)
+ * FUNCIÓN: alternarPantallaZillow
  * DESCRIPCIÓN: Controlador maestro de navegación SPA. Administra clases de visibilidad
  *              y asegura que los contenedores queden limpios y listos para el renderizado.
  */
-function alternarPantallaZillow(pantalla) {
+function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
     const contenedorSplit = document.querySelector('.split-view');
     let contenedorDetalle = document.getElementById('contenedor-detalle-zillow');
     const vistaGaleria = document.getElementById('vista-galeria-expandida');
     const headerGlobal = document.getElementById('header-ficha-global'); 
 
     // CASO 1: ACTIVAR SEGUNDA O TERCERA PANTALLA
-    if (pantalla === 'galeria-expandida' || pantalla === 'detalle-ficha') {
+    if (pantalla === 'galeria-expandida' || pantalla === 'detalle-ficha') { // Apertura IF Principal
         
         // Encendemos de inmediato la cabecera fija superior global
-        if (headerGlobal) {
+        if (headerGlobal) { // Apertura if (headerGlobal)
             headerGlobal.classList.remove('oculta-global');
-        }
+        } // Cierre if (headerGlobal)
         
-        // Transición específica a la Tercera Pantalla (Galería en Mosaico)
-        if (pantalla === 'galeria-expandida') {
+        // Transición específica a la... Tercera Pantalla (Galería en Mosaico)
+        if (pantalla === 'galeria-expandida') { // Apertura IF Galería
             if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
             if (contenedorDetalle) contenedorDetalle.classList.add('hidden');
             if (vistaGaleria) vistaGaleria.classList.remove('oculta');
-        } 
-        // Transición específica a la Segunda Pantalla (Ficha Detalle SPA)
-        else {
+        } // Cierre IF Galería
+        // Transición específica a la... Segunda Pantalla (Ficha Detalle SPA)
+        else { // Apertura ELSE Detalle
             if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
-            if (contenedorDetalle) {
+            if (contenedorDetalle) { // Apertura IF Detalle Panel
                 contenedorDetalle.classList.remove('hidden');
                 contenedorDetalle.classList.add('visible-panel');
                 
-                // Compensación milimétrica para pasar por debajo del encabezado fijo
+                // Compensación milimétrica para pasar por debajo del encabezado fijo de 60px
                 contenedorDetalle.style.paddingTop = "60px"; 
-            }
+            } // Cierre IF Detalle Panel
             if (vistaGaleria) vistaGaleria.classList.add('oculta');
-        }
-    } 
+        } // Cierre ELSE Detalle
+
+    } // Cierre IF Principal
     // CASO 2: RETORNO AL MAPA BASE (Primera Pantalla)
-    else {
-        // Apagamos firmemente la cabecera comercial para que no tape los filtros del buscador
-        if (headerGlobal) {
+    else { // Apertura ELSE Retorno Mapa
+        
+        // Apagamos firmemente la cabecera comercial para que no tape los filtros del buscador inicial
+        if (headerGlobal) { // Apertura if (headerGlobal)
             headerGlobal.classList.add('oculta-global');
-        }
+        } // Cierre if (headerGlobal)
         
         // Restauramos los paneles iniciales del mapa de Leaflet
         if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
-        if (contenedorDetalle) {
+        if (contenedorDetalle) { // Apertura IF Ocultar Panel Detalle
             contenedorDetalle.classList.add('hidden');
             contenedorDetalle.classList.remove('visible-panel');
             contenedorDetalle.style.paddingTop = "0px";
-            // OJO: Retiramos el vaciado destructivo directo de aquí para evitar pantallas en blanco
-        }
+        } // Cierre IF Ocultar Panel Detalle
         if (vistaGaleria) vistaGaleria.classList.add('oculta');
-    }
-}
 
-    // CASO B: ESTADO INICIAL / VUELTA AL MAPA (Primera Pantalla)
-    else {
-        // 1. Apagamos de forma contundente el header comercial para que no tape los filtros
-        if (headerGlobal) {
-            headerGlobal.classList.add('oculta-global');
-        }
-        
-        // 2. Restauramos la vista dividida original limpia
-        if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
-        if (contenedorDetalle) {
-            contenedorDetalle.classList.add('hidden');
-            contenedorDetalle.classList.remove('visible-panel');
-            contenedorDetalle.style.paddingTop = "0px"; // Reiniciamos el espacio superior
-            contenedorDetalle.textContent = ""; // Evita duplicar nodos de texto al reabrir casas
-        }
-        if (vistaGaleria) vistaGaleria.classList.add('oculta');
-    }
-}
+    } // Cierre ELSE Retorno Mapa
+} // Cierre definitivo alternarPantallaZillow
 
 
 function renderizarFichaDetalleZillow(propiedad) 
