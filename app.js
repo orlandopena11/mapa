@@ -347,7 +347,7 @@ function crearComponenteTarjetaZillow(propiedad)
     const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    // 2. Interceptor SPA inmutable hacia la Ficha de Detalle (Pantalla 2)
+       // 2. Interceptor SPA inmutable hacia la Ficha de Detalle (Pantalla 2)
     const clickSPAHandler = (e) => {
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
             return;
@@ -365,7 +365,7 @@ function crearComponenteTarjetaZillow(propiedad)
             panelFichaDetalle.innerHTML = "";
             renderizarFichaDetalleZillow(propiedad);
         }
-    }; // <--- AQUÍ ESTÁ LA LLAVE DE CIERRE QUE FALTABA PARA LA LÍNEA 351
+    }; // <--- Cierre de clickSPAHandler que repara el error de la línea 351
 
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
