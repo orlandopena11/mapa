@@ -945,36 +945,63 @@ function inicializarEventosDeFiltros()
     
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
-// =========================================================================
-// PARTE: 5-5 (NAVEGACIÓN SPA Y DETALLE ASIMÉTRICO DE PANTALLA 2)
-// =========================================================================
-function alternarPantallaZillow(pantalla) 
-{ // -->Aqui inicia Función alternarPantallaZillow
+/**
+ * FUNCIÓN: alternarPantallaZillow
+ * DESCRIPCIÓN: Controlador de estados SPA. Gestiona la visibilidad y compensación de padding
+ *              para que las fotos pasen por debajo del encabezado fijo de forma simétrica.
+ */
+function alternarPantallaZillow(pantalla) {
     const contenedorSplit = document.querySelector('.split-view');
     let contenedorDetalle = document.getElementById('contenedor-detalle-zillow');
+    const vistaGaleria = document.getElementById('vista-galeria-expandida');
+    const headerGlobal = document.getElementById('header-ficha-global'); 
 
-    if (!contenedorDetalle) 
-    { // -->Aqui inicia Condicional instanciar panel contenedor dinámico
-        contenedorDetalle = document.createElement('div');
-        contenedorDetalle.id = 'contenedor-detalle-zillow';
-        contenedorDetalle.className = 'contenedor-detalle-zillow hidden';
-        document.querySelector('.app-container').appendChild(contenedorDetalle);
-    } // <--Aqui finaliza Condicional instanciar panel contenedor dinámico
+    // CASO A: El usuario entra a la Segunda Pantalla (Detalle) o Tercera Pantalla (Galería)
+    if (pantalla === 'galeria-expandida' || pantalla === 'detalle-ficha') {
+        
+        // 1. Mostramos la cabecera compartida removiendo la clase utilitaria
+        if (headerGlobal) {
+            headerGlobal.classList.remove('oculta-global');
+        }
+        
+        // 2. Transición hacia la Tercera Pantalla (Mosaico Completo)
+        if (pantalla === 'galeria-expandida') {
+            if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
+            if (contenedorDetalle) contenedorDetalle.classList.add('hidden');
+            if (vistaGaleria) vistaGaleria.classList.remove('oculta');
+        } 
+        // 3. Transición hacia la Segunda Pantalla (Ficha Detalle SPA)
+        else {
+            if (contenedorSplit) contenedorSplit.classList.add('hidden-layout');
+            if (contenedorDetalle) {
+                contenedorDetalle.classList.remove('hidden');
+                contenedorDetalle.classList.add('visible-panel');
+                
+                // Compensación de 60px para que los datos no se queden escondidos detrás del header fijo
+                contenedorDetalle.style.paddingTop = "60px"; 
+            }
+            if (vistaGaleria) vistaGaleria.classList.add('oculta');
+        }
+    } 
+    // CASO B: ESTADO INICIAL / VUELTA AL MAPA (Primera Pantalla)
+    else {
+        // 1. Apagamos de forma contundente el header comercial para que no tape los filtros
+        if (headerGlobal) {
+            headerGlobal.classList.add('oculta-global');
+        }
+        
+        // 2. Restauramos la vista dividida original limpia
+        if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
+        if (contenedorDetalle) {
+            contenedorDetalle.classList.add('hidden');
+            contenedorDetalle.classList.remove('visible-panel');
+            contenedorDetalle.style.paddingTop = "0px"; // Reiniciamos el espacio superior
+            contenedorDetalle.textContent = ""; // Evita duplicar nodos de texto al reabrir casas
+        }
+        if (vistaGaleria) vistaGaleria.classList.add('oculta');
+    }
+}
 
-    if (pantalla === 'detalle-ficha') 
-    { // -->Aqui inicia Condicional ocultar catálogo e inyectar detalles
-        contenedorSplit.classList.add('hidden-layout');
-        contenedorDetalle.classList.remove('hidden');
-        contenedorDetalle.classList.add('visible-panel');
-    } // <--Aqui finaliza Condicional ocultar catálogo e inyectar detalles
-    else 
-    { // -->Aqui inicia Bloque else volver al mapa base
-        contenedorSplit.classList.remove('hidden-layout');
-        contenedorDetalle.classList.remove('visible-panel');
-        contenedorDetalle.classList.add('hidden');
-        contenedorDetalle.textContent = "";
-    } // <--Aqui finaliza Bloque else volver al mapa base
-} // <--Aqui finaliza Función alternarPantallaZillow
 
 function renderizarFichaDetalleZillow(propiedad) 
 { // -->Aqui inicia Función renderizarFichaDetalleZillow
