@@ -347,30 +347,70 @@ function crearComponenteTarjetaZillow(propiedad)
     const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-       // 2. Interceptor SPA inmutable hacia la Ficha de Detalle (Pantalla 2)
-    const clickSPAHandler = (e) => {
+    const clickSPAHandler = (e) => { // Apertura clickSPAHandler
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
             return;
         }
-        
+
         if (state.mapa) {
             state.mapa.closePopup();
         }
 
-        // SRE FIX: Persistencia utilizando la variable nativa 'prop' detectada en la auditoría
         state.propiedadSeleccionadaId = prop.id;
-        
-        // Ejecución de la transición SPA pasando el objeto 'prop' purista
-        alternarPantallaZillow(prop);
+        alternarPantallaZillow('detalle-ficha');
 
         const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-        if (panelFichaDetalle) {
-            panelFichaDetalle.innerHTML = "";
-            renderizarFichaDetalleZillow(prop);
-        }
-    }; // Cierre de clickSPAHandler que repara el error de la línea 351
+        if (panelFichaDetalle) { // Apertura panelFichaDetalle
+            panelFichaDetalle.innerHTML = `
+                <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                    <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver a la lista</button>
+                    <div style="font-weight: bold; color: #006aff;">FICHA DETALLE</div>
+                    <div style="width: 100px;"></div>
+                </div>
+                <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
+                    <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${prop.imagenes && prop.imagenes[0] ? prop.imagenes[0] : prop.imagen}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
+                    <div style="display: flex; gap: 30px;">
+                        <div style="flex: 2;">
+                            <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
+                            <p style="font-size: 18px; color: #555;">${prop.direccion || ''}</p>
+                            <p style="margin-top: 15px;">Estado: <strong>${prop.estado_publicacion || 'Disponible'}</strong></p>
+                        </div>
+                        <div style="flex: 1; background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; height: fit-content;">
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const vistaGaleria = document.getElementById('vista-galeria-expandida');
+            if (vistaGaleria) { // Apertura vistaGaleria
+                vistaGaleria.innerHTML = `
+                    <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                        <button class="btn-nav-accion" id="btn-regresar-p2" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver al detalle</button>
+                    </div>
+                    <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
+                        <div class="galeria-izquierda-mosaico" style="width: 65%; height: 100%; overflow-y: scroll; padding: 20px; box-sizing: border-box; background: #111;">
+                            ${(prop.imagenes || [prop.imagen]).map(img => `<img src="${img}" style="width: 100%; max-height: 80vh; object-fit: contain; margin-bottom: 15px; border-radius: 4px;">`).join('')}
+                        </div>
+                        <div class="panel-derecho-comercial" style="width: 35%; height: 100%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto;">
+                            <h2 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
+                            <p style="color: #666; margin-bottom: 20px;">${prop.direccion || ''}</p>
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
+                    </div>
+                `;
+            } // Cierre vistaGaleria
+
+            document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
+            document.getElementById('btn-regresar-p2')?.addEventListener('click', () => alternarPantallaZillow('detalle-ficha'));
+            document.getElementById('foto-principal-click')?.addEventListener('click', () => alternarPantallaZillow('galeria-expandida'));
+        } // Cierre panelFichaDetalle
+    }; // Cierre clickSPAHandler
 
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
+
 
     // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
     const datosCasa = document.createElement('div');
