@@ -532,63 +532,40 @@ function renderizarMapaZillow()
             closeOnClick: false // <--- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
         });
 
-// ========================================================================
-// [SRE REFACTOR] - INTERCEPTOR ESTABLE BASADO EN APERTURA REAL DE POPUP
-// Elimina el parpadeo y asegura la permanencia visual desde el primer clic
-// ========================================================================
-
-// 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
+   // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
 marcador.on('click', (e) => { // Apertura marcador.on('click'
-    // Detiene la propagación para evitar clics fantasmas en las capas traseras del mapa
+    // Detiene la propagación para evitar conflictos con las capas del mapa
     L.DomEvent.stopPropagation(e);
 
     const idPropiedadActual = prop.id;
 
-    // 1. Modificamos el orden en la memoria RAM sin destruir el HTML en este instante
+    // 1. Modificamos el orden en la memoria RAM de forma inmutable
     const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
     if (indicePropiedad > 0) { // Apertura if (indicePropiedad > 0)
         const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
         state.propiedades.unshift(propiedadSeleccionada);
-        // OJO: Retiramos la función renderizarCatálogoTarjetas() de aquí para que Leaflet no parpadee y borre la etiqueta
+        // Mantener renderizarCatálogoTarjetas fuera si causa parpadeo en tu plantilla nativa
     } // Cierre if (indicePropiedad > 0)
 
-    // 2. Ejecutamos el desplazamiento visual inmediato hacia la tarjeta derecha existente
+    // 2. Desplazamiento visual suave hacia la tarjeta derecha existente sin destruir la UI
     const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
     if (tarjetaDerecha) { // Apertura if (tarjetaDerecha)
-        // Desplazamiento sutil hacia la cabecera lateral
         tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
         
-        // Aplicamos el borde azul oficial de Zillow
+        // Aplicamos el resalte estético oficial
         tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
         tarjetaDerecha.style.borderRadius = '12px';
         
-        // Removemos el contorno limpio al finalizar la transición de enfoque
-        setTimeout(() => { // Apertura setTimeout remover contorno
+        // Limpieza del contorno al finalizar el enfoque
+        setTimeout(() => { // Apertura setTimeout
             tarjetaDerecha.style.outline = 'none'; 
-        }, 2000); // Cierre setTimeout remover contorno
-        
-        // ========================================================================
-        // [SRE FIX INYECCIÓN] - ENGRANE OPERATIVO SPA CONTRA PANTALLAS EN BLANCO
-        // Sincroniza el puntero de base de datos e invoca el pintado de la ficha
-        // ========================================================================
-        state.propiedadSeleccionadald = idPropiedadActual;
-        
-        // Activamos la navegación visual SPA ocultando la primera pantalla
-        alternarPantallaZillow('detalle-ficha');
-        
-        // Forzamos el redibujado dinámico inyectando fotos, precios y datos comerciales reales
-        if (typeof renderizarFichaDetalleZillow === "function") { // Apertura if (typeof renderizarFichaDetalleZillow)
-            const cajaDetalle = document.getElementById('contenedor-detalle-zillow');
-            if (cajaDetalle) { // Apertura if (cajaDetalle)
-                cajaDetalle.innerHTML = ""; // Limpieza estricta preventiva de nodos previos
-                renderizarFichaDetalleZillow(prop); // Inyección de la data contextual activa
-            } // Cierre if (cajaDetalle)
-        } // Cierre if (typeof renderizarFichaDetalleZillow)
-        
+        }, 2000); // Cierre setTimeout
     } // Cierre if (tarjetaDerecha)
-}); // Cierre marcador.on('click'
 
-        
+    // NOTA SENIOR: Se remueve por completo la navegación SPA de este bloque. 
+    // La etiqueta del mapa abrirá de forma nativa con el carrusel y el mapa permanecerá visible.
+}); // Cierre marcador.on('click'
+     
         // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
         marcador.on('popupopen', (e) => {
             const popupElement = marcador.getPopup().getElement();
