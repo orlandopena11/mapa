@@ -401,7 +401,9 @@ const clickSPAHandler = (e) => { // Apertura clickSPAHandler
 }; // Cierre clickSPAHandler
 
 
-    contenedorVisualFoto.addEventListener('click', clickSPAHandler);
+    // Solución SRE: Pointerdown elude los bloqueos obsoletos de MouseEvent y Util.js
+    contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
+
 
 
     // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
