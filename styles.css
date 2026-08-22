@@ -172,7 +172,8 @@ body, html {
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 20px;
 }
-/* 1. Oculta todos los paneles de opciones por defecto al cargar la página */
+
+/* 1. Oculta todos los paneles de opciones por defecto al cargar la página (Limpio) */
 .dropdown-content-panel {
     display: none; 
     position: absolute;
@@ -181,18 +182,21 @@ body, html {
     z-index: 9999; /* Prioridad por encima de los marcadores del mapa Leaflet */
     background-color: #ffffff;
     min-width: 200px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     padding: 16px;
     margin-top: 4px;
+    /* Eliminamos box-shadow de aquí para que no genere líneas fantasmas al estar oculto */
 }
     
-/* 2. Muestra el panel en formato de lista vertical ÚNICAMENTE cuando haces clic */
+/* 2. Muestra el panel y aplica la sombra ÚNICAMENTE cuando está activo y visible */
 .dropdown-content-panel.show {
     display: flex;
     flex-direction: column;
     gap: 10px; /* Espaciado uniforme entre En venta, Alquiler y Vendida */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* La sombra nace exclusivamente aquí */
+    border: 1px solid #e2e8f0; /* Borde gris tenue estructural */
 }
+
 
 /* =========================================================================
    ALINEACIÓN VERTICAL NATIVA PARA CONTENIDOS INTERNOS DE FILTROS
