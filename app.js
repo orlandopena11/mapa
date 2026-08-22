@@ -1588,37 +1588,78 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
     // Aseguramos la extracción del arreglo real de fotos leídas del Excel
     const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
 
-    // RUTA A: RENDERIZAR PANTALLA 2 (Ficha de Detalle)
+    // RUTA A: RENDERIZAR PANTALLA 2 (Ficha de Detalle - Layout Fiel a Zillow)
     if (tipoPantalla === 'detalle') { // Apertura IF detalle
+        // Extraemos las primeras 5 fotos del arreglo real de forma segura
+        const arregloFotos = Array.isArray(prop.fotos) ? prop.fotos : (typeof prop.fotos === 'string' ? prop.fotos.split(',') : []);
+        const f1 = arregloFotos[0] || './img/casa-placeholder.jpg';
+        const f2 = arregloFotos[1] || './img/casa-placeholder.jpg';
+        const f3 = arregloFotos[2] || './img/casa-placeholder.jpg';
+        const f4 = arregloFotos[3] || './img/casa-placeholder.jpg';
+        const f5 = arregloFotos[4] || './img/casa-placeholder.jpg';
+
         cortina.innerHTML = `
-            <div class="nav-ficha-zillow">
-                <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:1px solid #ccc; padding:8px 16px; border-radius:4px;">← Volver a la lista</button>
-                <div style="font-weight:bold; color:#006aff;">FICHA DETALLE</div>
-                <div style="width:100px;"></div>
+            <!-- Barra superior limpia idéntica a Zillow -->
+            <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
+                <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver a buscar</button>
+                <img src="./logos/zillow-logo.svg" alt="Zillow" style="height:24px; opacity:0.9;">
+                <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
+                    <span style="cursor:pointer;">♡ ¡Ahorra</span>
+                    <span style="cursor:pointer;">⤻ Compartir</span>
+                    <span style="cursor:pointer;">⊘ ¡Escóndete</span>
+                </div>
             </div>
-            <div class="cuerpo-ficha-detalle">
-                <!-- Mosaico interactivo de la Pantalla 2 -->
-                <div id="foto-disparador-galeria" style="width:100%; height:400px; background-image:url('${fotoPortadaReal}'); background-size:cover; background-position:center; border-radius:4px; cursor:pointer; margin-bottom:20px;"></div>
-                <div style="display:flex; gap:30px;">
-                    <div style="flex:2;">
-                        <h2 style="font-size:32px; font-weight:bold; margin-bottom:8px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
-                        <p style="font-size:18px; color:#555;">${prop.direccion || prop.titulo || ''}</p>
-                        <p style="margin-top:15px; color:#006aff; font-weight:bold; cursor:pointer;" id="texto-disparador-galeria">➔ Ver todas las ${prop.fotos ? prop.fotos.length : 0} fotos</p>
+            
+            <div class="cuerpo-ficha-detalle" style="margin-top: 60px; padding: 0; box-sizing: border-box;">
+                <!-- Mosaico de 5 Fotos Estilo Retícula Zillow -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4px; height: 420px; width: 100%; background: #fff; overflow: hidden; position: relative;">
+                    
+                    <!-- Columna Izquierda: Foto Principal Grande -->
+                    <div id="foto-disparador-1" style="grid-row: span 2; background-image: url('${f1}'); background-size: cover; background-position: center; cursor: pointer;"></div>
+                    
+                    <!-- Columnas Derechas: Cuadrícula de 4 fotos pequeñas -->
+                    <div id="foto-disparador-2" style="background-image: url('${f2}'); background-size: cover; background-position: center; cursor: pointer;"></div>
+                    <div id="foto-disparador-3" style="background-image: url('${f3}'); background-size: cover; background-position: center; cursor: pointer;"></div>
+                    <div id="foto-disparador-4" style="background-image: url('${f4}'); background-size: cover; background-position: center; cursor: pointer;"></div>
+                    <div id="foto-disparador-5" style="background-image: url('${f5}'); background-size: cover; background-position: center; cursor: pointer; position: relative;"></div>
+                    
+                    <!-- Botón Flotante de Conteo de Fotos en la esquina inferior derecha -->
+                    <button id="btn-flotante-galeria" style="position: absolute; bottom: 16px; right: 16px; background: rgba(255,255,255,0.95); color: #1a1a1a; border: 1px solid #1a1a1a; padding: 10px 16px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; z-index: 10;">
+                        ⚃ Ver todas las ${arregloFotos.length || 0} fotos
+                    </button>
+                </div>
+
+                <!-- Bloque de Datos del Excel e Interacción Comercial -->
+                <div style="display: flex; padding: 30px 40px; gap: 40px; box-sizing: border-box; max-width: 1300px; margin: 0 auto;">
+                    <div style="flex: 2;">
+                        <div style="display:flex; align-items: baseline; gap: 12px; margin-bottom: 8px;">
+                            <h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${prop.precio_base ? prop.precio_base.toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'N/A'}</h2>
+                            <div style="font-size:18px; color:#1a1a1a; font-weight:500;">
+                                <strong style="font-size:22px;">${prop.habitaciones || 0}</strong> <span style="color:#666;">cama</span> | 
+                                <strong style="font-size:22px;">${prop.banos || 0}</strong> <span style="color:#666;">baños</span> | 
+                                <strong style="font-size:22px;">${prop.area_construida || 0}</strong> <span style="color:#666;">pies cuadrados</span>
+                            </div>
+                        </div>
+                        <p style="font-size: 16px; color: #2a2a2a; font-weight: 500; margin: 0;">${prop.direccion || prop.titulo || ''}</p>
+                        <p style="font-size: 14px; color: #666; margin-top: 4px;">Distrito de ${prop.distrito || 'Lima'} • <span style="color:#ca8a04; font-weight:600;">Reducción de precio: $5K</span></p>
                     </div>
-                    <div style="flex:1; background:#f9f9f9; padding:20px; border:1px solid #ddd; border-radius:8px; height:fit-content;">
-                        <button style="width:100%; background:#006aff; color:white; border:none; padding:12px; border-radius:4px; font-weight:bold; margin-bottom:10px; cursor:pointer;">Solicitar un tour</button>
-                        <button style="width:100%; background:white; color:#006aff; border:1px solid #006aff; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;">Contacte con un agente</button>
+                    <div style="flex: 1; background: #ffffff; padding: 24px; border: 1px solid #ddd; border-radius: 8px; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                        <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
+                        <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer;">Contacte con un agente</button>
                     </div>
                 </div>
             </div>
         `;
 
-        // Enlace inmediato de los listeners nativos de la Pantalla 2
+        // Vinculación unificada de disparadores hacia la Pantalla 1 y la Pantalla 3
         document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => gestionarCortinaSPA('cerrar'));
-        document.getElementById('foto-disparador-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
-        document.getElementById('texto-disparador-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
+        document.getElementById('btn-flotante-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
+        for (let i = 1; i <= 5; i++) { // Bucle de vinculación táctil para las 5 fotos
+            document.getElementById(`foto-disparador-${i}`)?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
+        } // Cierre bucle fotos
     } // Cierre IF detalle
 
+    
     // RUTA B: RENDERIZAR PANTALLA 3 (Galería Expandida Split 65/35)
     else if (tipoPantalla === 'galeria') { // Apertura ELSE IF galeria
         cortina.innerHTML = `
