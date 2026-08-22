@@ -633,7 +633,7 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
 } // <--Aqui finaliza Función renderizarMapaZillow
 
 /**
- * RENDERIZADOR DE CATALOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
+ * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
  * Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
  */
 function renderizarCatalogoTarjetas() 
@@ -655,12 +655,10 @@ function renderizarCatalogoTarjetas()
     } // <--Aqui finaliza Bucle while remover listeners antiguos
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-
-    // Vinculación corregida apuntando de forma natural al ID contador: 'results-counter'
     const contador = document.getElementById('results-counter');
 
     // =========================================================================
-    // VALIDACIÓN DE CATALOGO VACÍO (MENSAJE GRANDE EN EL PANEL DERECHO)
+    // CONTROL DE FLUJO UNIFICADO (CON O SIN RESULTADOS)
     // =========================================================================
     if (filtradas.length === 0) 
     { // -->Aqui inicia Bloque pantalla sin resultados por filtros activos
@@ -678,25 +676,34 @@ function renderizarCatalogoTarjetas()
         if (contador) {
             contador.textContent = `0 resultados disponibles`;
         }
-        return; // Cortocircuito de escape inmediato
     } // <--Aqui finaliza Bloque pantalla sin resultados por filtros activos
+    else 
+    { // -->Aqui inicia Bloque con resultados activos en el sistema
+        const fragmento = document.createDocumentFragment();
+
+        // Inyección atómica de los nodos puros en el fragmento flotante
+        filtradas.forEach(prop => 
+        { // -->Aqui inicia Callback forEach inyección de tarjetas
+            const tarjetaNode = crearComponenteTarjetaZillow(prop);
+            fragmento.appendChild(tarjetaNode);
+        }); // <--Aqui finaliza Callback forEach inyección de tarjetas
+
+        contenedorRejilla.appendChild(fragmento);
+
+        if (contador) 
+        { // -->Aqui inicia Condicional actualizar contador en pantalla
+            contador.textContent = `${filtradas.length} resultados disponibles`;
+        } // <--Aqui finaliza Condicional actualizar contador en pantalla
+    } // <--Aqui finaliza Bloque con resultados activos en el sistema
+
     // =========================================================================
-
-    const fragmento = document.createDocumentFragment();
-
-    // Inyección atómica de los nodos puros en el fragmento flotante
-    filtradas.forEach(prop => 
-    { // -->Aqui inicia Callback forEach inyección de tarjetas
-        const tarjetaNode = crearComponenteTarjetaZillow(prop);
-        fragmento.appendChild(tarjetaNode);
-    }); // <--Aqui finaliza Callback forEach inyección de tarjetas
-
-    contenedorRejilla.appendChild(fragmento);
-
-    if (contador) 
-    { // -->Aqui inicia Condicional actualizar contador en pantalla
-        contador.textContent = `${filtradas.length} resultados disponibles`;
-    } // <--Aqui finaliza Condicional actualizar contador en pantalla
+    // REFRESCAR EL MAPA SIEMPRE AL FINALIZAR LA TUBERÍA
+    // =========================================================================
+    // Al colocar esta instrucción aquí afuera, garantizamos que si la lista está vacía,
+    // las burbujas del mapa también se limpien por completo en tiempo real.
+    if (typeof actualizarMarcadoresMapa === 'function') {
+        actualizarMarcadoresMapa(filtradas);
+    }
 } // <--Aqui finaliza Función renderizarCatalogoTarjetas
 
 
