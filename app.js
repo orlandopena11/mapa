@@ -145,7 +145,7 @@ state.filtros =
     camas: 0, // Cantidad mínima de dormitorios (0 = Cualquiera)
     camasExactas: false, // Switch de coincidencia exacta para dormitorios
     baños: 0, // Cantidad mínima de baños completos
-    //  ¡Corregido! Incluimos TODOS los tipos reales de tu catálogo LOV_tipo_propiedad
+    //  ¡Corregido! Incluimos TODOS los tipos reales de tu catalogo LOV_tipo_propiedad
     tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']) 
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
 
@@ -337,7 +337,7 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
 } // <--Aqui finaliza Función construirRielCarruselComponente
 
 /**
- * @description Crea el componente visual de la tarjeta de propiedad (Catálogo Derecho - Pantalla 1).
+ * @description Crea el componente visual de la tarjeta de propiedad (Catalogo Derecho - Pantalla 1).
  *              Sincroniza los datos con el Excel y maneja la transición SPA hacia las Pantallas 2 y 3.
  * @param {Object} prop - Objeto plano inmutable con las columnas reales de Google Sheets.
  * @returns {HTMLElement} Tarjeta construida y lista para insertarse en el DOM.
@@ -557,7 +557,7 @@ function renderizarMapaZillow()
             closeOnClick: false // <--- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
         });
 
-   // 2. Escucha e Interceptor de clic para reorganizar el Catálogo Derecho
+   // 2. Escucha e Interceptor de clic para reorganizar el Catalogo Derecho
 marcador.on('click', (e) => { // Apertura marcador.on('click'
     // Detiene la propagación para evitar conflictos con las capas del mapa
     L.DomEvent.stopPropagation(e);
@@ -569,7 +569,7 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
     if (indicePropiedad > 0) { // Apertura if (indicePropiedad > 0)
         const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
         state.propiedades.unshift(propiedadSeleccionada);
-        // Mantener renderizarCatálogoTarjetas fuera si causa parpadeo en tu plantilla nativa
+        // Mantener renderizarCatalogoTarjetas fuera si causa parpadeo en tu plantilla nativa
     } // Cierre if (indicePropiedad > 0)
 
     // 2. Desplazamiento visual suave hacia la tarjeta derecha existente sin destruir la UI
@@ -633,11 +633,11 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
 } // <--Aqui finaliza Función renderizarMapaZillow
 
 /**
-* RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
-* Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
-*/
-function renderizarCatálogoTarjetas() 
-{ // -->Aqui inicia Función renderizarCatálogoTarjetas
+ * RENDERIZADOR DE CATALOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
+ * Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
+ */
+function renderizarCatalogoTarjetas() 
+{ // -->Aqui inicia Función renderizarCatalogoTarjetas
     // Vinculación corregida apuntando de forma natural al ID: 'properties-grid-target'
     const contenedorRejilla = document.getElementById('properties-grid-target');
     if (!contenedorRejilla) return;
@@ -654,8 +654,35 @@ function renderizarCatálogoTarjetas()
         contenedorRejilla.removeChild(contenedorRejilla.firstChild);
     } // <--Aqui finaliza Bucle while remover listeners antiguos
 
-    const fragmento = document.createDocumentFragment();
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+
+    // Vinculación corregida apuntando de forma natural al ID contador: 'results-counter'
+    const contador = document.getElementById('results-counter');
+
+    // =========================================================================
+    // VALIDACIÓN DE CATALOGO VACÍO (MENSAJE GRANDE EN EL PANEL DERECHO)
+    // =========================================================================
+    if (filtradas.length === 0) 
+    { // -->Aqui inicia Bloque pantalla sin resultados por filtros activos
+        contenedorRejilla.innerHTML = `
+            <div class="mensaje-sin-propiedades" style="padding: 60px 20px; text-align: center; width: 100%; box-sizing: border-box;">
+                <h3 style="font-size: 22px; color: #2d3748; font-weight: 700; margin-bottom: 12px; line-height: 1.4; font-family: sans-serif;">
+                    No existe este tipo de propiedades en este momento
+                </h3>
+                <p style="color: #718096; font-size: 15px; font-family: sans-serif; margin: 0;">
+                    Prueba seleccionando otros criterios o habilitando más tipos de propiedad en el menú flotante.
+                </p>
+            </div>
+        `;
+        
+        if (contador) {
+            contador.textContent = `0 resultados disponibles`;
+        }
+        return; // Cortocircuito de escape inmediato
+    } // <--Aqui finaliza Bloque pantalla sin resultados por filtros activos
+    // =========================================================================
+
+    const fragmento = document.createDocumentFragment();
 
     // Inyección atómica de los nodos puros en el fragmento flotante
     filtradas.forEach(prop => 
@@ -666,13 +693,12 @@ function renderizarCatálogoTarjetas()
 
     contenedorRejilla.appendChild(fragmento);
 
-    // Vinculación corregida apuntando de forma natural al ID contador: 'results-counter'
-    const contador = document.getElementById('results-counter');
     if (contador) 
     { // -->Aqui inicia Condicional actualizar contador en pantalla
         contador.textContent = `${filtradas.length} resultados disponibles`;
     } // <--Aqui finaliza Condicional actualizar contador en pantalla
-} // <--Aqui finaliza Función renderizarCatálogoTarjetas
+} // <--Aqui finaliza Función renderizarCatalogoTarjetas
+
 
 /**
 * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
@@ -714,7 +740,7 @@ function procesarDatosDelMotor(data)
 
     // Ejecuta el renderizado sincronizado de las vistas
     renderizarMapaZillow();
-    renderizarCatálogoTarjetas();
+    renderizarCatalogoTarjetas();
 
     // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
     interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
@@ -1092,7 +1118,7 @@ function evaluarCriteriosDeFiltrado(prop)
     }
 
     // Aprobación final unificada
-    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
+    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 } // <-- Aquí finaliza Función evaluarCriteriosDeFiltrado
 
@@ -1100,7 +1126,7 @@ function evaluarCriteriosDeFiltrado(prop)
 function ejecutarTuberiaSincronizada() 
 { // -->Aqui inicia Función ejecutarTuberiaSincronizada
     renderizarMapaZillow();
-    renderizarCatálogoTarjetas();
+    renderizarCatalogoTarjetas();
 } // <--Aqui finaliza Función ejecutarTuberiaSincronizada
 
 function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioLogueado) 
