@@ -490,10 +490,6 @@ div.leaflet-marker-icon.map-price-pill span {
     height: 320px; /* Compactación vertical para optimizar espacio del mapa */
 }
 
-/*.zillow-custom-popup-wrapper .tarjeta-casa.popup-card .contenedor-foto {
-    height: 150px;
-}
-*/
 
 .hidden-layout, .oculta-global {
     display: none !important;
@@ -879,13 +875,6 @@ div.leaflet-marker-icon.map-price-pill span {
     height: 150px;
 }
 
-/* Coloración dorada para marcadores de propiedades vendidas */
-/*div.leaflet-marker-icon.map-price-pill.vendido-dorado {
-    background-color: #FAB019;
-    color: #111827;
-    border: 1.5px solid #ffffff;
-}
-*/
 
 /**
  * REGLAS DE DISEÑO DE BURBUJAS DE MAPA (SRE REFACTOR)
