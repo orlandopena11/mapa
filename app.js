@@ -601,24 +601,31 @@ marcador.on('click', (e) => { // Apertura marcador.on('click'
             }
         });
 
-// 4. Redirección hacia la pantalla de detalle (Pantalla 3) al presionar la foto
-carruselPopup.addEventListener('click', (e) => { // Apertura carruselPopup click
-    e.stopPropagation();
-    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-    
-    if (window.map) window.map.closePopup();
-    
-    // Estandarización de puntero SRE
-    state.propiedadSeleccionadald = prop.id;
-    alternarPantallaZillow('detalle-ficha');
-    
-    const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-    if (panelFichaDetalle) { // Apertura validación de panel
-        panelFichaDetalle.innerHTML = ""; 
-        // PASO CLAVE: Invocamos pasando 'prop' de forma idéntica a tu bucle mapeador
-        renderizarFichaDetalleZillow(prop); 
-    } // Cierre validación de panel
-}); // Cierre definitivo carruselPopup click
+        /**
+         * @description Interceptor de navegación SPA para las burbujas del mapa (Lado Izquierdo).
+         *              SISTEMA SIMPLIFICADO: Elude bloqueos obsoletos usando pointerdown y dispara la cortina unificada.
+         */
+        carruselPopup.addEventListener('pointerdown', (e) => { // Apertura carruselPopup pointerdown
+            e.stopPropagation();
+            
+            // Si hace click en las flechas del carrusel o favoritos dentro del mapa, no salta a pantalla 2
+            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura IF exclusiones
+                return;
+            } // Cierre IF exclusiones
+            
+            if (state.mapa) { // Apertura IF mapa
+                state.mapa.closePopup();
+            } // Cierre IF mapa
+            
+            // Persistencia inmutable del ID seleccionado en la raíz del estado global
+            state.propiedadSeleccionadaId = prop.id;
+            
+            /**
+             * @description Activación en caliente de la Pantalla 2 desde el mapa.
+             *              Envía el flujo directo hacia el panel cortina pasándole el objeto real 'prop'.
+             */
+            gestionarCortinaSPA('detalle', prop);
+        }); // Cierre definitivo carruselPopup pointerdown
 
         
         window.capaMarcadores.addLayer(marcador);
