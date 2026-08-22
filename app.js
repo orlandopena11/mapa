@@ -696,14 +696,7 @@ function renderizarCatalogoTarjetas()
         } // <--Aqui finaliza Condicional actualizar contador en pantalla
     } // <--Aqui finaliza Bloque con resultados activos en el sistema
 
-    // =========================================================================
-    // REFRESCAR EL MAPA SIEMPRE AL FINALIZAR LA TUBERÍA
-    // =========================================================================
-    // Al colocar esta instrucción aquí afuera, garantizamos que si la lista está vacía,
-    // las burbujas del mapa también se limpien por completo en tiempo real.
-    if (typeof actualizarMarcadoresMapa === 'function') {
-        actualizarMarcadoresMapa(filtradas);
-    }
+
 } // <--Aqui finaliza Función renderizarCatalogoTarjetas
 
 
@@ -1132,9 +1125,15 @@ function evaluarCriteriosDeFiltrado(prop)
 
 function ejecutarTuberiaSincronizada() 
 { // -->Aqui inicia Función ejecutarTuberiaSincronizada
-    renderizarMapaZillow();
+    // 1. Primero se ejecuta el catálogo derecho (que internamente procesa los filtros)
     renderizarCatalogoTarjetas();
+    
+    // 2. Invocamos la función del mapa pasándole las propiedades que pasaron los filtros
+    // Extraemos la lista filtrada directamente desde el Set para actualizar el mapa en tiempo real
+    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+    renderizarMapaZillow(filtradas);
 } // <--Aqui finaliza Función ejecutarTuberiaSincronizada
+
 
 function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioLogueado) 
 { // -->Aqui inicia Función interceptarFirewallSeguridadUsuario
