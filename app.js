@@ -401,7 +401,12 @@ const clickSPAHandler = (e) => { // Apertura clickSPAHandler
 }; // Cierre clickSPAHandler
 
 
-    // Solución SRE: Pointerdown elude los bloqueos obsoletos de MouseEvent y Util.js
+    /* @description Solución de Compatibilidad Avanzada (SRE FIX).
+     *              Se reemplaza el evento 'click' estándar por 'pointerdown'.
+     *              Esto elude y salta de forma directa los bloqueos de obsolescencia
+     *              detectados en la consola con la propiedad antigua 'MouseEvent.mozPressure'.
+     *              Garantiza una captura instantánea tanto en ratones modernos como en pantallas táctiles.
+     */
     contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
 
 
@@ -415,7 +420,12 @@ const clickSPAHandler = (e) => { // Apertura clickSPAHandler
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
     
-    precioTexto.textContent = propiedad.precio ? propiedad.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : "Consultar";
+    /**
+    * @description Conversión y formateo dinámico del precio de la propiedad.
+    *              SRE FIX: Se corrige el nombre del objeto raíz cambiando 'propiedad' por 'prop'
+    *              para garantizar que el motor consuma los datos reales de la memoria RAM.
+    */
+    precioTexto.textContent = prop.precio ? prop.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
     datosCasa.appendChild(precioTexto);
 
     // 2. Especificaciones de Habitaciones, Baños y Terrenos
