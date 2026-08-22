@@ -1133,3 +1133,9 @@ div.leaflet-marker-icon.map-price-pill span {
     box-sizing: border-box;
     overflow-y: auto;
 }
+
+/* CORRECCIÓN DE POSICIÓN DE LOS BOTONES DE ZOOM (+ y -) */
+.leaflet-top.leaflet-left {
+    top: 80px !important;  /* Modifica este valor (ej. 70px, 90px) para bajar el zoom lo necesario */
+    left: 15px !important; /* Mantiene una separación limpia del borde izquierdo */
+}
