@@ -347,59 +347,71 @@ function crearComponenteTarjetaZillow(propiedad)
     const contenedorVisualFoto = construirRielCarruselComponente(propiedad, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-const clickSPAHandler = (e) => { // Apertura clickSPAHandler
-    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
-        return;
-    }
+    const clickSPAHandler = (e) => { // Apertura clickSPAHandler
+        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+            return;
+        }
 
-    // 🕵️‍♂️ ESPÍA 1: Validar si la tarjeta tiene acceso al objeto 'prop' antes de saltar
-    console.log("%c🕵️‍♂️ [ESPÍA SRE] Clic detectado en tarjeta. Estado del objeto 'prop':", "background: #006aff; color: white; padding: 4px;", prop);
+        if (state.mapa) {
+            state.mapa.closePopup();
+        }
 
-    if (!prop || !prop.id) {
-        console.error("%c🚨 [ERROR] El objeto 'prop' llegó VACÍO o corrupto al hacer clic.", "background: red; color: white; padding: 4px;");
-        return;
-    }
+        state.propiedadSeleccionadaId = prop.id;
+        alternarPantallaZillow('detalle-ficha');
 
-    if (state.mapa) {
-        state.mapa.closePopup();
-    }
+        // Extraemos la foto de portada del arreglo real de 'fotos'
+        const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
 
-    state.propiedadSeleccionadaId = prop.id;
-    
-    // Cambiamos a la pantalla pasándole el objeto unificado
-    alternarPantallaZillow('detalle-ficha');
-
-    const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-    if (panelFichaDetalle) { // Apertura panelFichaDetalle
-        
-        // 🕵️‍♂️ ESPÍA 2: Validar la inyección del DOM con los datos reales
-        console.log(`%c🎨 [ESPÍA RENDER] Inyectando Pantalla 2 para la propiedad: ${prop.direccion}`, "background: green; color: white; padding: 4px;");
-
-        panelFichaDetalle.innerHTML = `
-            <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box; pointer-events: auto;">
-                <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer;">← Volver a la lista</button>
-                <div style="font-weight: bold; color: #006aff;">FICHA DETALLE: ${prop.id}</div>
-                <div style="width: 100px;"></div>
-            </div>
-            <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
-                <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${prop.imagenes && prop.imagenes[0] ? prop.imagenes[0] : prop.imagen}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
-                <div style="display: flex; gap: 30px;">
-                    <div style="flex: 2;">
-                        <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio ? prop.precio.toLocaleString() : 'N/A'}</h2>
-                        <p style="font-size: 18px; color: #555;">${prop.direccion || ''}</p>
+        const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
+        if (panelFichaDetalle) { // Apertura panelFichaDetalle
+            panelFichaDetalle.innerHTML = `
+                <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                    <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver a la lista</button>
+                    <div style="font-weight: bold; color: #006aff;">FICHA DETALLE REAL</div>
+                    <div style="width: 100px;"></div>
+                </div>
+                <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
+                    <!-- Mosaico dinámico consumiendo el arreglo de 'fotos' del Excel -->
+                    <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${fotoPortadaReal}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
+                    <div style="display: flex; gap: 30px;">
+                        <div style="flex: 2;">
+                            <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                            <p style="font-size: 18px; color: #555;">${prop.titulo || ''} - Distrito: <strong>${prop.distrito || ''}</strong></p>
+                            <p style="margin-top: 15px;">Año de construcción: <strong>${prop.ano_construccion || 'N/A'}</strong> | Área: <strong>${prop.area_construida || 0} m²</strong></p>
+                        </div>
+                        <div style="flex: 1; background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; height: fit-content;">
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
+            
+            const vistaGaleria = document.getElementById('vista-galeria-expandida');
+            if (vistaGaleria) { // Apertura vistaGaleria
+                vistaGaleria.innerHTML = `
+                    <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                        <button class="btn-nav-accion" id="btn-regresar-p2" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver al detalle</button>
+                    </div>
+                    <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
+                        <div class="galeria-izquierda-mosaico" style="width: 65%; height: 100%; overflow-y: scroll; padding: 20px; box-sizing: border-box; background: #111;">
+                            ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width: 100%; max-height: 80vh; object-fit: contain; margin-bottom: 15px; border-radius: 4px;">`).join('')}
+                        </div>
+                        <div class="panel-derecho-comercial" style="width: 35%; height: 100%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto;">
+                            <h2 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                            <p style="color: #666; margin-bottom: 20px;">${prop.titulo || ''} (${prop.distrito || ''})</p>
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
+                    </div>
+                `;
+            } // Cierre vistaGaleria
 
-        document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
-        document.getElementById('foto-principal-click')?.addEventListener('click', () => {
-            console.log("%c📸 [ESPÍA NAV] Saltando a Pantalla 3 (Galería Expandida)", "background: purple; color: white; padding: 4px;");
-            alternarPantallaZillow('galeria-expandida');
-        });
-    } // Cierre panelFichaDetalle
-}; // Cierre clickSPAHandler
-
+            document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
+            document.getElementById('btn-regresar-p2')?.addEventListener('click', () => alternarPantallaZillow('detalle-ficha'));
+            document.getElementById('foto-principal-click')?.addEventListener('click', () => alternarPantallaZillow('galeria-expandida'));
+        } // Cierre panelFichaDetalle
+    }; // Cierre clickSPAHandler
 
     /* @description Solución de Compatibilidad Avanzada (SRE FIX).
      *              Se reemplaza el evento 'click' estándar por 'pointerdown'.
@@ -420,12 +432,18 @@ const clickSPAHandler = (e) => { // Apertura clickSPAHandler
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
     
+    // 1. Renderizado del Precio Base leído directo desde el backend (Excel)
+    const precioTexto = document.createElement('div');
+    precioTexto.className = 'precio';
+    precioTexto.style.fontSize = '18px';
+    precioTexto.style.fontWeight = 'bold';
+            
     /**
-    * @description Conversión y formateo dinámico del precio de la propiedad.
-    *              SRE FIX: Se corrige el nombre del objeto raíz cambiando 'propiedad' por 'prop'
-    *              para garantizar que el motor consuma los datos reales de la memoria RAM.
+    * @description Formateo dinámico del precio de la propiedad.
+    *              SRE SYNC FIX: Se cambian las variables fantasma por las columnas 
+    *              reales del Excel leídas del backend: 'prop.precio_base'.
     */
-    precioTexto.textContent = prop.precio ? prop.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
+    precioTexto.textContent = prop.precio_base ? prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
     datosCasa.appendChild(precioTexto);
 
     // 2. Especificaciones de Habitaciones, Baños y Terrenos
