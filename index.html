@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <!-- 5. FILTRO DE TIPO DE PROPIEDAD -->
+        <!-- 5. FILTRO DE TIPO DE PROPIEDAD CORREGIDO -->
         <div class="filter-dropdown-wrapper">
             <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
             <div class="dropdown-content-panel" id="dropdown-type">
@@ -116,9 +116,16 @@
                         <input type="checkbox" class="type-cb" value="Lote" checked> Lotes
                     </label>
                 </div>
+                <!-- BOTÓN APLICAR INTEGRADO SIN MODIFICAR ESTILOS PROHIBIDOS -->
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; text-align: right; width: 100%;">
+                    <button id="btn-aplicar-tipo-propiedad" style="background-color: #006aff; color: #ffffff; border: none; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; font-family: sans-serif; width: 100%;">
+                        Aplicar Filtro
+                    </button>
+                </div>
             </div>
         </div>
 
+        
         <!-- 6. FILTRO MAESTRO DE FILTROS AVANZADOS -->
         <div class="filter-dropdown-wrapper">
             <button class="filter-btn" id="btn-filter-more">Filtros ▾</button>
