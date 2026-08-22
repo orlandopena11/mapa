@@ -1069,8 +1069,28 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <--Aqui finaliza Escape falso rango límite de precios
 
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
+    // ===== CÓDIGO DE ACOPLAMIENTO PARA FILTRO TIPO DE PROPIEDAD =====
+    // 1. Si no hay checkboxes marcados, permitimos que pasen todas por defecto
+    if (state.filtros.tiposPropiedad.size > 0) {
+        // 2. Extraemos el tipo limpio en minúsculas (ej: "casa" o "departamento")
+        const tipoLimpioBD = (propiedadMapeada.tipoPropiedad || '').toLowerCase().trim();
+        
+        // 3. Verificamos si coincide con los filtros activos del Set (manejando plurales)
+        const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => {
+            const filtroNorm = filtroActivo.toLowerCase().trim();
+            return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
+        });
+
+        // 4. Si tiene filtros seleccionados pero esta propiedad no cumple, se descarta
+        if (!cumpleTipo) {
+            return false;
+        }
+    }
+
+    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #...");
     return true;
-} // <--Aqui finaliza Función evaluarCriteriosDeFiltrado
+} // <-- Aquí finaliza Función evaluarCriteriosDeFiltrado
+
 
 function ejecutarTuberiaSincronizada() 
 { // -->Aqui inicia Función ejecutarTuberiaSincronizada
