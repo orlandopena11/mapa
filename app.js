@@ -1606,8 +1606,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
             <!-- Barra superior limpia idéntica a Zillow -->
             <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
                 <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver a buscar</button>
-                <img src="./logos/zillow-logo.svg" alt="Zillow" style="height:24px; opacity:0.9;">
-                <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
+               <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
+                        <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
                     <span style="cursor:pointer;">♡ ¡Ahorra</span>
                     <span style="cursor:pointer;">⤻ Compartir</span>
                     <span style="cursor:pointer;">⊘ ¡Escóndete</span>
@@ -1673,7 +1673,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
             <!-- Barra superior limpia e idéntica a la ficha detalle -->
             <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
                 <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver al detalle</button>
-                <img src="./logos/zillow-logo.svg" alt="Zillow" style="height:24px; opacity:0.9;">
+                <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                 <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
                     <span>♡ ¡Ahorra</span>
                     <span>⤻ Compartir</span>
