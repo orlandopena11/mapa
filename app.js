@@ -988,7 +988,7 @@ function inicializarEventosDeFiltros()
  * FUNCIÓN: alternarPantallaZillow
  * DESCRIPCIÓN: Controlador maestro de navegación SPA. Administra clases de visibilidad
  *              y asegura que los contenedores queden limpios y listos para el renderizado.
- */
+ 
 function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
     const contenedorSplit = document.querySelector('.split-view');
     let contenedorDetalle = document.getElementById('contenedor-detalle-zillow');
@@ -1028,14 +1028,15 @@ function alternarPantallaZillow(pantalla) { // Apertura alternarPantallaZillow
     else { // Apertura ELSE Retorno Mapa
         if (contenedorSplit) contenedorSplit.classList.remove('hidden-layout');
     } // Cierre ELSE Retorno Mapa
-} // Cierre definitivo alternarPantallaZillow
+} // Cierre definitivo alternarPantallaZillow 
+*/
 
 
 /**
  * FUNCIÓN: renderizarFichaDetalleZillow (ESTANDARIZADA DE PRODUCCIÓN)
  * DESCRIPCIÓN: Construye el mosaico de imágenes y metadata comercial consumiendo las
  *              variables directamente desde la raíz del objeto 'prop' purificado.
- */
+
 function renderizarFichaDetalleZillow(prop) { // Apertura de la función con variable estandarizada 'prop'
     const panelFicha = document.getElementById('contenedor-detalle-zillow');
     if (!panelFicha) return;
@@ -1243,7 +1244,7 @@ function renderizarFichaDetalleZillow(prop) { // Apertura de la función con var
 
 } // Cierre definitivo de la función renderizarFichaDetalleZillow
 
-
+*/
     
     
     
