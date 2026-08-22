@@ -438,27 +438,30 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
 
         
 // Mapea dinámicamente el color de los marcadores según tus estados reales: Azul, Naranja o Dorado.
-function renderizarMapaZillow() 
+function renderizarMapaZillow()
 { // -->Aqui inicia Función renderizarMapaZillow
-    if (typeof window.capaMarcadores === 'undefined') 
+    if (typeof window.capaMarcadores === 'undefined')
     { // -->Aqui inicia Condicional verificar capaMarcadores indefinida
         window.capaMarcadores = null;
     } // <--Aqui finaliza Condicional verificar capaMarcadores indefinida
 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    if (!window.capaMarcadores) 
+    if (!window.capaMarcadores)
     { // -->Aqui inicia Condicional inicializar capa de marcadores
         window.capaMarcadores = L.layerGroup().addTo(window.map);
     } // <--Aqui finaliza Condicional inicializar capa de marcadores
-    else 
+    else
     { // -->Aqui inicia Bloque else limpiar marcadores activos
         window.capaMarcadores.clearLayers();
     } // <--Aqui finaliza Bloque else limpiar marcadores activos
 
+    // =========================================================================
+    // MOTOR DE INTERSECCIÓN FILTRADA PARA LAS BURBUJAS DEL MAPA
+    // =========================================================================
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    filtradas.forEach(prop => 
+    filtradas.forEach(prop =>
     { // -->Aqui inicia Callback forEach de propiedades filtradas en mapa
         if (!prop.latitud || !prop.longitud) return;
 
@@ -469,9 +472,7 @@ function renderizarMapaZillow()
         const estadoPub = String(prop.estado_publicacion || "").trim();
         const tipoAnuncio = String(prop.tipo_anuncio || "").trim();
 
-        // ---------------------------------------------------------------------
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (ESTRICTO SIN MINÚSCULAS)
-        // ---------------------------------------------------------------------
         let claseColorBurbuja = "";
 
         if (prop.estado_publicacion === 'vendida') {
@@ -481,8 +482,7 @@ function renderizarMapaZillow()
         } else {
             claseColorBurbuja = 'venta-azul'; // Burbuja Azul por defecto para ventas disponibles
         }
-        // ---------------------------------------------------------------------
-     
+
         // Centrado geométrico nativo estricto mediante constructores L.point(80, 30) y L.point(40, 15)
         const iconoBurbuja = L.divIcon({ // -->Aqui inicia Configuración objeto divIcon Leaflet
             html: htmlBurbuja,
@@ -493,7 +493,7 @@ function renderizarMapaZillow()
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
-        // 1. FABRICAMOS EL CONTENEDOR MODULAR ASILADO PARA EL POPUP (Preservado intacto)
+        // 1. FABRICAMOS EL CONTENEDOR MODULAR AISLADO PARA EL POPUP (Preservado intacto)
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card';
         contenedorPopupMaster.style.width = '260px';
@@ -516,7 +516,8 @@ function renderizarMapaZillow()
         // FORMATEO MONETARIO FIEL (SRE REFACTOR): Configura el valor en Dólares Americanos ($ USD) alineado al Excel
         pPrice.textContent = prop.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
         datosPopup.appendChild(pPrice);
-                //  AGREGAR AQUÍ: Inyección de especificaciones técnicas (Dormitorios / Baños)
+
+        // Inyección de especificaciones técnicas (Dormitorios / Baños)
         const pSpecs = document.createElement('div');
         pSpecs.className = 'specs-popup';
         pSpecs.style.fontSize = '12px';
@@ -525,15 +526,15 @@ function renderizarMapaZillow()
         pSpecs.textContent = `${prop.habitaciones} Dorm | ${prop.banos} Baños | ${prop.area_construida} m²`;
         datosPopup.appendChild(pSpecs);
 
-        // 3. Fila de Datos Adicionales: Subtipo, Estacionamientos, Año y Estado del Inmueble
+        // Fila de Datos Adicionales: Subtipo, Estacionamientos, Año y Estado del Inmueble
         const pAdicionales = document.createElement('div');
         pAdicionales.style.fontSize = '11px';
         pAdicionales.style.color = '#64748b';
         pAdicionales.style.marginTop = '2px';
         pAdicionales.textContent = `${prop.subtipoPropiedad} | Estacionamientos: ${prop.estacionamientos} | Año: ${prop.ano_construccion} | Estado: ${prop.estado_propiedad}`;
+        datosPopup.appendChild(pAdicionales);
 
-        
-        //  AGREGAR AQUÍ: Inyección del título / dirección de la propiedad
+        // Inyección del título / dirección de la propiedad
         const pDireccion = document.createElement('div');
         pDireccion.className = 'direccion-popup';
         pDireccion.style.fontSize = '12px';
@@ -544,90 +545,65 @@ function renderizarMapaZillow()
 
         contenedorPopupMaster.appendChild(datosPopup);
 
-        // =====================================================================
-        // [SRE REFACTOR] - INTERCEPTOR ESTABLE Y ORDENAMIENTO EN VIVO EN RAM
-        // =====================================================================
-        
-        // 1. Enlace nativo directo del Popup (Estabilizado sin inyecciones visuales en JS)
+        // Enlace nativo directo del Popup (Estabilizado sin inyecciones visuales en JS)
         marcador.bindPopup(contenedorPopupMaster, {
             maxWidth: 300,
             minWidth: 260,
             className: 'zillow-custom-popup-wrapper',
             autoPan: true,
-            closeOnClick: false // <--- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
+            closeOnClick: false // <-- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
         });
 
-   // 2. Escucha e Interceptor de clic para reorganizar el Catalogo Derecho
-marcador.on('click', (e) => { // Apertura marcador.on('click'
-    // Detiene la propagación para evitar conflictos con las capas del mapa
-    L.DomEvent.stopPropagation(e);
+        // 2. Escucha e Interceptor de clic para reorganizar el Catalogo Derecho
+        marcador.on('click', (e) => { // Apertura marcador.on('click'
+            L.DomEvent.stopPropagation(e);
 
-    const idPropiedadActual = prop.id;
+            const idPropiedadActual = prop.id;
 
-    // 1. Modificamos el orden en la memoria RAM de forma inmutable
-    const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
-    if (indicePropiedad > 0) { // Apertura if (indicePropiedad > 0)
-        const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
-        state.propiedades.unshift(propiedadSeleccionada);
-        // Mantener renderizarCatalogoTarjetas fuera si causa parpadeo en tu plantilla nativa
-    } // Cierre if (indicePropiedad > 0)
+            // Modificamos el orden en la memoria RAM de forma inmutable
+            const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
+            if (indicePropiedad > 0) { 
+                const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
+                state.propiedades.unshift(propiedadSeleccionada);
+            }
 
-    // 2. Desplazamiento visual suave hacia la tarjeta derecha existente sin destruir la UI
-    const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
-    if (tarjetaDerecha) { // Apertura if (tarjetaDerecha)
-        tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        
-        // Aplicamos el resalte estético oficial
-        tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
-        tarjetaDerecha.style.borderRadius = '12px';
-        
-        // Limpieza del contorno al finalizar el enfoque
-        setTimeout(() => { // Apertura setTimeout
-            tarjetaDerecha.style.outline = 'none'; 
-        }, 2000); // Cierre setTimeout
-    } // Cierre if (tarjetaDerecha)
+            // Desplazamiento visual suave hacia la tarjeta derecha existente sin destruir la UI
+            const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
+            if (tarjetaDerecha) { 
+                tarjetaDerecha.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                tarjetaDerecha.style.outline = '3px solid var(--azul-zillow)';
+                tarjetaDerecha.style.borderRadius = '12px';
 
-    // NOTA SENIOR: Se remueve por completo la navegación SPA de este bloque. 
-    // La etiqueta del mapa abrirá de forma nativa con el carrusel y el mapa permanecerá visible.
-}); // Cierre marcador.on('click'
-     
+                setTimeout(() => { 
+                    tarjetaDerecha.style.outline = 'none';
+                }, 2000); 
+            }
+        }); // Cierre marcador.on('click'
+
         // 3. Bloqueador de rebotes interactivos para clics internos en el carrusel
         marcador.on('popupopen', (e) => {
             const popupElement = marcador.getPopup().getElement();
             if (popupElement) {
-                // Detiene nativamente que el avance de fotos o toques cierren el marcador
                 L.DomEvent.disableClickPropagation(popupElement);
                 L.DomEvent.disableScrollPropagation(popupElement);
             }
         });
 
-        /**
-         * @description Interceptor de navegación SPA para las burbujas del mapa (Lado Izquierdo).
-         *              SISTEMA SIMPLIFICADO: Elude bloqueos obsoletos usando pointerdown y dispara la cortina unificada.
-         */
         carruselPopup.addEventListener('pointerdown', (e) => { // Apertura carruselPopup pointerdown
             e.stopPropagation();
-            
-            // Si hace click en las flechas del carrusel o favoritos dentro del mapa, no salta a pantalla 2
-            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura IF exclusiones
+
+            if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { 
                 return;
-            } // Cierre IF exclusiones
-            
-            if (state.mapa) { // Apertura IF mapa
+            }
+
+            if (state.mapa) { 
                 state.mapa.closePopup();
-            } // Cierre IF mapa
-            
-            // Persistencia inmutable del ID seleccionado en la raíz del estado global
+            } 
+
             state.propiedadSeleccionadaId = prop.id;
-            
-            /**
-             * @description Activación en caliente de la Pantalla 2 desde el mapa.
-             *              Envía el flujo directo hacia el panel cortina pasándole el objeto real 'prop'.
-             */
             gestionarCortinaSPA('detalle', prop);
         }); // Cierre definitivo carruselPopup pointerdown
 
-        
         window.capaMarcadores.addLayer(marcador);
     }); // <--Aqui finaliza Callback forEach de propiedades filtradas en mapa
 } // <--Aqui finaliza Función renderizarMapaZillow
@@ -1125,14 +1101,10 @@ function evaluarCriteriosDeFiltrado(prop)
 
 function ejecutarTuberiaSincronizada() 
 { // -->Aqui inicia Función ejecutarTuberiaSincronizada
-    // 1. Primero se ejecuta el catálogo derecho (que internamente procesa los filtros)
+    renderizarMapaZillow();
     renderizarCatalogoTarjetas();
-    
-    // 2. Invocamos la función del mapa pasándole las propiedades que pasaron los filtros
-    // Extraemos la lista filtrada directamente desde el Set para actualizar el mapa en tiempo real
-    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-    renderizarMapaZillow(filtradas);
 } // <--Aqui finaliza Función ejecutarTuberiaSincronizada
+
 
 
 function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioLogueado) 
