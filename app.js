@@ -405,9 +405,8 @@ const clickSPAHandler = (e) => { // Apertura clickSPAHandler
     contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
 
 
+    datosCasa.addEventListener('pointerdown', clickSPAHandler);
 
-    // 3. Bloque Inferior de Contenido de Texto Plano Puro (Blindado contra XSS)
-    const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
     datosCasa.style.padding = '12px';
 
