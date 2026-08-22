@@ -353,76 +353,27 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
 
     /**
      * @description Manejador de navegación SPA interno de la tarjeta.
-     *              Activa la Pantalla 2 e inyecta dinámicamente las fotos y datos comerciales.
+     *              SISTEMA SIMPLIFICADO: Dispara la cortina pasando el objeto unificado 'prop'.
      */
     const clickSPAHandler = (e) => { // Apertura clickSPAHandler
+        // Exclusiones mecánicas para evitar saltos si se pulsa en el corazón o las flechas
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura IF exclusiones
             return;
         } // Cierre IF exclusiones
 
+        // Cerramos el popup nativo de Leaflet si estuviera activo para limpiar la Pantalla 1
         if (state.mapa) { // Apertura IF mapa
             state.mapa.closePopup();
         } // Cierre IF mapa
 
-        // Persistencia del ID seleccionado en la raíz inmutable del estado
+        // Persistencia inmutable del ID seleccionado en la raíz del estado global
         state.propiedadSeleccionadaId = prop.id;
         
-        // Cambio visual de pantallas enrutado
-        alternarPantallaZillow('detalle-ficha');
-
-        // Extracción segura del arreglo de imágenes real del Excel
-        const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos : './img/casa-placeholder.jpg';
-
-        const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
-        if (panelFichaDetalle) { // Apertura IF panelFichaDetalle
-            panelFichaDetalle.innerHTML = `
-                <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
-                    <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver a la lista</button>
-                    <div style="font-weight: bold; color: #006aff;">FICHA DETALLE</div>
-                    <div style="width: 100px;"></div>
-                </div>
-                <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
-                    <!-- Mosaico de 5 fotos de la Pantalla 2 -->
-                    <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${fotoPortadaReal}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
-                    <div style="display: flex; gap: 30px;">
-                        <div style="flex: 2;">
-                            <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
-                            <p style="font-size: 18px; color: #555;">${prop.direccion || prop.titulo || ''}</p>
-                            <p style="margin-top: 15px;">Dormitorios: <strong>${prop.habitaciones || 0}</strong> | Baños: <strong>${prop.banos || 0}</strong></p>
-                        </div>
-                        <div style="flex: 1; background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; height: fit-content;">
-                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Solicitar un tour</button>
-                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            const vistaGaleria = document.getElementById('vista-galeria-expandida');
-            if (vistaGaleria) { // Apertura IF vistaGaleria
-                vistaGaleria.innerHTML = `
-                    <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
-                        <button class="btn-nav-accion" id="btn-regresar-p2" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver al detalle</button>
-                    </div>
-                    <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
-                        <div class="galeria-izquierda-mosaico" style="width: 65%; height: 100%; overflow-y: scroll; padding: 20px; box-sizing: border-box; background: #111;">
-                            ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width: 100%; max-height: 80vh; object-fit: contain; margin-bottom: 15px; border-radius: 4px;">`).join('')}
-                        </div>
-                        <div class="panel-derecho-comercial" style="width: 35%; height: 100%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto;">
-                            <h2 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
-                            <p style="color: #666; margin-bottom: 20px;">${prop.direccion || prop.titulo || ''}</p>
-                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
-                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
-                        </div>
-                    </div>
-                `;
-            } // Cierre IF vistaGaleria
-
-            // Registro inmediato de listeners de navegación en los botones inyectados
-            document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
-            document.getElementById('btn-regresar-p2')?.addEventListener('click', () => alternarPantallaZillow('detalle-ficha'));
-            document.getElementById('foto-principal-click')?.addEventListener('click', () => alternarPantallaZillow('galeria-expandida'));
-        } // Cierre IF panelFichaDetalle
+        /**
+         * @description Activación en caliente de la Pantalla 2.
+         *              Envía el flujo directo hacia el panel cortina pasándole el objeto real 'prop'.
+         */
+        gestionarCortinaSPA('detalle', prop);
     }; // Cierre clickSPAHandler
 
     // Asignación de Pointerdown a la imagen para eludir fallas de compatibilidad de mouse
@@ -1607,3 +1558,85 @@ function ejecutarEnvioAppsScript(payload, idModal, idForm) {
         alert("Hubo un error de conexión con el servidor. Por favor, intente nuevamente.");
     });
 }
+
+/**
+ * @description Controlador maestro del panel tipo cortina (SPA Simplificado).
+ *              Gestiona la inyección dinámica de HTML para las Pantallas 2 y 3
+ *              y activa las transiciones de deslizamiento nativas en el CSS.
+ * @param {String} tipoPantalla - Determina la vista a renderizar ('detalle' o 'galeria').
+ * @param {Object} prop - El objeto de datos unificado de la propiedad seleccionada.
+ */
+function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaSPA
+    const cortina = document.getElementById('cortina-spa');
+    if (!cortina) { // Apertura IF validacion
+        return;
+    } // Cierre IF validacion
+
+    // CASO DE CIERRE: Retornar al mapa base (Pantalla 1)
+    if (tipoPantalla === 'cerrar') { // Apertura IF cerrar
+        cortina.classList.remove('cortina-activa');
+        return;
+    } // Cierre IF cerrar
+
+    // Aseguramos la extracción del arreglo real de fotos leídas del Excel
+    const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
+
+    // RUTA A: RENDERIZAR PANTALLA 2 (Ficha de Detalle)
+    if (tipoPantalla === 'detalle') { // Apertura IF detalle
+        cortina.innerHTML = `
+            <div class="nav-ficha-zillow">
+                <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:1px solid #ccc; padding:8px 16px; border-radius:4px;">← Volver a la lista</button>
+                <div style="font-weight:bold; color:#006aff;">FICHA DETALLE</div>
+                <div style="width:100px;"></div>
+            </div>
+            <div class="cuerpo-ficha-detalle">
+                <!-- Mosaico interactivo de la Pantalla 2 -->
+                <div id="foto-disparador-galeria" style="width:100%; height:400px; background-image:url('${fotoPortadaReal}'); background-size:cover; background-position:center; border-radius:4px; cursor:pointer; margin-bottom:20px;"></div>
+                <div style="display:flex; gap:30px;">
+                    <div style="flex:2;">
+                        <h2 style="font-size:32px; font-weight:bold; margin-bottom:8px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                        <p style="font-size:18px; color:#555;">${prop.direccion || prop.titulo || ''}</p>
+                        <p style="margin-top:15px; color:#006aff; font-weight:bold; cursor:pointer;" id="texto-disparador-galeria">➔ Ver todas las ${prop.fotos ? prop.fotos.length : 0} fotos</p>
+                    </div>
+                    <div style="flex:1; background:#f9f9f9; padding:20px; border:1px solid #ddd; border-radius:8px; height:fit-content;">
+                        <button style="width:100%; background:#006aff; color:white; border:none; padding:12px; border-radius:4px; font-weight:bold; margin-bottom:10px; cursor:pointer;">Solicitar un tour</button>
+                        <button style="width:100%; background:white; color:#006aff; border:1px solid #006aff; padding:12px; border-radius:4px; font-weight:bold; cursor:pointer;">Contacte con un agente</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Enlace inmediato de los listeners nativos de la Pantalla 2
+        document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => gestionarCortinaSPA('cerrar'));
+        document.getElementById('foto-disparador-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
+        document.getElementById('texto-disparador-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
+    } // Cierre IF detalle
+
+    // RUTA B: RENDERIZAR PANTALLA 3 (Galería Expandida Split 65/35)
+    else if (tipoPantalla === 'galeria') { // Apertura ELSE IF galeria
+        cortina.innerHTML = `
+            <div class="nav-ficha-zillow">
+                <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:1px solid #ccc; padding:8px 16px; border-radius:4px;">← Volver al detalle</button>
+                <div style="font-weight:bold; color:#006aff;">GALERÍA DE FOTOS</div>
+                <div style="width:100px;"></div>
+            </div>
+            <div class="galeria-split-zillow">
+                <div class="galeria-izquierda-mosaico">
+                    ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width:100%; max-height:80vh; object-fit:contain; margin-bottom:15px; border-radius:4px;">`).join('')}
+                </div>
+                <div class="panel-derecho-comercial">
+                    <h2 style="font-size:28px; font-weight:bold; margin-bottom:10px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                    <p style="color:#666; margin-bottom:20px;">${prop.direccion || prop.titulo || ''}</p>
+                    <button style="width:100%; background:#006aff; color:white; border:none; padding:14px; border-radius:4px; font-weight:bold; font-size:16px; margin-bottom:12px; cursor:pointer;">Solicitar un tour</button>
+                    <button style="width:100%; background:white; color:#006aff; border:1px solid #006aff; padding:14px; border-radius:4px; font-weight:bold; cursor:pointer;">Contacte con un agente</button>
+                </div>
+            </div>
+        `;
+
+        // Enlace inmediato del botón de retorno a la Pantalla 2
+        document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => gestionarCortinaSPA('detalle', prop));
+    } // Cierre ELSE IF galeria
+
+    // Deslizamos la cortina de forma nativa hacia adentro añadiendo la clase CSS
+    cortina.classList.add('cortina-activa');
+} // Cierre gestionarCortinaSPA
