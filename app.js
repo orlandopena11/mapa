@@ -336,47 +336,154 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
     return contenedorFoto;
 } // <--Aqui finaliza Función construirRielCarruselComponente
 
-function crearComponenteTarjetaZillow(prop) { // Corregido: parámetro 'prop'
+/**
+ * @description Crea el componente visual de la tarjeta de propiedad (Catálogo Derecho - Pantalla 1).
+ *              Sincroniza los datos con el Excel y maneja la transición SPA hacia las Pantallas 2 y 3.
+ * @param {Object} prop - Objeto plano inmutable con las columnas reales de Google Sheets.
+ * @returns {HTMLElement} Tarjeta construida y lista para insertarse en el DOM.
+ */
+function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjetaZillow
     const tarjeta = document.createElement('div');
     tarjeta.className = 'tarjeta-casa';
     tarjeta.setAttribute('data-id', prop.id);
 
-    // Contenedor de fotos
+    // Contenedor visual del Riel de Fotos / Carrusel
     const contenedorVisualFoto = construirRielCarruselComponente(prop, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    // Handler SPA para selección de propiedad
-    const clickSPAHandler = (e) => {
-        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
-        if (state.mapa) state.mapa.closePopup();
+    /**
+     * @description Manejador de navegación SPA interno de la tarjeta.
+     *              Activa la Pantalla 2 e inyecta dinámicamente las fotos y datos comerciales.
+     */
+    const clickSPAHandler = (e) => { // Apertura clickSPAHandler
+        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) { // Apertura IF exclusiones
+            return;
+        } // Cierre IF exclusiones
 
+        if (state.mapa) { // Apertura IF mapa
+            state.mapa.closePopup();
+        } // Cierre IF mapa
+
+        // Persistencia del ID seleccionado en la raíz inmutable del estado
         state.propiedadSeleccionadaId = prop.id;
+        
+        // Cambio visual de pantallas enrutado
         alternarPantallaZillow('detalle-ficha');
 
-        const fotoPortada = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : 'default.jpg';
-        const panelFicha = document.getElementById('contenedor-detalle-zillow');
-        
-        if (panelFicha) {
-            panelFicha.innerHTML = `<!-- Estructura Ficha Detalle usando ${prop.id} -->`;
-            // ... (resto de la lógica de UI inyectada)
-        }
-    };
+        // Extracción segura del arreglo de imágenes real del Excel
+        const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos : './img/casa-placeholder.jpg';
 
+        const panelFichaDetalle = document.getElementById('contenedor-detalle-zillow');
+        if (panelFichaDetalle) { // Apertura IF panelFichaDetalle
+            panelFichaDetalle.innerHTML = `
+                <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                    <button class="btn-nav-accion" id="btn-regresar-p1" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver a la lista</button>
+                    <div style="font-weight: bold; color: #006aff;">FICHA DETALLE</div>
+                    <div style="width: 100px;"></div>
+                </div>
+                <div class="contenedor-detalle-zillow visible-panel" style="margin-top: 60px; padding: 20px; box-sizing: border-box;">
+                    <!-- Mosaico de 5 fotos de la Pantalla 2 -->
+                    <div id="foto-principal-click" style="display: block; width: 100%; height: 400px; background-image: url('${fotoPortadaReal}'); background-size: cover; background-position: center; border-radius: 4px; cursor: pointer; margin-bottom: 20px;"></div>
+                    <div style="display: flex; gap: 30px;">
+                        <div style="flex: 2;">
+                            <h2 style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                            <p style="font-size: 18px; color: #555;">${prop.direccion || prop.titulo || ''}</p>
+                            <p style="margin-top: 15px;">Dormitorios: <strong>${prop.habitaciones || 0}</strong> | Baños: <strong>${prop.banos || 0}</strong></p>
+                        </div>
+                        <div style="flex: 1; background: #f9f9f9; padding: 20px; border: 1px solid #ddd; border-radius: 8px; height: fit-content;">
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 12px; border-radius: 4px; font-weight: bold; margin-bottom: 10px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const vistaGaleria = document.getElementById('vista-galeria-expandida');
+            if (vistaGaleria) { // Apertura IF vistaGaleria
+                vistaGaleria.innerHTML = `
+                    <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; padding: 0 20px; z-index: 6000; box-sizing: border-box;">
+                        <button class="btn-nav-accion" id="btn-regresar-p2" style="cursor: pointer; background: none; border: 1px solid #ccc; padding: 8px 16px; border-radius: 4px;">← Volver al detalle</button>
+                    </div>
+                    <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
+                        <div class="galeria-izquierda-mosaico" style="width: 65%; height: 100%; overflow-y: scroll; padding: 20px; box-sizing: border-box; background: #111;">
+                            ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width: 100%; max-height: 80vh; object-fit: contain; margin-bottom: 15px; border-radius: 4px;">`).join('')}
+                        </div>
+                        <div class="panel-derecho-comercial" style="width: 35%; height: 100%; background: white; padding: 30px; box-sizing: border-box; overflow-y: auto;">
+                            <h2 style="font-size: 28px; font-weight: bold; margin-bottom: 10px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                            <p style="color: #666; margin-bottom: 20px;">${prop.direccion || prop.titulo || ''}</p>
+                            <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
+                            <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; cursor: pointer;">Contacte con un agente</button>
+                        </div>
+                    </div>
+                `;
+            } // Cierre IF vistaGaleria
+
+            // Registro inmediato de listeners de navegación en los botones inyectados
+            document.getElementById('btn-regresar-p1')?.addEventListener('click', () => alternarPantallaZillow('catalogo'));
+            document.getElementById('btn-regresar-p2')?.addEventListener('click', () => alternarPantallaZillow('detalle-ficha'));
+            document.getElementById('foto-principal-click')?.addEventListener('click', () => alternarPantallaZillow('galeria-expandida'));
+        } // Cierre IF panelFichaDetalle
+    }; // Cierre clickSPAHandler
+
+    // Asignación de Pointerdown a la imagen para eludir fallas de compatibilidad de mouse
     contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
-    
-    // Generación de datos de la tarjeta
+
+        // Bloque contenedor de descripciones y textos informativos
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
-    datosCasa.innerHTML = `
-        <div class="precio">$${prop.precio_base?.toLocaleString()}</div>
-        <div class="info">${prop.habitaciones} Dorm | ${prop.banos} Baños</div>
-        <div class="direccion">${prop.direccion}</div>
-    `;
+    datosCasa.style.padding = '12px';
+    datosCasa.addEventListener('pointerdown', clickSPAHandler);
+
+    // 1. Inyección del Precio Base formateado en dólares desde la raíz
+    const precioTexto = document.createElement('div');
+    precioTexto.className = 'precio';
+    precioTexto.style.fontSize = '18px';
+    precioTexto.style.fontWeight = 'bold';
+    precioTexto.style.color = '#1e293b';
+    precioTexto.textContent = prop.precio_base ? prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
+    datosCasa.appendChild(precioTexto);
+
+    // 2. Inyección de Dormitorios, Baños y Áreas leídas de forma plana del Excel
+    const caracteristicasTexto = document.createElement('div');
+    caracteristicasTexto.className = 'caracteristicas-inmueble';
+    caracteristicasTexto.style.fontSize = '13px';
+    caracteristicasTexto.style.color = '#475569';
+    caracteristicasTexto.style.marginTop = '4px';
+    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
+    datosCasa.appendChild(caracteristicasTexto);
+
+    // 3. Inyección de Información complementaria (Tipo de propiedad y Año)
+    const adicionalesTexto = document.createElement('div');
+    adicionalesTexto.className = 'adicionales-inmueble';
+    adicionalesTexto.style.fontSize = '12px';
+    adicionalesTexto.style.color = '#64748b';
+    adicionalesTexto.style.marginTop = '2px';
+    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | Año: ${prop.ano_construccion || 0}`;
+    datosCasa.appendChild(adicionalesTexto);
+
+    // 4. Inyección de la Dirección física real de la Columna G de la pestaña propiedad
+    const ubicacionTexto = document.createElement('div');
+    ubicacionTexto.className = 'ubicacion-direccion-directa';
+    ubicacionTexto.style.fontSize = '14px';
+    ubicacionTexto.style.color = '#1e293b';
+    ubicacionTexto.style.fontWeight = '600';
+    ubicacionTexto.style.marginTop = '4px';
+    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "Propiedad Premium");
+    datosCasa.appendChild(ubicacionTexto);
+
+    // Acople de los textos estructurados en la tarjeta principal
     tarjeta.appendChild(datosCasa);
-    
+
+    // Recolector de basura interno para mitigar fugas de memoria RAM en filtros masivos
+    if (state.limpiadoresDOM) { // Apertura IF limpiadoresDOM
+        state.limpiadoresDOM.set(prop.id, () => { // Apertura callback set
+            contenedorVisualFoto.removeEventListener('pointerdown', clickSPAHandler);
+            datosCasa.removeEventListener('pointerdown', clickSPAHandler);
+        }); // Cierre callback set
+    } // Cierre IF limpiadoresDOM
+
     return tarjeta;
-    
-} // Cierre definitivo de la función crearComponenteTarjetaZillow
+} // Cierre crearComponenteTarjetaZillow
 
         
 // Mapea dinámicamente el color de los marcadores según tus estados reales: Azul, Naranja o Dorado.
