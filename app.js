@@ -427,58 +427,85 @@ function crearComponenteTarjetaZillow(propiedad)
     datosCasa.className = 'datos-casa';
     datosCasa.style.padding = '12px';
 
+    // 1. Creación e inyección del precio base leído desde el Excel
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
+    precioTexto.style.color = '#1e293b';
     
-    // 1. Renderizado del Precio Base leído directo desde el backend (Excel)
-    const precioTexto = document.createElement('div');
-    precioTexto.className = 'precio';
-    precioTexto.style.fontSize = '18px';
-    precioTexto.style.fontWeight = 'bold';
-            
     /**
-    * @description Formateo dinámico del precio de la propiedad.
-    *              SRE SYNC FIX: Se cambian las variables fantasma por las columnas 
-    *              reales del Excel leídas del backend: 'prop.precio_base'.
-    */
+     * @description Procesa y formatea el valor monetario del inmueble.
+     *              SRE SYNC: Utiliza la propiedad 'prop.precio_base' que mapea de forma
+     *              directa la columna de precios configurada en tu Google Sheets.
+     */
     precioTexto.textContent = prop.precio_base ? prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
     datosCasa.appendChild(precioTexto);
 
-    // 2. Especificaciones de Habitaciones, Baños y Terrenos
-    const specsTexto = document.createElement('div');
-    specsTexto.style.fontSize = '13px';
-    specsTexto.style.color = '#475569';
-    specsTexto.style.marginTop = '4px';
-    specsTexto.textContent = `${propiedad.habitaciones || 3} Dorm | ${propiedad.banos || 2} Baños | AC: ${propiedad.area_construida || 0} m² | AT: ${propiedad.area_terreno || 0} m²`;
-    datosCasa.appendChild(specsTexto);
+    // 2. Creación e inyección de características de habitabilidad (Estructura Plana en Raíz)
+    const caracteristicasTexto = document.createElement('div');
+    caracteristicasTexto.className = 'caracteristicas-inmueble';
+    caracteristicasTexto.style.fontSize = '13px';
+    caracteristicasTexto.style.color = '#475569';
+    caracteristicasTexto.style.marginTop = '4px';
+    
+    /**
+     * @description Renderiza la distribución física interna y áreas a primer nivel plano.
+     *              SRE SYNC: Consume directo 'prop.habitaciones', 'prop.banos', 'prop.area_construida' 
+     *              y 'prop.area_terreno' mapeados de las columnas reales de tu hoja 'propiedad'.
+     */
+    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
+    datosCasa.appendChild(caracteristicasTexto);
 
-    // 3. Nuevos Campos complementarios
+    // 3. Creación e inyección de datos complementarios del inmueble
     const adicionalesTexto = document.createElement('div');
+    adicionalesTexto.className = 'adicionales-inmueble';
     adicionalesTexto.style.fontSize = '12px';
     adicionalesTexto.style.color = '#64748b';
     adicionalesTexto.style.marginTop = '2px';
-    adicionalesTexto.textContent = `${propiedad.subtipoPropiedad || 'Inmueble'} | Estacionamientos: ${propiedad.estacionamientos || 0} | Año: ${propiedad.ano_construccion || 0} | Estado: ${propiedad.estado_propiedad || 'Disponible'}`;
+    
+    /**
+     * @description Muestra información de estacionamientos, año y estado de la propiedad.
+     *              SRE SYNC: Apunta a los campos planos 'prop.tipo_propiedad', 'prop.estacionamientos',
+     *              'prop.ano_construccion' y 'prop.estado_propiedad' leídos desde tu backend.
+     */
+    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | Año: ${prop.ano_construccion || 0} | Estado: ${prop.estado_propiedad || 'Disponible'}`;
     datosCasa.appendChild(adicionalesTexto);
 
-    // 4. Frase Descriptiva / Título
-    const tituloTexto = document.createElement('div');
-    tituloTexto.style.fontSize = '14px';
-    tituloTexto.style.color = '#1e293b';
-    tituloTexto.style.fontWeight = '600';
-    tituloTexto.style.marginTop = '4px';
-    tituloTexto.textContent = propiedad.fraseDescriptiva || "Propiedad Premium";
-    datosCasa.appendChild(tituloTexto);
+    // 4. Creación e inyección de la localización física (Dirección exacta de la columna G)
+    const ubicacionTexto = document.createElement('div');
+    ubicacionTexto.className = 'ubicacion-direccion-directa';
+    ubicacionTexto.style.fontSize = '14px';
+    ubicacionTexto.style.color = '#1e293b';
+    ubicacionTexto.style.fontWeight = '600';
+    ubicacionTexto.style.marginTop = '4px';
+    
+    /**
+     * @description Renderiza la dirección o el título descriptivo en la base de la tarjeta.
+     *              SRE SYNC: Acopla 'prop.direccion' (Columna G) y 'prop.distrito' para una 
+     *              lectura clara y simétrica de la localización del inmueble en el catálogo.
+     */
+    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "Propiedad Premium");
+    datosCasa.appendChild(ubicacionTexto);
 
+    // Ensamble final del componente en el árbol DOM local
     tarjeta.appendChild(datosCasa);
 
-    // 4. Registro en el Garbage Collector interno para evitar Memory Leaks
-    state.limpiadoresDOM.set(propiedad.id, () => {
-        contenedorVisualFoto.removeEventListener('click', clickSPAHandler);
-    });
+    /**
+     * @description Registro en el recolector de basura interno de la aplicación.
+     *              SRE FIX: Se cambia 'propiedad.id' por la variable unificada 'prop.id' 
+     *              y el tipo de evento a 'pointerdown' para liberar la memoria correctamente.
+     */
+    if (state.limpiadoresDOM) {
+        state.limpiadoresDOM.set(prop.id, () => {
+            contenedorVisualFoto.removeEventListener('pointerdown', clickSPAHandler);
+            datosCasa.removeEventListener('pointerdown', clickSPAHandler);
+        });
+    }
 
     return tarjeta;
+
+    
 } // Cierre definitivo de la función crearComponenteTarjetaZillow
 
         
