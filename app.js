@@ -1660,31 +1660,66 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
     } // Cierre IF detalle
 
     
-    // RUTA B: RENDERIZAR PANTALLA 3 (Galería Expandida Split 65/35)
+    // RUTA B: RENDERIZAR PANTALLA 3 (Galería Expandida Split Compacto)
     else if (tipoPantalla === 'galeria') { // Apertura ELSE IF galeria
+        // Aseguramos la extracción del arreglo real de fotos leídas del Excel
+        const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
+
         cortina.innerHTML = `
-            <div class="nav-ficha-zillow">
-                <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:1px solid #ccc; padding:8px 16px; border-radius:4px;">← Volver al detalle</button>
-                <div style="font-weight:bold; color:#006aff;">GALERÍA DE FOTOS</div>
-                <div style="width:100px;"></div>
-            </div>
-            <div class="galeria-split-zillow">
-                <div class="galeria-izquierda-mosaico">
-                    ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width:100%; max-height:80vh; object-fit:contain; margin-bottom:15px; border-radius:4px;">`).join('')}
+            <!-- Barra superior limpia e idéntica a la ficha detalle -->
+            <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
+                <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver al detalle</button>
+                <img src="./logos/zillow-logo.svg" alt="Zillow" style="height:24px; opacity:0.9;">
+                <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
+                    <span>♡ ¡Ahorra</span>
+                    <span>⤻ Compartir</span>
+                    <span>⊘ ¡Escóndete</span>
                 </div>
-                <div class="panel-derecho-comercial">
-                    <h2 style="font-size:28px; font-weight:bold; margin-bottom:10px;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
-                    <p style="color:#666; margin-bottom:20px;">${prop.direccion || prop.titulo || ''}</p>
-                    <button style="width:100%; background:#006aff; color:white; border:none; padding:14px; border-radius:4px; font-weight:bold; font-size:16px; margin-bottom:12px; cursor:pointer;">Solicitar un tour</button>
-                    <button style="width:100%; background:white; color:#006aff; border:1px solid #006aff; padding:14px; border-radius:4px; font-weight:bold; cursor:pointer;">Contacte con un agente</button>
+            </div>
+            
+            <!-- Estructura Split con ancho reducido a la derecha para asemejarse a la captura de Zillow -->
+            <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
+                
+                <!-- Lado Izquierdo Amplio: Mosaico vertical scrollable de fotos (73% del ancho) -->
+                <div class="galeria-izquierda-mosaico" style="width: 73%; height: 100%; overflow-y: scroll; background-color: #111111; padding: 20px; box-sizing: border-box;">
+                    ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width:100%; max-height:85vh; object-fit:contain; margin-bottom:12px; border-radius:4px;">`).join('')}
+                </div>
+                
+                <!-- Lado Derecho Compacto: Columna comercial estilizada y angosta (27% del ancho exacto) -->
+                <div class="panel-derecho-comercial" style="width: 27%; height: 100%; background-color: #ffffff; border-left: 1px solid #e2e8f0; padding: 24px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-start;">
+                    
+                    <!-- Bloque de Precio Base y Datos de la Hoja -->
+                    <div style="margin-bottom: 24px;">
+                        <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
+                        <div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
+                            <span><strong>${prop.habitaciones || 0}</strong> bd</span>
+                            <span><strong>${prop.banos || 0}</strong> ba</span>
+                            <span><strong>${prop.area_construida || 0}</strong> pies cuadrados</span>
+                        </div>
+                        <p style="font-size: 14px; color: #2a2a2a; margin: 0; line-height: 1.4; font-weight: 500;">
+                            ${prop.direccion || prop.titulo || ''}, Distrito de ${prop.distrito || ''}
+                        </p>
+                    </div>
+                    
+                    <!-- Botonera de Acción Comercial Fiel a la Retícula de tu Captura -->
+                    <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                        <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;">
+                            Solicitar un tour<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">Ya hoy a las 5:30 pm</span>
+                        </button>
+                        <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer;">
+                            Contacte con un agente
+                        </button>
+                    </div>
+
                 </div>
             </div>
         `;
 
-        // Enlace inmediato del botón de retorno a la Pantalla 2
+        // Enlace inmediato del botón de retorno hacia la Pantalla 2
         document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => gestionarCortinaSPA('detalle', prop));
     } // Cierre ELSE IF galeria
 
+    
     // Deslizamos la cortina de forma nativa hacia adentro añadiendo la clase CSS
     cortina.classList.add('cortina-activa');
 } // Cierre gestionarCortinaSPA
