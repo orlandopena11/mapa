@@ -1063,31 +1063,36 @@ function evaluarCriteriosDeFiltrado(prop)
         }
     }
 
+    // =========================================================================
+    // TERCER FILTRO: RANGO DE PRECIOS
+    // =========================================================================
     if (prop.precio < state.filtros.precioMin || prop.precio > state.filtros.precioMax) 
     { // -->Aqui inicia Escape falso rango límite de precios
         return false;
     } // <--Aqui finaliza Escape falso rango límite de precios
 
-    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
-    // ===== CÓDIGO DE ACOPLAMIENTO PARA FILTRO TIPO DE PROPIEDAD =====
-    // 1. Si no hay checkboxes marcados, permitimos que pasen todas por defecto
+    // =========================================================================
+    // CUARTO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE PROPIEDAD
+    // =========================================================================
     if (state.filtros.tiposPropiedad.size > 0) {
-        // 2. Extraemos el tipo limpio en minúsculas (ej: "casa" o "departamento")
-        const tipoLimpioBD = (propiedadMapeada.tipoPropiedad || '').toLowerCase().trim();
+        // Leemos la propiedad mapeada exacta de tu objeto real de datos
+        const tipoLimpioBD = (prop.tipoPropiedad || '').toLowerCase().trim();
         
-        // 3. Verificamos si coincide con los filtros activos del Set (manejando plurales)
+        // Evaluamos si el tipo del Excel cruza con los checkboxes marcados
         const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => {
             const filtroNorm = filtroActivo.toLowerCase().trim();
+            // Resuelve la validación flexible para "Casa" (Singular) vs "Casas" (Plural)
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
         });
 
-        // 4. Si tiene filtros seleccionados pero esta propiedad no cumple, se descarta
+        // Cortocircuito directo: Si no cumple con los tipos seleccionados, se descarta
         if (!cumpleTipo) {
             return false;
         }
     }
 
-    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #...");
+    // Aprobación final unificada
+    console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catálogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
 } // <-- Aquí finaliza Función evaluarCriteriosDeFiltrado
 
