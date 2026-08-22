@@ -1380,9 +1380,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                         <div style="display:flex; align-items: baseline; gap: 12px; margin-bottom: 8px;">
 <h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${precioFormateadoParaVista}</h2>
                             <div style="font-size:18px; color:#1a1a1a; font-weight:500;">
-                                <strong style="font-size:22px;">${prop.habitaciones || 0}</strong> <span style="color:#666;">cama</span> | 
+                                <strong style="font-size:22px;">${prop.habitaciones || 0}</strong> <span style="color:#666;">habitaciones</span> | 
                                 <strong style="font-size:22px;">${prop.banos || 0}</strong> <span style="color:#666;">baños</span> | 
-                                <strong style="font-size:22px;">${prop.area_construida || 0}</strong> <span style="color:#666;">pies cuadrados</span>
+                                <strong style="font-size:22px;">${prop.area_construida || 0}</strong> <span style="color:#666;">m²</span>
                             </div>
                         </div>
                         <p style="font-size: 16px; color: #2a2a2a; font-weight: 500; margin: 0;">${prop.direccion || prop.titulo || ''}</p>
@@ -1439,7 +1439,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
 <div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
                             <span><strong>${prop.habitaciones || 0}</strong> bd</span>
                             <span><strong>${prop.banos || 0}</strong> ba</span>
-                            <span><strong>${prop.area_construida || 0}</strong> pies cuadrados</span>
+                            <span><strong>${prop.area_construida || 0}</strong> m²</span>
                         </div>
                         <p style="font-size: 14px; color: #2a2a2a; margin: 0; line-height: 1.4; font-weight: 500;">
                             ${prop.direccion || prop.titulo || ''}, Distrito de ${prop.distrito || ''}
