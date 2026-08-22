@@ -1349,7 +1349,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                 <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver a buscar</button>
                <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                         <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span style="cursor:pointer;">♡ ¡Ahorra</span>
+                    <span style="cursor:pointer;">♡ ¡Guardar</span>
                     <span style="cursor:pointer;">⤻ Compartir</span>
                     <span style="cursor:pointer;">⊘ ¡Escóndete</span>
                 </div>
@@ -1416,7 +1416,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                 <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver al detalle</button>
                 <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                 <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span>♡ ¡Ahorra</span>
+                    <span>♡ ¡Guardar</span>
                     <span>⤻ Compartir</span>
                     <span>⊘ ¡Escóndete</span>
                 </div>
