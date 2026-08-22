@@ -1584,6 +1584,10 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
         cortina.classList.remove('cortina-activa');
         return;
     } // Cierre IF cerrar
+        // Formateo y sanitización del precio del inmueble (SRE FIX: Corrige el valor $N/A en pantalla)
+    const precioNumericoReal = prop.precio_base || prop.precio;
+    const precioFormateadoParaVista = precioNumericoReal ? Number(precioNumericoReal).toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'Precio no disponible';
+
 
     // Aseguramos la extracción del arreglo real de fotos leídas del Excel
     const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
@@ -1633,7 +1637,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                 <div style="display: flex; padding: 30px 40px; gap: 40px; box-sizing: border-box; max-width: 1300px; margin: 0 auto;">
                     <div style="flex: 2;">
                         <div style="display:flex; align-items: baseline; gap: 12px; margin-bottom: 8px;">
-                            <h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${prop.precio_base ? prop.precio_base.toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'N/A'}</h2>
+<h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${precioFormateadoParaVista}</h2>
                             <div style="font-size:18px; color:#1a1a1a; font-weight:500;">
                                 <strong style="font-size:22px;">${prop.habitaciones || 0}</strong> <span style="color:#666;">cama</span> | 
                                 <strong style="font-size:22px;">${prop.banos || 0}</strong> <span style="color:#666;">baños</span> | 
@@ -1690,8 +1694,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                     
                     <!-- Bloque de Precio Base y Datos de la Hoja -->
                     <div style="margin-bottom: 24px;">
-                        <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${prop.precio_base ? prop.precio_base.toLocaleString() : 'N/A'}</h2>
-                        <div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
+<h2 style="font-size: 28px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${precioFormateadoParaVista}</h2>
+<div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
                             <span><strong>${prop.habitaciones || 0}</strong> bd</span>
                             <span><strong>${prop.banos || 0}</strong> ba</span>
                             <span><strong>${prop.area_construida || 0}</strong> pies cuadrados</span>
