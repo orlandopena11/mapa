@@ -499,31 +499,8 @@ div.leaflet-marker-icon.map-price-pill span {
     display: none !important;
 }
 
-.contenedor-detalle-zillow.hidden {
-    display: none;
-}
-
-.contenedor-detalle-zillow.visible-panel {
-    display: block !important;
-    width: 100vw;
-    height: 100vh;
-    overflow-y: auto;
-    background-color: var(--blanco);
-    padding: 30px 40px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 5000;
-}
 
 /* Nuevas clases estructurales para la Pantalla 3 de Galería Expandida */
-.galeria-split-zillow {
-    display: flex;
-    width: 100%;
-    height: calc(100vh - 60px);
-    margin-top: 60px;
-    overflow: hidden;
-}
 
 .galeria-izquierda-mosaico {
     width: 65%;
@@ -570,19 +547,6 @@ div.leaflet-marker-icon.map-price-pill span {
     display: none !important; /* Forzado exclusivamente aquí para evitar parpadeos en el inicio */
 }
 
-/* Ajuste del contenedor de la ficha para permitir el scroll inferior interno */
-.contenedor-detalle-zillow.visible-panel {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    overflow-y: auto;
-    background-color: var(--blanco);
-    padding: 0 0 40px 0; /* Retiramos el padding top para que la barra pegue al filo */
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 5000;
-}
 
 /* Modificamos el contenedor inferior de texto para espaciarse correctamente */
 .mosaico-galeria-zillow {
@@ -1084,4 +1048,87 @@ div.leaflet-marker-icon.map-price-pill.vendido-dorado {
 
 .btn-enviar-formulario:hover {
   background-color: #0052c4;
+}
+
+/* ==========================================================================
+   CORTINA SPA MECÁNICA (PANTALLAS 2 Y 3 UNIFICADAS)
+   Diseño de panel deslizante puro sobrepuesto que no altera el mapa base.
+   ========================================================================== */
+
+/* Estado inicial: El contenedor ocupa toda la pantalla pero está escondido a la derecha */
+.cortina-escondida {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    z-index: 5000; /* Queda por encima del Navbar (2000) y del mapa base (1000) */
+    transform: translateX(100vw); /* Desplazado completamente fuera del monitor */
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Animación de deslizamiento suave */
+    overflow-y: auto; /* Permite scroll vertical interno independiente */
+    box-sizing: border-box;
+}
+
+/* Estado activo: Desliza el panel hacia adentro cambiando su posición en el eje X */
+.cortina-escondida.cortina-activa {
+    transform: translateX(0); /* Se acomoda de forma natural ocupando la pantalla */
+}
+
+/* ==========================================================================
+   COMPONENTES INTERNOS DE LA CORTINA (VISTAS COMPARTIDAS)
+   ========================================================================== */
+
+/* Barra de navegación superior fija dentro de la cortina */
+.nav-ficha-zillow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 6000; /* Asegura estar por encima del contenido interno de la cortina */
+    box-sizing: border-box;
+}
+
+/* Cuerpo de la Pantalla 2: Añade un espacio superior para no ser tapado por su navbar de 60px */
+.cuerpo-ficha-detalle {
+    margin-top: 60px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+/* Estructura Split 65/35 de la Pantalla 3 (Galería Expandida) */
+.galeria-split-zillow {
+    display: flex;
+    width: 100%;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    overflow: hidden;
+}
+
+/* Lado izquierdo de la Pantalla 3: Mosaico de fotos vertical con scroll propio */
+.galeria-izquierda-mosaico {
+    width: 65%;
+    height: 100%;
+    overflow-y: scroll;
+    background-color: #111111; /* Fondo oscuro para resaltar las fotografías */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Lado derecho de la Pantalla 3: Columna comercial estática con información */
+.panel-derecho-comercial {
+    width: 35%;
+    height: 100%;
+    background-color: #ffffff;
+    border-left: 1px solid #e2e8f0;
+    padding: 32px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
