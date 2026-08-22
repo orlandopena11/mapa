@@ -864,10 +864,11 @@ function inicializarEventosDeFiltros()
             if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
         }); // <--Aqui finaliza Callback cambiar coincidencia exacta
     } // <--Aqui finaliza Condicional listener interruptor exacto
-
-    // 5. FILTRO 5: TIPO DE PROPIEDAD (CHECKBOXES MULTISELECT)
+ 
+        // 5. FILTRO 5: TIPO DE PROPIEDAD (MODULO CON BOTÓN APLICAR DE ALTA SRE)
     const checkSelectAll = document.getElementById('type-select-all');
     const checkboxesTipo = document.querySelectorAll('.type-cb');
+    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
 
     if (checkSelectAll) 
     { // -->Aqui inicia Condicional listener seleccionar todos
@@ -879,7 +880,6 @@ function inicializarEventosDeFiltros()
                 if (e.target.checked) state.filtros.tiposPropiedad.add(cb.value);
                 else state.filtros.tiposPropiedad.delete(cb.value);
             }); // <--Aqui finaliza Callback forEach sincronizar checkboxes
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
         }); // <--Aqui finaliza Callback marcar/desmarcar todos los tipos
     } // <--Aqui finaliza Condicional listener seleccionar todos
 
@@ -891,10 +891,27 @@ function inicializarEventosDeFiltros()
             else state.filtros.tiposPropiedad.delete(e.target.value);
             
             if (!e.target.checked && checkSelectAll) checkSelectAll.checked = false;
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
         }); // <--Aqui finaliza Callback actualizar set de tipos de propiedad
     }); // <--Aqui finaliza Callback forEach enlaces individuales multiselect
 
+    // DISPARADOR ÚNICO ATÓMICO DESDE EL BOTÓN APLICAR
+    if (btnAplicarTipo) 
+    { // -->Aqui inicia Condicional listener boton aplicar
+        btnAplicarTipo.addEventListener('click', () => 
+        { // -->Aqui inicia Callback ejecucion sincronizada boton aplicar
+            if (typeof ejecutarTuberiaSincronizada === 'function') {
+                ejecutarTuberiaSincronizada();
+            }
+            
+            // Cierra el panel de filtros retirando la clase show nativa
+            const panelDropdown = document.getElementById('dropdown-type');
+            if (panelDropdown) {
+                panelDropdown.classList.remove('show');
+            }
+        }); // <--Aqui finaliza Callback ejecucion sincronizada boton aplicar
+    } // <--Aqui finaliza Condicional listener boton aplicar
+
+    
     // 6. BOTONES DE ACCIÓN: Limpiador maestro y aplicador del menú expandido
     // =========================================================================
     // 6. REINICIALIZACIÓN SIMÉTRICA Y LIMPIEZA MAESTRA DE FILTROS (CORREGIDO)
