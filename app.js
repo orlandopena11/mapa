@@ -333,6 +333,12 @@ function construirRielCarruselComponente(propiedad, esPopup = false)
         contenedorFoto.appendChild(btnDer);
     } // <--Aqui finaliza Condicional si tiene más de 1 foto
 
+    // Inyección de la etiqueta flotante usando el campo exacto de la Google Sheet
+    const etiquetaFlotante = document.createElement('div');
+    etiquetaFlotante.className = 'etiqueta-foto-zillow';
+    etiquetaFlotante.textContent = prop.titulo || '';
+    contenedorFoto.appendChild(etiquetaFlotante);
+    
     return contenedorFoto;
 } // <--Aqui finaliza Función construirRielCarruselComponente
 
