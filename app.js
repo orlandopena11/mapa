@@ -164,7 +164,7 @@ if (typeof ejecutarTuberiaSincronizada === 'function')
 * REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
 * Consume el arreglo unificado 'fotos' y el sub-objeto 'specs' directamente desde el backend.
 */
-function normalizarPropiedadProduccion(prop) 
+/**function normalizarPropiedadProduccion(prop) 
 { // -->Aqui inicia Función normalizarPropiedadProduccion
     const id = prop.id || prop.propiedad_id || String(Math.random());
     
@@ -192,7 +192,8 @@ function normalizarPropiedadProduccion(prop)
         id: String(id),
         anuncio_id: String(prop.anuncio_id || ""),
         titulo: String(prop.titulo || 'Inmueble Premium').trim(),
-        precio_base: parseFloat(prop.precio_base || 0),
+        precio_base: parseFloat(prop.precio_base || 350000),
+
         tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
         estado_publicacion: estadoZillow,
         fotos: fotosUnicas,
@@ -211,6 +212,7 @@ function normalizarPropiedadProduccion(prop)
         } // <--Aqui finaliza Sub-objeto specs
     }; // <--Aqui finaliza Objeto de retorno normalizarPropiedadProduccion
 } // <--Aqui finaliza Función normalizarPropiedadProduccion
+*/
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
