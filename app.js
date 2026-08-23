@@ -1219,8 +1219,8 @@ function cerrarPopupAccion(idPopup) {
 
 function inyectarDatosPropiedadAlMensaje() {
     const areaTextoMensaje = document.getElementById("agente-mensaje");
-    if (areaTextoMensaje && state?.propiedades && state.propiedadSeleccionadald) {
-        const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+    if (areaTextoMensaje && state?.propiedades && state.propiedadSeleccionadaId) {
+        const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
         if (propiedadActiva) {
             const precioFormateado = propiedadActiva.precio_base 
                 ? Number(propiedadActiva.precio_base).toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }) 
@@ -1236,8 +1236,8 @@ function inyectarDatosPropiedadAlMensaje() {
 function procesarFormularioTour(event) {
     event.preventDefault();
 
-    if (!state.propiedadSeleccionadald) return;
-    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+    if (!state.propiedadSeleccionadaId) return;
+    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
 
     const campoFecha = document.getElementById("tour-fecha").value;
     const campoHora = document.getElementById("tour-hora").value;
@@ -1266,8 +1266,8 @@ function procesarFormularioTour(event) {
 function procesarFormularioAgente(event) {
     event.preventDefault();
 
-    if (!state.propiedadSeleccionadald) return;
-    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadald);
+    if (!state.propiedadSeleccionadaId) return;
+    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
 
     const campoMensaje = document.getElementById("agente-mensaje").value;
     const campoTelefono = document.getElementById("agente-telefono").value;
