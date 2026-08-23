@@ -608,23 +608,18 @@ function renderizarMapaZillow()
     }); // <--Aqui finaliza Callback forEach de propiedades filtradas en mapa
 } // <--Aqui finaliza Función renderizarMapaZillow
 
+/**
+ * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
+ * Utiliza DocumentFragment para una inyección atómica de alta velocidad en el DOM.
+ */
 function renderizarCatalogoTarjetas() 
 { // -->Aqui inicia Función renderizarCatalogoTarjetas
     // Vinculación corregida apuntando de forma natural al ID: 'properties-grid-target'
     const contenedorRejilla = document.getElementById('properties-grid-target');
     if (!contenedorRejilla) return;
 
-    // Garbage Collector interno activo: Remueve de la memoria RAM los Listeners de tarjetas previas
-    while (contenedorRejilla.firstChild) 
-    { // -->Aqui inicia Bucle while remover listeners antiguos
-        const id = contenedorRejilla.firstChild.getAttribute('data-id');
-        if (id && state.limpiadoresDOM.has(id)) 
-        { // -->Aqui inicia Condicional ejecutar limpiador de listeners
-            state.limpiadoresDOM.get(id)(); // Remoción limpia garantizada
-        } // <--Aqui finaliza Condicional ejecutar limpiador de listeners
-        state.limpiadoresDOM.delete(id);
-        contenedorRejilla.removeChild(contenedorRejilla.firstChild);
-    } // <--Aqui finaliza Bucle while remover listeners antiguos
+    // LIMPIEZA ATÓMICA ULTRA-RÁPIDA: Erradica textos residuales y evita colisiones de getAttribute
+    contenedorRejilla.innerHTML = '';
 
     // SINCRONIZACIÓN REAL CON EL MOTOR DE FILTRADO MULTIDIMENSIONAL
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
@@ -652,17 +647,15 @@ function renderizarCatalogoTarjetas()
     } // <--Aqui finaliza Bloque pantalla sin resultados por filtros activos
     else 
     { // -->Aqui inicia Bloque con resultados activos en el sistema
-        
-        // CORRECCIÓN CRÍTICA: Limpia el mensaje de error previo antes de inyectar las tarjetas nuevas
-        contenedorRejilla.innerHTML = ''; 
-
         const fragmento = document.createDocumentFragment();
 
         // Inyección atómica de los nodos puros en el fragmento flotante
         filtradas.forEach(prop => 
         { // -->Aqui inicia Callback forEach inyección de tarjetas
             const tarjetaNode = crearComponenteTarjetaZillow(prop);
-            fragmento.appendChild(tarjetaNode);
+            if (tarjetaNode) {
+                fragmento.appendChild(tarjetaNode);
+            }
         }); // <--Aqui finaliza Callback forEach inyección de tarjetas
 
         contenedorRejilla.appendChild(fragmento);
