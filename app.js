@@ -608,10 +608,6 @@ function renderizarMapaZillow()
     }); // <--Aqui finaliza Callback forEach de propiedades filtradas en mapa
 } // <--Aqui finaliza Función renderizarMapaZillow
 
-/**
- * RENDERIZADOR DE CATÁLOGO DERECHO Y CALLBACK PRINCIPAL DE RED (ESCONCOR)
- * Utiliza DocumentFragment y libera explícitamente los Event Listeners viejos para evitar fugas de memoria.
- */
 function renderizarCatalogoTarjetas() 
 { // -->Aqui inicia Función renderizarCatalogoTarjetas
     // Vinculación corregida apuntando de forma natural al ID: 'properties-grid-target'
@@ -630,6 +626,7 @@ function renderizarCatalogoTarjetas()
         contenedorRejilla.removeChild(contenedorRejilla.firstChild);
     } // <--Aqui finaliza Bucle while remover listeners antiguos
 
+    // SINCRONIZACIÓN REAL CON EL MOTOR DE FILTRADO MULTIDIMENSIONAL
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     const contador = document.getElementById('results-counter');
 
@@ -655,6 +652,10 @@ function renderizarCatalogoTarjetas()
     } // <--Aqui finaliza Bloque pantalla sin resultados por filtros activos
     else 
     { // -->Aqui inicia Bloque con resultados activos en el sistema
+        
+        // CORRECCIÓN CRÍTICA: Limpia el mensaje de error previo antes de inyectar las tarjetas nuevas
+        contenedorRejilla.innerHTML = ''; 
+
         const fragmento = document.createDocumentFragment();
 
         // Inyección atómica de los nodos puros en el fragmento flotante
@@ -671,8 +672,6 @@ function renderizarCatalogoTarjetas()
             contador.textContent = `${filtradas.length} resultados disponibles`;
         } // <--Aqui finaliza Condicional actualizar contador en pantalla
     } // <--Aqui finaliza Bloque con resultados activos en el sistema
-
-
 } // <--Aqui finaliza Función renderizarCatalogoTarjetas
 
 
