@@ -486,13 +486,15 @@ function renderizarMapaZillow()
     // =========================================================================
     // MOTOR DE INTERSECCIÓN FILTRADA PARA LAS BURBUJAS DEL MAPA
     // =========================================================================
-    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+    const filtradas = state.propiedades.map(normalizarPropiedad).filter(evaluarCriteriosDeFiltrado);
+
 
     filtradas.forEach(prop =>
     { // -->Aqui inicia Callback forEach de propiedades filtradas en mapa
         if (!prop.latitud || !prop.longitud) return;
 
-        const precioCompacto = formatearPrecioCompacto(prop.precio);
+        const precioCompacto = formatearPrecioCompacto(prop.precio_base);
+        
         const htmlBurbuja = `<span>${precioCompacto}</span>`;
 
         // DETERMINACIÓN DINÁMICA DE LA CLASE DE COLOR (Fiel al Excel sin mutaciones)
@@ -649,7 +651,8 @@ function renderizarCatalogoTarjetas()
     contenedorRejilla.innerHTML = '';
 
     // SINCRONIZACIÓN REAL CON EL MOTOR DE FILTRADO MULTIDIMENSIONAL
-    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+    const filtradas = state.propiedades.map(normalizarPropiedad).filter(evaluarCriteriosDeFiltrado);
+
     const contador = document.getElementById('results-counter');
 
     // =========================================================================
