@@ -391,7 +391,19 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
     precioTexto.style.fontSize = '18px';
     precioTexto.style.fontWeight = 'bold';
     precioTexto.style.color = '#1e293b';
-    precioTexto.textContent = prop.precio_base ? prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) : 'Precio no disponible';
+    
+    // CORRECCIÓN CRÍTICA: Convertimos el texto del Excel a número puro antes de formatear
+    const numPrecioBase = Number(prop.precio_base);
+    if (!isNaN(numPrecioBase) && numPrecioBase > 0) {
+        precioTexto.textContent = numPrecioBase.toLocaleString('en-US', { 
+            style: 'currency', 
+            currency: 'USD', 
+            maximumFractionDigits: 0 
+        });
+    } else {
+        precioTexto.textContent = 'Precio no disponible';
+    }
+    
     datosCasa.appendChild(precioTexto);
 
     // 2. Inyección de Dormitorios, Baños y Áreas leídas de forma plana del Excel
