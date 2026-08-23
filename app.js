@@ -1078,46 +1078,40 @@ function evaluarCriteriosDeFiltrado(prop)
     // CUARTO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE PROPIEDAD
     // =========================================================================
     if (state.filtros.tiposPropiedad.size > 0) {
-        // Leemos la propiedad mapeada exacta de tu objeto real de datos
         const tipoLimpioBD = (prop.tipoPropiedad || '').toLowerCase().trim();
         
-        // Evaluamos si el tipo del Excel cruza con los checkboxes marcados
         const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => {
             const filtroNorm = filtroActivo.toLowerCase().trim();
-            // Resuelve la validación flexible para "Casa" (Singular) vs "Casas" (Plural)
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
         });
-        
-        // Cortocircuito directo: Si no cumple con los tipos seleccionados, se descarta
+
         if (!cumpleTipo) {
             return false;
         }
+    }
 
-        // =========================================================================
-        // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
-        // =========================================================================
-        if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
-            // Leemos la propiedad mapeada exacta de tu objeto real de datos
-            const listadoLimpio = String(prop.subtipo_propiedad || "").toLowerCase().trim();
+    // =========================================================================
+    // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
+    // =========================================================================
+    if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
+        const listadoLimpio = String(prop.subtipo_propiedad || "").toLowerCase().trim();
     
-            // Evaluamos si el subtipo del Excel cruza con los checkboxes marcados
-            const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => {
-                const filtroNorm = String(filtroActivo).toLowerCase().trim();
-                return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
-            });
+        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => {
+            const filtroNorm = String(filtroActivo).toLowerCase().trim();
+            return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
+        });
             
-            if (!cumpleListado) {
-                return false;
-            }
-            
+        if (!cumpleListado) {
+            return false;
         }
+    }
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
-} // <-- Aquí finaliza Función evaluarCriteriosDeFiltrado
+} 
 
-
+    
 function ejecutarTuberiaSincronizada() 
 { // -->Aqui inicia Función ejecutarTuberiaSincronizada
     renderizarMapaZillow();
