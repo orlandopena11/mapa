@@ -99,9 +99,9 @@ function normalizarPropiedad(prop)
         // ---------------------------------------------------------------------
 
         estadoListado: prop.estado_publicacion || "Venta", // Mapeado a estado_publicacion del backend
-        fraseDescriptiva: String(prop.titulo || '').trim(), // Mantiene tu título original limpio
-        tipoPropiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
-        subtipoPropiedad: String(prop.subtipo_propiedad || "").trim(),
+        titulo: String(prop.titulo || '').trim(), // Mantiene tu título original limpio
+        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(), // Mapeado a tipo_propiedad del backend
+        subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
         area_terreno: parseFloat(prop.area_terreno || 0),
         estacionamientos: parseInt(prop.estacionamientos, 10) || 0,
         ano_construccion: parseInt(prop.ano_construccion, 10) || 0,
@@ -410,9 +410,7 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
    
     // ESPÍA 2: Monitorea qué evalúa la tarjeta para el precio
     console.log(`[TARJETA PRECIO] Evaluando prop.precio_base para ID ${prop?.id}:`, prop?.precio_base);
-    
-    precioTexto.textContent = prop.precio_base ? `$/., ${prop.precio_base}` : 'Precio no disponible';
-    
+      
     console.log(`[TARJETA PRECIO RESULTADO] Texto asignado: "${precioTexto.textContent}"`);
 
     
