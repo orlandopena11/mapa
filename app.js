@@ -1088,6 +1088,19 @@ function evaluarCriteriosDeFiltrado(prop)
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
         });
 
+        // =========================================================================
+        // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
+        // =========================================================================
+        if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
+            // Leemos la propiedad mapeada exacta de tu objeto real de datos
+            const listadoLimpio = String(prop.subtipo_propiedad || "").toLowerCase().trim();
+    
+            // Evaluamos si el subtipo del Excel cruza con los checkboxes marcados
+            const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => {
+                const filtroNorm = String(filtroActivo).toLowerCase().trim();
+                return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
+            });
+            
         // Cortocircuito directo: Si no cumple con los tipos seleccionados, se descarta
         if (!cumpleTipo) {
             return false;
