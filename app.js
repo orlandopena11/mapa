@@ -543,7 +543,7 @@ function renderizarMapaZillow()
         pPrice.style.color = '#002E50';
 
         // FORMATEO MONETARIO FIEL (SRE REFACTOR): Configura el valor en Dólares Americanos ($ USD) alineado al Excel
-        pPrice.textContent = prop.precio.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+        pPrice.textContent = prop.precio_base.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
         datosPopup.appendChild(pPrice);
 
         // Inyección de especificaciones técnicas (Dormitorios / Baños)
