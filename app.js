@@ -406,7 +406,8 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
     precioTexto.style.fontWeight = 'bold';
     precioTexto.style.color = '#1e293b';
     
-    precioTexto.textContent = prop.precio_base ? `$/., ${prop.precio_base}` : 'Precio no disponible';
+    precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
+
     
     // ESPÍA 2: Monitorea qué evalúa la tarjeta para el precio
     console.log(`[TARJETA PRECIO] Evaluando prop.precio_base para ID ${prop?.id}:`, prop?.precio_base);
