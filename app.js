@@ -88,7 +88,7 @@ function normalizarPropiedad(prop)
     return { // -->Aqui inicia Objeto de retorno normalizarPropiedad
         id: String(id),
         anuncio_id: prop.anuncio_id || "",
-        precio: parseFloat(prop.precio_base || 350000), // Mapeado a precio_base del backend
+        precio_base: parseFloat(prop.precio_base || 350000), // Mapeado a precio_base del backend
         
         // ---------------------------------------------------------------------
         // COLUMNAS REALES DE TUS EXCEL (HOJA "anuncio" Y HOJA "propiedad")
