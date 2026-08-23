@@ -159,60 +159,6 @@ if (typeof ejecutarTuberiaSincronizada === 'function')
     window.ejecutarTuberiaSincronizada = ejecutarTuberiaSincronizada;
 } // <--Aqui finaliza Condicional alias de seguridad SRE
 
-// PARTE: 2-5 (NORMALIZACIÓN RELACIONAL RESTRUCTURADA DE PRODUCCIÓN)
-/**
-* REGLAS DE NEGOCIO PARA CRUCE DE TABLAS (GOOGLE SHEETS -> STATE)
-* Consume el arreglo unificado 'fotos' y el sub-objeto 'specs' directamente desde el backend.
-*/
-/**function normalizarPropiedadProduccion(prop) 
-{ // -->Aqui inicia Función normalizarPropiedadProduccion
-    const id = prop.id || prop.propiedad_id || String(Math.random());
-    
-    // 1. Extraer la galería unificada que ya viene procesada con éxito desde Código.gs
-    const fotosUnicas = Array.isArray(prop.fotos) && prop.fotos.length > 0 ? prop.fotos : ['https://cloudinary.com'];
-
-    // 2. Clasificación exacta basada en las columnas de las Sheets
-    let estadoZillow = 'Venta';
-    const publicacion = String(prop.estado_publicacion || "").trim();
-    if (publicacion === 'vendida' || publicacion === 'vendido') 
-    { // -->Aqui inicia Condicional asignación Vendido
-        estadoZillow = 'Vendido';
-    } // <--Aqui finaliza Condicional asignación Vendido
-    else if (publicacion === 'alquiler') 
-    { // -->Aqui inicia Condicional asignación Alquiler
-        estadoZillow = 'Alquiler';
-    } // <--Aqui finaliza Condicional asignación Alquiler
-    else if (publicacion === 'venta') 
-    { // -->Aqui inicia Condicional asignación Venta
-        estadoZillow = 'Venta';
-    } // <--Aqui finaliza Condicional asignación Venta
-
-    // 3. Retorno simétrico inmutable acoplado al Join de tu backend relacional
-    return { // -->Aqui inicia Objeto de retorno normalizarPropiedadProduccion
-        id: String(id),
-        anuncio_id: String(prop.anuncio_id || ""),
-        titulo: String(prop.titulo || 'Inmueble Premium').trim(),
-        precio_base: parseFloat(prop.precio_base || 350000),
-
-        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
-        estado_publicacion: estadoZillow,
-        fotos: fotosUnicas,
-        latitud: parseFloat(prop.latitud || -12.125),
-        longitud: parseFloat(prop.longitud || -76.995),
-        telefono: String(prop.telefono || "").trim(),
-        contacto_nombre: String(prop.contacto_nombre || 'Contacto').trim(),
-        specs: 
-        { // -->Aqui inicia Sub-objeto specs
-            habitaciones: parseInt(prop.specs?.habitaciones || 3),
-            banos: parseFloat(prop.specs?.banos || 2),
-            area_construida: parseFloat(prop.specs?.area_construida || 120),
-            sotano: String(prop.specs?.sotano || 'no'),
-            almacen: String(prop.specs?.almacen || 'no'),
-            vista: String(prop.specs?.vista || 'Interna')
-        } // <--Aqui finaliza Sub-objeto specs
-    }; // <--Aqui finaliza Objeto de retorno normalizarPropiedadProduccion
-} // <--Aqui finaliza Función normalizarPropiedadProduccion
-*/
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
