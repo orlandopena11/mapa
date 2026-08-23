@@ -245,8 +245,8 @@ function construirRielCarruselComponente(prop, esPopup = false)
     for (let i = 0; i < totalFotos; i++) 
     { // -->Aqui inicia Ciclo for renderizar fotos e indicadores
         const img = document.createElement('img');
-        img.src = propiedad.fotos[i];
-        img.alt = `${propiedad.titulo} - Vista ${i + 1}`;
+        img.src = prop.fotos[i];
+        img.alt = `${prop.titulo} - Vista ${i + 1}`;
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
