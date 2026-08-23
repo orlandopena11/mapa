@@ -870,6 +870,17 @@ function inicializarEventosDeFiltros()
     const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
 
+    // =========================================================================
+    // SINCRONIZACIÓN INICIAL DEL SET CON LOS CHECKBOXES DEL HTML REAL
+    // =========================================================================
+    checkboxesTipo.forEach(cb => {
+        if (cb.checked) {
+            state.filtros.tiposPropiedad.add(cb.value);
+        }
+    });
+    // =========================================================================
+
+    
     if (checkSelectAll) 
     { // -->Aqui inicia Condicional listener seleccionar todos
         checkSelectAll.addEventListener('change', (e) => 
