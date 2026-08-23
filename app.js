@@ -1065,7 +1065,8 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
     // TERCER FILTRO: RANGO DE PRECIOS
     // =========================================================================
-    if (prop.precio < state.filtros.precioMin || prop.precio > state.filtros.precioMax) 
+    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) 
+    /*if (prop.precio < state.filtros.precioMin || prop.precio > state.filtros.precioMax) */
     { // -->Aqui inicia Escape falso rango límite de precios
         return false;
     } // <--Aqui finaliza Escape falso rango límite de precios
