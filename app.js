@@ -401,6 +401,7 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
     precioTexto.style.color = '#1e293b';
     
     precioTexto.textContent = prop.precio_base ? `$/., ${prop.precio_base}` : 'Precio no disponible';
+
     
     datosCasa.appendChild(precioTexto);
 
