@@ -1087,6 +1087,11 @@ function evaluarCriteriosDeFiltrado(prop)
             // Resuelve la validación flexible para "Casa" (Singular) vs "Casas" (Plural)
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
         });
+        
+        // Cortocircuito directo: Si no cumple con los tipos seleccionados, se descarta
+        if (!cumpleTipo) {
+            return false;
+        }
 
         // =========================================================================
         // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
@@ -1101,11 +1106,11 @@ function evaluarCriteriosDeFiltrado(prop)
                 return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
             });
             
-        // Cortocircuito directo: Si no cumple con los tipos seleccionados, se descarta
-        if (!cumpleTipo) {
-            return false;
+            if (!cumpleListado) {
+                return false;
+            }
+            
         }
-    }
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
