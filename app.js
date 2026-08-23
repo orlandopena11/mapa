@@ -353,6 +353,10 @@ function construirRielCarruselComponente(prop, esPopup = false)
  * @returns {HTMLElement} Tarjeta construida y lista para insertarse en el DOM.
  */
 function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjetaZillow
+        // ESPÍA 1: Monitorea qué datos entran exactamente a cada tarjeta
+    console.log(`%c [TARJETA INICIO] Procesando ID: ${prop?.id}`, "background: #1e3a8a; color: #fff; padding: 2px 6px;");
+    console.log("Campos críticos en la tarjeta:", { precio_base: prop?.precio_base, titulo: prop?.titulo });
+
     const tarjeta = document.createElement('div');
     tarjeta.className = 'tarjeta-casa';
     tarjeta.setAttribute('data-id', prop.id);
@@ -403,6 +407,13 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
     precioTexto.style.color = '#1e293b';
     
     precioTexto.textContent = prop.precio_base ? `$/., ${prop.precio_base}` : 'Precio no disponible';
+   
+    // ESPÍA 2: Monitorea qué evalúa la tarjeta para el precio
+    console.log(`[TARJETA PRECIO] Evaluando prop.precio_base para ID ${prop?.id}:`, prop?.precio_base);
+    
+    precioTexto.textContent = prop.precio_base ? `$/., ${prop.precio_base}` : 'Precio no disponible';
+    
+    console.log(`[TARJETA PRECIO RESULTADO] Texto asignado: "${precioTexto.textContent}"`);
 
     
     datosCasa.appendChild(precioTexto);
@@ -446,6 +457,10 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
             datosCasa.removeEventListener('pointerdown', clickSPAHandler);
         }); // Cierre callback set
     } // Cierre IF limpiadoresDOM
+
+    // ESPÍA 3: Confirma que la tarjeta se construyó por completo sin romperse
+    console.log(`%c [TARJETA FIN] Éxito total construyendo tarjeta para ID: ${prop?.id}`, "background: #065f46; color: #fff; padding: 2px 6px;");
+
 
     return tarjeta;
 } // Cierre crearComponenteTarjetaZillow
