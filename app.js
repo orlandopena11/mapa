@@ -430,7 +430,8 @@ function crearComponenteTarjetaZillow(prop) { // Apertura crearComponenteTarjeta
     ubicacionTexto.style.color = '#1e293b';
     ubicacionTexto.style.fontWeight = '600';
     ubicacionTexto.style.marginTop = '4px';
-    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "Propiedad Premium");
+    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "");
+
     datosCasa.appendChild(ubicacionTexto);
 
     // Acople de los textos estructurados en la tarjeta principal
