@@ -223,6 +223,8 @@ function formatearPrecioCompacto(precio)
 // CONSTRUCTOR SEMÁNTICO DEL MICRO-CARRUSEL (SRE PRODUCTION - CERO ESTILOS EN JS)
 function construirRielCarruselComponente(prop, esPopup = false) 
 { // -->Aqui inicia Función construirRielCarruselComponente
+    const propiedad = prop;
+
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
 
