@@ -150,15 +150,15 @@ state.filtros =
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
 
 // ALIAS DE SEGURIDAD ARQUITECTÓNICA SRE (BLINDAJE ANTIDESFASE)
-// Mapea y unifica todas las variaciones ortográficas de la tubería central.
+// Mapea y unifica todas las variaciones ortográficas de la tuberia central.
 // Elimina de raíz los errores sintácticos de consola por falta de tildes o mayúsculas.
-if (typeof ejecutarTuberiaSincronizada === 'function') 
+/*if (typeof ejecutarTuberiaSincronizada === 'function') 
 { // -->Aqui inicia Condicional alias de seguridad SRE
     window.ejecutarTuberíaSincronizada = ejecutarTuberiaSincronizada;
     window.ejecutarTuberiasincronizada = ejecutarTuberiaSincronizada;
     window.ejecutarTuberiaSincronizada = ejecutarTuberiaSincronizada;
 } // <--Aqui finaliza Condicional alias de seguridad SRE
-
+*/
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
@@ -1328,7 +1328,7 @@ function ejecutarEnvioAppsScript(payload, idModal, idForm) {
         if (formulario) formulario.reset();
     })
     .catch(error => {
-        console.error("Fallo crítico en la tubería de red Apps Script:", error);
+        console.error("Fallo crítico en la tuberia de red Apps Script:", error);
         alert("Hubo un error de conexión con el servidor. Por favor, intente nuevamente.");
     });
 }
