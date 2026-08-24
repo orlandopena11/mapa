@@ -509,8 +509,7 @@ function renderizarMapaZillow()
         pAdicionales.style.marginTop = '2px';
         // CÓDIGO CORREGIDO:
         pAdicionales.textContent = `${prop.subtipo_propiedad} | Estacionamientos: ${prop.estacionamientos} | Año: ${prop.ano_construccion} | Estado: ${prop.estado_propiedad}`;
-
-        /*pAdicionales.textContent = `${prop.subtipoPropiedad} | Estacionamientos: ${prop.estacionamientos} | Año: ${prop.ano_construccion} | Estado: ${prop.estado_propiedad}`;*/
+                
         datosPopup.appendChild(pAdicionales);
 
         // Inyección del título / dirección de la propiedad
@@ -519,7 +518,9 @@ function renderizarMapaZillow()
         pDireccion.style.fontSize = '12px';
         pDireccion.style.color = '#1e293b';
         pDireccion.style.fontWeight = '500';
-        pDireccion.textContent = prop.fraseDescriptiva; // Tu columna de título unificada
+        pDireccion.textContent = prop.direccion || prop.titulo || "Inmueble Premium";
+
+      /*  pDireccion.textContent = prop.fraseDescriptiva; */ // Tu columna de título unificada
         datosPopup.appendChild(pDireccion);
 
         contenedorPopupMaster.appendChild(datosPopup);
@@ -822,7 +823,7 @@ function inicializarEventosDeFiltros()
 
         configurarSegmentado('row-baths', (valor) => 
         { // -->Aqui inicia Callback segmentar cantidad de baños
-            state.filtros.baños = parseFloat(valor) || 0;
+            state.filtros.banos = parseFloat(valor) || 0;
             if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
         }); // <--Aqui finaliza Callback segmentar cantidad de baños
     } // <--Aqui finaliza Condicional validar existencia del helper segmentado
