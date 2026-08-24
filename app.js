@@ -971,7 +971,34 @@ function inicializarEventosDeFiltros()
             }, 800);
         });
     }
-    
+
+     // =========================================================================
+    // ENLACE AGREGADO: CAPTURA REACTIVA PARA TIPO DE LISTADO (ÚLTIMO FILTRO)
+    // =========================================================================
+    // Captura todos los checkboxes del menú flotante derecho
+    const checkboxesListado = document.querySelectorAll('.listado-cb'); 
+
+    checkboxesListado.forEach(cb => 
+    { // -->Aqui inicia Callback forEach para checkboxes de listado
+        cb.addEventListener('change', (e) => 
+        { // -->Aqui inicia Callback al cambiar check de listado
+            if (e.target.checked) 
+            { // -->Aqui inicia Condicional añadir filtro activo
+                state.filtros.tiposListado.add(e.target.value);
+            } // <--Aqui finaliza Condicional añadir filtro activo
+            else 
+            { // -->Aqui inicia Bloque else remover filtro inactivo
+                state.filtros.tiposListado.delete(e.target.value);
+            } // <--Aqui finaliza Bloque else remover filtro inactivo
+            
+            // Dispara el redibujado inmediato del mapa y catálogo
+            if (typeof ejecutarTuberiaSincronizada === 'function') 
+            { // -->Aqui inicia Condicional ejecutar tuberia
+                ejecutarTuberiaSincronizada();
+            } // <--Aqui finaliza Condicional ejecutar tuberia
+        }); // <--Aqui finaliza Callback al cambiar check de listado
+    }); // <--Aqui finaliza Callback forEach para checkboxes de listado
+
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
 
