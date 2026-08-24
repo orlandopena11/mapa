@@ -10,13 +10,14 @@ const state =
     favoritos: new Set(),
     filtros: 
     { // -->Aqui inicia Sub-objeto filtros
-        estado: 'Todos',
-        precioMin: 0,
-        precioMax: Infinity,
-        camas: 0,
-        camasExactas: false,
-        baños: 0,
-        tiposPropiedad: new Set(['Casa', 'Departamento'])
+        estado: 'Todos', 
+        precioMin: 0, 
+        precioMax: Infinity, 
+        camas: 0, 
+        camasExactas: false, 
+        baños: 0, 
+        tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
+        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     }, // <--Aqui finaliza Sub-objeto filtros
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     limpiadoresDOM: new Map()
