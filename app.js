@@ -1078,7 +1078,9 @@ function evaluarCriteriosDeFiltrado(prop)
     // CUARTO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE PROPIEDAD
     // =========================================================================
     if (state.filtros.tiposPropiedad.size > 0) {
-        const tipoLimpioBD = (prop.tipoPropiedad || '').toLowerCase().trim();
+        const tipoLimpioBD = String(prop.tipo_propiedad || '').toLowerCase().trim();
+
+      /*  const tipoLimpioBD = (prop.tipoPropiedad || '').toLowerCase().trim(); */
         
         const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => {
             const filtroNorm = filtroActivo.toLowerCase().trim();
