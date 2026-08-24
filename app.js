@@ -1169,19 +1169,23 @@ function evaluarCriteriosDeFiltrado(prop)
         } // <-- Aqui finaliza Escape tipo propiedad no coincide
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
+    
     // =========================================================================
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
     if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) 
     { // --> Aqui inicia Condicional set tipos de listado activo
-        // ¡CORREGIDO! Leemos directamente la columna real de tu Google Sheet
+        // Leemos la celda real de tu Google Sheet en minúsculas y sin espacios extra
         const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
     
         const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
         { // --> Aqui inicia Callback some evaluacion situacion propiedad
             const filtroNorm = String(filtroActivo).toLowerCase().trim();
-            // Compara de forma flexible (ej: "subastas" incluye "subasta")
-            return situacionLimpia.includes(filtroNorm) || filtroNorm.includes(situacionLimpia);
+            
+            // Cruce lógico flexible y bidireccional (Resuelve subasta vs subastas y nueva construccion)
+            return situacionLimpia.includes(filtroNorm) || 
+                   filtroNorm.includes(situacionLimpia) ||
+                   (filtroNorm === "construccion" && situacionLimpia.includes("construccion"));
         }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
             
         if (!cumpleListado) 
