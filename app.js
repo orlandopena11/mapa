@@ -151,7 +151,7 @@ state.filtros =
     tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
     tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
-
+  
 
 
 function formatearPrecioCompacto(precio) 
