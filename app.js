@@ -1069,11 +1069,11 @@ function evaluarCriteriosDeFiltrado(prop)
     const textoBuscarDireccion = ""; 
     
     // =========================================================================
-    const columna_estado_publicacion = String(prop.estadoListado || "").trim();
-    const columna_tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
-    const columna_titulo_direccion = String(prop.fraseDescriptiva || "").trim();
+    const estado_publicacion = String(prop.estadoListado || "").trim();
+    const tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
+    const titulo_direccion = String(prop.fraseDescriptiva || "").trim();
 
-    console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}"`);
+    console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${estado_publicacion}"`);
 
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
@@ -1105,7 +1105,7 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
     if (textoBuscarDireccion !== "") 
     {
-        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) 
+        if (!titulo_direccion.includes(textoBuscarDireccion)) 
         {
             return false;
         }
