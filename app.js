@@ -116,7 +116,9 @@ function normalizarPropiedad(prop)
         habitaciones: parseInt(prop.specs && prop.specs.habitaciones ? prop.specs.habitaciones : (prop.habitaciones || 3)),
         banos: parseInt(prop.specs && prop.specs.banos ? prop.specs.banos : (prop.banos || 2)),
         area_construida: parseFloat(prop.specs && prop.specs.area_construida ? prop.specs.area_construida : (prop.area_construida || 0)),
-        situacion_propiedad: prop.situacion_propiedad || "",
+        // Dentro de normalizarPropiedad:
+        situacion_propiedad: String(prop.situacion_propiedad || "").toLowerCase().trim(),
+        /*situacion_propiedad: prop.situacion_propiedad || "", */
         sotano: prop.sotano || "no",
         almacen: prop.almacen || "no",
         vista: prop.vista || "Ninguna",
@@ -1140,24 +1142,27 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
     // =========================================================================
-    // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
+    // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
     if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) 
     { // --> Aqui inicia Condicional set tipos de listado activo
-        const listadoLimpio = String(prop.subtipo_propiedad || "").toLowerCase().trim();
+        // ¡CORREGIDO! Leemos directamente la columna real de tu Google Sheet
+        const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
     
         const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
-        { // --> Aqui inicia Callback some evaluacion tipo listado
+        { // --> Aqui inicia Callback some evaluacion situacion propiedad
             const filtroNorm = String(filtroActivo).toLowerCase().trim();
-            return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
-        }); // <-- Aqui finaliza Callback some evaluacion tipo listado
+            // Compara de forma flexible (ej: "subastas" incluye "subasta")
+            return situacionLimpia.includes(filtroNorm) || filtroNorm.includes(situacionLimpia);
+        }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
             
         if (!cumpleListado) 
-        { // --> Aqui inicia Escape tipo listado no coincide
+        { // --> Aqui inicia Escape situacion propiedad no coincide
             return false;
-        } // <-- Aqui finaliza Escape tipo listado no coincide
+        } // <-- Aqui finaliza Escape situacion propiedad no coincide
     } // <-- Aqui finaliza Condicional set tipos de listado activo
 
+    
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
