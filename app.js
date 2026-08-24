@@ -134,31 +134,19 @@ function formatearPrecioCompleto(precio)
 } // <--Aqui finaliza Función formatearPrecioCompleto
 
 // PARTE: 1-5 (EXTENSIÓN DE CONTROL DE FILTROS EN EL ESTADO)
-/**
-* Modelo de datos unificado para la captura reactiva de parámetros de búsqueda.
-*/
 state.filtros = 
 { // -->Aqui inicia Objeto state.filtros reestructurado
-    estado: 'Venta', // Tipo de Transacción (Radio: Venta, Alquiler, Vendido)
-    precioMin: 0, // Rango de precio mínimo
-    precioMax: Infinity, // Rango de precio máximo
-    camas: 0, // Cantidad mínima de dormitorios (0 = Cualquiera)
-    camasExactas: false, // Switch de coincidencia exacta para dormitorios
-    baños: 0, // Cantidad mínima de baños completos
-    //  ¡Corregido! Incluimos TODOS los tipos reales de tu catalogo LOV_tipo_propiedad
-    tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']) 
+    estado: 'Venta', 
+    precioMin: 0, 
+    precioMax: Infinity, 
+    camas: 0, 
+    camasExactas: false, 
+    baños: 0, 
+    tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
+    tiposListado: new Set() // <--- ¡AÑADE ESTA LÍNEA EXACTA AQUÍ!
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
 
-// ALIAS DE SEGURIDAD ARQUITECTÓNICA SRE (BLINDAJE ANTIDESFASE)
-// Mapea y unifica todas las variaciones ortográficas de la tuberia central.
-// Elimina de raíz los errores sintácticos de consola por falta de tildes o mayúsculas.
-/*if (typeof ejecutarTuberiaSincronizada === 'function') 
-{ // -->Aqui inicia Condicional alias de seguridad SRE
-    window.ejecutarTuberíaSincronizada = ejecutarTuberiaSincronizada;
-    window.ejecutarTuberiasincronizada = ejecutarTuberiaSincronizada;
-    window.ejecutarTuberiaSincronizada = ejecutarTuberiaSincronizada;
-} // <--Aqui finaliza Condicional alias de seguridad SRE
-*/
+
 
 function formatearPrecioCompacto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompacto
