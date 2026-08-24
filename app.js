@@ -1187,11 +1187,11 @@ function evaluarCriteriosDeFiltrado(prop)
     { // --> Aqui inicia Callback some evaluacion situacion propiedad
         const filtroNorm = String(filtroActivo).toLowerCase().trim();
         
-        // REGLA DE COINCIDENCIA EXPANDIDA PARA EL RUBRO HIPOTECARIO
-        // Si el checkbox de la web dice "ejecucion hipoteca", habilitará de golpe
-        // tanto a "ejecucion hipoteca" como a "pre ejecucion hipoteca" de tu Excel
-        if (filtroNorm === "ejecucion hipoteca" && situacionBD.includes("hipoteca")) {
-            return true;
+        // REGLA DE COINCIDENCIA EXPANDIDA Y SEGURA PARA EL RUBRO HIPOTECARIO
+        // Solo aprueba si el checkbox activo analizado en este ciclo es "ejecucion hipoteca"
+        // Y el registro de la Sheet efectivamente contiene el texto "hipoteca"
+        if (filtroNorm === "ejecucion hipoteca") {
+            return situacionBD.includes("hipoteca");
         }
         
         // Validación flexible estándar para las demás categorías (propietario, agente, subasta)
