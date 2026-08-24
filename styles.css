@@ -227,11 +227,18 @@ label.filter-checkbox-label {
     min-width: 240px; /* Le da el espacio necesario a "Nueva construcción" o "Para el alquiler" */
 }
 
-/* Posicionamiento exclusivo para que el menú avanzado se despliegue hacia la izquierda */
-.filter-group-options #dropdown-more-filters {
+/* Forzamos el contenedor del filtro a tener posición relativa para anclar el despliegue */
+.filter-buttons-group,
+.filter-group-options {
+    position: relative;
+}
+
+/* Alineación limpia del menú hacia la izquierda tomando como eje el borde derecho del botón */
+#dropdown-more-filters {
     position: absolute;
     right: 0;
     left: auto;
+    transform: translateX(-15px); /* Desplazamiento extra de seguridad hacia el centro */
 }
 
 /* ==========================================================================
