@@ -145,7 +145,7 @@ state.filtros =
     camasExactas: false, 
     baños: 0, 
     tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
-    tiposListado: new Set() // <--- ¡AÑADE ESTA LÍNEA EXACTA AQUÍ!
+    tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
 }; // <--Aqui finaliza Objeto state.filtros reestructurado
 
 
