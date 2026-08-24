@@ -1052,6 +1052,7 @@ function configurarSegmentado(idContenedor, callback)
     }); // <--Aqui finaliza Callback clics en botones de control de barras fijas
 } // <--Aqui finaliza Función configurarSegmentado
 
+
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 function evaluarCriteriosDeFiltrado(prop)
 { // --> Aqui inicia Funcion evaluarCriteriosDeFiltrado
@@ -1064,7 +1065,6 @@ function evaluarCriteriosDeFiltrado(prop)
     const textoBuscarDireccion = ""; 
     
     // =========================================================================
-
     const columna_estado_publicacion = String(prop.estadoListado || "").trim();
     const columna_tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
     const columna_titulo_direccion = String(prop.fraseDescriptiva || "").trim();
@@ -1077,43 +1077,43 @@ function evaluarCriteriosDeFiltrado(prop)
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
     { // --> Aqui inicia Condicional Transaccion Venta
         if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") 
-        { // --> Aqui inicia Escape Venta invalida
+        {
             return false;
-        } // <-- Aqui finaliza Escape Venta invalida
+        }
     } // <-- Aqui finaliza Condicional Transaccion Venta
     else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
     { // --> Aqui inicia Condicional Transaccion Alquiler
         if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") 
-        { // --> Aqui inicia Escape Alquiler invalido
+        {
             return false;
-        } // <-- Aqui finaliza Escape Alquiler invalido
+        }
     } // <-- Aqui finaliza Condicional Transaccion Alquiler
     else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
     { // --> Aqui inicia Condicional Transaccion Vendido
         if (prop.estado_publicacion !== "vendida") 
-        { // --> Aqui inicia Escape Vendido invalido
+        {
             return false;
-        } // <-- Aqui finaliza Escape Vendido invalido
+        }
     } // <-- Aqui finaliza Condicional Transaccion Vendido
 
     // =========================================================================
     // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV / DISTRITO) - SOLUCIÓN NATIVA
     // =========================================================================
     if (textoBuscarDireccion !== "") 
-    { // --> Aqui inicia Condicional texto de direccion activo
+    {
         if (!columna_titulo_direccion.includes(textoBuscarDireccion)) 
-        { // --> Aqui inicia Escape direccion no coincide
+        {
             return false;
-        } // <-- Aqui finaliza Escape direccion no coincide
-    } // <-- Aqui finaliza Condicional texto de direccion activo
+        }
+    }
 
     // =========================================================================
     // TERCER FILTRO: RANGO DE PRECIOS
     // =========================================================================
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) 
-    { // --> Aqui inicia Escape falso rango limite de precios
+    {
         return false;
-    } // <-- Aqui finaliza Escape falso rango limite de precios
+    }
 
     // =========================================================================
     // NUEVO FILTRO COMPLEMENTARIO: EVALUACIÓN DE CAMAS (DORMITORIOS)
@@ -1123,19 +1123,19 @@ function evaluarCriteriosDeFiltrado(prop)
         const camasPropiedad = parseInt(prop.habitaciones) || 0;
         
         if (state.filtros.camasExactas) 
-        { // --> Aqui inicia Condicional coincidencia exacta camas
+        {
             if (camasPropiedad !== state.filtros.camas) 
-            { // --> Aqui inicia Escape camas no exactas
+            {
                 return false;
-            } // <-- Aqui finaliza Escape camas no exactas
-        } // <-- Aqui finaliza Condicional coincidencia exacta camas
+            }
+        }
         else 
-        { // --> Aqui inicia Bloque else camas minimas requeridas
+        {
             if (camasPropiedad < state.filtros.camas) 
-            { // --> Aqui inicia Escape menos camas del minimo
+            {
                 return false;
-            } // <-- Aqui finaliza Escape menos camas del minimo
-        } // <-- Aqui finaliza Bloque else camas minimas requeridas
+            }
+        }
     } // <-- Aqui finaliza Condicional filtro de camas activo
 
     // =========================================================================
@@ -1146,9 +1146,9 @@ function evaluarCriteriosDeFiltrado(prop)
         const banosPropiedad = parseFloat(prop.banos) || 0;
         
         if (banosPropiedad < state.filtros.banos) 
-        { // --> Aqui inicia Escape menos banos del minimo
+        {
             return false;
-        } // <-- Aqui finaliza Escape menos banos del minimo
+        }
     } // <-- Aqui finaliza Condicional filtro de banos activo
 
     // =========================================================================
@@ -1159,49 +1159,42 @@ function evaluarCriteriosDeFiltrado(prop)
         const tipoLimpioBD = String(prop.tipo_prop_propiedad || prop.tipo_propiedad || '').toLowerCase().trim();
         
         const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => 
-        { // --> Aqui inicia Callback some evaluacion tipo propiedad
+        {
             const filtroNorm = filtroActivo.toLowerCase().trim();
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
-        }); // <-- Aqui finaliza Callback some evaluacion tipo propiedad
+        });
 
         if (!cumpleTipo) 
-        { // --> Aqui inicia Escape tipo propiedad no coincide
+        {
             return false;
-        } // <-- Aqui finaliza Escape tipo propiedad no coincide
+        }
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
-    
     // =========================================================================
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
     if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
-    { // --> Aqui inicia Escape restrictivo por filtros vacios
+    {
         return false; 
-    } // <-- Aqui finaliza Escape restrictivo por filtros vacios
+    }
 
     const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
 
     const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
-    { // --> Aqui inicia Callback some evaluacion situacion propiedad
+    {
         const filtroNorm = String(filtroActivo).toLowerCase().trim();
-        
-        // Comparación bidireccional pura para propietario, agente y listados compuestos
         return situacionLimpia.includes(filtroNorm) || filtroNorm.includes(situacionLimpia);
-    }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
+    });
         
     if (!cumpleListado) 
-    { // --> Aqui inicia Escape situacion propiedad no coincide
+    {
         return false;
-    } // <-- Aqui finaliza Escape situacion propiedad no coincide
+    }
 
-    
-} // <-- Aqui finaliza Condicional set tipos de listado activo
-
-    
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
-} // <-- Aqui finaliza Funcion evaluarCriteriosDeFiltrado
+} // <-- Aqui finaliza Funcion evaluarCriteriosDeFiltrado de forma correcta
 
     
 function ejecutarTuberiaSincronizada() 
