@@ -1184,21 +1184,34 @@ function evaluarCriteriosDeFiltrado(prop)
 
     const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
 
-    const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
+        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
     { // --> Aqui inicia Callback some evaluacion situacion propiedad
-        const filtroNorm = String(filtroActivo).toLowerCase().trim();
-        
-        // REGLA DE COINCIDENCIA EXPANDIDA Y SEGURA PARA EL RUBRO HIPOTECARIO
-        // Solo aprueba si el checkbox activo analizado en este ciclo es "ejecucion hipoteca"
-        // Y el registro de la Sheet efectivamente contiene el texto "hipoteca"
-        if (filtroNorm === "ejecucion hipoteca") {
-            return situacionBD.includes("hipoteca");
+        const filtroClean = String(filtroActivo).toLowerCase().trim();
+
+        // Comparación estricta uno-a-uno mapeada según los checks del HTML y los valores de tu Sheets
+        switch (filtroClean) {
+            case "propietario":
+                return situacionBD === "propietario publicado";
+            case "agente":
+                return situacionBD === "agente listado";
+            case "subasta":
+            case "subastas":
+                return situacionBD === "subastas" || situacionBD === "subasta";
+            case "ejecucion hipoteca":
+            case "ejecuciones hipotecarias":
+                return situacionBD === "ejecucion hipoteca";
+            case "pre ejecucion hipoteca":
+                return situacionBD === "pre ejecucion hipoteca";
+            case "nueva construccion":
+                return situacionBD === "nueva construccion";
+            case "embargo":
+                return situacionBD === "embargo";
+            default:
+                return false;
         }
-        
-        // Validación flexible estándar para las demás categorías (propietario, agente, subasta)
-        return situacionBD.includes(filtroNorm) || filtroNorm.includes(situacionBD);
     }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
-        
+
+    
     if (!cumpleListado) 
     { // --> Aqui inicia Escape situacion propiedad no coincide
         return false;
