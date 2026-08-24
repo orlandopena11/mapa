@@ -1177,22 +1177,32 @@ function evaluarCriteriosDeFiltrado(prop)
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
     if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
-    {
+    { // --> Aqui inicia Escape restrictivo por filtros vacios
         return false; 
-    }
+    } // <-- Aqui finaliza Escape restrictivo por filtros vacios
 
-    const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
+    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
 
     const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
-    {
+    { // --> Aqui inicia Callback some evaluacion situacion propiedad
         const filtroNorm = String(filtroActivo).toLowerCase().trim();
-        return situacionLimpia.includes(filtroNorm) || filtroNorm.includes(situacionLimpia);
-    });
+        
+        // REGLA DE COINCIDENCIA EXPANDIDA PARA EL RUBRO HIPOTECARIO
+        // Si el checkbox de la web dice "ejecucion hipoteca", habilitará de golpe
+        // tanto a "ejecucion hipoteca" como a "pre ejecucion hipoteca" de tu Excel
+        if (filtroNorm === "ejecucion hipoteca" && situacionBD.includes("hipoteca")) {
+            return true;
+        }
+        
+        // Validación flexible estándar para las demás categorías (propietario, agente, subasta)
+        return situacionBD.includes(filtroNorm) || filtroNorm.includes(situacionBD);
+    }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
         
     if (!cumpleListado) 
-    {
+    { // --> Aqui inicia Escape situacion propiedad no coincide
         return false;
-    }
+    } // <-- Aqui finaliza Escape situacion propiedad no coincide
+
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
