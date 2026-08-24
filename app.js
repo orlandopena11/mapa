@@ -1008,16 +1008,13 @@ function configurarSegmentado(idContenedor, callback)
 
 // PARTE: 6-5 (MOTOR DE FILTRADO MULTIDIMENSIONAL INDESTRUCTIBLE Y FLEXIBLE)
 function evaluarCriteriosDeFiltrado(prop)
-{ // -->Aqui inicia Función evaluarCriteriosDeFiltrado
+{ // --> Aqui inicia Funcion evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
     const inputDireccionNode = document.getElementById('search-address');
    
     // =========================================================================
     // BUENAS PRÁCTICAS SRE: CORTOCIRCUITO TOTAL PARA BUSCADOR DE MAPAS
     // =========================================================================
-    // Si hay texto en el input, asumimos que es una búsqueda de ubicación geográfica para el mapa.
-    // Al forzar esta variable como vacía para la evaluación de datos, anulamos por completo
-    // el filtro estricto de texto en la base de datos de RAM, permitiendo que las burbujas sigan vivas.
     const textoBuscarDireccion = ""; 
     
     // =========================================================================
@@ -1028,91 +1025,128 @@ function evaluarCriteriosDeFiltrado(prop)
 
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${columna_estado_publicacion}"`);
 
-
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
     // =========================================================================
-    
-    // Si el usuario hace clic en "Venta" o "En venta" en la interfaz de la web
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") { 
-        // Pasa únicamente si tipo_anuncio es EXACTAMENTE "Venta" Y estado_publicacion es EXACTAMENTE "disponible"
-        if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") { 
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
+    { // --> Aqui inicia Condicional Transaccion Venta
+        if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") 
+        { // --> Aqui inicia Escape Venta invalida
             return false;
-        } 
-    } 
-    // Si el usuario hace clic en "Alquiler" o "Para el alquiler" en la interfaz de la web
-    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // Pasa únicamente si tipo_anuncio es EXACTAMENTE "Alquiler" Y estado_publicacion es EXACTAMENTE "disponible"
-        if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") {
+        } // <-- Aqui finaliza Escape Venta invalida
+    } // <-- Aqui finaliza Condicional Transaccion Venta
+    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
+    { // --> Aqui inicia Condicional Transaccion Alquiler
+        if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") 
+        { // --> Aqui inicia Escape Alquiler invalido
             return false;
-        }
-    } 
-    // Si el usuario hace clic en "Vendido" o "Vendidas" en la interfaz de la web
-    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // Pasa únicamente si el estado_publicacion es EXACTAMENTE "vendida"
-        if (prop.estado_publicacion !== "vendida") {
+        } // <-- Aqui finaliza Escape Alquiler invalido
+    } // <-- Aqui finaliza Condicional Transaccion Alquiler
+    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
+    { // --> Aqui inicia Condicional Transaccion Vendido
+        if (prop.estado_publicacion !== "vendida") 
+        { // --> Aqui inicia Escape Vendido invalido
             return false;
-        }
-    }
+        } // <-- Aqui finaliza Escape Vendido invalido
+    } // <-- Aqui finaliza Condicional Transaccion Vendido
 
-    
     // =========================================================================
     // PRIMER FILTRO: REGLA DE LOCALIDAD (CALLE / AV / DISTRITO) - SOLUCIÓN NATIVA
     // =========================================================================
-    if (textoBuscarDireccion !== "") {
-        // Compara de manera natural si el título del Excel contiene la palabra escrita por el usuario
-        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) {
+    if (textoBuscarDireccion !== "") 
+    { // --> Aqui inicia Condicional texto de direccion activo
+        if (!columna_titulo_direccion.includes(textoBuscarDireccion)) 
+        { // --> Aqui inicia Escape direccion no coincide
             return false;
-        }
-    }
+        } // <-- Aqui finaliza Escape direccion no coincide
+    } // <-- Aqui finaliza Condicional texto de direccion activo
 
     // =========================================================================
     // TERCER FILTRO: RANGO DE PRECIOS
     // =========================================================================
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) 
-    /*if (prop.precio < state.filtros.precioMin || prop.precio > state.filtros.precioMax) */
-    { // -->Aqui inicia Escape falso rango límite de precios
+    { // --> Aqui inicia Escape falso rango limite de precios
         return false;
-    } // <--Aqui finaliza Escape falso rango límite de precios
+    } // <-- Aqui finaliza Escape falso rango limite de precios
+
+    // =========================================================================
+    // NUEVO FILTRO COMPLEMENTARIO: EVALUACIÓN DE CAMAS (DORMITORIOS)
+    // =========================================================================
+    if (state.filtros.camas && state.filtros.camas > 0) 
+    { // --> Aqui inicia Condicional filtro de camas activo
+        const camasPropiedad = parseInt(prop.habitaciones) || 0;
+        
+        if (state.filtros.camasExactas) 
+        { // --> Aqui inicia Condicional coincidencia exacta camas
+            if (camasPropiedad !== state.filtros.camas) 
+            { // --> Aqui inicia Escape camas no exactas
+                return false;
+            } // <-- Aqui finaliza Escape camas no exactas
+        } // <-- Aqui finaliza Condicional coincidencia exacta camas
+        else 
+        { // --> Aqui inicia Bloque else camas minimas requeridas
+            if (camasPropiedad < state.filtros.camas) 
+            { // --> Aqui inicia Escape menos camas del minimo
+                return false;
+            } // <-- Aqui finaliza Escape menos camas del minimo
+        } // <-- Aqui finaliza Bloque else camas minimas requeridas
+    } // <-- Aqui finaliza Condicional filtro de camas activo
+
+    // =========================================================================
+    // NUEVO FILTRO COMPLEMENTARIO: EVALUACIÓN DE BAÑOS
+    // =========================================================================
+    if (state.filtros.banos && state.filtros.banos > 0) 
+    { // --> Aqui inicia Condicional filtro de banos activo
+        const banosPropiedad = parseFloat(prop.banos) || 0;
+        
+        if (banosPropiedad < state.filtros.banos) 
+        { // --> Aqui inicia Escape menos banos del minimo
+            return false;
+        } // <-- Aqui finaliza Escape menos banos del minimo
+    } // <-- Aqui finaliza Condicional filtro de banos activo
 
     // =========================================================================
     // CUARTO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE PROPIEDAD
     // =========================================================================
-    if (state.filtros.tiposPropiedad.size > 0) {
-        const tipoLimpioBD = String(prop.tipo_propiedad || '').toLowerCase().trim();
-
-      /*  const tipoLimpioBD = (prop.tipoPropiedad || '').toLowerCase().trim(); */
+    if (state.filtros.tiposPropiedad.size > 0) 
+    { // --> Aqui inicia Condicional set tipos de propiedad activo
+        const tipoLimpioBD = String(prop.tipo_prop_propiedad || prop.tipo_propiedad || '').toLowerCase().trim();
         
-        const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => {
+        const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => 
+        { // --> Aqui inicia Callback some evaluacion tipo propiedad
             const filtroNorm = filtroActivo.toLowerCase().trim();
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
-        });
+        }); // <-- Aqui finaliza Callback some evaluacion tipo propiedad
 
-        if (!cumpleTipo) {
+        if (!cumpleTipo) 
+        { // --> Aqui inicia Escape tipo propiedad no coincide
             return false;
-        }
-    }
+        } // <-- Aqui finaliza Escape tipo propiedad no coincide
+    } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
     // =========================================================================
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE LISTADO (SUBTIPO)
     // =========================================================================
-    if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
+    if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) 
+    { // --> Aqui inicia Condicional set tipos de listado activo
         const listadoLimpio = String(prop.subtipo_propiedad || "").toLowerCase().trim();
     
-        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => {
+        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
+        { // --> Aqui inicia Callback some evaluacion tipo listado
             const filtroNorm = String(filtroActivo).toLowerCase().trim();
             return listadoLimpio.includes(filtroNorm) || filtroNorm.includes(listadoLimpio);
-        });
+        }); // <-- Aqui finaliza Callback some evaluacion tipo listado
             
-        if (!cumpleListado) {
+        if (!cumpleListado) 
+        { // --> Aqui inicia Escape tipo listado no coincide
             return false;
-        }
-    }
+        } // <-- Aqui finaliza Escape tipo listado no coincide
+    } // <-- Aqui finaliza Condicional set tipos de listado activo
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
     return true;
-} 
+} // <-- Aqui finaliza Funcion evaluarCriteriosDeFiltrado
 
     
 function ejecutarTuberiaSincronizada() 
