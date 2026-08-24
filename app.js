@@ -974,32 +974,60 @@ function inicializarEventosDeFiltros()
         });
     }
 
-     // =========================================================================
-    // ENLACE AGREGADO: CAPTURA REACTIVA PARA TIPO DE LISTADO (ÚLTIMO FILTRO)
     // =========================================================================
-    // Captura todos los checkboxes del menú flotante derecho
-    const checkboxesListado = document.querySelectorAll('.listado-cb'); 
+    // ENLACE MAESTRO: CAPTURA REACTIVA E INTEGRAL PARA TIPO DE LISTADO
+    // =========================================================================
+    const checkTodos = document.getElementById('check-todos-listados');
+    // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
+    const checkboxesListado = document.querySelectorAll('.more-filter-cb'); 
 
-    checkboxesListado.forEach(cb => 
-    { // -->Aqui inicia Callback forEach para checkboxes de listado
-        cb.addEventListener('change', (e) => 
-        { // -->Aqui inicia Callback al cambiar check de listado
-            if (e.target.checked) 
-            { // -->Aqui inicia Condicional añadir filtro activo
-                state.filtros.tiposListado.add(e.target.value);
-            } // <--Aqui finaliza Condicional añadir filtro activo
-            else 
-            { // -->Aqui inicia Bloque else remover filtro inactivo
-                state.filtros.tiposListado.delete(e.target.value);
-            } // <--Aqui finaliza Bloque else remover filtro inactivo
+    // 1. Escuchador para el botón maestro "Seleccione todos"
+    if (checkTodos) 
+    { // --> Aqui inicia Condicional existencia boton maestro
+        checkTodos.addEventListener('change', (e) => 
+        { // --> Aqui inicia Evento checkbox maestro
+            const estaMarcado = e.target.checked;
             
-            // Dispara el redibujado inmediato del mapa y catálogo
-            if (typeof ejecutarTuberiaSincronizada === 'function') 
-            { // -->Aqui inicia Condicional ejecutar tuberia
+            checkboxesListado.forEach(cb => 
+            { // --> Aqui inicia Iteracion para marcar/desmarcar todos
+                cb.checked = estaMarcado; // Sincroniza visualmente el check
+                
+                if (estaMarcado) {
+                    state.filtros.tiposListado.add(cb.value);
+                } else {
+                    state.filtros.tiposListado.delete(cb.value);
+                }
+            }); // <-- Aqui finaliza Iteracion para marcar/desmarcar todos
+            
+            if (typeof ejecutarTuberiaSincronizada === 'function') {
                 ejecutarTuberiaSincronizada();
-            } // <--Aqui finaliza Condicional ejecutar tuberia
-        }); // <--Aqui finaliza Callback al cambiar check de listado
-    }); // <--Aqui finaliza Callback forEach para checkboxes de listado
+            }
+        }); // <-- Aqui finaliza Evento checkbox maestro
+    } // <-- Aqui finaliza Condicional existencia boton maestro
+
+    // 2. Escuchador para los checkboxes individuales
+    checkboxesListado.forEach(cb => 
+    { // --> Aqui inicia Callback forEach para checkboxes individuales
+        cb.addEventListener('change', (e) => 
+        { // --> Aqui inicia Callback al cambiar un check individual
+            if (e.target.checked) {
+                state.filtros.tiposListado.add(e.target.value);
+            } else {
+                state.filtros.tiposListado.delete(e.target.value);
+                if (checkTodos) checkTodos.checked = false;
+            }
+            
+            if (checkTodos) {
+                const todosMarcados = Array.from(checkboxesListado).every(c => c.checked);
+                checkTodos.checked = todosMarcados;
+            }
+            
+            if (typeof ejecutarTuberiaSincronizada === 'function') {
+                ejecutarTuberiaSincronizada();
+            }
+        }); // <-- Aqui finaliza Callback al cambiar un check individual
+    }); // <-- Aqui finaliza Callback forEach para checkboxes individuales
+
 
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
