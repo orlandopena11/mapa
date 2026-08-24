@@ -1174,26 +1174,28 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
-    if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) 
-    { // --> Aqui inicia Condicional set tipos de listado activo
-        // Leemos la celda real de tu Google Sheet en minúsculas y sin espacios extra
-        const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
+    if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
+    { // --> Aqui inicia Escape restrictivo por filtros vacios
+        return false; 
+    } // <-- Aqui finaliza Escape restrictivo por filtros vacios
+
+    const situacionLimpia = String(prop.situacion_propiedad || "").toLowerCase().trim();
+
+    const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
+    { // --> Aqui inicia Callback some evaluacion situacion propiedad
+        const filtroNorm = String(filtroActivo).toLowerCase().trim();
+        
+        // Comparación bidireccional pura para propietario, agente y listados compuestos
+        return situacionLimpia.includes(filtroNorm) || filtroNorm.includes(situacionLimpia);
+    }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
+        
+    if (!cumpleListado) 
+    { // --> Aqui inicia Escape situacion propiedad no coincide
+        return false;
+    } // <-- Aqui finaliza Escape situacion propiedad no coincide
+
     
-        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
-        { // --> Aqui inicia Callback some evaluacion situacion propiedad
-            const filtroNorm = String(filtroActivo).toLowerCase().trim();
-            
-            // Cruce lógico flexible y bidireccional (Resuelve subasta vs subastas y nueva construccion)
-            return situacionLimpia.includes(filtroNorm) || 
-                   filtroNorm.includes(situacionLimpia) ||
-                   (filtroNorm === "construccion" && situacionLimpia.includes("construccion"));
-        }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
-            
-        if (!cumpleListado) 
-        { // --> Aqui inicia Escape situacion propiedad no coincide
-            return false;
-        } // <-- Aqui finaliza Escape situacion propiedad no coincide
-    } // <-- Aqui finaliza Condicional set tipos de listado activo
+} // <-- Aqui finaliza Condicional set tipos de listado activo
 
     
     // Aprobación final unificada
