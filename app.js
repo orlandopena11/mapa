@@ -10,7 +10,8 @@ const state =
     favoritos: new Set(),
     filtros: 
     { // -->Aqui inicia Sub-objeto filtros
-        estado: 'Todos', 
+        estado: 'Venta', // Predeterminado para carga inicial
+        /*estado: 'Todos', */ 
         precioMin: 0, 
         precioMax: Infinity, 
         camas: 0, 
