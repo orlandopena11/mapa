@@ -227,6 +227,13 @@ label.filter-checkbox-label {
     min-width: 240px; /* Le da el espacio necesario a "Nueva construcción" o "Para el alquiler" */
 }
 
+/* Posicionamiento exclusivo para que el menú avanzado se despliegue hacia la izquierda */
+.filter-group-options #dropdown-more-filters {
+    position: absolute;
+    right: 0;
+    left: auto;
+}
+
 /* ==========================================================================
    PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
    Arquitectura del Riel del Deslizador y Animaciones de Transición Fluida
