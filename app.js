@@ -18,6 +18,7 @@ const state =
         baños: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
+        
     }, // <--Aqui finaliza Sub-objeto filtros
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
     limpiadoresDOM: new Map()
@@ -94,9 +95,10 @@ function normalizarPropiedad(prop)
         // ---------------------------------------------------------------------
         // COLUMNAS REALES DE TUS EXCEL (HOJA "anuncio" Y HOJA "propiedad")
         // Captura directa y estricta sin toLowerCase() para no deformar tus datos
+        // ¡MODIFICADO CON BLINDAJE POR DEFECTO! Evita que queden vacíos si el Apps Script no cruza las hojas
         // ---------------------------------------------------------------------
-        estado_publicacion: String(prop.estado_publicacion || "").trim(), // Almacena estrictamente "disponible" o "vendida"
-        tipo_anuncio: String(prop.tipo_anuncio || "").trim(),             // Almacena estrictamente "Venta" o "Alquiler"
+        estado_publicacion: String(prop.estado_publicacion || prop.estado_anuncio || "disponible").trim(), 
+        tipo_anuncio: String(prop.tipo_anuncio || prop.tipoAnuncio || "Venta").trim(),             
         // ---------------------------------------------------------------------
 
         estadoListado: prop.estado_publicacion || "Venta", // Mapeado a estado_publicacion del backend
@@ -127,7 +129,8 @@ function normalizarPropiedad(prop)
         telefono: prop.telefono || "",
         contacto_nombre: prop.contacto_nombre || "Contacto"
     }; // <--Aqui finaliza Objeto de retorno normalizarPropiedad
-   } 
+}
+
     
 function formatearPrecioCompleto(precio) 
 { // -->Aqui inicia Función formatearPrecioCompleto
