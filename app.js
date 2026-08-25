@@ -1203,30 +1203,38 @@ function evaluarCriteriosDeFiltrado(prop)
         return false; 
     } // <-- Aqui finaliza Escape restrictivo por filtros vacios  */
 
-    // =========================================================================
+        // =========================================================================
     // SRE REFACTOR: VALIDADOR DE EXCLUSIÓN MUTUA Y MATRIZ DE ÉXITO TRIDIMENSIONAL
-    // Evalúa si el único checkbox seleccionado en la pantalla coincide con la
-    // columna U de la Google Sheet ("situacion_propiedad") de forma unívoca.
+    // Cruza el filtro de transacciones principal con la casuística de selección
+    // única avanzada o la liberación total por medio del botón "Seleccione todos".
     // =========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
+    // CASO ESPECIAL: BOTÓN MAESTRO ACTIVO ("Seleccione todos")
+    // Si la casilla superior de "Seleccione todos" está marcada, se anulan las restricciones
+    // avanzadas y el motor muestra la totalidad de propiedades de la transacción actual (5, 2 o 3).
+    const esSeleccioneTodosActivo = checkMaestro && checkMaestro.checked;
+
     // REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si el usuario interactuó con el panel avanzado y desmarcó absolutamente todo, se oculta la propiedad.
-    if (checkMaestro && !checkMaestro.checked && cantidadDeChecksMarcados === 0) 
+    // Si el botón maestro está apagado Y el usuario no ha marcado ninguna casilla individual,
+    // significa que apagó el panel avanzado explícitamente. Se ocultan todas las propiedades.
+    if (!esSeleccioneTodosActivo && cantidadDeChecksMarcados === 0) 
     { // --> Aqui inicia Bloqueo por desmarcado explicito (Freno de Mano)
         return false; 
     } // <-- Aqui finaliza Bloqueo por desmarcado explicito (Freno de Mano)
 
-    // CARGA INICIAL / TODO DESMARCADO EN AVANZADOS
-    // Si no hay ningún checkbox seleccionado en el panel avanzado, la propiedad pasa (Subordinada al filtro maestro anterior)
-    if (!checkboxActivo) 
-    { // --> Aqui inicia Aprobación por Carga Inicial
+    // CARGA INICIAL O LIBERACIÓN MAESTRA
+    // Si "Seleccione todos" está activo, o si no hay ninguna casilla tocada en el panel,
+    // la propiedad pasa la validación avanzada (subordinada únicamente al filtro transaccional superior).
+    if (esSeleccioneTodosActivo || !checkboxActivo) 
+    { // --> Aqui inicia Aprobación por Flujo Abierto o Carga Inicial
         return true;
-    } // <-- Aqui finaliza Aprobación por Carga Inicial
+    } // <-- Aqui finaliza Aprobación por Flujo Abierto o Carga Inicial
 
+    // EVALUACIÓN DE SELECCIÓN ÚNICA CONTRA LA MATRIZ DE ÉXITO (Cuando hay un check específico marcado)
     const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
     const filtroUnicoUI = String(checkboxActivo.value).toLowerCase().trim();
 
@@ -1234,9 +1242,9 @@ function evaluarCriteriosDeFiltrado(prop)
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
     { // --> Aqui inicia Bloque Evaluación Venta
         if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
-        {
+        { // --> Aqui inicia Restricción de valores nulos para Venta
             return false;
-        }
+        } // <-- Aqui finaliza Restricción de valores nulos para Venta
         return situacionBD === filtroUnicoUI;
     } // <-- Aqui finaliza Bloque Evaluación Venta
 
@@ -1244,27 +1252,27 @@ function evaluarCriteriosDeFiltrado(prop)
     else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
     { // --> Aqui inicia Bloque Evaluación Alquiler
         if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
-        {
+        { // --> Aqui inicia Match para PROP-003
             return true;
-        }
+        } // <-- Aqui finaliza Match para PROP-003
         if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
-        {
+        { // --> Aqui inicia Match para PROP-006
             return true;
-        }
-        return false; // Cualquier otra opción avanzada seleccionada bajo Alquiler muestra 0 propiedades
+        } // <-- Aqui finaliza Match para PROP-006
+        return false; // Cualquier otra opción avanzada individual seleccionada bajo Alquiler muestra 0 propiedades
     } // <-- Aqui finaliza Bloque Evaluación Alquiler
 
     // INTERSECCIÓN DIMENSIONAL 3: ESCENARIO "VENDIDO"
     else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
     { // --> Aqui inicia Bloque Evaluación Vendido
         if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
-        {
+        { // --> Aqui inicia Match para PROP-008, PROP-009 y PROP-010
             return true;
-        }
-        return false; // Cualquier otra opción avanzada seleccionada bajo Vendido muestra 0 propiedades
+        } // <-- Aqui finaliza Match para PROP-008, PROP-009 y PROP-010
+        return false; // Cualquier otra opción avanzada individual seleccionada bajo Vendido muestra 0 propiedades
     } // <-- Aqui finaliza Bloque Evaluación Vendido
 
-
+    
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
     console.log(`🔍 DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
 
