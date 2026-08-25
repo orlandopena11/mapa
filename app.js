@@ -1069,12 +1069,20 @@ function evaluarCriteriosDeFiltrado(prop)
     const textoBuscarDireccion = ""; 
     
     // =========================================================================
-    const estado_publicacion = String(prop.estadoListado || "").trim();
-    const tipo_anuncio = String(prop.subtipoPropiedad || "").trim();
-    const titulo_direccion = String(prop.fraseDescriptiva || "").trim();
+    const estado_publicacion = String(prop.estado_publicacion || "").trim();
+    const tipo_anuncio = String(prop.tipo_anuncio || "").trim();
+    const titulo_direccion = prop.direccion; 
+    /*const titulo_direccion = String(prop.fraseDescriptiva || "").trim(); */
+
 
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${estado_publicacion}"`);
 
+    // REGLA DE VACÍO ABSOLUTO INTERNA: Si el usuario desmarca todo en la UI, cortamos el flujo inmediatamente
+    if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0)
+    
+    {
+        return false; 
+    }
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
     // =========================================================================
@@ -1158,7 +1166,7 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
     // CUARTO FILTRO: INTERSECCIÓN LOGÍSTICA PARA TIPO DE PROPIEDAD
     // =========================================================================
-    if (state.filtros.tiposPropiedad.size > 0) 
+        if (state.filtros.tiposPropiedad.size > 0) 
     { // --> Aqui inicia Condicional set tipos de propiedad activo
         const tipoLimpioBD = String(prop.tipo_prop_propiedad || prop.tipo_propiedad || '').toLowerCase().trim();
         
