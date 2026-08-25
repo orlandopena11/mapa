@@ -1219,39 +1219,49 @@ function evaluarCriteriosDeFiltrado(prop)
 
         const situacionBD = String(prop.situacion_propiedad || "").trim();
 
-    const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
-    { // --> Aqui inicia Callback some evaluacion situacion propiedad
-        const filtroPuro = String(filtroActivo).trim();
+        const situacionBD = String(prop.situacion_propiedad || "").trim();
 
-        if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-            switch (filtroPuro) {
-                case "propietario": return situacionBD === "propietario";
-                case "agente": return situacionBD === "agente";
-                case "subasta": return situacionBD === "subasta";
-                case "ejecucion hipoteca": return situacionBD === "ejecucion hipoteca";
-                case "pre ejecucion hipoteca": return situacionBD === "pre ejecucion hipoteca";
-                case "nueva construccion": return false; 
-                case "embargo": return false; 
-                default: return false;
-            }
-        } 
-        else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-            switch (filtroPuro) {
-                case "nueva construccion": return situacionBD === "nueva construccion";
-                case "embargo": return situacionBD === "embargo";
-                default: return false; 
-            }
-        } 
-        else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-            switch (filtroPuro) {
-                case "propietario": return situacionBD === "propietario";
-                default: return false; 
-            }
-        }
+    const cumpleListado = Array.from(checkboxesFisicosEnPantalla)
+        .filter(cb => cb.checked)
+        .some(cb => 
+        { // --> Aqui inicia Callback some evaluacion situacion propiedad
+            const filtroPuro = String(cb.value).trim(); 
 
-        return false;
-    });
+            if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
+            { // --> Aqui inicia Condicional Transaccion Venta
+                switch (filtroPuro) 
+                { // --> Aqui inicia Switch Filtro Puro Venta
+                    case "propietario": return situacionBD === "propietario";
+                    case "agente": return situacionBD === "agente";
+                    case "subasta": return situacionBD === "subasta";
+                    case "ejecucion hipoteca": return situacionBD === "ejecucion hipoteca";
+                    case "pre ejecucion hipoteca": return situacionBD === "pre ejecucion hipoteca";
+                    case "nueva construccion": return false; 
+                    case "embargo": return false; 
+                    default: return false;
+                } // <-- Aqui finaliza Switch Filtro Puro Venta
+            } // <-- Aqui finaliza Condicional Transaccion Venta
+            else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
+            { // --> Aqui inicia Condicional Transaccion Alquiler
+                switch (filtroPuro) 
+                { // --> Aqui inicia Switch Filtro Puro Alquiler
+                    case "nueva construccion": return situacionBD === "nueva construccion";
+                    case "embargo": return situacionBD === "embargo";
+                    default: return false; 
+                } // <-- Aqui finaliza Switch Filtro Puro Alquiler
+            } // <-- Aqui finaliza Condicional Transaccion Alquiler
+            else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
+            { // --> Aqui inicia Condicional Transaccion Vendido
+                switch (filtroPuro) 
+                { // --> Aqui inicia Switch Filtro Puro Vendido
+                    case "propietario": return situacionBD === "propietario";
+                    default: return false; 
+                } // <-- Aqui finaliza Switch Filtro Puro Vendido
+            } // <-- Aqui finaliza Condicional Transaccion Vendido
 
+            return false;
+        }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad de forma correcta
+    
     
     if (!cumpleListado) 
     { // --> Aqui inicia Escape situacion propiedad no coincide
