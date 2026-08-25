@@ -1188,15 +1188,15 @@ function evaluarCriteriosDeFiltrado(prop)
     { // --> Aqui inicia Callback some evaluacion situacion propiedad
         const filtroClean = String(filtroActivo).toLowerCase().trim();
 
-        // Comparación estricta uno-a-uno mapeada según los checks del HTML y los valores de tu Sheets
+        // Mapeo matemático y estricto uno-a-uno con los datos reales de tu imagen
         switch (filtroClean) {
             case "propietario":
-                return situacionBD === "propietario publicado";
+                return situacionBD === "propietario";
             case "agente":
-                return situacionBD === "agente listado";
+                return situacionBD === "agente";
             case "subasta":
             case "subastas":
-                return situacionBD === "subastas" || situacionBD === "subasta";
+                return situacionBD === "subasta";
             case "ejecucion hipoteca":
             case "ejecuciones hipotecarias":
                 return situacionBD === "ejecucion hipoteca";
