@@ -1083,6 +1083,10 @@ function evaluarCriteriosDeFiltrado(prop)
     {
         return false; 
     }
+
+    
+    console.log(`✅ ESPÍA PASÓ PRIMER CONTROL | ID: ${prop.id} continúa evaluación.`);
+    
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
     // =========================================================================
