@@ -18,7 +18,7 @@ const state =
         camasExactas: false, 
         baños: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
-        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
+        tiposListado: new Set()
         
     }, // <--Aqui finaliza Sub-objeto filtros
     // Registro interno para la remoción explícita de Listeners (Garbage Collector)
@@ -847,6 +847,13 @@ function inicializarEventosDeFiltros()
         }
     });
     // =========================================================================
+
+    // Sincronización pura de fábrica para tipos de listado según la pantalla
+    checkboxesListado.forEach(cb => {
+        if (cb.checked) {
+            state.filtros.tiposListado.add(cb.value);
+        }
+    });
 
     
     if (checkSelectAll) 
