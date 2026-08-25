@@ -1197,10 +1197,25 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
     // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
     // =========================================================================
-    if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
+    /*if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
     { // --> Aqui inicia Escape restrictivo por filtros vacios
         return false; 
-    } // <-- Aqui finaliza Escape restrictivo por filtros vacios
+    } // <-- Aqui finaliza Escape restrictivo por filtros vacios  */
+
+    // =========================================================================
+    // FRENO DE MANO ULTRA-STRICTO CONTRA BASURA EN MEMORIA: VALIDACIÓN VISUAL DIRECTA
+    // =========================================================================
+    // Captura los checkboxes físicos que el usuario ve en la pantalla en este instante
+    const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
+    const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
+
+    // Si el usuario desmarcó todo visualmente en la pantalla, la propiedad muere aquí (0 resultados)
+    if (cantidadDeChecksMarcados === 0) 
+    {
+        return false; 
+    }
+    // =========================================================================
+
 
         const situacionBD = String(prop.situacion_propiedad || "").trim();
 
