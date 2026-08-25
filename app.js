@@ -848,12 +848,7 @@ function inicializarEventosDeFiltros()
     });
     // =========================================================================
 
-    // Sincronización pura de fábrica para tipos de listado según la pantalla
-    checkboxesListado.forEach(cb => {
-        if (cb.checked) {
-            state.filtros.tiposListado.add(cb.value);
-        }
-    });
+
 
     
     if (checkSelectAll) 
@@ -992,6 +987,14 @@ function inicializarEventosDeFiltros()
     const checkTodos = document.getElementById('check-todos-listados');
     // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
     const checkboxesListado = document.querySelectorAll('.more-filter-cb'); 
+
+    // Sincronización pura de fábrica para tipos de listado según la pantalla
+    checkboxesListado.forEach(cb => {
+        if (cb.checked) {
+            state.filtros.tiposListado.add(cb.value);
+        }
+    });
+
 
     // 1. Escuchador para el botón maestro "Seleccione todos"
     if (checkTodos) 
