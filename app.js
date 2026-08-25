@@ -1239,6 +1239,8 @@ function evaluarCriteriosDeFiltrado(prop)
         return false;
     } // <-- Aqui finaliza Escape situacion propiedad no coincide
 
+    // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
+    console.log(`🔍 DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
