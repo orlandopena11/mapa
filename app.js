@@ -848,8 +848,6 @@ function inicializarEventosDeFiltros()
     });
     // =========================================================================
 
-
-
     
     if (checkSelectAll) 
     { // -->Aqui inicia Condicional listener seleccionar todos
