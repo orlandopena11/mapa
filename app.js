@@ -536,11 +536,15 @@ function renderizarMapaZillow()
             const idPropiedadActual = prop.id;
 
             // Modificamos el orden en la memoria RAM de forma inmutable
-            const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
+            /*const indicePropiedad = state.propiedades.findIndex(p => p.id === idPropiedadActual);
             if (indicePropiedad > 0) { 
                 const [propiedadSeleccionada] = state.propiedades.splice(indicePropiedad, 1);
                 state.propiedades.unshift(propiedadSeleccionada);
-            }
+            } */
+            
+            // SRE FIX: Buscamos la propiedad por referencia sin alterar ni reordenar el arreglo global
+            const propiedadSeleccionada = state.propiedades.find(p => p.id === idPropiedadActual);
+
 
             // Desplazamiento visual suave hacia la tarjeta derecha existente sin destruir la UI
             const tarjetaDerecha = document.querySelector(`.tarjeta-casa[data-id="${idPropiedadActual}"]`);
