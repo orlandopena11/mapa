@@ -1217,9 +1217,7 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
 
 
-        const situacionBD = String(prop.situacion_propiedad || "").trim();
-
-        const situacionBD = String(prop.situacion_propiedad || "").trim();
+    const situacionBD = String(prop.situacion_propiedad || "").trim();
 
     const cumpleListado = Array.from(checkboxesFisicosEnPantalla)
         .filter(cb => cb.checked)
