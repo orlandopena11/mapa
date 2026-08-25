@@ -998,54 +998,51 @@ function inicializarEventosDeFiltros()
     });
 
 
-    // 1. Escuchador para el botón maestro "Seleccione todos"
-    if (checkTodos) 
-    { // --> Aqui inicia Condicional existencia boton maestro
-        checkTodos.addEventListener('change', (e) => 
-        { // --> Aqui inicia Evento checkbox maestro
-            const estaMarcado = e.target.checked;
-            
-            checkboxesListado.forEach(cb => 
-            { // --> Aqui inicia Iteracion para marcar/desmarcar todos
-                cb.checked = estaMarcado; // Sincroniza visualmente el check
-                
-                if (estaMarcado) {
-                    state.filtros.tiposListado.add(cb.value);
-                } else {
-                    state.filtros.tiposListado.delete(cb.value);
-                }
-            }); // <-- Aqui finaliza Iteracion para marcar/desmarcar todos
-            
-            if (typeof ejecutarTuberiaSincronizada === 'function') {
-                ejecutarTuberiaSincronizada();
-            }
-        }); // <-- Aqui finaliza Evento checkbox maestro
-    } // <-- Aqui finaliza Condicional existencia boton maestro
-
-    // 2. Escuchador para los checkboxes individuales
+    // =========================================================================
+    // ENLACE MAESTRO: CAPTURA REACTIVA CON EXCLUSIÓN MUTUA PARA SELECCIÓN ÚNICA
+    // Este bloque intercepta los clicks en los checkboxes avanzados de situación
+    // y desmarca automáticamente a los demás para forzar un único valor activo.
+    // =========================================================================
     checkboxesListado.forEach(cb => 
-    { // --> Aqui inicia Callback forEach para checkboxes individuales
+    { // --> Aqui inicia Callback forEach para checkboxes de exclusión mutua
         cb.addEventListener('change', (e) => 
         { // --> Aqui inicia Callback al cambiar un check individual
-            if (e.target.checked) {
+            if (e.target.checked) 
+            { // --> Aqui inicia Condicional si el usuario activa el elemento
+                // Desmarcar físicamente todos los demás checkboxes del panel visual
+                checkboxesListado.forEach(otroCb => 
+                { // --> Aqui inicia Limpieza de controles hermanos
+                    if (otroCb !== e.target) 
+                    { // --> Aqui inicia Validación de exclusión
+                        otroCb.checked = false;
+                        state.filtros.tiposListado.delete(otroCb.value);
+                    } // <-- Aqui finaliza Validación de exclusión
+                }); // <-- Aqui finaliza Limpieza de controles hermanos
+                
+                // Forzar que en la memoria RAM (state) solo viva este valor único
+                state.filtros.tiposListado.clear();
                 state.filtros.tiposListado.add(e.target.value);
-            } else {
+            } // <-- Aqui finaliza Condicional si el usuario activa el elemento
+            else 
+            { // --> Aqui inicia Bloque else por si el usuario desmarca la opción activa
                 state.filtros.tiposListado.delete(e.target.value);
-                if (checkTodos) checkTodos.checked = false;
-            }
+            } // <-- Aqui finaliza Bloque else por si el usuario desmarca la opción activa
             
-            if (checkTodos) {
-                const todosMarcados = Array.from(checkboxesListado).every(c => c.checked);
-                checkTodos.checked = todosMarcados;
-            }
+            // Forzar el apagado del botón maestro "todos" ya que viola la selección única
+            if (checkTodos) 
+            { // --> Aqui inicia Apagado preventivo de botón maestro
+                checkTodos.checked = false;
+            } // <-- Aqui finaliza Apagado preventivo de botón maestro
             
-            if (typeof ejecutarTuberiaSincronizada === 'function') {
+            // Actualizar instantáneamente los componentes cartográficos y el catálogo derecho
+            if (typeof ejecutarTuberiaSincronizada === 'function') 
+            { // --> Aqui inicia Disparo de actualización del DOM
                 ejecutarTuberiaSincronizada();
-            }
+            } // <-- Aqui finaliza Disparo de actualización del DOM
         }); // <-- Aqui finaliza Callback al cambiar un check individual
-    }); // <-- Aqui finaliza Callback forEach para checkboxes individuales
+    }); // <-- Aqui finaliza Callback forEach para checkboxes de exclusión mutua
 
-
+    
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
 
@@ -1207,70 +1204,66 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Escape restrictivo por filtros vacios  */
 
     // =========================================================================
-    // FRENO DE MANO ULTRA-STRICTO CONTRA BASURA EN MEMORIA: VALIDACIÓN VISUAL DIRECTA
-    // =========================================================================
-    // Captura los checkboxes físicos que el usuario ve en la pantalla en este instante
+    // SRE REFACTOR: VALIDADOR DE EXCLUSIÓN MUTUA Y MATRIZ DE ÉXITO TRIDIMENSIONAL
+    // Evalúa si el único checkbox seleccionado en la pantalla coincide con la
+    // columna U de la Google Sheet ("situacion_propiedad") de forma unívoca.
     // =========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-    const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
+    const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
+    const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
+    // REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
+    // Si el usuario interactuó con el panel avanzado y desmarcó absolutamente todo, se oculta la propiedad.
     if (checkMaestro && !checkMaestro.checked && cantidadDeChecksMarcados === 0) 
-    { // --> Aqui inicia Bloqueo por desmarcado explicito
+    { // --> Aqui inicia Bloqueo por desmarcado explicito (Freno de Mano)
         return false; 
-    } // <-- Aqui finaliza Bloqueo por desmarcado explicito
+    } // <-- Aqui finaliza Bloqueo por desmarcado explicito (Freno de Mano)
 
-    
+    // CARGA INICIAL / TODO DESMARCADO EN AVANZADOS
+    // Si no hay ningún checkbox seleccionado en el panel avanzado, la propiedad pasa (Subordinada al filtro maestro anterior)
+    if (!checkboxActivo) 
+    { // --> Aqui inicia Aprobación por Carga Inicial
+        return true;
+    } // <-- Aqui finaliza Aprobación por Carga Inicial
 
+    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+    const filtroUnicoUI = String(checkboxActivo.value).toLowerCase().trim();
 
-    const situacionBD = String(prop.situacion_propiedad || "").trim();
-
-    const cumpleListado = Array.from(checkboxesFisicosEnPantalla)
-        .filter(cb => cb.checked)
-        .some(cb => 
-        { // --> Aqui inicia Callback some evaluacion situacion propiedad
-            const filtroPuro = String(cb.value).trim(); 
-
-            if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
-            { // --> Aqui inicia Condicional Transaccion Venta
-                switch (filtroPuro) 
-                { // --> Aqui inicia Switch Filtro Puro Venta
-                    case "propietario": return situacionBD === "propietario";
-                    case "agente": return situacionBD === "agente";
-                    case "subasta": return situacionBD === "subasta";
-                    case "ejecucion hipoteca": return situacionBD === "ejecucion hipoteca";
-                    case "pre ejecucion hipoteca": return situacionBD === "pre ejecucion hipoteca";
-                    case "nueva construccion": return false; 
-                    case "embargo": return false; 
-                    default: return false;
-                } // <-- Aqui finaliza Switch Filtro Puro Venta
-            } // <-- Aqui finaliza Condicional Transaccion Venta
-            else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
-            { // --> Aqui inicia Condicional Transaccion Alquiler
-                switch (filtroPuro) 
-                { // --> Aqui inicia Switch Filtro Puro Alquiler
-                    case "nueva construccion": return situacionBD === "nueva construccion";
-                    case "embargo": return situacionBD === "embargo";
-                    default: return false; 
-                } // <-- Aqui finaliza Switch Filtro Puro Alquiler
-            } // <-- Aqui finaliza Condicional Transaccion Alquiler
-            else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
-            { // --> Aqui inicia Condicional Transaccion Vendido
-                switch (filtroPuro) 
-                { // --> Aqui inicia Switch Filtro Puro Vendido
-                    case "propietario": return situacionBD === "propietario";
-                    default: return false; 
-                } // <-- Aqui finaliza Switch Filtro Puro Vendido
-            } // <-- Aqui finaliza Condicional Transaccion Vendido
-
+    // INTERSECCIÓN DIMENSIONAL 1: ESCENARIO "VENTA"
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
+    { // --> Aqui inicia Bloque Evaluación Venta
+        if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
+        {
             return false;
-        }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad de forma correcta
-    
-    
-    if (!cumpleListado) 
-    { // --> Aqui inicia Escape situacion propiedad no coincide
-        return false;
-    } // <-- Aqui finaliza Escape situacion propiedad no coincide
+        }
+        return situacionBD === filtroUnicoUI;
+    } // <-- Aqui finaliza Bloque Evaluación Venta
+
+    // INTERSECCIÓN DIMENSIONAL 2: ESCENARIO "ALQUILER"
+    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
+    { // --> Aqui inicia Bloque Evaluación Alquiler
+        if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
+        {
+            return true;
+        }
+        if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
+        {
+            return true;
+        }
+        return false; // Cualquier otra opción avanzada seleccionada bajo Alquiler muestra 0 propiedades
+    } // <-- Aqui finaliza Bloque Evaluación Alquiler
+
+    // INTERSECCIÓN DIMENSIONAL 3: ESCENARIO "VENDIDO"
+    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
+    { // --> Aqui inicia Bloque Evaluación Vendido
+        if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
+        {
+            return true;
+        }
+        return false; // Cualquier otra opción avanzada seleccionada bajo Vendido muestra 0 propiedades
+    } // <-- Aqui finaliza Bloque Evaluación Vendido
+
 
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
     console.log(`🔍 DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
