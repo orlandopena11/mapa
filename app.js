@@ -1206,15 +1206,17 @@ function evaluarCriteriosDeFiltrado(prop)
     // FRENO DE MANO ULTRA-STRICTO CONTRA BASURA EN MEMORIA: VALIDACIÓN VISUAL DIRECTA
     // =========================================================================
     // Captura los checkboxes físicos que el usuario ve en la pantalla en este instante
+    // =========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
+    const checkMaestro = document.getElementById('check-todos-listados');
 
-    // Si el usuario desmarcó todo visualmente en la pantalla, la propiedad muere aquí (0 resultados)
-    if (cantidadDeChecksMarcados === 0) 
-    {
+    if (checkMaestro && !checkMaestro.checked && cantidadDeChecksMarcados === 0) 
+    { // --> Aqui inicia Bloqueo por desmarcado explicito
         return false; 
-    }
-    // =========================================================================
+    } // <-- Aqui finaliza Bloqueo por desmarcado explicito
+
+    
 
 
     const situacionBD = String(prop.situacion_propiedad || "").trim();
