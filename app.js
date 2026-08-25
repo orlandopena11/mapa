@@ -1194,44 +1194,40 @@ function evaluarCriteriosDeFiltrado(prop)
         return false; 
     } // <-- Aqui finaliza Escape restrictivo por filtros vacios
 
-    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+        const situacionBD = String(prop.situacion_propiedad || "").trim();
 
-        const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
+    const cumpleListado = Array.from(state.filtros.tiposListado).some(filtroActivo => 
     { // --> Aqui inicia Callback some evaluacion situacion propiedad
-        const filtroClean = String(filtroActivo).toLowerCase().trim();
+        const filtroPuro = String(filtroActivo).trim();
 
-        // EVALUACIÓN TRIDIMENSIONAL COMBINADA (Transacción + Situación Real)
         if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-            switch (filtroClean) {
+            switch (filtroPuro) {
                 case "propietario": return situacionBD === "propietario";
                 case "agente": return situacionBD === "agente";
-                case "subasta": case "subastas": return situacionBD === "subasta";
-                case "ejecucion hipoteca": case "ejecuciones hipotecarias": return situacionBD === "ejecucion hipoteca";
+                case "subasta": return situacionBD === "subasta";
+                case "ejecucion hipoteca": return situacionBD === "ejecucion hipoteca";
                 case "pre ejecucion hipoteca": return situacionBD === "pre ejecucion hipoteca";
-                case "nueva construccion": return false; // 0 Propiedades en Venta
-                case "embargo": return false; // 0 Propiedades en Venta
+                case "nueva construccion": return false; 
+                case "embargo": return false; 
                 default: return false;
             }
         } 
         else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-            switch (filtroClean) {
-                case "nueva construccion": return situacionBD === "nueva construccion"; // Muestra PROP-003
-                case "embargo": return situacionBD === "embargo"; // Muestra PROP-006
-                // Todas las demás casillas deben dar 0 propiedades si estamos en Alquiler
+            switch (filtroPuro) {
+                case "nueva construccion": return situacionBD === "nueva construccion";
+                case "embargo": return situacionBD === "embargo";
                 default: return false; 
             }
         } 
         else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-            switch (filtroClean) {
-                // Muestra únicamente las 3 propiedades correspondientes (PROP-008, PROP-009, PROP-010)
-                case "propietario": return situacionBD === "propietario"; 
-                // Todas las demás casillas deben dar 0 propiedades si estamos en Vendidas
+            switch (filtroPuro) {
+                case "propietario": return situacionBD === "propietario";
                 default: return false; 
             }
         }
 
         return false;
-    }); // <-- Aqui finaliza Callback some evaluacion situacion propiedad
+    });
 
     
     if (!cumpleListado) 
