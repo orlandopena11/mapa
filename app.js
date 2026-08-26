@@ -854,12 +854,28 @@ function inicializarEventosDeFiltros()
         });
     } // <-- Aqui finaliza Bloque seguro de encendido visual de inicio
 
-    // Sincronización nativa para tipos de propiedad de fábrica
-    checkboxesTipo.forEach(cb => {
-        if (cb.checked) {
-            state.filtros.tiposPropiedad.add(cb.value);
-        }
-    });
+    // =========================================================================
+    // SRE REFACTOR: CAPTURA COMPATIBLE PARA BOTÓN APLICAR TIPO
+    // Escucha el click del botón azul para refrescar Casas, Departamentos, etc.
+    // =========================================================================
+    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
+    if (btnAplicarTipo) 
+    { // --> Aqui inicia Evento seguro para el botón de aplicar tipo
+        btnAplicarTipo.addEventListener('click', () => {
+            if (state && state.filtros) {
+                state.filtros.tiposPropiedad.clear();
+                if (checkboxesTipo) {
+                    checkboxesTipo.forEach(cb => {
+                        if (cb.checked) state.filtros.tiposPropiedad.add(cb.value);
+                    });
+                }
+            }
+            if (typeof ejecutarTuberiaSincronizada === 'function') {
+                ejecutarTuberiaSincronizada();
+            }
+        });
+    } // <-- Aqui finaliza Evento seguro para el botón de aplicar tipo
+
 
     // =========================================================================
 
