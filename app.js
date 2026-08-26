@@ -1270,13 +1270,26 @@ function evaluarCriteriosDeFiltrado(prop)
         return false; 
     } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
 
-    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET (Cuando hay un check específico marcado)
-    else 
-    { // --> Aqui inicia Bloque de evaluación para casillas de selección única
-        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-        const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
-        const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
+    
+    // =========================================================================
+    // SRE DEFINITIVE FIX: EXTRACCIÓN DE CONSTANTES AL ÁMBITO GLOBAL DE LA FUNCIÓN
+    // Declaración sin cortocircuitos para alimentar correctamente tus espías inferiores.
+    // =========================================================================
+    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
+    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
 
+    // INTERSECCIÓN 2: REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
+    // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
+    if (checkMaestro && checkMaestro.checked === false && cantidadDeChecksMarcados === 0) 
+    { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
+        return false; 
+    } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
+
+    // INTERSECCIÓN 3: EVALUACIÓN DE CASILLAS INDIVIDUALES DE SELECCIÓN ÚNICA
+    // Si no está activo el botón maestro "Seleccione todos", procesamos el filtro individual.
+    if (checkMaestro && checkMaestro.checked === false) 
+    { // --> Aqui inicia Bloque de evaluación por check individual activo
         // ESCENARIO MAESTRO: "VENTA"
         if (txActual === "venta" || txActual === "en venta") 
         { // --> Aqui inicia Evaluación estricta para Ventas
@@ -1307,8 +1320,7 @@ function evaluarCriteriosDeFiltrado(prop)
         { // --> Aqui inicia Evaluación estricta para Vendidas
             if (situacionBD !== "propietario" || filtroUnicoUI !== "propietario") return false;
         } // <-- Aqui finaliza Evaluación estricta para Vendidas
-    } // <-- Aqui finaliza Bloque de evaluación para casillas de selección única
-
+    } // <-- Aqui finaliza Bloque de evaluación por check individual activo
 
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
