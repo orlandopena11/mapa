@@ -1523,7 +1523,7 @@ function procesarFormularioTour(event) {
     const payloadTour = {
         target_sheet: "visita", // <--- Esta bandera activa el desvío seguro en tu doPost
         usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
-        propiedad_id_fk: state.propiedadSeleccionadald,
+        propiedad_id_fk: state.propiedadSeleccionadaId,
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
         fecha_visita: fechaFormateada, 
         tipo_visita: campoTipo.toLowerCase(), 
@@ -1559,7 +1559,7 @@ function procesarFormularioAgente(event) {
     const payloadContacto = {
         target_sheet: "visita",              // Mismo destino controlado por el interceptor
         usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
-        propiedad_id_fk: state.propiedadSeleccionadald,
+        propiedad_id_fk: state.propiedadSeleccionadaId,
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
         fecha_visita: fechaFormateadaAhora,  // Fecha y hora del envío del mensaje
         tipo_visita: "agente",               // Clasificación directa solicitada para tu columna
