@@ -1318,26 +1318,33 @@ function evaluarCriteriosDeFiltrado(prop)
     
     // =========================================================================
     // SRE DEFINITIVE FIX: EXTRACCIÓN DE CONSTANTES AL ÁMBITO GLOBAL DE LA FUNCIÓN
-    // Declaración libre de mutaciones para alimentar los espías inferiores de la app
+    // Declaración sin cortocircuitos para alimentar correctamente tus espías inferiores.
     // =========================================================================
     const situacionBD = String(prop.situacion_propiedad || "");
     const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value) : "";
     const txActual = String(filtroTransaccion || "Venta");
 
+    // INTERSECCIÓN 2: REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
+    // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
+    if (checkMaestro && checkMaestro.checked === false && cantidadDeChecksMarcados === 0) 
+    { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
+        return false; 
+    } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
+
     // INTERSECCIÓN 3: EVALUACIÓN DE CASILLAS INDIVIDUALES DE SELECCIÓN ÚNICA
-    // Si no está activo el botón maestro "Seleccione todos", procesamos el filtro individual de forma simétrica.
+    // Si no está activo el botón maestro "Seleccione todos", procesamos el filtro individual.
     if (checkMaestro && checkMaestro.checked === false) 
     { // --> Aqui inicia Bloque de evaluación por check individual activo
         // ESCENARIO MAESTRO: "VENTA"
-        if (txActual === "Venta" || txActual === "En venta") 
+        if (txActual === "venta" || txActual === "en venta") 
         { // --> Aqui inicia Evaluación estricta para Ventas
-            if (situacionBD === "Nueva Construcción" || situacionBD === "Embargo") 
+            if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
             {
                 return false;
             }
-            if (filtroUnicoUI === "Pre-ejecución Hipoteca") 
+            if (filtroUnicoUI === "pre ejecucion hipoteca") 
             {
-                if (situacionBD !== "Pre-ejecución Hipoteca") return false;
+                if (situacionBD !== "pre ejecucion hipoteca") return false;
             }
             else 
             {
@@ -1346,17 +1353,17 @@ function evaluarCriteriosDeFiltrado(prop)
         } // <-- Aqui finaliza Evaluación estricta para Ventas
 
         // ESCENARIO MAESTRO: "ALQUILER"
-        else if (txActual === "Alquiler" || txActual === "Para el alquiler") 
+        else if (txActual === "alquiler" || txActual === "para el alquiler") 
         { // --> Aqui inicia Evaluación estricta para Alquileres
-            if (situacionBD === "Nueva Construcción" && filtroUnicoUI === "Nueva Construcción") { /* Pasa */ }
-            else if (situacionBD === "Embargo" && filtroUnicoUI === "Embargo") { /* Pasa */ }
+            if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") { /* Pasa */ }
+            else if (situacionBD === "embargo" && filtroUnicoUI === "embargo") { /* Pasa */ }
             else return false;
         } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
         // ESCENARIO MAESTRO: "VENDIDO"
-        else if (txActual === "Vendido" || txActual === "Vendidas") 
+        else if (txActual === "vendido" || txActual === "vendidas") 
         { // --> Aqui inicia Evaluación estricta para Vendidas
-            if (situacionBD !== "Propietario" || filtroUnicoUI !== "Propietario") return false;
+            if (situacionBD !== "propietario" || filtroUnicoUI !== "propietario") return false;
         } // <-- Aqui finaliza Evaluación estricta para Vendidas
     } // <-- Aqui finaliza Bloque de evaluación por check individual activo
 
