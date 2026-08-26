@@ -915,7 +915,10 @@ function inicializarEventosDeFiltros()
             if (inputMinPrecio) inputMinPrecio.value = "";
             if (inputMaxPrecio) inputMaxPrecio.value = ""; // Vaciamos para que asuma cualquier monto
             if (checkSelectAll) checkSelectAll.checked = true;
-            
+            if (checkboxesListado) {
+                checkboxesListado.forEach(cb => cb.checked = true);
+            }
+
             if (checkboxesTipo) {
                 checkboxesTipo.forEach(cb => {
                     cb.checked = true;
