@@ -1245,37 +1245,35 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
     
-
     // =========================================================================
     // SRE MOTOR DE INTERSECCIÓN DIRECTA Y PUREZA ABSOLUTA DE DATOS
-    // Lectura literal del valor de la celda de la Sheet en minúsculas y singular.
+    // Prioridad Absoluta al Canal Maestro: Si "Seleccione todos" está activo,
+    // se aprueba la propiedad inmediatamente para mostrar los datos base (5, 2 o 3).
     // =========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
-    // Normalización de la transacción activa en memoria RAM para evitar fallos de strings
-    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
-
     // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
-    // Si la opción "Seleccione todos" está activa en la pantalla, el flujo se libera
-    // por completo para recargar las propiedades base (5 de Venta, 2 de Alquiler o 3 Vendidas).
+    // ¡REGLA DE ORO!: Si el botón maestro está encendido, no evaluamos restricciones individuales.
+    // Retornamos true inmediatamente para que fluyan las 5 propiedades de Venta.
     if (checkMaestro && checkMaestro.checked) 
     { // --> Aqui inicia Aprobación por Canal Maestro Activo
         return true;
     } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
 
     // B. REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si "Seleccione todos" está apagado y el usuario no marcó nada individualmente, da 0.
+    // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
     if (cantidadDeChecksMarcados === 0) 
     { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
         return false; 
     } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
 
-    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET
+    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET (Cuando hay un check exclusivo)
     const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
     const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
+    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
 
     // ESCENARIO MAESTRO: "VENTA"
     if (txActual === "venta" || txActual === "en venta") 
@@ -1308,7 +1306,7 @@ function evaluarCriteriosDeFiltrado(prop)
         {
             return true;
         }
-        return false; // Cualquier otra opción individual bajo Alquiler muestra 0 propiedades
+        return false; 
     } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
     // ESCENARIO MAESTRO: "VENDIDO"
@@ -1318,8 +1316,11 @@ function evaluarCriteriosDeFiltrado(prop)
         {
             return true;
         }
-        return false; // Cualquier otra opción individual bajo Vendida muestra 0 propiedades
+        return false; 
     } // <-- Aqui finaliza Evaluación estricta para Vendidas
+
+    return false;
+
 
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
