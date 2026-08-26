@@ -1010,35 +1010,41 @@ function inicializarEventosDeFiltros()
     const checkTodos = document.getElementById('check-todos-listados');
     // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
     
-
     // =========================================================================
     // SRE REFACTOR: CONTROLADOR DIRECTO PARA EL BOTÓN "SELECCIONE TODOS"
-    // Al activarse, limpia visualmente los criterios individuales inferiores
-    // y vacía el almacenamiento de la RAM para habilitar el flujo libre de la app.
+    // Sincroniza la UI: Si se marca, enciende todos los checks y muestra todo.
+    // Si se desmarca, apaga todos los checks individuales y oculta todo.
     // =========================================================================
     if (checkTodos) 
     { // --> Aqui inicia Condicional de existencia del nodo checkTodos
         checkTodos.addEventListener('change', (e) => 
         { // --> Aqui inicia Evento de escucha para el botón maestro del panel
             if (e.target.checked) 
-            { // --> Aqui inicia Reseteo reactivo por activación de selección total
-                // Desmarcar visualmente todas las casillas individuales inferiores
+            { // --> Aqui inicia Activación total: Enciende todo el panel
                 checkboxesListado.forEach(cb => 
-                { // --> Aqui inicia Limpieza visual del panel inferior
-                    cb.checked = false;
-                }); // <-- Aqui finaliza Limpieza visual del panel inferior
+                { // --> Aqui inicia Seteo visual afirmativo inferior
+                    cb.checked = true;
+                }); // <-- Aqui finaliza Seteo visual afirmativo inferior
                 
-                // Vaciar el almacenamiento interno para que el motor reconozca flujo libre
                 state.filtros.tiposListado.clear();
-            } // <-- Aqui finaliza Reseteo reactivo por activación de selección total
+            } // <-- Aqui finaliza Activación total: Enciende todo el panel
+            else 
+            { // --> Aqui inicia Desactivación total: Apaga todo el panel
+                checkboxesListado.forEach(cb => 
+                { // --> Aqui inicia Seteo visual negativo inferior
+                    cb.checked = false;
+                }); // <-- Aqui finaliza Seteo visual negativo inferior
+                
+                state.filtros.tiposListado.clear();
+            } // <-- Aqui finaliza Desactivación total: Apaga todo el panel
             
-            // Disparar inmediatamente la sincronización del catálogo y marcadores
             if (typeof ejecutarTuberiaSincronizada === 'function') 
             { // --> Aqui inicia Refresco atómico de componentes visuales
                 ejecutarTuberiaSincronizada();
             } // <-- Aqui finaliza Refresco atómico de componentes visuales
         }); // <-- Aqui finaliza Evento de escucha para el botón maestro del panel
     } // <-- Aqui finaliza Condicional de existencia del nodo checkTodos
+
 
     // =========================================================================
     // ENLACE MAESTRO: CAPTURA REACTIVA CON EXCLUSIÓN MUTUA PARA SELECCIÓN ÚNICA
