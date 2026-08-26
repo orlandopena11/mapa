@@ -1318,33 +1318,26 @@ function evaluarCriteriosDeFiltrado(prop)
     
     // =========================================================================
     // SRE DEFINITIVE FIX: EXTRACCIÓN DE CONSTANTES AL ÁMBITO GLOBAL DE LA FUNCIÓN
-    // Declaración sin cortocircuitos para alimentar correctamente tus espías inferiores.
+    // Declaración libre de mutaciones para alimentar los espías inferiores de la app
     // =========================================================================
-    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
-    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
-
-    // INTERSECCIÓN 2: REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
-    if (checkMaestro && checkMaestro.checked === false && cantidadDeChecksMarcados === 0) 
-    { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
-        return false; 
-    } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
+    const situacionBD = String(prop.situacion_propiedad || "");
+    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value) : "";
+    const txActual = String(filtroTransaccion || "Venta");
 
     // INTERSECCIÓN 3: EVALUACIÓN DE CASILLAS INDIVIDUALES DE SELECCIÓN ÚNICA
-    // Si no está activo el botón maestro "Seleccione todos", procesamos el filtro individual.
+    // Si no está activo el botón maestro "Seleccione todos", procesamos el filtro individual de forma simétrica.
     if (checkMaestro && checkMaestro.checked === false) 
     { // --> Aqui inicia Bloque de evaluación por check individual activo
         // ESCENARIO MAESTRO: "VENTA"
-        if (txActual === "venta" || txActual === "en venta") 
+        if (txActual === "Venta" || txActual === "En venta") 
         { // --> Aqui inicia Evaluación estricta para Ventas
-            if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
+            if (situacionBD === "Nueva Construcción" || situacionBD === "Embargo") 
             {
                 return false;
             }
-            if (filtroUnicoUI === "pre ejecucion hipoteca") 
+            if (filtroUnicoUI === "Pre-ejecución Hipoteca") 
             {
-                if (situacionBD !== "pre ejecucion hipoteca") return false;
+                if (situacionBD !== "Pre-ejecución Hipoteca") return false;
             }
             else 
             {
@@ -1353,19 +1346,20 @@ function evaluarCriteriosDeFiltrado(prop)
         } // <-- Aqui finaliza Evaluación estricta para Ventas
 
         // ESCENARIO MAESTRO: "ALQUILER"
-        else if (txActual === "alquiler" || txActual === "para el alquiler") 
+        else if (txActual === "Alquiler" || txActual === "Para el alquiler") 
         { // --> Aqui inicia Evaluación estricta para Alquileres
-            if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") { /* Pasa */ }
-            else if (situacionBD === "embargo" && filtroUnicoUI === "embargo") { /* Pasa */ }
+            if (situacionBD === "Nueva Construcción" && filtroUnicoUI === "Nueva Construcción") { /* Pasa */ }
+            else if (situacionBD === "Embargo" && filtroUnicoUI === "Embargo") { /* Pasa */ }
             else return false;
         } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
         // ESCENARIO MAESTRO: "VENDIDO"
-        else if (txActual === "vendido" || txActual === "vendidas") 
+        else if (txActual === "Vendido" || txActual === "Vendidas") 
         { // --> Aqui inicia Evaluación estricta para Vendidas
-            if (situacionBD !== "propietario" || filtroUnicoUI !== "propietario") return false;
+            if (situacionBD !== "Propietario" || filtroUnicoUI !== "Propietario") return false;
         } // <-- Aqui finaliza Evaluación estricta para Vendidas
     } // <-- Aqui finaliza Bloque de evaluación por check individual activo
+
 
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
