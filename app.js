@@ -1320,9 +1320,9 @@ function evaluarCriteriosDeFiltrado(prop)
     // SRE DEFINITIVE FIX: EXTRACCIÓN DE CONSTANTES AL ÁMBITO GLOBAL DE LA FUNCIÓN
     // Declaración sin cortocircuitos para alimentar correctamente tus espías inferiores.
     // =========================================================================
-    const situacionBD = String(prop.situacion_propiedad || "");
-    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value) : "";
-    const txActual = String(filtroTransaccion || "Venta");
+    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();;
+    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim(); : "";
+    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();;
 
     // INTERSECCIÓN 2: REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
     // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
