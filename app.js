@@ -846,6 +846,7 @@ function inicializarEventosDeFiltros()
     // (incluyendo la nueva opción de pre-ejecución) nazcan marcados por defecto al iniciar la app.
     if (checkboxesListado) 
     { // --> Aqui inicia Condicional de marcado por defecto en la carga inicial
+        const checkboxesListado = document.querySelectorAll('.more-filter-cb');
         checkboxesListado.forEach(cb => 
         { // --> Aqui inicia Iteración forzada de encendido visual
             cb.checked = true;
