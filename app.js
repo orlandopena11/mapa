@@ -115,9 +115,15 @@ function normalizarPropiedad(prop)
         // GEOLOCALIZACIÓN INTEGRAL ASIGNADA DESDE LAS LLAVES REALES DEL BACKEND
         latitud: parseFloat(prop.latitud || -12.125),
         longitud: parseFloat(prop.longitud || -76.995),
-        
+
+        // DATOS TÉCNICOS ACOPLADOS EN LÍNEA DIRECTA CON TU CODIGO.GS (SIN SUB-OBJETO SPECS)
+        habitaciones: parseInt(prop.habitaciones || 0, 10),
+        banos: parseInt(prop.banos || 0, 10),
+        area_construida: parseFloat(prop.area_construida || 0),
+
+        situacion_propiedad: String(prop.situacion_propiedad || ""),
         // Datos técnicos del sub-objeto specs o mapeados directamente
-        habitaciones: parseInt(prop.specs && prop.specs.habitaciones ? prop.specs.habitaciones : (prop.habitaciones || 3)),
+        /*habitaciones: parseInt(prop.specs && prop.specs.habitaciones ? prop.specs.habitaciones : (prop.habitaciones || 3)),
         banos: parseInt(prop.specs && prop.specs.banos ? prop.specs.banos : (prop.banos || 2)),
         area_construida: parseFloat(prop.specs && prop.specs.area_construida ? prop.specs.area_construida : (prop.area_construida || 0)),
         // Dentro de normalizarPropiedad:
