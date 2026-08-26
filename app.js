@@ -1218,6 +1218,7 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
     
+
     // =========================================================================
     // SRE MOTOR DE INTERSECCIÓN DIRECTA Y PUREZA ABSOLUTA DE DATOS
     // Lectura literal del valor de la celda de la Sheet en minúsculas y singular.
@@ -1228,13 +1229,16 @@ function evaluarCriteriosDeFiltrado(prop)
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
     // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
+    // Si la opción "Seleccione todos" está activa en la UI, liberamos el paso instantáneamente 
+    // para que se muestren las propiedades base de la transacción (5 para Venta, 2 Alquiler, 3 Vendidas).
     if (checkMaestro && checkMaestro.checked) 
     { // --> Aqui inicia Aprobación por Canal Maestro Activo
-        // No aplica restricciones individuales avanzados; fluyen las 5 propiedades directo a los espías
+        return true;
     } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
 
     // B. REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    else if (cantidadDeChecksMarcados === 0) 
+    // Si "Seleccione todos" está apagado y no hay casillas individuales marcadas, se oculta todo.
+    if (cantidadDeChecksMarcados === 0) 
     { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
         return false; 
     } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
@@ -1252,14 +1256,14 @@ function evaluarCriteriosDeFiltrado(prop)
             return false;
         } // <-- Aqui finaliza Expulsión por Regla de Negocio
         
-        // SRE INTEGRACIÓN: Validación explícita y unívoca para "pre ejecucion hipoteca"
+        // Validación unívoca para el criterio seleccionado en la interfaz
         if (filtroUnicoUI === "pre ejecucion hipoteca") 
-        { // --> Aqui inicia Condicional de enganche para pre-ejecuciones
-            if (situacionBD !== "pre ejecucion hipoteca") return false;
-        } // <-- Aqui finaliza Condicional de enganche para pre-ejecuciones
+        { // --> Aqui inicia Validación para pre-ejecuciones
+            return situacionBD === "pre ejecucion hipoteca";
+        } // <-- Aqui finaliza Validación para pre-ejecuciones
         else 
         { // --> Aqui inicia Validación para el resto de checkboxes individuales de Venta
-            if (situacionBD !== filtroUnicoUI) return false;
+            return situacionBD === filtroUnicoUI;
         } // <-- Aqui finaliza Validación para el resto de checkboxes individuales de Venta
     } // <-- Aqui finaliza Evaluación estricta para Ventas
 
@@ -1268,16 +1272,13 @@ function evaluarCriteriosDeFiltrado(prop)
     { // --> Aqui inicia Evaluación estricta para Alquileres
         if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
         {
-            // Deja pasar libremente para que el espía inferior tome el control
+            return true;
         }
-        else if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
+        if (situacionBD === "embargo" && filtroUnuiUI === "embargo") 
         {
-            // Deja pasar libremente para que el espía inferior tome el control
+            return true;
         }
-        else 
-        {
-            return false;
-        }
+        return false; // Cualquier otra opción individual bajo Alquiler muestra 0 propiedades
     } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
     // ESCENARIO MAESTRO: "VENDIDO"
@@ -1285,13 +1286,11 @@ function evaluarCriteriosDeFiltrado(prop)
     { // --> Aqui inicia Evaluación estricta para Vendidas
         if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
         {
-            // Deja pasar libremente para que el espía inferior tome el control
+            return true;
         }
-        else 
-        {
-            return false;
-        }
+        return false; // Cualquier otra opción individual bajo Vendida muestra 0 propiedades
     } // <-- Aqui finaliza Evaluación estricta para Vendidas
+
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
     console.log(`🔍 DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
