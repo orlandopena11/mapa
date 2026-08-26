@@ -1228,16 +1228,19 @@ function evaluarCriteriosDeFiltrado(prop)
     const checkMaestro = document.getElementById('check-todos-listados');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
+    // Normalización de la transacción activa en memoria RAM para evitar fallos de strings
+    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
+
     // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
-    // Si la opción "Seleccione todos" está activa en la UI, liberamos el paso instantáneamente 
-    // para que se muestren las propiedades base de la transacción (5 para Venta, 2 Alquiler, 3 Vendidas).
+    // Si la opción "Seleccione todos" está activa en la pantalla, el flujo se libera
+    // por completo para recargar las propiedades base (5 de Venta, 2 de Alquiler o 3 Vendidas).
     if (checkMaestro && checkMaestro.checked) 
     { // --> Aqui inicia Aprobación por Canal Maestro Activo
         return true;
     } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
 
     // B. REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si "Seleccione todos" está apagado y no hay casillas individuales marcadas, se oculta todo.
+    // Si "Seleccione todos" está apagado y el usuario no marcó nada individualmente, da 0.
     if (cantidadDeChecksMarcados === 0) 
     { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
         return false; 
@@ -1248,7 +1251,7 @@ function evaluarCriteriosDeFiltrado(prop)
     const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
 
     // ESCENARIO MAESTRO: "VENTA"
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
+    if (txActual === "venta" || txActual === "en venta") 
     { // --> Aqui inicia Evaluación estricta para Ventas
         // Si el valor de la columna U es "nueva construccion" o "embargo", muestra 0 propiedades en Venta
         if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
@@ -1268,13 +1271,13 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Evaluación estricta para Ventas
 
     // ESCENARIO MAESTRO: "ALQUILER"
-    else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
+    else if (txActual === "alquiler" || txActual === "para el alquiler") 
     { // --> Aqui inicia Evaluación estricta para Alquileres
         if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
         {
             return true;
         }
-        if (situacionBD === "embargo" && filtroUnuiUI === "embargo") 
+        if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
         {
             return true;
         }
@@ -1282,7 +1285,7 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
     // ESCENARIO MAESTRO: "VENDIDO"
-    else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
+    else if (txActual === "vendido" || txActual === "vendidas") 
     { // --> Aqui inicia Evaluación estricta para Vendidas
         if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
         {
