@@ -842,14 +842,23 @@ function inicializarEventosDeFiltros()
     const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
 
-    // =========================================================================
-    // SINCRONIZACIÓN INICIAL DEL SET CON LOS CHECKBOXES DEL HTML REAL
-    // =========================================================================
+    // SRE FIX: Forzar que visualmente todos los checkboxes individuales del listado
+    // (incluyendo la nueva opción de pre-ejecución) nazcan marcados por defecto al iniciar la app.
+    if (checkboxesListado) 
+    { // --> Aqui inicia Condicional de marcado por defecto en la carga inicial
+        checkboxesListado.forEach(cb => 
+        { // --> Aqui inicia Iteración forzada de encendido visual
+            cb.checked = true;
+        }); // <-- Aqui finaliza Iteración forzada de encendido visual
+    } // <-- Aqui finaliza Condicional de marcado por defecto en la carga inicial
+
+    // Sincronización nativa para tipos de propiedad de fábrica
     checkboxesTipo.forEach(cb => {
         if (cb.checked) {
             state.filtros.tiposPropiedad.add(cb.value);
         }
     });
+
     // =========================================================================
 
     
@@ -990,7 +999,7 @@ function inicializarEventosDeFiltros()
     // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
     const checkboxesListado = document.querySelectorAll('.more-filter-cb'); 
 
-        // =========================================================================
+    // =========================================================================
     // SRE REFACTOR: CONTROLADOR DIRECTO PARA EL BOTÓN "SELECCIONE TODOS"
     // Al activarse, limpia visualmente los criterios individuales inferiores
     // y vacía el almacenamiento de la RAM para habilitar el flujo libre de la app.
