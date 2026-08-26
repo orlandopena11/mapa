@@ -918,9 +918,13 @@ function inicializarEventosDeFiltros()
             if (inputMinPrecio) inputMinPrecio.value = "";
             if (inputMaxPrecio) inputMaxPrecio.value = ""; // Vaciamos para que asuma cualquier monto
             if (checkSelectAll) checkSelectAll.checked = true;
-            if (checkboxesListado) {
-                checkboxesListado.forEach(cb => cb.checked = true);
-            }
+ 
+            // SRE FIX DEFINITIVO: Captura local en tiempo de ejecución para evitar errores de inicialización
+            const checkboxesFisicosListado = document.querySelectorAll('.more-filter-cb');
+            if (checkboxesFisicosListado) 
+            { // --> Aqui inicia Encendido forzado de casillas al resetear
+                checkboxesFisicosListado.forEach(cb => cb.checked = true);
+            } // <-- Aqui finaliza Encendido forzado de casillas al resetear
 
             if (checkboxesTipo) {
                 checkboxesTipo.forEach(cb => {
