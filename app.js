@@ -1067,49 +1067,6 @@ function inicializarEventosDeFiltros()
 } // <--Aqui finaliza Función inicializarEventosDeFiltros
 
 
-    // =========================================================================
-    // ENLACE MAESTRO: CAPTURA REACTIVA CON EXCLUSIÓN MUTUA PARA SELECCIÓN ÚNICA
-    // Este bloque intercepta los clicks en los checkboxes avanzados de situación
-    // y desmarca automáticamente a los demás para forzar un único valor activo.
-    // =========================================================================
-    checkboxesListado.forEach(cb => 
-    { // --> Aqui inicia Callback forEach para checkboxes de exclusión mutua
-        cb.addEventListener('change', (e) => 
-        { // --> Aqui inicia Callback al cambiar un check individual
-            if (e.target.checked) 
-            { // --> Aqui inicia Condicional si el usuario activa el elemento
-                // Desmarcar físicamente todos los demás checkboxes del panel visual
-                checkboxesListado.forEach(otroCb => 
-                { // --> Aqui inicia Limpieza de controles hermanos
-                    if (otroCb !== e.target) 
-                    { // --> Aqui inicia Validación de exclusión
-                        otroCb.checked = false;
-                        state.filtros.tiposListado.delete(otroCb.value);
-                    } // <-- Aqui finaliza Validación de exclusión
-                }); // <-- Aqui finaliza Limpieza de controles hermanos
-                
-                // Forzar que en la memoria RAM (state) solo viva este valor único
-                state.filtros.tiposListado.clear();
-                state.filtros.tiposListado.add(e.target.value);
-            } // <-- Aqui finaliza Condicional si el usuario activa el elemento
-            else 
-            { // --> Aqui inicia Bloque else por si el usuario desmarca la opción activa
-                state.filtros.tiposListado.delete(e.target.value);
-            } // <-- Aqui finaliza Bloque else por si el usuario desmarca la opción activa
-            
-
-            
-            // Actualizar instantáneamente los componentes cartográficos y el catálogo derecho
-            if (typeof ejecutarTuberiaSincronizada === 'function') 
-            { // --> Aqui inicia Disparo de actualización del DOM
-                ejecutarTuberiaSincronizada();
-            } // <-- Aqui finaliza Disparo de actualización del DOM
-        }); // <-- Aqui finaliza Callback al cambiar un check individual
-    }); // <-- Aqui finaliza Callback forEach para checkboxes de exclusión mutua
-
-    
-} // <--Aqui finaliza Función inicializarEventosDeFiltros
-
 
 
     
