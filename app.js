@@ -906,8 +906,11 @@ function inicializarEventosDeFiltros()
     
     // 6. BOTONES DE ACCIÓN: Limpiador maestro y aplicador del menú expandido
     // =========================================================================
-    // 6. REINICIALIZACIÓN SIMÉTRICA Y LIMPIEZA MAESTRA DE FILTROS (CORREGIDO)
     // =========================================================================
+    // SRE INITIALIZATION FIX: Declaración prioritaria de selectores avanzados
+    // =========================================================================
+    const checkboxesListado = document.querySelectorAll('.more-filter-cb');
+
     const btnReset = document.getElementById('master-reset-btn');
     if (btnReset) {
         btnReset.addEventListener('click', () => {
@@ -1000,7 +1003,7 @@ function inicializarEventosDeFiltros()
     // =========================================================================
     const checkTodos = document.getElementById('check-todos-listados');
     // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
-    const checkboxesListado = document.querySelectorAll('.more-filter-cb'); 
+    
 
     // =========================================================================
     // SRE REFACTOR: CONTROLADOR DIRECTO PARA EL BOTÓN "SELECCIONE TODOS"
