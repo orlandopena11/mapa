@@ -1255,72 +1255,59 @@ function evaluarCriteriosDeFiltrado(prop)
     const checkMaestro = document.getElementById('check-todos-listados');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
-    // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
-    // ¡REGLA DE ORO ABSOLUTA!: Si la casilla "Seleccione todos" está activa en la pantalla,
-    // el motor rompe cualquier validación secundaria o de texto inferior y aprueba la propiedad.
-    // Esto garantiza que aparezcan tus 5 propiedades de Venta, 2 de Alquiler o 3 Vendidas al instante.
+    // A. CONDICIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
+    // Si el botón superior está encendido, el motor ignora las restricciones individuales inferiores
+    // y aprueba la propiedad de inmediato para que fluyan las 5 de Venta hacia tus espías azules.
     if (checkMaestro && checkMaestro.checked === true) 
     { // --> Aqui inicia Aprobación por Canal Maestro Activo
-        return true;
+        // Deja pasar la propiedad directamente al flujo inferior de aprobación
     } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
-
+    
     // B. REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si el maestro está apagado y el panel quedó con 0 casillas marcadas, se oculta todo.
-    if (cantidadDeChecksMarcados === 0) 
+    // Si el maestro está apagado y tampoco hay ninguna casilla individual marcada, se oculta todo.
+    else if (cantidadDeChecksMarcados === 0) 
     { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
         return false; 
     } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
 
-    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET (Cuando hay un check exclusivo)
-    const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
-    const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
+    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET (Cuando hay un check específico marcado)
+    else 
+    { // --> Aqui inicia Bloque de evaluación para casillas de selección única
+        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+        const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
+        const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();
 
-    // ESCENARIO MAESTRO: "VENTA"
-    if (txActual === "venta" || txActual === "en venta") 
-    { // --> Aqui inicia Evaluación estricta para Ventas
-        // Si el valor de la columna U es "nueva construccion" o "embargo", muestra 0 propiedades en Venta
-        if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
-        { // --> Aqui inicia Expulsión por Regla de Negocio
-            return false;
-        } // <-- Aqui finaliza Expulsión por Regla de Negocio
-        
-        // Validación unívoca para el criterio seleccionado en la interfaz
-        if (filtroUnicoUI === "pre ejecucion hipoteca") 
-        { // --> Aqui inicia Validación para pre-ejecuciones
-            return situacionBD === "pre ejecucion hipoteca";
-        } // <-- Aqui finaliza Validación para pre-ejecuciones
-        else 
-        { // --> Aqui inicia Validación para el resto de checkboxes individuales de Venta
-            return situacionBD === filtroUnicoUI;
-        } // <-- Aqui finaliza Validación para el resto de checkboxes individuales de Venta
-    } // <-- Aqui finaliza Evaluación estricta para Ventas
+        // ESCENARIO MAESTRO: "VENTA"
+        if (txActual === "venta" || txActual === "en venta") 
+        { // --> Aqui inicia Evaluación estricta para Ventas
+            if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
+            {
+                return false;
+            }
+            if (filtroUnicoUI === "pre ejecucion hipoteca") 
+            {
+                if (situacionBD !== "pre ejecucion hipoteca") return false;
+            }
+            else 
+            {
+                if (situacionBD !== filtroUnicoUI) return false;
+            }
+        } // <-- Aqui finaliza Evaluación estricta para Ventas
 
-    // ESCENARIO MAESTRO: "ALQUILER"
-    else if (txActual === "alquiler" || txActual === "para el alquiler") 
-    { // --> Aqui inicia Evaluación estricta para Alquileres
-        if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
-        {
-            return true;
-        }
-        if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
-        {
-            return true;
-        }
-        return false; 
-    } // <-- Aqui finaliza Evaluación estricta para Alquileres
+        // ESCENARIO MAESTRO: "ALQUILER"
+        else if (txActual === "alquiler" || txActual === "para el alquiler") 
+        { // --> Aqui inicia Evaluación estricta para Alquileres
+            if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") { /* Pasa */ }
+            else if (situacionBD === "embargo" && filtroUnicoUI === "embargo") { /* Pasa */ }
+            else return false;
+        } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
-    // ESCENARIO MAESTRO: "VENDIDO"
-    else if (txActual === "vendido" || txActual === "vendidas") 
-    { // --> Aqui inicia Evaluación estricta para Vendidas
-        if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
-        {
-            return true;
-        }
-        return false; 
-    } // <-- Aqui finaliza Evaluación estricta para Vendidas
-
-    return false;
+        // ESCENARIO MAESTRO: "VENDIDO"
+        else if (txActual === "vendido" || txActual === "vendidas") 
+        { // --> Aqui inicia Evaluación estricta para Vendidas
+            if (situacionBD !== "propietario" || filtroUnicoUI !== "propietario") return false;
+        } // <-- Aqui finaliza Evaluación estricta para Vendidas
+    } // <-- Aqui finaliza Bloque de evaluación para casillas de selección única
 
 
     
