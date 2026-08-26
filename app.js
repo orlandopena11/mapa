@@ -1218,81 +1218,67 @@ function evaluarCriteriosDeFiltrado(prop)
     } // <-- Aqui finaliza Condicional set tipos de propiedad activo
 
     // =========================================================================
-    // NUEVO FILTRO: INTERSECCIÓN LOGÍSTICA PARA SITUACIÓN DE LA PROPIEDAD
-    // =========================================================================
-    /*if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0) 
-    { // --> Aqui inicia Escape restrictivo por filtros vacios
-        return false; 
-    } // <-- Aqui finaliza Escape restrictivo por filtros vacios  */
-
-        // =========================================================================
-    // SRE REFACTOR: VALIDADOR DE EXCLUSIÓN MUTUA Y MATRIZ DE ÉXITO TRIDIMENSIONAL
-    // Cruza el filtro de transacciones principal con la casuística de selección
-    // única avanzada o la liberación total por medio del botón "Seleccione todos".
+    // SRE MOTOR DE INTERSECCIÓN DIRECTA Y PUREZA ABSOLUTA DE DATOS
+    // Lectura literal del valor de la celda de la Sheet en minúsculas y singular.
     // =========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
-    // CASO ESPECIAL: BOTÓN MAESTRO ACTIVO ("Seleccione todos")
-    // Si la casilla superior de "Seleccione todos" está marcada, se anulan las restricciones
-    // avanzadas y el motor muestra la totalidad de propiedades de la transacción actual (5, 2 o 3).
-    const esSeleccioneTodosActivo = checkMaestro && checkMaestro.checked;
-
-    // REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
-    // Si el botón maestro está apagado Y el usuario no ha marcado ninguna casilla individual,
-    // significa que apagó el panel avanzado explícitamente. Se ocultan todas las propiedades.
-    if (!esSeleccioneTodosActivo && cantidadDeChecksMarcados === 0) 
-    { // --> Aqui inicia Bloqueo por desmarcado explicito (Freno de Mano)
-        return false; 
-    } // <-- Aqui finaliza Bloqueo por desmarcado explicito (Freno de Mano)
-
-    // CARGA INICIAL O LIBERACIÓN MAESTRA
-    // Si "Seleccione todos" está activo, o si no hay ninguna casilla tocada en el panel,
-    // la propiedad pasa la validación avanzada (subordinada únicamente al filtro transaccional superior).
-    if (esSeleccioneTodosActivo || !checkboxActivo) 
-    { // --> Aqui inicia Aprobación por Flujo Abierto o Carga Inicial
+    // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
+    if (checkMaestro && checkMaestro.checked) 
+    { // --> Aqui inicia Aprobación por Canal Maestro Activo
         return true;
-    } // <-- Aqui finaliza Aprobación por Flujo Abierto o Carga Inicial
+    } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
 
-    // EVALUACIÓN DE SELECCIÓN ÚNICA CONTRA LA MATRIZ DE ÉXITO (Cuando hay un check específico marcado)
+    // B. REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
+    if (cantidadDeChecksMarcados === 0) 
+    { // --> Aqui inicia Bloqueo por desmarcado explícito (Freno de mano)
+        return false; 
+    } // <-- Aqui finaliza Bloqueo por desmarcado explícito (Freno de mano)
+
+    // C. COMPARACIÓN TEXTUAL LITERAL CON LA GOOGLE SHEET
     const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-    const filtroUnicoUI = String(checkboxActivo.value).toLowerCase().trim();
+    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
 
-    // INTERSECCIÓN DIMENSIONAL 1: ESCENARIO "VENTA"
+    // ESCENARIO MAESTRO: "VENTA"
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") 
-    { // --> Aqui inicia Bloque Evaluación Venta
+    { // --> Aqui inicia Evaluación estricta para Ventas
+        // Si el valor de la columna U es "nueva construccion" o "embargo", muestra 0 propiedades en Venta
         if (situacionBD === "nueva construccion" || situacionBD === "embargo") 
-        { // --> Aqui inicia Restricción de valores nulos para Venta
+        { // --> Aqui inicia Expulsión por Regla de Negocio
             return false;
-        } // <-- Aqui finaliza Restricción de valores nulos para Venta
+        } // <-- Aqui finaliza Expulsión por Regla de Negocio
+        
         return situacionBD === filtroUnicoUI;
-    } // <-- Aqui finaliza Bloque Evaluación Venta
+    } // <-- Aqui finaliza Evaluación estricta para Ventas
 
-    // INTERSECCIÓN DIMENSIONAL 2: ESCENARIO "ALQUILER"
+    // ESCENARIO MAESTRO: "ALQUILER"
     else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") 
-    { // --> Aqui inicia Bloque Evaluación Alquiler
+    { // --> Aqui inicia Evaluación estricta para Alquileres
         if (situacionBD === "nueva construccion" && filtroUnicoUI === "nueva construccion") 
-        { // --> Aqui inicia Match para PROP-003
+        {
             return true;
-        } // <-- Aqui finaliza Match para PROP-003
+        }
         if (situacionBD === "embargo" && filtroUnicoUI === "embargo") 
-        { // --> Aqui inicia Match para PROP-006
+        {
             return true;
-        } // <-- Aqui finaliza Match para PROP-006
-        return false; // Cualquier otra opción avanzada individual seleccionada bajo Alquiler muestra 0 propiedades
-    } // <-- Aqui finaliza Bloque Evaluación Alquiler
+        }
+        return false; 
+    } // <-- Aqui finaliza Evaluación estricta para Alquileres
 
-    // INTERSECCIÓN DIMENSIONAL 3: ESCENARIO "VENDIDO"
+    // ESCENARIO MAESTRO: "VENDIDO"
     else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") 
-    { // --> Aqui inicia Bloque Evaluación Vendido
+    { // --> Aqui inicia Evaluación estricta para Vendidas
         if (situacionBD === "propietario" && filtroUnicoUI === "propietario") 
-        { // --> Aqui inicia Match para PROP-008, PROP-009 y PROP-010
+        {
             return true;
-        } // <-- Aqui finaliza Match para PROP-008, PROP-009 y PROP-010
-        return false; // Cualquier otra opción avanzada individual seleccionada bajo Vendido muestra 0 propiedades
-    } // <-- Aqui finaliza Bloque Evaluación Vendido
+        }
+        return false; 
+    } // <-- Aqui finaliza Evaluación estricta para Vendidas
+
+    return false;
 
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
