@@ -1256,9 +1256,10 @@ function evaluarCriteriosDeFiltrado(prop)
     const cantidadDeChecksMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length;
 
     // A. VALIDACIÓN DE CANAL ABIERTO MAESTRO ("Seleccione todos")
-    // ¡REGLA DE ORO!: Si el botón maestro está encendido, no evaluamos restricciones individuales.
-    // Retornamos true inmediatamente para que fluyan las 5 propiedades de Venta.
-    if (checkMaestro && checkMaestro.checked) 
+    // ¡REGLA DE ORO ABSOLUTA!: Si la casilla "Seleccione todos" está activa en la pantalla,
+    // el motor rompe cualquier validación secundaria o de texto inferior y aprueba la propiedad.
+    // Esto garantiza que aparezcan tus 5 propiedades de Venta, 2 de Alquiler o 3 Vendidas al instante.
+    if (checkMaestro && checkMaestro.checked === true) 
     { // --> Aqui inicia Aprobación por Canal Maestro Activo
         return true;
     } // <-- Aqui finaliza Aprobación por Canal Maestro Activo
