@@ -1270,13 +1270,18 @@ function evaluarCriteriosDeFiltrado(prop)
     // =========================================================================
         if (state.filtros.tiposPropiedad.size > 0) 
     { // --> Aqui inicia Condicional set tipos de propiedad activo
-        const tipoLimpioBD = String(prop.tipo_prop_propiedad || prop.tipo_propiedad || '').toLowerCase().trim();
-        
-        const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => 
+        /*const tipoLimpioBD = String(prop.tipo_prop_propiedad || prop.tipo_propiedad || '').toLowerCase().trim(); */
+        const tipoLimpioBD = String(prop.tipo_propiedad || '');
+        /*const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => 
         {
             const filtroNorm = filtroActivo.toLowerCase().trim();
             return filtroNorm.includes(tipoLimpioBD) || tipoLimpioBD.includes(filtroNorm);
+        }); */
+        const cumpleTipo = Array.from(state.filtros.tiposPropiedad).some(filtroActivo => 
+        {
+            return filtroActivo === tipoLimpioBD;
         });
+
 
         if (!cumpleTipo) 
         {
