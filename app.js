@@ -864,11 +864,24 @@ function inicializarEventosDeFiltros()
         btnAplicarTipo.addEventListener('click', () => {
             if (state && state.filtros) {
                 state.filtros.tiposPropiedad.clear();
-                if (checkboxesTipo) {
-                    checkboxesTipo.forEach(cb => {
-                        if (cb.checked) state.filtros.tiposPropiedad.add(cb.value);
-                    });
-                }
+            // SRE FIX: Capturamos cuántas casillas individuales quedaron marcadas en el panel de tipos
+            const cantidadTiposMarcados = Array.from(checkboxesTipo).filter(cb => cb.checked).length;
+
+            if (cantidadTiposMarcados === 0) 
+            { // --> Si desmarcó absolutamente todo y dio "Aplicar Filtro"
+                // Inyectamos un valor ficticio para forzar al motor a ocultar todo el catálogo
+                state.filtros.tiposPropiedad.add("ninguno");
+            } // <-- Fin de protección para panel vacío
+            else 
+            { // --> Si el usuario sí tiene al menos una opción marcada (Casas, Departamentos, etc.)
+                checkboxesTipo.forEach(cb => {
+                    if (cb.checked) {
+                        state.filtros.tiposPropiedad.add(cb.value);
+                    }
+                });
+            } // <-- Fin de repoblación ordinaria de la RAM
+
+                
             }
             if (typeof ejecutarTuberiaSincronizada === 'function') {
                 ejecutarTuberiaSincronizada();
