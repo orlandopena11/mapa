@@ -858,7 +858,7 @@ function inicializarEventosDeFiltros()
     // SRE REFACTOR: CAPTURA COMPATIBLE PARA BOTÓN APLICAR TIPO
     // Escucha el click del botón azul para refrescar Casas, Departamentos, etc.
     // =========================================================================
-    btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
+    
     if (btnAplicarTipo) 
     { // --> Aqui inicia Evento seguro para el botón de aplicar tipo
         btnAplicarTipo.addEventListener('click', () => {
