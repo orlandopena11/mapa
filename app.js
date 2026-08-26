@@ -1010,10 +1010,11 @@ function inicializarEventosDeFiltros()
     const checkTodos = document.getElementById('check-todos-listados');
     // ¡ADAPTADO! Ahora busca exactamente la clase de tu HTML: "more-filter-cb"
     
+
     // =========================================================================
     // SRE REFACTOR: CONTROLADOR DIRECTO PARA EL BOTÓN "SELECCIONE TODOS"
-    // Sincroniza la UI: Si se marca, enciende todos los checks y muestra todo.
-    // Si se desmarca, apaga todos los checks individuales y oculta todo.
+    // Sincroniza la UI y la RAM de forma simétrica para que ninguna función
+    // del catálogo asuma que el panel avanzado se encuentra vacío.
     // =========================================================================
     if (checkTodos) 
     { // --> Aqui inicia Condicional de existencia del nodo checkTodos
@@ -1021,12 +1022,15 @@ function inicializarEventosDeFiltros()
         { // --> Aqui inicia Evento de escucha para el botón maestro del panel
             if (e.target.checked) 
             { // --> Aqui inicia Activación total: Enciende todo el panel
-                checkboxesListado.forEach(cb => 
-                { // --> Aqui inicia Seteo visual afirmativo inferior
-                    cb.checked = true;
-                }); // <-- Aqui finaliza Seteo visual afirmativo inferior
-                
+                // Vaciar la RAM para reconstruir de forma limpia y consistente
                 state.filtros.tiposListado.clear();
+                
+                checkboxesListado.forEach(cb => 
+                { // --> Aqui inicia Seteo visual y almacenamiento en RAM síncrono
+                    cb.checked = true;
+                    // SRE FIX: Guardamos el string literal en el Set de la memoria RAM
+                    state.filtros.tiposListado.add(cb.value);
+                }); // <-- Aqui finaliza Seteo visual y almacenamiento en RAM síncrono
             } // <-- Aqui finaliza Activación total: Enciende todo el panel
             else 
             { // --> Aqui inicia Desactivación total: Apaga todo el panel
@@ -1038,6 +1042,7 @@ function inicializarEventosDeFiltros()
                 state.filtros.tiposListado.clear();
             } // <-- Aqui finaliza Desactivación total: Apaga todo el panel
             
+            // Forzar la actualización inmediata de la interfaz cartográfica y catálogo
             if (typeof ejecutarTuberiaSincronizada === 'function') 
             { // --> Aqui inicia Refresco atómico de componentes visuales
                 ejecutarTuberiaSincronizada();
