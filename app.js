@@ -1321,7 +1321,7 @@ function evaluarCriteriosDeFiltrado(prop)
     // Declaración sin cortocircuitos para alimentar correctamente tus espías inferiores.
     // =========================================================================
     const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();;
-    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim(); : "";
+    const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
     const txActual = String(filtroTransaccion || "Venta").toLowerCase().trim();;
 
     // INTERSECCIÓN 2: REGLA DE EXCLUSIÓN TOTAL (FRENO DE MANO)
