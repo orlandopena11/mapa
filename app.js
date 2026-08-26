@@ -842,16 +842,17 @@ function inicializarEventosDeFiltros()
     const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
 
-    // SRE FIX: Forzar que visualmente todos los checkboxes individuales del listado
-    // (incluyendo la nueva opción de pre-ejecución) nazcan marcados por defecto al iniciar la app.
-    if (checkboxesListado) 
-    { // --> Aqui inicia Condicional de marcado por defecto en la carga inicial
-        const checkboxesListado = document.querySelectorAll('.more-filter-cb');
-        checkboxesListado.forEach(cb => 
-        { // --> Aqui inicia Iteración forzada de encendido visual
+    // =========================================================================
+    // SRE DEFINITIVE FIX: DECLARACIÓN EN EL TOPE Y MARCADO INICIAL COMPLETO
+    // Se declara la constante en el momento justo para erradicar el ReferenceError.
+    // =========================================================================
+    const checkboxesFisicosListadoInicial = document.querySelectorAll('.more-filter-cb');
+    if (checkboxesFisicosListadoInicial) 
+    { // --> Aqui inicia Bloque seguro de encendido visual de inicio
+        checkboxesFisicosListadoInicial.forEach(cb => {
             cb.checked = true;
-        }); // <-- Aqui finaliza Iteración forzada de encendido visual
-    } // <-- Aqui finaliza Condicional de marcado por defecto en la carga inicial
+        });
+    } // <-- Aqui finaliza Bloque seguro de encendido visual de inicio
 
     // Sincronización nativa para tipos de propiedad de fábrica
     checkboxesTipo.forEach(cb => {
