@@ -1749,6 +1749,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
                         </div>
                         <p style="font-size: 16px; color: #2a2a2a; font-weight: 500; margin: 0;">${prop.direccion || prop.titulo || ''}</p>
                     </div>
+
                     <div style="flex: 1; background: #ffffff; padding: 24px; border: 1px solid #ddd; border-radius: 8px; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                         <button id="btn-solicitar-tour-galeria" style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
                         <button id="btn-contactar-agente-galeria" style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer;">Contacte con un agente</button>
@@ -1765,10 +1766,24 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
         if (elDireccion) { elDireccion.textContent = prop.direccion || prop.titulo || "Inmueble Seleccionado"; }
         if (elSpecs) { elSpecs.textContent = `${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} m²`; }
 
+        // BINDING SÍNCRONO INMEDIATO SRE: Evita el uso de setTimeout inestables
         document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => { gestionarCortinaSPA('cerrar'); });
         document.getElementById('btn-flotante-galeria')?.addEventListener('click', () => { gestionarCortinaSPA('galeria', prop); });
         
-        setTimeout(() => { inicializarEventosPopups(); }, 50);
+        // ACTIVACIÓN DIRECTA DE LOS EVENTOS DE LOS BOTONES DE LA FICHA DETALLE
+        document.getElementById("btn-solicitar-tour-galeria")?.addEventListener("click", () => { // --> Aqui inicia Apertura Tour Ficha Detalle
+            mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
+            gestionarPasosModalTour(1);
+        }); // <-- Aqui finaliza Apertura Tour Ficha Detalle
+
+        document.getElementById("btn-contactar-agente-galeria")?.addEventListener("click", () => { // --> Aqui inicia Apertura Agente Ficha Detalle
+            mostrarPopupAccion("modal-agente-comercial");
+            inyectarDatosPropiedadAlMensaje();
+        }); // <-- Aqui finaliza Apertura Agente Ficha Detalle
+
+        // Inicializador de respaldo para los listeners globales del formulario y modales
+        inicializarEventosPopups();
 
         for (let i = 1; i <= 5; i++) { // --> Aqui inicia Asignación de clics a fotos individuales del mosaico
             document.getElementById(`foto-disparador-${i}`)?.addEventListener('click', () => { gestionarCortinaSPA('galeria', prop); });
