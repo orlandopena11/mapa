@@ -1708,8 +1708,9 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
     // =========================================================================
     // INICIO DE CORRECCIÓN EXCLUSIVA: PAYLOAD CONTACTO AGENTE SIN VALORES FIJOS
     // =========================================================================
-    const propiedadActiva = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
-
+    // SRE FIX: Renombrado quirúrgico a 'propAsociadaAgente' para erradicar el SyntaxError de redeclaración
+    const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+    
     const payloadContacto = {
         target_sheet: "visita",              
         usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
