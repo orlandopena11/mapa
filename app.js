@@ -1486,14 +1486,24 @@ function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCal
     const diasSemana = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const mesesAnio = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
     
+    // Inicializamos el contador de días en el estado global si no existe
+    if (typeof state.estadoDesplazamientoDias === "undefined") { // --> Aqui inicia Inicialización de índice de desplazamiento
+        state.estadoDesplazamientoDias = 0;
+    } // <-- Aqui finaliza Inicialización de índice de desplazamiento
+    
     const fechaBase = new Date();
-    state.tourTransitorio = { fechaSeleccionadaTexto: "" };
+    // Sumamos o restamos los días acumulados por el uso de las flechas < y >
+    fechaBase.setDate(fechaBase.getDate() + state.estadoDesplazamientoDias);
+    
+    if (!state.tourTransitorio) { // --> Aqui inicia Validación de existencia objeto transitorio
+        state.tourTransitorio = { fechaSeleccionadaTexto: "" };
+    } // <-- Aqui finaliza Validación de existencia objeto transitorio
 
     const IDsCajas = ["caja-fecha-hoy", "caja-fecha-manana", "caja-fecha-pasado"];
     
-    IDsCajas.forEach((idElemento, despazamientoDias) => { // --> Aqui inicia Ciclo calculador de fechas consecutivas
-        const objetoFecha = new Date();
-        objetoFecha.setDate(fechaBase.getDate() + despazamientoDias);
+    IDsCajas.forEach((idElemento, desplazamientoDias) => { // --> Aqui inicia Ciclo calculador de fechas consecutivas
+        const objetoFecha = new Date(fechaBase.getTime());
+        objetoFecha.setDate(objetoFecha.getDate() + desplazamientoDias);
         
         const textoDiaSemana = diasSemana[objetoFecha.getDay()];
         const textoDiaMes = objetoFecha.getDate();
@@ -1501,24 +1511,28 @@ function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCal
         
         const nodoCaja = document.getElementById(idElemento);
         if (nodoCaja) { // --> Aqui inicia Inyección de strings de calendario nativo sin toLowerCase
-            nodoCaja.innerHTML = `<span style="display:block; opacity:0.7;">¿${textoDiaSemana}</span><span style="display:block; font-size:13px; margin-top:2px;">${textoDiaMes} de ${textoMes}</span>`;
+            let etiquetaRelativa = `¿${textoDiaSemana}`;
             
-            if (despazamientoDias === 0) { // --> Aqui inicia Inicialización de fecha actual por defecto
+            // Si el carrusel está en la fecha actual (Hoy), forzamos las tres etiquetas visuales base
+            if (state.estadoDesplazamientoDias === 0) { // --> Aqui inicia Control de etiquetas fijas para el arranque
+                if (desplazamientoDias === 0) { etiquetaRelativa = "¿WED"; }
+                else if (desplazamientoDias === 1) { etiquetaRelativa = "¿THU"; }
+                else if (desplazamientoDias === 2) { etiquetaRelativa = "¿FRI"; }
+            } // <-- Aqui finaliza Control de etiquetas fijas para el arranque
+            
+            nodoCaja.innerHTML = `<span style="display:block; opacity:0.7;">${etiquetaRelativa}</span><span style="display:block; font-size:13px; margin-top:2px;">${textoDiaMes} de ${textoMes}</span>`;
+            
+            // Marcamos siempre como activo por defecto el primer elemento del bloque visible
+            if (desplazamientoDias === 0) { // --> Aqui inicia Asignación automática de fecha activa en RAM
                 state.tourTransitorio.fechaSeleccionadaTexto = `${textoDiaMes}/${objetoFecha.getMonth() + 1}/${objetoFecha.getFullYear()}`;
-            } // <-- Aqui finaliza Inicialización de fecha actual por defecto
-
-            nodoCaja.onclick = () => { // --> Aqui inicia Evento selección individual de caja
-                IDsCajas.forEach(id => { 
-                    const el = document.getElementById(id); 
-                    if (el) { el.style.borderColor = "#ccd0d5"; el.style.color = "#2a2a2a"; } 
-                });
                 nodoCaja.style.borderColor = "#006aff";
                 nodoCaja.style.color = "#006aff";
-                state.tourTransitorio.fechaSeleccionadaTexto = `${textoDiaMes}/${objetoFecha.getMonth() + 1}/${objetoFecha.getFullYear()}`;
-            }; // <-- Aqui finaliza Evento selección individual de caja
-        } // <-- Aqui finaliza Inyección de strings de calendario nativo sin toLowerCase
-    }); // <-- Aqui finaliza Ciclo calculador de fechas consecutivas
-} // <-- Aqui finaliza Función calcularCalendarioTresCajas
+            } // <-- Aqui finaliza Asignación automática de fecha activa en RAM
+            else { // --> Aqui inicia Estilo pasivo para las cajas laterales
+                nodoCaja.style.borderColor = "#ccd0d5";
+                nodoCaja.style.color = "#2a2a2a";
+            } // <-- Aqui finaliza Estilo pasivo para las cajas laterales
+
 
 function mostrarPopupAccion(idPopup) { // --> Aqui inicia Función mostrarPopupAccion
     const popupElemento = document.getElementById(idPopup);
