@@ -1166,3 +1166,78 @@ div.leaflet-marker-icon.map-price-pill span {
     font-family: sans-serif;
     pointer-events: none;
 }
+
+/* ========================================================================
+   MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES (PRODUCTION V3)
+   Inyectar al final del archivo styles.css sin alterar clases superiores
+   ======================================================================== */
+
+/* Control de estados y opacidad para los modales flotantes */
+.modal-accion-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 7000;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Disparador de visibilidad usando especificidad por ID para evitar !important */
+#modal-tour-comercial.modal-activo,
+#modal-agente-comercial.modal-activo {
+    display: flex;
+    opacity: 1;
+}
+
+/* Contenedor interno con scroll para soportar pantallas pequeñas */
+.modal-tour-body-scroll {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 16px;
+}
+
+/* Ocultación limpia SPA para elementos de pasos inactivos */
+.seccion-modal-paso {
+    display: none;
+}
+
+#modal-tour-comercial .seccion-modal-paso.activo {
+    display: block;
+}
+
+/* Freno de red: Ocultación de botones y avisos legales por selectores específicos */
+#modal-tour-comercial .oculto,
+#modal-agente-comercial .oculto {
+    display: none;
+}
+
+/* Estilo semántico para el input de teléfono inválido */
+.campo-formulario input[type="tel"] {
+    transition: border-color 0.2s ease;
+}
+
+/* Animación sutil de entrada para el warning rojo */
+.error-mensaje-input {
+    animation: unificarAlertaSlidIn 0.25s ease-out forwards;
+}
+
+@keyframes unificarAlertaSlidIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+/* ========================================================================
+   FIN DEL MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES
+   ======================================================================== */
