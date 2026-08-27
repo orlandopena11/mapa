@@ -1631,7 +1631,29 @@ function inyectarDatosPropiedadAlMensaje() { // --> Aqui inicia Función inyecta
 } // <-- Aqui finaliza Función inyectarDatosPropiedadAlMensaje
 
 function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFormularioTour
-    event.preventDefault();
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: ANTI-DUPLICACIÓN POR BOTÓN Y CONTROL DE EVENTOS
+    // =========================================================================
+    if (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation(); // Detiene en seco cualquier ejecución redundante en paralelo
+    }
+
+    // Buscamos el elemento interactivo del formulario para congelar la acción del cliente
+    const botonEnvioTour = document.getElementById("form-solicitar-tour-completo") ? document.getElementById("form-solicitar-tour-completo").querySelector('button[type="submit"]') : null;
+    
+    if (botonEnvioTour) { // --> Aqui inicia Bloqueo estructural del gatillo de red
+        if (botonEnvioTour.disabled) {
+            return; // Cortocircuito inmediato si el usuario intenta clickear de nuevo
+        }
+        botonEnvioTour.disabled = true;
+        var textoOriginalBoton = botonEnvioTour.innerText;
+        botonEnvioTour.innerText = "Procesando...";
+    } // <-- Aqui finaliza Bloqueo estructural del gatillo de red
+    // =========================================================================
+    // FIN DE INYECCIÓN FRONTEND: ANTI-DUPLICACIÓN POR BOTÓN Y CONTROL DE EVENTOS
+    // =========================================================================
+
 
     if (!state.propiedadSeleccionadaId) { return; }
     const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
@@ -1690,7 +1712,28 @@ function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFor
 } // <-- Aqui finaliza Función procesarFormularioTour
 
 function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarFormularioAgente
-    event.preventDefault();
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: ANTI-DUPLICACIÓN POR BOTÓN EN CONTACTO AGENTE
+    // =========================================================================
+    if (event) {
+        event.preventDefault();
+        event.stopImmediatePropagation(); // Corta en seco cualquier disparo asíncrono en paralelo
+    }
+
+    // Ubicamos el gatillo de envío dentro del formulario de contacto para congelar la acción
+    const botonEnvioAgente = document.getElementById("form-contactar-agente") ? document.getElementById("form-contactar-agente").querySelector('button[type="submit"]') : null;
+    
+    if (botonEnvioAgente) { // --> Aqui inicia Bloqueo estructural del control de red
+        if (botonEnvioAgente.disabled) {
+            return; // Aborta inmediatamente si el proceso de envío ya está en tránsito
+        }
+        botonEnvioAgente.disabled = true;
+        botonEnvioAgente.innerText = "Enviando mensaje...";
+    } // <-- Aqui finaliza Bloqueo estructural del control de red
+    // =========================================================================
+    // FIN DE INYECCIÓN FRONTEND: ANTI-DUPLICACIÓN POR BOTÓN EN CONTACTO AGENTE
+    // =========================================================================
+
 
     if (!state.propiedadSeleccionadaId) { return; }
     const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
