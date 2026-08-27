@@ -225,8 +225,8 @@
 
   </div>
 
-    
-<!-- ========================================================================
+
+    <!-- ========================================================================
      MODALES FLOTANTES DE ACCIÓN COMERCIAL (SRE PRODUCTION V5)
      Estructura Maquetada Simétricamente al Diseño Nativo de Zillow
      ======================================================================== -->
@@ -244,9 +244,7 @@
         <!-- CUERPO DEL MODAL CON CONTENEDORES DE FLUJO PASO A PASO -->
         <div class="modal-tour-body-scroll">
             
-            <!-- ======================================================= -->
             <!-- PASO 1: HORARIOS, TARJETA CONTEXTUAL Y CARRUSEL DE 3 CAJAS -->
-            <!-- ======================================================= -->
             <div id="tour-paso-horarios" class="seccion-modal-paso activo">
                 
                 <!-- Tarjeta de Contexto Superior del Inmueble (Foto + Specs) -->
@@ -297,9 +295,7 @@
                 </div>
             </div>
 
-            <!-- ======================================================= -->
-            <!-- PASO 2: FORMULARIO AUTOMATIZADO CON CAPTURA COMERCIAL -->
-            <!-- ======================================================= -->
+                        <!-- PASO 2: FORMULARIO AUTOMATIZADO CON CAPTURA COMERCIAL -->
             <div id="tour-paso-confirmacion" class="seccion-modal-paso" style="display: none; padding: 0 4px;">
                 
                 <div class="encabezado-confirmacion-wrapper" style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f0f2f5; padding-bottom: 16px;">
@@ -333,8 +329,54 @@
 
                     <!-- CASILLA DE FINANCIAMIENTO EXACTA DE LA CAPTURA -->
                     <div class="campo-formulario-checkbox" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="tour-contacto-financiamiento" style="width: 18px; height: 18px; cursor: pointer;" checked>
+                        <label for="tour-contacto-financiamiento" style="font-size: 14px; font-weight: 600; color: #2a2a2a; cursor: pointer;">Quiero información de financiamiento</label>
+                    </div>
 
+                    <!-- LEYENDA LEGAL DE DESCARGO REQUERIDA -->
+                    <p class="leyenda-legal-modal-txt" style="font-size: 11px; line-height: 1.4; color: #666; text-align: justify; margin: 0; padding-top: 12px; border-top: 1px solid #f0f2f5;">
+                        Al presionar Solicitar tour, usted acepta que Zillow Group y sus filiales o Profesionales Inmobiliarios puedan llamarlo/enviarle un mensaje de texto sobre su consulta, lo que puede implicar el uso de medios automatizados y voces pregrabadas/artificiales. No necesita dar su consentimiento como condición para comprar cualquier propiedad, bienes o servicios. Se pueden aplicar tarifas de mensajes/datos.
+                    </p>
+                </form>
+            </div>
 
+        </div>
+
+        <!-- BASE FIJA PARA BOTÓN CONMUTABLE (SIGUIENTE / SOLICITAR TOUR) -->
+        <div class="modal-tour-footer-fijo" style="margin-top: 12px;">
+            <button type="button" id="btn-navegacion-siguiente-tour" style="width: 100%; background-color: #006aff; color: #ffffff; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;">Siguiente</button>
+            <button type="submit" form="form-solicitar-tour-completo" id="btn-enviar-solicitud-tour" style="width: 100%; background-color: #006aff; color: #ffffff; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; display: none;">Solicitar un tour</button>
+        </div>
+
+    </div>
+</div>
+
+    <!-- INTERFAZ FLOTANTE: CONTACTE CON UN AGENTE -->
+<div id="modal-agente-comercial" class="modal-accion-overlay" aria-hidden="true" role="dialog" aria-labelledby="titulo-modal-agente">
+    <div class="modal-accion-contenido" style="max-width: 460px; border-radius: 8px; font-family: sans-serif; position: relative;">
+        <div class="modal-tour-header">
+            <h3 id="titulo-modal-agente" style="font-size: 20px; font-weight: bold; color: #2a2a2a; margin: 10px 0;">Contactar Agente</h3>
+            <button type="button" class="btn-cerrar-popup" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #54565a;" aria-label="Cerrar modal">&times;</button>
+        </div>
+        <p class="modal-subtitulo-info" style="font-size: 14px; color: #54565a; margin-bottom: 20px;">Envíe un mensaje de interés. El sistema asignará automáticamente un asesor por prelación de zona y disponibilidad.</p>
+        
+        <form id="form-contactar-agente">
+            <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                <label for="agente-mensaje" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Mensaje</label>
+                <textarea id="agente-mensaje" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; font-family: sans-serif; box-sizing: border-box; resize: none;" required></textarea>
+            </div>
+
+            <div class="campo-formulario" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;">
+                <label for="agente-telefono" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Tu Teléfono Celular</label>
+                <input type="tel" id="agente-telefono" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" placeholder="Ej. 999888777" required>
+            </div>
+
+            <button type="submit" class="btn-enviar-formulario" style="width: 100%; background-color: #006aff; color: #ffffff; border: none; padding: 14px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer;">Enviar Mensaje de Interés</button>
+        </form>
+    </div>
+</div>
+
+    
 <!-- ========================================================================
      CORTINA SPA UNIFICADA (SISTEMA SIMPLIFICADO PARA PANTALLAS 2 Y 3)
      Ubicada en la raíz del body para deslizarse de forma natural sobre el mapa
