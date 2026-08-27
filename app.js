@@ -1718,12 +1718,19 @@ function ejecutarEnvioAppsScript(payload, idModal, idForm, mensajeExito) { // --
     if (typeof urlMiScriptGoogle === "undefined") { return; }
     console.log(`[SRE RED] Despachando payload hacia la API transaccional...`, payload);
 
+    // =========================================================================
+    // INICIO DE INYECCIÓN: BYPASS DE PREFLIGHT CORS MEDIANTE TEXT/PLAIN
+    // =========================================================================
     fetch(urlMiScriptGoogle, {
         method: "POST",
-        mode: "cors", 
-        headers: { "Content-Type": "application/json" },
+         mode: "no-cors", // Cambiado a no-cors para autorizar el envío asíncrono ciego
+        headers: { "Content-Type": "text/plain;charset=utf-8" }, // Evita el envío de OPTIONS
         body: JSON.stringify(payload)
     })
+    // =========================================================================
+    // FIN DE INYECCIÓN: BYPASS DE PREFLIGHT CORS MEDIANTE TEXT/PLAIN
+    // =========================================================================
+
     .then(res => { if (!res.ok) { throw new Error("Error en canalización"); } return res.json(); })
     .then(() => {
         alert(mensajeExito);
