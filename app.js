@@ -1434,6 +1434,7 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     if (btnTourGaleria) { // --> Aqui inicia Evento clic Tour Galería
         btnTourGaleria.addEventListener("click", () => {
             mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
         });
     } // <-- Aqui finaliza Evento clic Tour Galería
@@ -1481,6 +1482,44 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
 } // <-- Aqui finaliza Función inicializarEventosPopups
 
+function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCalendarioTresCajas
+    const diasSemana = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+    const mesesAnio = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+    
+    const fechaBase = new Date();
+    state.tourTransitorio = { fechaSeleccionadaTexto: "" };
+
+    const IDsCajas = ["caja-fecha-hoy", "caja-fecha-manana", "caja-fecha-pasado"];
+    
+    IDsCajas.forEach((idElemento, despazamientoDias) => { // --> Aqui inicia Ciclo calculador de fechas consecutivas
+        const objetoFecha = new Date();
+        objetoFecha.setDate(fechaBase.getDate() + despazamientoDias);
+        
+        const textoDiaSemana = diasSemana[objetoFecha.getDay()];
+        const textoDiaMes = objetoFecha.getDate();
+        const textoMes = mesesAnio[objetoFecha.getMonth()];
+        
+        const nodoCaja = document.getElementById(idElemento);
+        if (nodoCaja) { // --> Aqui inicia Inyección de strings de calendario nativo sin toLowerCase
+            nodoCaja.innerHTML = `<span style="display:block; opacity:0.7;">¿${textoDiaSemana}</span><span style="display:block; font-size:13px; margin-top:2px;">${textoDiaMes} de ${textoMes}</span>`;
+            
+            if (despazamientoDias === 0) { // --> Aqui inicia Inicialización de fecha actual por defecto
+                state.tourTransitorio.fechaSeleccionadaTexto = `${textoDiaMes}/${objetoFecha.getMonth() + 1}/${objetoFecha.getFullYear()}`;
+            } // <-- Aqui finaliza Inicialización de fecha actual por defecto
+
+            nodoCaja.onclick = () => { // --> Aqui inicia Evento selección individual de caja
+                IDsCajas.forEach(id => { 
+                    const el = document.getElementById(id); 
+                    if (el) { el.style.borderColor = "#ccd0d5"; el.style.color = "#2a2a2a"; } 
+                });
+                nodoCaja.style.borderColor = "#006aff";
+                nodoCaja.style.color = "#006aff";
+                state.tourTransitorio.fechaSeleccionadaTexto = `${textoDiaMes}/${objetoFecha.getMonth() + 1}/${objetoFecha.getFullYear()}`;
+            }; // <-- Aqui finaliza Evento selección individual de caja
+        } // <-- Aqui finaliza Inyección de strings de calendario nativo sin toLowerCase
+    }); // <-- Aqui finaliza Ciclo calculador de fechas consecutivas
+} // <-- Aqui finaliza Función calcularCalendarioTresCajas
+
 function mostrarPopupAccion(idPopup) { // --> Aqui inicia Función mostrarPopupAccion
     const popupElemento = document.getElementById(idPopup);
     if (popupElemento) { // --> Aqui inicia Validación inyección estado activo modal
@@ -1502,7 +1541,6 @@ function gestionarPasosModalTour(paso) { // --> Aqui inicia Función gestionarPa
     const pasoConfirmacion = document.getElementById("tour-paso-confirmacion");
     const btnSiguiente = document.getElementById("btn-navegacion-siguiente-tour");
     const btnEnviar = document.getElementById("btn-enviar-solicitud-tour");
-    const leyendaLegal = document.getElementById("leyenda-legal-tour");
     const tituloModal = document.getElementById("modal-tour-titulo-dinamico");
 
     if (paso === 1) { // --> Aqui inicia Activación de Paso 1 (Horarios UI)
@@ -1510,7 +1548,6 @@ function gestionarPasosModalTour(paso) { // --> Aqui inicia Función gestionarPa
         if (pasoConfirmacion) { pasoConfirmacion.style.display = "none"; }
         if (btnSiguiente) { btnSiguiente.style.display = "block"; }
         if (btnEnviar) { btnEnviar.style.display = "none"; }
-        if (leyendaLegal) { leyendaLegal.style.display = "none"; }
         if (tituloModal) { tituloModal.textContent = "Solicitar un tour"; }
     } // <-- Aqui finaliza Activación de Paso 1 (Horarios UI)
     else if (paso === 2) { // --> Aqui inicia Activación de Paso 2 (Formulario Contacto)
@@ -1518,8 +1555,18 @@ function gestionarPasosModalTour(paso) { // --> Aqui inicia Función gestionarPa
         if (pasoConfirmacion) { pasoConfirmacion.style.display = "block"; }
         if (btnSiguiente) { btnSiguiente.style.display = "none"; }
         if (btnEnviar) { btnEnviar.style.display = "block"; }
-        if (leyendaLegal) { leyendaLegal.style.display = "block"; }
         if (tituloModal) { tituloModal.textContent = "Confirma tu tour"; }
+
+        if (document.getElementById("tour-contacto-nombre")) { document.getElementById("tour-contacto-nombre").value = state.usuarioActual?.nombre || "Orlando Peña"; }
+        if (document.getElementById("tour-contacto-email")) { document.getElementById("tour-contacto-email").value = state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com"; }
+
+        const areaMensajeTour = document.getElementById("tour-contacto-mensaje");
+        if (areaMensajeTour && state.propiedadSeleccionadaId) { // --> Aqui inicia Concatenación de dirección contextual literal
+            const propActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+            if (propActiva) { // --> Aqui inicia Bloque de asignación string inglés
+                areaMensajeTour.value = `I am interested in ${propActiva.direccion || propActiva.titulo || 'this property'}.`;
+            } // <-- Aqui finaliza Bloque de asignación string inglés
+        } // <-- Aqui finaliza Concatenación de dirección contextual literal
     } // <-- Aqui finaliza Activación de Paso 2 (Formulario Contacto)
 } // <-- Aqui finaliza Función gestionarPasosModalTour
 
@@ -1547,20 +1594,24 @@ function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFor
     const campoNombre = document.getElementById("tour-contacto-nombre") ? document.getElementById("tour-contacto-nombre").value.trim() : "";
     const campoEmail = document.getElementById("tour-contacto-email") ? document.getElementById("tour-contacto-email").value.trim() : "";
     const campoMensaje = document.getElementById("tour-contacto-mensaje") ? document.getElementById("tour-contacto-mensaje").value.trim() : "";
+    
+    const nodeFinanciamiento = document.getElementById("tour-contacto-financiamiento");
+    const solicitaFinanciamientoTexto = nodeFinanciamiento && nodeFinanciamiento.checked ? "Sí" : "No";
 
     const telefonoTexto = campoTelefonoNode ? campoTelefonoNode.value.trim() : "";
     if (telefonoTexto === "" || telefonoTexto.length < 9) { // --> Aqui inicia Activación de Alerta de Validación Visual
         if (campoTelefonoNode) { campoTelefonoNode.style.borderColor = "#d92323"; }
-        if (warningTelefono) { warningTelefono.style.style.display = "block"; }
+        if (warningTelefono) { warningTelefono.style.display = "block"; }
         return; 
     } // <-- Aqui finaliza Activación de Alerta de Validación Visual
     else { // --> Aqui inicia Limpieza de Advertencia de Teléfono Válido
         if (campoTelefonoNode) { campoTelefonoNode.style.borderColor = "#e2e8f0"; }
-        if (warningTelefono) { warningTelefono.style.style.display = "none"; }
+        if (warningTelefono) { warningTelefono.style.display = "none"; }
     } // <-- Aqui finaliza Limpieza de Advertencia de Teléfono Válido
 
-    const horaSeleccionada = document.getElementById("hora-principal") ? document.getElementById("hora-principal").value : "05:30 pm";
-    const fechaFormateadaCombinada = "26/08/2026 " + horaSeleccionada; 
+    const horaSeleccionada = document.getElementById("hora-principal") ? document.getElementById("hora-principal").value : "18:00";
+    const fechaBaseElegida = state.tourTransitorio?.fechaSeleccionadaTexto || "26/08/2026";
+    const fechaFormateadaCombinada = `${fechaBaseElegida} ${horaSeleccionada} hrs`; 
 
     const payloadTour = {
         target_sheet: "visita", 
@@ -1575,7 +1626,8 @@ function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFor
         telefono: telefonoTexto, 
         creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com", 
         mensaje_usuario: campoMensaje,
-        nombre_contacto: campoNombre
+        nombre_contacto: campoNombre,
+        financiamiento: solicitaFinanciamientoTexto
     };
 
     typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadTour, "modal-tour-comercial", "form-solicitar-tour-completo", "¡Su solicitud al Tour ha sido agendada!");
@@ -1616,38 +1668,29 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
 } // <-- Aqui finaliza Función procesarFormularioAgente
 
 function ejecutarEnvioAppsScript(payload, idModal, idForm, mensajeExito) { // --> Aqui inicia Función ejecutarEnvioAppsScript
-    if (typeof urlMiScriptGoogle === "undefined") { // --> Aqui inicia Control de seguridad de variable de red
-        alert("Error: La URL del servidor de Google Apps Script no está definida.");
-        return;
-    } // <-- Aqui finaliza Control de seguridad de variable de red
-
+    if (typeof urlMiScriptGoogle === "undefined") { return; }
     console.log(`[SRE RED] Despachando payload hacia la API transaccional...`, payload);
 
     fetch(urlMiScriptGoogle, {
         method: "POST",
         mode: "cors", 
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
     })
-    .then(res => { // --> Aqui inicia Procesamiento de respuesta síncrona de red
-        if (!res.ok) { throw new Error("Error en canalización transaccional"); }
-        return res.json();
-    }) // <-- Aqui finaliza Procesamiento de respuesta síncrona de red
-    .then(() => { // --> Aqui inicia Despliegue de confirmación en inserción limpia
+    .then(res => { if (!res.ok) { throw new Error("Error en canalización"); } return res.json(); })
+    .then(() => {
         alert(mensajeExito);
         cerrarPopupAccion(idModal);
         const formulario = document.getElementById(idForm);
         if (formulario) { formulario.reset(); }
-    }) // <-- Aqui finaliza Despliegue de confirmación en inserción limpia
-    .catch(error => { // --> Aqui inicia Mecanismo de Contingencia por CORS en Apps Script
-        console.warn("! [SRE RED CONTINGENCIA] Procesando envío asíncrono con confirmación estándar.", error);
+    })
+    .catch(error => {
+        console.warn("! [SRE RED CONTINGENCIA] Procesando envío estándar.", error);
         alert(mensajeExito);
         cerrarPopupAccion(idModal);
         const formulario = document.getElementById(idForm);
         if (formulario) { formulario.reset(); }
-    }); // <-- Aqui finaliza Mecanismo de Contingencia por CORS en Apps Script
+    });
 } // <-- Aqui finaliza Función ejecutarEnvioAppsScript
 
 function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función gestionarCortinaSPA
@@ -1714,6 +1757,14 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
             </div>
         `;
 
+        // INYECCIÓN DINÁMICA SÍNCRONA A LA TARJETA CONTEXTUAL INTERNA DEL POPUP DESDE LA HOJA
+        const elFoto = document.getElementById("modal-tour-mini-foto");
+        const elDireccion = document.getElementById("modal-tour-mini-direccion");
+        const elSpecs = document.getElementById("modal-tour-mini-specs");
+        if (elFoto) { elFoto.src = f1; }
+        if (elDireccion) { elDireccion.textContent = prop.direccion || prop.titulo || "Inmueble Seleccionado"; }
+        if (elSpecs) { elSpecs.textContent = `${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} m²`; }
+
         document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => { gestionarCortinaSPA('cerrar'); });
         document.getElementById('btn-flotante-galeria')?.addEventListener('click', () => { gestionarCortinaSPA('galeria', prop); });
         
@@ -1724,7 +1775,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
         } // <-- Aqui finaliza Asignación de clics a fotos individuales del mosaico
     } // <-- Aqui finaliza Renderizado estructural Pantalla 2 (Detalle)
 
-        else if (tipoPantalla === 'galeria') { // --> Aqui inicia Renderizado estructural Pantalla 3 (Galería Split View)
+    else if (tipoPantalla === 'galeria') { // --> Aqui inicia Renderizado estructural Pantalla 3 (Galería Split View)
         const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
 
         cortina.innerHTML = `
@@ -1765,10 +1816,18 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
             </div>
         `;
 
+        const elFoto = document.getElementById("modal-tour-mini-foto");
+        const elDireccion = document.getElementById("modal-tour-mini-direccion");
+        const elSpecs = document.getElementById("modal-tour-mini-specs");
+        if (elFoto) { elFoto.src = fotoPortadaReal; }
+        if (elDireccion) { elDireccion.textContent = prop.direccion || prop.titulo || "Inmueble Seleccionado"; }
+        if (elSpecs) { elSpecs.textContent = `${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} m²`; }
+
         document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => { gestionarCortinaSPA('detalle', prop); });
         
         document.getElementById('btn-solicitar-tour-galeria-split')?.addEventListener('click', () => {
             mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
         });
     } // <-- Aqui finaliza Renderizado estructural Pantalla 3 (Galería Split View)
