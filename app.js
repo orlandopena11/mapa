@@ -1511,15 +1511,15 @@ function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCal
         
         const nodoCaja = document.getElementById(idElemento);
         if (nodoCaja) { // --> Aqui inicia Inyección de strings de calendario nativo sin toLowerCase
-            let etiquetaRelativa = `¿${textoDiaSemana}`;
-            
-            // Si el carrusel está en la fecha actual (Hoy), forzamos las tres etiquetas visuales base
-            if (state.estadoDesplazamientoDias === 0) { // --> Aqui inicia Control de etiquetas fijas para el arranque
-                if (desplazamientoDias === 0) { etiquetaRelativa = "¿WED"; }
-                else if (desplazamientoDias === 1) { etiquetaRelativa = "¿THU"; }
-                else if (desplazamientoDias === 2) { etiquetaRelativa = "¿FRI"; }
-            } // <-- Aqui finaliza Control de etiquetas fijas para el arranque
-            
+        // =========================================================================
+        // INICIO DE INYECCIÓN: CORRECCIÓN DE SIMETRÍA TEMPORAL DÍA DINÁMICO
+        // =========================================================================
+        // SRE FIX: Extraemos dinámicamente el día real de la semana y removemos el prefijo estático '¿'
+        let etiquetaRelativa = `${textoDiaSemana}`;
+        // =========================================================================
+        // FIN DE INYECCIÓN: CORRECCIÓN DE SIMETRÍA TEMPORAL DÍA DINÁMICO
+        // =========================================================================
+    
             nodoCaja.innerHTML = `<span style="display:block; opacity:0.7;">${etiquetaRelativa}</span><span style="display:block; font-size:13px; margin-top:2px;">${textoDiaMes} de ${textoMes}</span>`;
             
             // Marcamos siempre como activo por defecto el primer elemento del bloque visible
