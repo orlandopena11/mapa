@@ -1660,23 +1660,32 @@ function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFor
     const fechaBaseElegida = state.tourTransitorio?.fechaSeleccionadaTexto || "26/08/2026";
     const fechaFormateadaCombinada = `${fechaBaseElegida} ${horaSeleccionada} hrs`; 
 
+    // =========================================================================
+    // INICIO DE CORRECCIÓN EXCLUSIVA: PAYLOAD TOUR SIN VALORES FIJOS
+    // =========================================================================
+    const propActiva = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+
     const payloadTour = {
         target_sheet: "visita", 
-        usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
+        usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
         propiedad_id_fk: state.propiedadSeleccionadaId, 
-        anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
+        anuncio_id_fk: propActiva?.anuncio_id || "",
         fecha_visita: fechaFormateadaCombinada, 
         horario: "Principal", 
         tipo_visita: "presencial", 
         estado_visita: "pendiente", 
         estado_lead: "nuevo", 
         telefono: telefonoTexto, 
-        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com", 
+        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "", 
         mensaje_usuario: campoMensaje,
         nombre_contacto: campoNombre,
         financiamiento: solicitaFinanciamientoTexto
     };
+    // =========================================================================
+    // FIN DE CORRECCIÓN EXCLUSIVA: PAYLOAD TOUR SIN VALORES FIJOS
+    // =========================================================================
 
+    
     typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadTour, "modal-tour-comercial", "form-solicitar-tour-completo", "¡Su solicitud al Tour ha sido agendada!");
 } // <-- Aqui finaliza Función procesarFormularioTour
 
@@ -1696,21 +1705,30 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
                                  String(fechaAhora.getHours()).padStart(2, '0') + ':' + 
                                  String(fechaAhora.getMinutes()).padStart(2, '0');
 
+    // =========================================================================
+    // INICIO DE CORRECCIÓN EXCLUSIVA: PAYLOAD CONTACTO AGENTE SIN VALORES FIJOS
+    // =========================================================================
+    const propiedadActiva = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+
     const payloadContacto = {
         target_sheet: "visita",              
-        usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
+        usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
         propiedad_id_fk: state.propiedadSeleccionadaId, 
-        anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
+        anuncio_id_fk: propiedadActiva?.anuncio_id || "",
         fecha_visita: fechaFormateadaAhora,  
         tipo_visita: "agente",               
-        distrito_propiedad: propiedadActiva?.distrito || "Lima", 
+        distrito_propiedad: propiedadActiva?.distrito || "", 
         estado_visita: "pendiente",
         estado_lead: "nuevo",
         telefono: campoTelefono,
-        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com",
+        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "",
         mensaje_usuario: campoMensaje
     };
+    // =========================================================================
+    // FIN DE CORRECCIÓN EXCLUSIVA: PAYLOAD CONTACTO AGENTE SIN VALORES FIJOS
+    // =========================================================================
 
+    
     typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
 } // <-- Aqui finaliza Función procesarFormularioAgente
 
