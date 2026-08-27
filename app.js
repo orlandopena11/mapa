@@ -1532,6 +1532,39 @@ function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCal
                 nodoCaja.style.borderColor = "#ccd0d5";
                 nodoCaja.style.color = "#2a2a2a";
             } // <-- Aqui finaliza Estilo pasivo para las cajas laterales
+                        nodoCaja.onclick = () => { // --> Aqui inicia Evento selección individual de caja
+                IDsCajas.forEach(id => { 
+                    const el = document.getElementById(id); 
+                    if (el) { el.style.borderColor = "#ccd0d5"; el.style.color = "#2a2a2a"; } 
+                });
+                nodoCaja.style.borderColor = "#006aff";
+                nodoCaja.style.color = "#006aff";
+                state.tourTransitorio.fechaSeleccionadaTexto = `${textoDiaMes}/${objetoFecha.getMonth() + 1}/${objetoFecha.getFullYear()}`;
+            }; // <-- Aqui finaliza Evento selección individual de caja
+        } // <-- Aqui finaliza Inyección de strings de calendario nativo sin toLowerCase
+    }); // <-- Aqui finaliza Ciclo calculador de fechas consecutivas
+
+    // =========================================================================
+    // ENLACE INTERACTIVO: LOGICA MATEMATICA DE DESPLAZAMIENTO RECURSIVO
+    // =========================================================================
+    const btnAtras = document.getElementById("btn-carrusel-atras");
+    const btnAdelante = document.getElementById("btn-carrusel-adelante");
+
+    if (btnAtras) { // --> Aqui inicia Registro de control flecha izquierda
+        btnAtras.onclick = () => {
+            state.estadoDesplazamientoDias = state.estadoDesplazamientoDias - 1;
+            calcularCalendarioTresCajas(); // Auto-renderizado recursivo SRE
+        };
+    } // <-- Aqui finaliza Registro de control flecha izquierda
+
+    if (btnAdelante) { // --> Aqui inicia Registro de control flecha derecha
+        btnAdelante.onclick = () => {
+            state.estadoDesplazamientoDias = state.estadoDesplazamientoDias + 1;
+            calcularCalendarioTresCajas(); // Auto-renderizado recursivo SRE
+        };
+    } // <-- Aqui finaliza Registro de control flecha derecha
+} // <-- Aqui finaliza Función calcularCalendarioTresCajas
+
 
 
 function mostrarPopupAccion(idPopup) { // --> Aqui inicia Función mostrarPopupAccion
