@@ -227,107 +227,112 @@
 
     
 <!-- ========================================================================
-     MODALES FLOTANTES DE ACCIÓN COMERCIAL (SRE PRODUCTION V3)
-     Ubicados fuera del flujo SPA para evitar rupturas del layout e indexación
+     MODALES FLOTANTES DE ACCIÓN COMERCIAL (SRE PRODUCTION V5)
+     Estructura Maquetada Simétricamente al Diseño Nativo de Zillow
      ======================================================================== -->
 
-<!-- INTERFAZ FLOTANTE: SOLICITAR UN TOUR (SISTEMA MULTIPASO SPA) -->
+<!-- INTERFAZ FLOTANTE MULTIPASO: SOLICITAR UN TOUR -->
 <div id="modal-tour-comercial" class="modal-accion-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-tour-titulo-dinamico">
-    <div class="modal-accion-contenido modal-tour-container">
-        <!-- CABECERA FIJA DEL MODAL -->
-        <div class="modal-tour-header">
-            <h3 id="modal-tour-titulo-dinamico">Solicitar un tour</h3>
-            <button type="button" class="btn-cerrar-popup" id="btn-cerrar-modal-tour" aria-label="Cerrar modal">&times;</button>
-        </div>
+    <div class="modal-accion-contenido modal-tour-container" style="max-width: 460px; border-radius: 8px; font-family: sans-serif; position: relative;">
+        
+        <!-- CONTROL DE CIERRE ORIGINAL EN ESQUINA -->
+        <button type="button" class="btn-cerrar-popup" id="btn-cerrar-modal-tour" style="position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 20px; cursor: pointer; color: #54565a;" aria-label="Cerrar modal">&times;</button>
+        
+        <!-- TITULO DINÁMICO DE NAVEGACIÓN -->
+        <h3 id="modal-tour-titulo-dinamico" style="text-align: center; font-size: 20px; font-weight: bold; margin-top: 10px; margin-bottom: 20px; color: #2a2a2a;">Solicitar un tour</h3>
 
         <!-- CUERPO DEL MODAL CON CONTENEDORES DE FLUJO PASO A PASO -->
         <div class="modal-tour-body-scroll">
             
-            <!-- PASO 1: CONFIGURACIÓN DE HORARIOS Y FECHAS (UI CORE) -->
+            <!-- ======================================================= -->
+            <!-- PASO 1: HORARIOS, TARJETA CONTEXTUAL Y CARRUSEL DE 3 CAJAS -->
+            <!-- ======================================================= -->
             <div id="tour-paso-horarios" class="seccion-modal-paso activo">
-                <p class="modal-subtitulo-info">Seleccione el horario de su preferencia para coordinar con un asesor experto.</p>
-                <div class="campo-formulario">
-                    <label for="hora-principal">Seleccione un Horario Disponible</label>
-                    <select id="hora-principal" class="select-hora-dropdown" required>
-                        <option value="09:00 am">09:00 am</option>
-                        <option value="10:30 am">10:30 am</option>
-                        <option value="12:00 pm">12:00 pm</option>
-                        <option value="02:30 pm">02:30 pm</option>
-                        <option value="04:00 pm">04:00 pm</option>
-                        <option value="05:30 pm" selected>05:30 pm</option>
+                
+                <!-- Tarjeta de Contexto Superior del Inmueble (Foto + Specs) -->
+                <div class="tarjeta-contexto-inmueble" style="display: flex; gap: 16px; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 16px; align-items: center;">
+                    <img id="modal-tour-mini-foto" src="" alt="Portada" style="width: 80px; height: 60px; object-fit: cover; border-radius: 4px; background-color: #f7f8f9;">
+                    <div class="datos-contexto-wrapper" style="display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #2a2a2a;">
+                        <strong id="modal-tour-mini-direccion" style="font-size: 14px; font-weight: 700; display: block; max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dirección</strong>
+                        <span id="modal-tour-mini-specs" style="color: #54565a;">0 bd | 0 ba | 0 m²</span>
+                    </div>
+                </div>
+
+                <!-- Mensaje Comercial Informativo de Zillow -->
+                <div class="mensaje-informativo-zillow" style="display: flex; gap: 12px; padding: 0 4px; margin-bottom: 24px; align-items: flex-start;">
+                    <div style="font-size: 22px; color: #006aff; margin-top: -2px;">💡</div>
+                    <p style="font-size: 14px; line-height: 1.4; color: #2a2a2a; margin: 0; font-weight: 500;">
+                        Haga un recorrido personalizado por esta casa conectándose con un agente de compradores locales que se anuncia en Zillow.
+                    </p>
+                </div>
+
+                <label class="seccion-grupo-titulo" style="font-size: 15px; font-weight: bold; color: #2a2a2a; display: block; margin-bottom: 12px;">Seleccione hasta 3 veces</label>
+                
+                <!-- Carrusel de Fechas de 3 Cajas Pequeñas con Controles Laterales -->
+                <div class="carrusel-fechas-contenedor" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 20px; position: relative;">
+                    <button type="button" id="btn-carrusel-atras" style="background: none; border: 1px solid #ccd0d5; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #006aff;">&lsaquo;</button>
+                    
+                    <div class="cajas-fechas-row" style="display: flex; gap: 8px; flex: 1; justify-content: space-between;">
+                        <div class="caja-fecha-item active" id="caja-fecha-hoy" data-index="0" style="flex: 1; text-align: center; border: 1px solid #006aff; border-radius: 4px; padding: 10px 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: #006aff;">Hoy</div>
+                        <div class="caja-fecha-item" id="caja-fecha-manana" data-index="1" style="flex: 1; text-align: center; border: 1px solid #ccd0d5; border-radius: 4px; padding: 10px 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: #2a2a2a;">Mañana</div>
+                        <div class="caja-fecha-item" id="caja-fecha-pasado" data-index="2" style="flex: 1; text-align: center; border: 1px solid #ccd0d5; border-radius: 4px; padding: 10px 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: #2a2a2a;">Pasado</div>
+                    </div>
+                    
+                    <button type="button" id="btn-carrusel-adelante" style="background: none; border: 1px solid #ccd0d5; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; color: #006aff;">&rsaquo;</button>
+                </div>
+
+                <!-- Lista Desplegable de Horas Acotada de 10:00 a 18:00 hrs -->
+                <div class="campo-select-hora-box" style="margin-bottom: 24px;">
+                    <select id="hora-principal" class="select-hora-dropdown" style="width: 100%; padding: 12px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; background-color: #ffffff; color: #2a2a2a; outline: none; cursor: pointer;">
+                        <option value="10:00">10:00 hrs</option>
+                        <option value="11:00">11:00 hrs</option>
+                        <option value="12:00">12:00 hrs</option>
+                        <option value="13:00">13:00 hrs</option>
+                        <option value="14:00">14:00 hrs</option>
+                        <option value="15:00">15:00 hrs</option>
+                        <option value="16:00">16:00 hrs</option>
+                        <option value="17:00">17:00 hrs</option>
+                        <option value="18:00" selected>18:00 hrs</option>
                     </select>
                 </div>
-                <div id="contenedor-tiempos-alternativos"></div>
             </div>
 
-            <!-- PASO 2: FORMULARIO DE CAPTURA DEL INTERESADO Y CONTACTO (PUREZA SHEETS) -->
-            <div id="tour-paso-confirmacion" class="seccion-modal-paso">
-                <p class="modal-subtitulo-info">Confirme sus datos de contacto para validar y asentar la cita de forma automática.</p>
+            <!-- ======================================================= -->
+            <!-- PASO 2: FORMULARIO AUTOMATIZADO CON CAPTURA COMERCIAL -->
+            <!-- ======================================================= -->
+            <div id="tour-paso-confirmacion" class="seccion-modal-paso" style="display: none; padding: 0 4px;">
                 
+                <div class="encabezado-confirmacion-wrapper" style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f0f2f5; padding-bottom: 16px;">
+                    <h4 style="font-size: 18px; font-weight: bold; margin: 0; line-height: 1.3; color: #2a2a2a; flex: 1;">¿Cómo podemos llegar para confirmar el tour?</h4>
+                    <div style="font-size: 28px;">💬</div>
+                </div>
+
                 <form id="form-solicitar-tour-completo">
-                    <div class="campo-formulario">
-                        <label for="tour-contacto-nombre">Nombre Completo *</label>
-                        <input type="text" id="tour-contacto-nombre" placeholder="Ej. Orlando Peña" required>
+                    <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <label for="tour-contacto-nombre" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Nombre *</label>
+                        <input type="text" id="tour-contacto-nombre" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" required placeholder="Ej. Orlando Peña">
                     </div>
 
-                    <div class="campo-formulario">
-                        <label for="tour-contacto-email">Correo Electrónico *</label>
-                        <input type="email" id="tour-contacto-email" placeholder="ejemplo@correo.com" required>
+                    <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <label for="tour-contacto-email" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Email *</label>
+                        <input type="email" id="tour-contacto-email" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" required placeholder="ejemplo@correo.com">
                     </div>
 
-                    <div class="campo-formulario">
-                        <label for="tour-contacto-telefono">Número de Teléfono Celular *</label>
-                        <input type="tel" id="tour-contacto-telefono" placeholder="Mínimo 9 dígitos" required>
-                        <!-- Nodo de Alerta de Validación / Warning oculto por defecto -->
-                        <div id="warning-telefono-tour" class="error-mensaje-input" style="color: #d92323; font-size: 12px; margin-top: 5px; display: none;">
+                    <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <label for="tour-contacto-telefono" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Teléfono *</label>
+                        <input type="tel" id="tour-contacto-telefono" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" placeholder="Mínimo 9 dígitos" required>
+                        <div id="warning-telefono-tour" class="error-mensaje-input" style="color: #d92323; font-size: 12px; margin-top: 4px; display: none;">
                             <span>⚠️</span> Ingrese un número de teléfono válido
                         </div>
                     </div>
 
-                    <div class="campo-formulario">
-                        <label for="tour-contacto-mensaje">Notas o Mensaje Adicional</label>
-                        <textarea id="tour-contacto-mensaje" rows="3" placeholder="Indique alguna indicación particular si lo requiere..."></textarea>
+                    <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                        <label for="tour-contacto-mensaje" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Mensaje</label>
+                        <textarea id="tour-contacto-mensaje" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; font-family: sans-serif; box-sizing: border-box; resize: none;"></textarea>
                     </div>
-                </form>
-            </div>
 
-        </div>
-
-        <!-- BASE FIJA PARA EL CONTROL DE NAVEGACIÓN Y ENVÍO BATCH -->
-        <div class="modal-tour-footer-fijo" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px;">
-            <button type="button" id="btn-navegacion-siguiente-tour" class="btn-enviar-formulario">Siguiente</button>
-            <button type="submit" form="form-solicitar-tour-completo" id="btn-enviar-solicitud-tour" class="btn-enviar-formulario oculto" style="display: none;">Solicitar un tour</button>
-            <p class="leyenda-legal-modal-txt oculto" id="leyenda-legal-tour" style="font-size: 11px; color: #666; text-align: center; display: none; margin: 0;">
-                Al presionar Solicitar tour, usted acepta que el sistema procese su información de forma transparente en la base de datos inmobiliaria.
-            </p>
-        </div>
-    </div>
-</div>
-
-<!-- INTERFAZ FLOTANTE: CONTACTE CON UN AGENTE -->
-<div id="modal-agente-comercial" class="modal-accion-overlay" aria-hidden="true" role="dialog" aria-labelledby="titulo-modal-agente">
-    <div class="modal-accion-contenido">
-        <div class="modal-tour-header">
-            <h3 id="titulo-modal-agente">Contactar Agente</h3>
-            <button type="button" class="btn-cerrar-popup" aria-label="Cerrar modal">&times;</button>
-        </div>
-        <p class="modal-subtitulo-info">Envíe un mensaje de interés. El sistema asignará automáticamente un asesor por prelación de zona.</p>
-        
-        <form id="form-contactar-agente">
-            <div class="campo-formulario">
-                <label for="agente-mensaje">Mensaje</label>
-                <textarea id="agente-mensaje" rows="5" required></textarea>
-            </div>
-
-            <div class="campo-formulario">
-                <label for="agente-telefono">Tu Teléfono Celular</label>
-                <input type="tel" id="agente-telefono" placeholder="Ej. +51 999 888 777" required>
-            </div>
-
-            <button type="submit" class="btn-enviar-formulario">Enviar Mensaje de Interés</button>
-        </form>
-    </div>
-</div>
+                    <!-- CASILLA DE FINANCIAMIENTO EXACTA DE LA CAPTURA -->
+                    <div class="campo-formulario-checkbox" style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
 
 
 <!-- ========================================================================
