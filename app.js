@@ -1806,10 +1806,16 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
                             ${prop.direccion || prop.titulo || ''}
                         </p>
                     </div>
-                    
-                    <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+
+                                        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                        <!-- BOTÓN 1: SOLICITAR UN TOUR EN GALERÍA SPLIT -->
                         <button id="btn-solicitar-tour-galeria-split" style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;">
                             Solicitar un tour<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">Hoy a las 5:30 pm</span>
+                        </button>
+                        
+                        <!-- BOTÓN 2: CONTACTAR AGENTE EN GALERÍA SPLIT (INYECCIÓN DE COMPATIBILIDAD V5) -->
+                        <button id="btn-contactar-agente-galeria-split" style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;">
+                            Contacte con un agente
                         </button>
                     </div>
                 </div>
@@ -1825,13 +1831,21 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
 
         document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => { gestionarCortinaSPA('detalle', prop); });
         
+        // Enlace del evento clic para el Botón 1 de la Galería Split
         document.getElementById('btn-solicitar-tour-galeria-split')?.addEventListener('click', () => {
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
+        });
+
+        // ENLACE DEL EVENTO CLIC PARA EL BOTÓN 2 DE LA GALERÍA SPLIT (NUEVO DISPARADOR COMERCIAL)
+        document.getElementById('btn-contactar-agente-galeria-split')?.addEventListener('click', () => {
+            mostrarPopupAccion("modal-agente-comercial");
+            inyectarDatosPropiedadAlMensaje();
         });
     } // <-- Aqui finaliza Renderizado estructural Pantalla 3 (Galería Split View)
 
     cortina.classList.add('cortina-activa');
 } // <-- Aqui finaliza Función gestionarCortinaSPA
 
+                    
