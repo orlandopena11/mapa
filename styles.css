@@ -1167,12 +1167,14 @@ div.leaflet-marker-icon.map-price-pill span {
     pointer-events: none;
 }
 
+/* ... Tus estilos originales del mapa, filtros y catalogo (Intactos arriba) ... */
+
 /* ========================================================================
    MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES (PRODUCTION V3)
    Inyectar al final del archivo styles.css sin alterar clases superiores
    ======================================================================== */
 
-/* Control de estados y opacidad para los modales flotantes */
+/* Contenedor Overlay de fondo oscuro para modales */
 .modal-accion-overlay {
     position: fixed;
     top: 0;
@@ -1188,22 +1190,22 @@ div.leaflet-marker-icon.map-price-pill span {
     transition: opacity 0.2s ease-in-out;
 }
 
-/* Disparador de visibilidad usando especificidad por ID para evitar !important */
+/* Activación de visibilidad limpia por ID compuesta (Sin usar !important) */
 #modal-tour-comercial.modal-activo,
 #modal-agente-comercial.modal-activo {
     display: flex;
     opacity: 1;
 }
 
-/* Contenedor interno con scroll para soportar pantallas pequeñas */
+/* Contenedor interno scrollable para flujos multipaso */
 .modal-tour-body-scroll {
-    max-height: 60vh;
+    max-height: 65vh;
     overflow-y: auto;
-    padding-right: 8px;
-    margin-bottom: 16px;
+    padding-right: 6px;
+    margin-bottom: 12px;
 }
 
-/* Ocultación limpia SPA para elementos de pasos inactivos */
+/* Ocultación y despliegue secuencial SPA */
 .seccion-modal-paso {
     display: none;
 }
@@ -1212,18 +1214,7 @@ div.leaflet-marker-icon.map-price-pill span {
     display: block;
 }
 
-/* Freno de red: Ocultación de botones y avisos legales por selectores específicos */
-#modal-tour-comercial .oculto,
-#modal-agente-comercial .oculto {
-    display: none;
-}
-
-/* Estilo semántico para el input de teléfono inválido */
-.campo-formulario input[type="tel"] {
-    transition: border-color 0.2s ease;
-}
-
-/* Animación sutil de entrada para el warning rojo */
+/* Animación de entrada sutil para la alerta visual de teléfono */
 .error-mensaje-input {
     animation: unificarAlertaSlidIn 0.25s ease-out forwards;
 }
