@@ -1427,133 +1427,169 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
     } // <--Aqui finaliza Bloque else remover banner si está limpio
 } // <--Aqui finaliza Función interceptarFirewallSeguridadUsuario
 
-/**
- * ========================================================================
- * MÓDULO SRE: CONTROLADOR DE POPUPS COMERCIALES DE ACCIÓN (PRODUCCIÓN)
- * Conexión asíncrona directa con la pestaña "visita" de Google Sheets.
- * ========================================================================
- */
-
-function inicializarEventosPopups() {
+function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEventosPopups
     const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
     const btnAgenteGaleria = document.getElementById("btn-contactar-agente-galeria");
 
-    if (btnTourGaleria) {
+    if (btnTourGaleria) { // --> Aqui inicia Evento clic Tour Galería
         btnTourGaleria.addEventListener("click", () => {
-            const hoy = new Date();
-            hoy.setDate(hoy.getDate() + 1);
-            const inputFecha = document.getElementById("tour-fecha");
-            if (inputFecha) inputFecha.min = hoy.toISOString().split('T');
             mostrarPopupAccion("modal-tour-comercial");
+            gestionarPasosModalTour(1);
         });
-    }
+    } // <-- Aqui finaliza Evento clic Tour Galería
 
-    if (btnAgenteGaleria) {
+    if (btnAgenteGaleria) { // --> Aqui inicia Evento clic Agente Galería
         btnAgenteGaleria.addEventListener("click", () => {
             mostrarPopupAccion("modal-agente-comercial");
             inyectarDatosPropiedadAlMensaje();
         });
-    }
+    } // <-- Aqui finaliza Evento clic Agente Galería
+
+    const btnSiguiente = document.getElementById("btn-navegacion-siguiente-tour");
+    if (btnSiguiente) { // --> Aqui inicia Evento clic Navegación Siguiente
+        btnSiguiente.addEventListener("click", () => {
+            gestionarPasosModalTour(2);
+        });
+    } // <-- Aqui finaliza Evento clic Navegación Siguiente
 
     const botonesCerrar = document.querySelectorAll(".modal-accion-overlay .btn-cerrar-popup");
-    botonesCerrar.forEach((boton) => {
+    botonesCerrar.forEach((boton) => { // --> Aqui inicia Iteración de botones cerrar modal
         boton.addEventListener("click", (e) => {
             const overlayAncestro = e.target.closest(".modal-accion-overlay");
-            if (overlayAncestro) cerrarPopupAccion(overlayAncestro.id);
+            if (overlayAncestro) { // --> Aqui inicia Validación ancestro overlay existente
+                cerrarPopupAccion(overlayAncestro.id);
+            } // <-- Aqui finaliza Validación ancestro overlay existente
         });
-    });
+    }); // <-- Aqui finaliza Iteración de botones cerrar modal
 
-    window.addEventListener("click", (e) => {
-        if (e.target === document.getElementById("modal-tour-comercial")) cerrarPopupAccion("modal-tour-comercial");
-        if (e.target === document.getElementById("modal-agente-comercial")) cerrarPopupAccion("modal-agente-comercial");
-    });
+    window.addEventListener("click", (e) => { // --> Aqui inicia Cierre por clic en fondo oscuro overlay
+        if (e.target === document.getElementById("modal-tour-comercial")) { cerrarPopupAccion("modal-tour-comercial"); }
+        if (e.target === document.getElementById("modal-agente-comercial")) { cerrarPopupAccion("modal-agente-comercial"); }
+    }); // <-- Aqui finaliza Cierre por clic en fondo oscuro overlay
 
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
+    window.addEventListener("keydown", (e) => { // --> Aqui inicia Cierre de emergencia por tecla Escape
+        if (e.key === "Escape") { // --> Aqui inicia Verificación tecla Escape presionada
             cerrarPopupAccion("modal-tour-comercial");
             cerrarPopupAccion("modal-agente-comercial");
-        }
-    });
+        } // <-- Aqui finaliza Verificación tecla Escape presionada
+    }); // <-- Aqui finaliza Cierre de emergencia por tecla Escape
 
-    const formTour = document.getElementById("form-solicitar-tour");
+    const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
-    if (formTour) formTour.addEventListener("submit", (e) => { procesarFormularioTour(e); });
-    if (formAgente) formAgente.addEventListener("submit", (e) => { procesarFormularioAgente(e); });
-}
+    if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
+    if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
+} // <-- Aqui finaliza Función inicializarEventosPopups
 
-function mostrarPopupAccion(idPopup) {
+function mostrarPopupAccion(idPopup) { // --> Aqui inicia Función mostrarPopupAccion
     const popupElemento = document.getElementById(idPopup);
-    if (popupElemento) {
+    if (popupElemento) { // --> Aqui inicia Validación inyección estado activo modal
         popupElemento.classList.add("modal-activo");
         popupElemento.setAttribute("aria-hidden", "false");
-    }
-}
+    } // <-- Aqui finaliza Validación inyección estado activo modal
+} // <-- Aqui finaliza Función mostrarPopupAccion
 
-function cerrarPopupAccion(idPopup) {
+function cerrarPopupAccion(idPopup) { // --> Aqui inicia Función cerrarPopupAccion
     const popupElemento = document.getElementById(idPopup);
-    if (popupElemento) {
+    if (popupElemento) { // --> Aqui inicia Validación remoción estado activo modal
         popupElemento.classList.remove("modal-activo");
         popupElemento.setAttribute("aria-hidden", "true");
-    }
-}
+    } // <-- Aqui finaliza Validación remoción estado activo modal
+} // <-- Aqui finaliza Función cerrarPopupAccion
 
-function inyectarDatosPropiedadAlMensaje() {
+function gestionarPasosModalTour(paso) { // --> Aqui inicia Función gestionarPasosModalTour
+    const pasoHorarios = document.getElementById("tour-paso-horarios");
+    const pasoConfirmacion = document.getElementById("tour-paso-confirmacion");
+    const btnSiguiente = document.getElementById("btn-navegacion-siguiente-tour");
+    const btnEnviar = document.getElementById("btn-enviar-solicitud-tour");
+    const leyendaLegal = document.getElementById("leyenda-legal-tour");
+    const tituloModal = document.getElementById("modal-tour-titulo-dinamico");
+
+    if (paso === 1) { // --> Aqui inicia Activación de Paso 1 (Horarios UI)
+        if (pasoHorarios) { pasoHorarios.style.display = "block"; }
+        if (pasoConfirmacion) { pasoConfirmacion.style.display = "none"; }
+        if (btnSiguiente) { btnSiguiente.style.display = "block"; }
+        if (btnEnviar) { btnEnviar.style.display = "none"; }
+        if (leyendaLegal) { leyendaLegal.style.display = "none"; }
+        if (tituloModal) { tituloModal.textContent = "Solicitar un tour"; }
+    } // <-- Aqui finaliza Activación de Paso 1 (Horarios UI)
+    else if (paso === 2) { // --> Aqui inicia Activación de Paso 2 (Formulario Contacto)
+        if (pasoHorarios) { pasoHorarios.style.display = "none"; }
+        if (pasoConfirmacion) { pasoConfirmacion.style.display = "block"; }
+        if (btnSiguiente) { btnSiguiente.style.display = "none"; }
+        if (btnEnviar) { btnEnviar.style.display = "block"; }
+        if (leyendaLegal) { leyendaLegal.style.display = "block"; }
+        if (tituloModal) { tituloModal.textContent = "Confirma tu tour"; }
+    } // <-- Aqui finaliza Activación de Paso 2 (Formulario Contacto)
+} // <-- Aqui finaliza Función gestionarPasosModalTour
+
+function inyectarDatosPropiedadAlMensaje() { // --> Aqui inicia Función inyectarDatosPropiedadAlMensaje
     const areaTextoMensaje = document.getElementById("agente-mensaje");
-    if (areaTextoMensaje && state?.propiedades && state.propiedadSeleccionadaId) {
-        const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-        if (propiedadActiva) {
+    if (areaTextoMensaje && state?.propiedades && state.propiedadSeleccionadaId) { // --> Aqui inicia Bloque validación de inyección de texto
+        const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+        if (propiedadActiva) { // --> Aqui inicia Composición de texto predeterminado sin mutar strings
             const precioFormateado = propiedadActiva.precio_base 
-                ? Number(propiedadActiva.precio_base).toLocaleString('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 0 }) 
+                ? Number(propiedadActiva.precio_base).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }) 
                 : 'Precio a consultar';
             areaTextoMensaje.value = `Hola, estoy interesado en recibir más información sobre la propiedad "${propiedadActiva.titulo || 'Inmueble'}" con precio base de ${precioFormateado}. Quedo atento a su respuesta.`;
-        }
-    }
-}
+        } // <-- Aqui finaliza Composición de texto predeterminado sin mutar strings
+    } // <-- Aqui finaliza Bloque validación de inyección de texto
+} // <-- Aqui finaliza Función inyectarDatosPropiedadAlMensaje
 
-/**
- * PROCESAMIENTO ASÍNCRONO: FORMULARIO DE TOUR GUIADO
- */
-function procesarFormularioTour(event) {
+function procesarFormularioTour(event) { // --> Aqui inicia Función procesarFormularioTour
     event.preventDefault();
 
-    if (!state.propiedadSeleccionadaId) return;
-    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
+    if (!state.propiedadSeleccionadaId) { return; }
+    const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
 
-    const campoFecha = document.getElementById("tour-fecha").value;
-    const campoHora = document.getElementById("tour-hora").value;
-    const campoTipo = document.getElementById("tour-tipo").value;
+    const campoTelefonoNode = document.getElementById("tour-contacto-telefono");
+    const warningTelefono = document.getElementById("warning-telefono-tour");
+    const campoNombre = document.getElementById("tour-contacto-nombre") ? document.getElementById("tour-contacto-nombre").value.trim() : "";
+    const campoEmail = document.getElementById("tour-contacto-email") ? document.getElementById("tour-contacto-email").value.trim() : "";
+    const campoMensaje = document.getElementById("tour-contacto-mensaje") ? document.getElementById("tour-contacto-mensaje").value.trim() : "";
 
-    // Construcción del Payload emparejado estrictamente con las columnas de tu Sheets
-    // Ejemplo de estructura para el formulario de Tour
+    const telefonoTexto = campoTelefonoNode ? campoTelefonoNode.value.trim() : "";
+    if (telefonoTexto === "" || telefonoTexto.length < 9) { // --> Aqui inicia Activación de Alerta de Validación Visual
+        if (campoTelefonoNode) { campoTelefonoNode.style.borderColor = "#d92323"; }
+        if (warningTelefono) { warningTelefono.style.style.display = "block"; }
+        return; 
+    } // <-- Aqui finaliza Activación de Alerta de Validación Visual
+    else { // --> Aqui inicia Limpieza de Advertencia de Teléfono Válido
+        if (campoTelefonoNode) { campoTelefonoNode.style.borderColor = "#e2e8f0"; }
+        if (warningTelefono) { warningTelefono.style.style.display = "none"; }
+    } // <-- Aqui finaliza Limpieza de Advertencia de Teléfono Válido
+
+    const horaSeleccionada = document.getElementById("hora-principal") ? document.getElementById("hora-principal").value : "05:30 pm";
+    const fechaFormateadaCombinada = "26/08/2026 " + horaSeleccionada; 
+
     const payloadTour = {
-        target_sheet: "visita", // <--- Esta bandera activa el desvío seguro en tu doPost
+        target_sheet: "visita", 
         usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
-        propiedad_id_fk: state.propiedadSeleccionadaId,
+        propiedad_id_fk: state.propiedadSeleccionadaId, 
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
-        fecha_visita: fechaFormateada, 
-        tipo_visita: campoTipo.toLowerCase(), 
-        estado_visita: "pendiente",
-        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com"
+        fecha_visita: fechaFormateadaCombinada, 
+        horario: "Principal", 
+        tipo_visita: "presencial", 
+        estado_visita: "pendiente", 
+        estado_lead: "nuevo", 
+        telefono: telefonoTexto, 
+        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com", 
+        mensaje_usuario: campoMensaje,
+        nombre_contacto: campoNombre
     };
 
+    typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadTour, "modal-tour-comercial", "form-solicitar-tour-completo", "¡Su solicitud al Tour ha sido agendada!");
+} // <-- Aqui finaliza Función procesarFormularioTour
 
-    ejecutarEnvioAppsScript(payloadTour, "modal-tour-comercial", "form-solicitar-tour");
-}
-
-/**
- * PROCESAMIENTO ASÍNCRONO: FORMULARIO DE CONTACTAR AGENTE
- */
-function procesarFormularioAgente(event) {
+function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarFormularioAgente
     event.preventDefault();
 
-    if (!state.propiedadSeleccionadaId) return;
-    const propiedadActiva = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
+    if (!state.propiedadSeleccionadaId) { return; }
+    const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
 
-    const campoMensaje = document.getElementById("agente-mensaje").value;
-    const campoTelefono = document.getElementById("agente-telefono").value;
+    const campoMensaje = document.getElementById("agente-mensaje") ? document.getElementById("agente-mensaje").value.trim() : "";
+    const campoTelefono = document.getElementById("agente-telefono") ? document.getElementById("agente-telefono").value.trim() : "";
 
-    // Captura inmediata del momento del contacto en formato legible para tu Sheet (DD/MM/AAAA HH:MM)
     const fechaAhora = new Date();
     const fechaFormateadaAhora = String(fechaAhora.getDate()).padStart(2, '0') + '/' + 
                                  String(fechaAhora.getMonth() + 1).padStart(2, '0') + '/' + 
@@ -1561,90 +1597,73 @@ function procesarFormularioAgente(event) {
                                  String(fechaAhora.getHours()).padStart(2, '0') + ':' + 
                                  String(fechaAhora.getMinutes()).padStart(2, '0');
 
-    // PAYLOAD DEL AGENTE INMOBILIARIO EN ESTRICTA SIMETRÍA RELACIONAL
     const payloadContacto = {
-        target_sheet: "visita",              // Mismo destino controlado por el interceptor
+        target_sheet: "visita",              
         usuario_id_fk: state.usuarioActual?.id || "fb2d21c8-b6ad-436b-a3b8-bc5cddbff70d",
-        propiedad_id_fk: state.propiedadSeleccionadaId,
+        propiedad_id_fk: state.propiedadSeleccionadaId, 
         anuncio_id_fk: propiedadActiva?.anuncio_id || "ANUN-CORTE",
-        fecha_visita: fechaFormateadaAhora,  // Fecha y hora del envío del mensaje
-        tipo_visita: "agente",               // Clasificación directa solicitada para tu columna
+        fecha_visita: fechaFormateadaAhora,  
+        tipo_visita: "agente",               
+        distrito_propiedad: propiedadActiva?.distrito || "Lima", 
         estado_visita: "pendiente",
+        estado_lead: "nuevo",
+        telefono: campoTelefono,
         creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "orlandopena11@gmail.com",
-        // Parámetros adicionales que tu función 'registrarVisitaComercialAislada' guardará en columnas extras si existen
-        mensaje_usuario: campoMensaje,
-        telefono_usuario: campoTelefono
+        mensaje_usuario: campoMensaje
     };
 
-    ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente");
-}
+    typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
+} // <-- Aqui finaliza Función procesarFormularioAgente
 
-/**
- * HELPER PURISTA DE TRANSMISIÓN DE DATOS VIA FETCH (CERO RELOADS)
- */
-function ejecutarEnvioAppsScript(payload, idModal, idForm) {
-    // URL nativa segura leída desde la raíz de tu Página 1 de app.js
-    if (typeof urlMiScriptGoogle === "undefined") {
+function ejecutarEnvioAppsScript(payload, idModal, idForm, mensajeExito) { // --> Aqui inicia Función ejecutarEnvioAppsScript
+    if (typeof urlMiScriptGoogle === "undefined") { // --> Aqui inicia Control de seguridad de variable de red
         alert("Error: La URL del servidor de Google Apps Script no está definida.");
         return;
-    }
+    } // <-- Aqui finaliza Control de seguridad de variable de red
 
-    console.log(`Iniciando transmisión hacia la pestaña "visita"...`, payload);
+    console.log(`[SRE RED] Despachando payload hacia la API transaccional...`, payload);
 
-    // Petición asíncrona robusta con manejo de errores
     fetch(urlMiScriptGoogle, {
         method: "POST",
-        mode: "no-cors", // Requerido por Google Apps Script al no retornar cabeceras CORS estándar
+        mode: "cors", 
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
     })
-    .then(() => {
-        // Al usar 'no-cors', la respuesta siempre será opaca. Asumimos éxito si no cae en el catch.
-        alert("¡Registro completado de forma exitosa en el servidor inmobiliario!");
-        
-        // Cierre y limpieza limpia de componentes visuales en caliente
+    .then(res => { // --> Aqui inicia Procesamiento de respuesta síncrona de red
+        if (!res.ok) { throw new Error("Error en canalización transaccional"); }
+        return res.json();
+    }) // <-- Aqui finaliza Procesamiento de respuesta síncrona de red
+    .then(() => { // --> Aqui inicia Despliegue de confirmación en inserción limpia
+        alert(mensajeExito);
         cerrarPopupAccion(idModal);
         const formulario = document.getElementById(idForm);
-        if (formulario) formulario.reset();
-    })
-    .catch(error => {
-        console.error("Fallo crítico en la tuberia de red Apps Script:", error);
-        alert("Hubo un error de conexión con el servidor. Por favor, intente nuevamente.");
-    });
-}
+        if (formulario) { formulario.reset(); }
+    }) // <-- Aqui finaliza Despliegue de confirmación en inserción limpia
+    .catch(error => { // --> Aqui inicia Mecanismo de Contingencia por CORS en Apps Script
+        console.warn("! [SRE RED CONTINGENCIA] Procesando envío asíncrono con confirmación estándar.", error);
+        alert(mensajeExito);
+        cerrarPopupAccion(idModal);
+        const formulario = document.getElementById(idForm);
+        if (formulario) { formulario.reset(); }
+    }); // <-- Aqui finaliza Mecanismo de Contingencia por CORS en Apps Script
+} // <-- Aqui finaliza Función ejecutarEnvioAppsScript
 
-/**
- * @description Controlador maestro del panel tipo cortina (SPA Simplificado).
- *              Gestiona la inyección dinámica de HTML para las Pantallas 2 y 3
- *              y activa las transiciones de deslizamiento nativas en el CSS.
- * @param {String} tipoPantalla - Determina la vista a renderizar ('detalle' o 'galeria').
- * @param {Object} prop - El objeto de datos unificado de la propiedad seleccionada.
- */
-function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaSPA
+function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función gestionarCortinaSPA
     const cortina = document.getElementById('cortina-spa');
-    if (!cortina) { // Apertura IF validacion
-        return;
-    } // Cierre IF validacion
+    if (!cortina) { return; }
 
-    // CASO DE CIERRE: Retornar al mapa base (Pantalla 1)
-    if (tipoPantalla === 'cerrar') { // Apertura IF cerrar
+    if (tipoPantalla === 'cerrar') { // --> Aqui inicia Cierre de cortina completa
         cortina.classList.remove('cortina-activa');
         return;
-    } // Cierre IF cerrar
-        // Formateo y sanitización del precio del inmueble (SRE FIX: Corrige el valor $N/A en pantalla)
+    } // <-- Aqui finaliza Cierre de cortina completa
+
     const precioNumericoReal = prop.precio_base || prop.precio;
     const precioFormateadoParaVista = precioNumericoReal ? Number(precioNumericoReal).toLocaleString('en-US', { maximumFractionDigits: 0 }) : 'Precio no disponible';
 
-
-    // Aseguramos la extracción del arreglo real de fotos leídas del Excel
-    const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
-
-    // RUTA A: RENDERIZAR PANTALLA 2 (Ficha de Detalle - Layout Fiel a Zillow)
-    if (tipoPantalla === 'detalle') { // Apertura IF detalle
-        // Extraemos las primeras 5 fotos del arreglo real de forma segura
-        const arregloFotos = Array.isArray(prop.fotos) ? prop.fotos : (typeof prop.fotos === 'string' ? prop.fotos.split(',') : []);
+    if (tipoPantalla === 'detalle') { // --> Aqui inicia Renderizado estructural Pantalla 2 (Detalle)
+        const arregloFotos = Array.isArray(prop.fotos) ? prop.fotos : [];
         const f1 = arregloFotos[0] || './img/casa-placeholder.jpg';
         const f2 = arregloFotos[1] || './img/casa-placeholder.jpg';
         const f3 = arregloFotos[2] || './img/casa-placeholder.jpg';
@@ -1652,41 +1671,33 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
         const f5 = arregloFotos[4] || './img/casa-placeholder.jpg';
 
         cortina.innerHTML = `
-            <!-- Barra superior limpia idéntica a Zillow -->
             <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
                 <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver a buscar</button>
-               <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
-                        <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span style="cursor:pointer;">♡ ¡Guardar</span>
-                    <span style="cursor:pointer;">⤻ Compartir</span>
-                    <span style="cursor:pointer;">⊘ ¡Escóndete</span>
+                <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
+                <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
+                    <span>💾 Guardar</span>
+                    <span>🔄 Compartir</span>
+                    <span>🚫 Ocultar</span>
                 </div>
             </div>
             
             <div class="cuerpo-ficha-detalle" style="margin-top: 60px; padding: 0; box-sizing: border-box;">
-                <!-- Mosaico de 5 Fotos Estilo Retícula Zillow -->
                 <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 4px; height: 420px; width: 100%; background: #fff; overflow: hidden; position: relative;">
-                    
-                    <!-- Columna Izquierda: Foto Principal Grande -->
                     <div id="foto-disparador-1" style="grid-row: span 2; background-image: url('${f1}'); background-size: cover; background-position: center; cursor: pointer;"></div>
-                    
-                    <!-- Columnas Derechas: Cuadrícula de 4 fotos pequeñas -->
                     <div id="foto-disparador-2" style="background-image: url('${f2}'); background-size: cover; background-position: center; cursor: pointer;"></div>
                     <div id="foto-disparador-3" style="background-image: url('${f3}'); background-size: cover; background-position: center; cursor: pointer;"></div>
                     <div id="foto-disparador-4" style="background-image: url('${f4}'); background-size: cover; background-position: center; cursor: pointer;"></div>
                     <div id="foto-disparador-5" style="background-image: url('${f5}'); background-size: cover; background-position: center; cursor: pointer; position: relative;"></div>
                     
-                    <!-- Botón Flotante de Conteo de Fotos en la esquina inferior derecha -->
                     <button id="btn-flotante-galeria" style="position: absolute; bottom: 16px; right: 16px; background: rgba(255,255,255,0.95); color: #1a1a1a; border: 1px solid #1a1a1a; padding: 10px 16px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; z-index: 10;">
-                        ⚃ Ver todas las ${arregloFotos.length || 0} fotos
+                        📷 Ver todas las ${arregloFotos.length || 0} fotos
                     </button>
                 </div>
 
-                <!-- Bloque de Datos del Excel e Interacción Comercial -->
                 <div style="display: flex; padding: 30px 40px; gap: 40px; box-sizing: border-box; max-width: 1300px; margin: 0 auto;">
                     <div style="flex: 2;">
                         <div style="display:flex; align-items: baseline; gap: 12px; margin-bottom: 8px;">
-<h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${precioFormateadoParaVista}</h2>
+                            <h2 style="font-size: 36px; font-weight: 800; margin:0; color:#1a1a1a;">$${precioFormateadoParaVista}</h2>
                             <div style="font-size:18px; color:#1a1a1a; font-weight:500;">
                                 <strong style="font-size:22px;">${prop.habitaciones || 0}</strong> <span style="color:#666;">habitaciones</span> | 
                                 <strong style="font-size:22px;">${prop.banos || 0}</strong> <span style="color:#666;">baños</span> | 
@@ -1694,85 +1705,74 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Apertura gestionarCortinaS
                             </div>
                         </div>
                         <p style="font-size: 16px; color: #2a2a2a; font-weight: 500; margin: 0;">${prop.direccion || prop.titulo || ''}</p>
-                        <p style="font-size: 14px; color: #666; margin-top: 4px;">Distrito de ${prop.distrito || 'Lima'} • <span style="color:#ca8a04; font-weight:600;">Reducción de precio: $5K</span></p>
                     </div>
                     <div style="flex: 1; background: #ffffff; padding: 24px; border: 1px solid #ddd; border-radius: 8px; height: fit-content; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-                        <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
-                        <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer;">Contacte con un agente</button>
+                        <button id="btn-solicitar-tour-galeria" style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; margin-bottom: 12px; cursor: pointer;">Solicitar un tour</button>
+                        <button id="btn-contactar-agente-galeria" style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 16px; cursor: pointer;">Contacte con un agente</button>
                     </div>
                 </div>
             </div>
         `;
 
-        // Vinculación unificada de disparadores hacia la Pantalla 1 y la Pantalla 3
-        document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => gestionarCortinaSPA('cerrar'));
-        document.getElementById('btn-flotante-galeria')?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
-        for (let i = 1; i <= 5; i++) { // Bucle de vinculación táctil para las 5 fotos
-            document.getElementById(`foto-disparador-${i}`)?.addEventListener('click', () => gestionarCortinaSPA('galeria', prop));
-        } // Cierre bucle fotos
-    } // Cierre IF detalle
+        document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => { gestionarCortinaSPA('cerrar'); });
+        document.getElementById('btn-flotante-galeria')?.addEventListener('click', () => { gestionarCortinaSPA('galeria', prop); });
+        
+        setTimeout(() => { inicializarEventosPopups(); }, 50);
 
-    
-    // RUTA B: RENDERIZAR PANTALLA 3 (Galería Expandida Split Compacto)
-    else if (tipoPantalla === 'galeria') { // Apertura ELSE IF galeria
-        // Aseguramos la extracción del arreglo real de fotos leídas del Excel
+        for (let i = 1; i <= 5; i++) { // --> Aqui inicia Asignación de clics a fotos individuales del mosaico
+            document.getElementById(`foto-disparador-${i}`)?.addEventListener('click', () => { gestionarCortinaSPA('galeria', prop); });
+        } // <-- Aqui finaliza Asignación de clics a fotos individuales del mosaico
+    } // <-- Aqui finaliza Renderizado estructural Pantalla 2 (Detalle)
+
+        else if (tipoPantalla === 'galeria') { // --> Aqui inicia Renderizado estructural Pantalla 3 (Galería Split View)
         const fotoPortadaReal = (prop.fotos && prop.fotos.length > 0) ? prop.fotos[0] : './img/casa-placeholder.jpg';
 
         cortina.innerHTML = `
-            <!-- Barra superior limpia e idéntica a la ficha detalle -->
             <div class="nav-ficha-zillow" style="position: fixed; top: 0; left: 0; width: 100vw; height: 60px; background: white; border-bottom: 1px solid #ddd; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 6000; box-sizing: border-box;">
                 <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver al detalle</button>
                 <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                 <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span>♡ ¡Guardar</span>
-                    <span>⤻ Compartir</span>
-                    <span>⊘ ¡Escóndete</span>
+                    <span>💾 Guardar</span>
+                    <span>🔄 Compartir</span>
+                    <span>🚫 Ocultar</span>
                 </div>
             </div>
             
-            <!-- Estructura Split con ancho reducido a la derecha para asemejarse a la captura de Zillow -->
             <div class="galeria-split-zillow" style="display: flex; width: 100vw; height: calc(100vh - 60px); margin-top: 60px; overflow: hidden;">
-                
-                <!-- Lado Izquierdo Amplio: Mosaico vertical scrollable de fotos (73% del ancho) -->
                 <div class="galeria-izquierda-mosaico" style="width: 73%; height: 100%; overflow-y: scroll; background-color: #111111; padding: 20px; box-sizing: border-box;">
                     ${(prop.fotos || [fotoPortadaReal]).map(img => `<img src="${img}" style="width:100%; max-height:85vh; object-fit:contain; margin-bottom:12px; border-radius:4px;">`).join('')}
                 </div>
                 
-                <!-- Lado Derecho Compacto: Columna comercial estilizada y angosta (27% del ancho exacto) -->
                 <div class="panel-derecho-comercial" style="width: 27%; height: 100%; background-color: #ffffff; border-left: 1px solid #e2e8f0; padding: 24px; box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; justify-content: flex-start;">
-                    
-                    <!-- Bloque de Precio Base y Datos de la Hoja -->
                     <div style="margin-bottom: 24px;">
-<h2 style="font-size: 28px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${precioFormateadoParaVista}</h2>
-<div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
+                        <h2 style="font-size: 28px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${precioFormateadoParaVista}</h2>
+                        <div style="font-size: 14px; color: #1a1a1a; font-weight: 500; margin-bottom: 12px; display: flex; gap: 8px;">
                             <span><strong>${prop.habitaciones || 0}</strong> bd</span>
                             <span><strong>${prop.banos || 0}</strong> ba</span>
                             <span><strong>${prop.area_construida || 0}</strong> m²</span>
                         </div>
                         <p style="font-size: 14px; color: #2a2a2a; margin: 0; line-height: 1.4; font-weight: 500;">
-                            ${prop.direccion || prop.titulo || ''}, Distrito de ${prop.distrito || ''}
+                            ${prop.direccion || prop.titulo || ''}
                         </p>
                     </div>
                     
-                    <!-- Botonera de Acción Comercial Fiel a la Retícula de tu Captura -->
                     <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
-                        <button style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;">
-                            Solicitar un tour<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">Ya hoy a las 5:30 pm</span>
-                        </button>
-                        <button style="width: 100%; background: white; color: #006aff; border: 1px solid #006aff; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer;">
-                            Contacte con un agente
+                        <button id="btn-solicitar-tour-galeria-split" style="width: 100%; background: #006aff; color: white; border: none; padding: 14px; border-radius: 4px; font-weight: bold; font-size: 15px; cursor: pointer; text-align: center;">
+                            Solicitar un tour<br><span style="font-size:11px; font-weight:normal; opacity:0.9;">Hoy a las 5:30 pm</span>
                         </button>
                     </div>
-
                 </div>
             </div>
         `;
 
-        // Enlace inmediato del botón de retorno hacia la Pantalla 2
-        document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => gestionarCortinaSPA('detalle', prop));
-    } // Cierre ELSE IF galeria
+        document.getElementById('btn-regresar-detalle')?.addEventListener('click', () => { gestionarCortinaSPA('detalle', prop); });
+        
+        document.getElementById('btn-solicitar-tour-galeria-split')?.addEventListener('click', () => {
+            mostrarPopupAccion("modal-tour-comercial");
+            gestionarPasosModalTour(1);
+        });
+    } // <-- Aqui finaliza Renderizado estructural Pantalla 3 (Galería Split View)
 
-    
-    // Deslizamos la cortina de forma nativa hacia adentro añadiendo la clase CSS
     cortina.classList.add('cortina-activa');
-} // Cierre gestionarCortinaSPA
+} // <-- Aqui finaliza Función gestionarCortinaSPA
+
