@@ -1611,7 +1611,7 @@ function gestionarPasosModalTour(paso) { // --> Aqui inicia Función gestionarPa
         if (areaMensajeTour && state.propiedadSeleccionadaId) { // --> Aqui inicia Concatenación de dirección contextual literal
             const propActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
             if (propActiva) { // --> Aqui inicia Bloque de asignación string inglés
-                areaMensajeTour.value = `I am interested in ${propActiva.direccion || propActiva.titulo || 'this property'}.`;
+                areaMensajeTour.value = `Estoy interesado en ${propActiva.direccion || propActiva.titulo || 'this property'}.`;
             } // <-- Aqui finaliza Bloque de asignación string inglés
         } // <-- Aqui finaliza Concatenación de dirección contextual literal
     } // <-- Aqui finaliza Activación de Paso 2 (Formulario Contacto)
