@@ -1738,10 +1738,18 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
     if (!state.propiedadSeleccionadaId) { return; }
     const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
 
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: EXTRACCIÓN AUTOMÁTICA DE EMAIL DE USUARIO
+    // =========================================================================
     const campoMensaje = document.getElementById("agente-mensaje") ? document.getElementById("agente-mensaje").value.trim() : "";
     const campoTelefono = document.getElementById("agente-telefono") ? document.getElementById("agente-telefono").value.trim() : "";
+    
+    // SRE PUREZA: Extrae dinámicamente el correo electrónico de la sesión activa del estado global sin valores quemados
+    const campoEmailUsuario = state.usuarioActual?.correo || window.usuarioLogueado?.email || "";
+    // =========================================================================
+    // FIN DE INYECCIÓN FRONTEND: EXTRACCIÓN AUTOMÁTICA DE EMAIL DE USUARIO
+    // =========================================================================
 
-    const fechaAhora = new Date();
     const fechaFormateadaAhora = String(fechaAhora.getDate()).padStart(2, '0') + '/' + 
                                  String(fechaAhora.getMonth() + 1).padStart(2, '0') + '/' + 
                                  fechaAhora.getFullYear() + ' ' + 
@@ -1767,10 +1775,18 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
         distrito_propiedad: propAsociadaAgente?.distrito ? String(propAsociadaAgente.distrito).trim() : "", // Alimenta la zona de forma directa
         estado_visita: "pendiente",
         estado_lead: "nuevo",
+        // =========================================================================
+        // INICIO DE INYECCIÓN FRONTEND: REDIRECCIÓN DEL CORREO AL CANAL DE RED
+        // =========================================================================
         telefono: campoTelefono,
-        creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "",
+        email_contacto: campoEmailUsuario, // Inyección dinámica limpia hacia las columnas del servidor
+        creado_por: campoEmailUsuario,
         mensaje_usuario: campoMensaje
-    };
+        // =========================================================================
+        // FIN DE INYECCIÓN FRONTEND: REDIRECCIÓN DEL CORREO AL CANAL DE RED
+        // =========================================================================
+            
+        };
 
     // ANTI-DUPLICACIÓN: Si el botón ya fue congelado al inicio por seguridad, despachamos una única petición limpia
     if (typeof ejecutarEnvioAppsScript === "function") { // --> Aqui inicia Despacho de Red Protegido SRE
