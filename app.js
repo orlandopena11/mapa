@@ -25,6 +25,27 @@ const state =
     limpiadoresDOM: new Map()
 }; // <--Aqui finaliza Objeto state global
 
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO GENERAL DE CONTROL DE ACCESO
+// =========================================================================
+function verificarAutorizacionAcceso() { // --> Aqui inicia Regla de Acceso Centralizada ACL
+    if (!state.usuarioActual || !state.usuarioActual.id) {
+        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
+        typeof mostrarPopupAccion === "function" && mostrarPopupAccion("modal-autenticacion-supabase");
+        return false;
+    }
+    
+    if (state.usuarioActual.estado_cuenta === "suspendido") {
+        alert("Cuenta Suspendida: No tiene autorización para ver teléfonos, dar favoritos o agendar citas.");
+        return false;
+    }
+    return true;
+} // <-- Aqui finaliza Regla de Acceso Centralizada ACL
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO GENERAL DE CONTROL DE ACCESO
+// =========================================================================
+
+
 // URL de conexión segura con el backend relacional de Google Apps Script
 const urlMiScriptGoogle ="https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
 
