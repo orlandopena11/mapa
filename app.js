@@ -1752,55 +1752,48 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
     const propiedadActiva = state.properties?.find(p => p.id === state.propiedadSeleccionadaId) || state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
 
     // =========================================================================
-    // INICIO DE INYECCIÓN FRONTEND: EXTRACCIÓN AUTOMÁTICA DE EMAIL DE USUARIO
+    // INICIO DE INYECCIÓN FRONTEND: CAPTURA COMPLETA SIMÉTRICA DE CAMPOS COMERCIALES
     // =========================================================================
     const campoMensaje = document.getElementById("agente-mensaje") ? document.getElementById("agente-mensaje").value.trim() : "";
     const campoTelefono = document.getElementById("agente-telefono") ? document.getElementById("agente-telefono").value.trim() : "";
     
-    // SRE PUREZA: Extrae dinámicamente el correo electrónico de la sesión activa del estado global sin valores quemados
-    const campoEmailUsuario = state.usuarioActual?.correo || window.usuarioLogueado?.email || "";
-    // =========================================================================
-    // FIN DE INYECCIÓN FRONTEND: EXTRACCIÓN AUTOMÁTICA DE EMAIL DE USUARIO
-    // =========================================================================
+    // Captura dinámica del input de Email libre editable de la interfaz gráfica
+    const campoEmailFinal = document.getElementById("agente-email") ? document.getElementById("agente-email").value.trim() : "";
+    
+    // Captura del estado físico del checkbox de financiamiento por default
+    const nodoFinanciamientoAgente = document.getElementById("agente-financiamiento");
+    const financiamientoTextoAgente = nodoFinanciamientoAgente && nodoFinanciamientoAgente.checked ? "Sí" : "No";
 
+    const fechaAhora = new Date();
     const fechaFormateadaAhora = String(fechaAhora.getDate()).padStart(2, '0') + '/' + 
                                  String(fechaAhora.getMonth() + 1).padStart(2, '0') + '/' + 
                                  fechaAhora.getFullYear() + ' ' + 
                                  String(fechaAhora.getHours()).padStart(2, '0') + ':' + 
                                  String(fechaAhora.getMinutes()).padStart(2, '0');
 
-        // =========================================================================
-        // INICIO DE INYECCIÓN FRONTEND: VARIABLE DE AGENTE PURIFICADA SIN DUPLICAR
-        // =========================================================================
-        // SRE COMPATIBILITY FIX: Una sola declaración limpia de la propiedad activa para todo el bloque
-        const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
-
-        const payloadContacto = {
-        // =========================================================================
-        // FIN DE INYECCIÓN FRONTEND: VARIABLE DE AGENTE PURIFICADA SIN DUPLICAR
-        // ========================================================================= 
+    // SRE COMPATIBILITY FIX: Localizamos de forma inmutable la propiedad activa en tu state
+    const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+    
+    const payloadContacto = {
         target_sheet: "visita",              
         usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
         propiedad_id_fk: state.propiedadSeleccionadaId, 
         anuncio_id_fk: propAsociadaAgente?.anuncio_id || "", 
         fecha_visita: fechaFormateadaAhora,  
-        tipo_visita: "agente",               // Fuerza el ruteo comercial en el servidor
-        distrito_propiedad: propAsociadaAgente?.distrito ? String(propAsociadaAgente.distrito).trim() : "", // Alimenta la zona de forma directa
+        tipo_visita: "agente",               // Activa el algoritmo relacional en Código.gs
+        distrito_propiedad: propAsociadaAgente?.distrito ? String(propAsociadaAgente.distrito).trim() : "", // Cruza la zona exacta para filtrar agentes
         estado_visita: "pendiente",
         estado_lead: "nuevo",
-        // =========================================================================
-        // INICIO DE INYECCIÓN FRONTEND: REDIRECCIÓN DEL CORREO AL CANAL DE RED
-        // =========================================================================
         telefono: campoTelefono,
-        email_contacto: campoEmailUsuario, // Inyección dinámica limpia hacia las columnas del servidor
-        creado_por: campoEmailUsuario,
-        mensaje_usuario: campoMensaje
+        creado_por: campoEmailFinal || state.usuarioActual?.correo || "", // Usa el correo ingresado en el input
+        mensaje_usuario: campoMensaje,
+        financiamiento: financiamientoTextoAgente // Inyecta el estado "Sí" por default en la columna relacional
+    };
         // =========================================================================
-        // FIN DE INYECCIÓN FRONTEND: REDIRECCIÓN DEL CORREO AL CANAL DE RED
+        // FIN DE INYECCIÓN FRONTEND: CAPTURA COMPLETA SIMÉTRICA DE CAMPOS COMERCIALES
         // =========================================================================
-            
-        };
 
+    
     // ANTI-DUPLICACIÓN: Si el botón ya fue congelado al inicio por seguridad, despachamos una única petición limpia
     if (typeof ejecutarEnvioAppsScript === "function") { // --> Aqui inicia Despacho de Red Protegido SRE
         ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
