@@ -724,6 +724,53 @@ function procesarDatosDelMotor(data)
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => 
 { // -->Aqui inicia Callback principal DOMContentLoaded
+    // =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CON CRUCE DE HOJAS EN ARRANQUE
+// =========================================================================
+    // SRE PREVENTIVE SECURITY: Oyente en caliente del estado de cuenta de Supabase Auth contra la Google Sheet
+    if (typeof supabase !== "undefined") { // --> Aqui inicia Verificación de Estado de Cuenta Real
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session && session.user) {
+                const correoUsuario = String(session.user.email).trim();
+
+                try {
+                    // Consultamos el estado actual del usuario al backend de Google por canal GET
+                    const respuestaServidor = await fetch(urlMiScriptGoogle + "?accion=leer_estado_usuario&correo=" + encodeURIComponent(correoUsuario), {
+                        method: "GET",
+                        mode: "cors"
+                    });
+                    const datosUsuarioSheet = await respuestaServidor.json();
+
+                    // Cortocircuito estricto: Si el administrador lo suspendió en la Sheet, lo expulsamos
+                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
+                        state.usuarioActual = null; 
+                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador debido al incumplimiento de las políticas.");
+                        await supabase.auth.signOut(); // Limpia los tokens locales del navegador del cliente
+                        return;
+                    }
+
+                    // Si está activo o pendiente, poblamos dinámicamente la memoria RAM de la SPA
+                    state.usuarioActual = {
+                        id: String(session.user.id).trim(),
+                        correo: correoUsuario,
+                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "").trim(),
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "pendiente"
+                    };
+                    console.log("[SRE SECURE] Usuario autorizado con estado en Sheets: " + state.usuarioActual.estado_cuenta);
+
+                } catch (errorRed) {
+                    console.warn("[SRE ALERTA] Falló la verificación en la Sheet, aplicando fallback preventivo anónimo.", errorRed);
+                    state.usuarioActual = null;
+                }
+            } else {
+                state.usuarioActual = null;
+            }
+        });
+    } // <-- Aqui finaliza Verificación de Estado de Cuenta Real
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CON CRUCE DE HOJAS EN ARRANQUE
+// =========================================================================
+
         // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
         if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
         { // -->Aqui inicia Condicional inicializar mapa Leaflet
