@@ -1808,12 +1808,7 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
             }
         }, 2500);
     } // <-- Aqui finaliza Canal de envío protegido SRE
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: COBERTURA ASÍNCRONA CON LIBERACIÓN DE INTERFAZ
-// =========================================================================
-
         
-    } // <-- Aqui finaliza Despacho de Red Protegido SRE
 } // <-- Aqui finaliza Función procesarFormularioAgente
     // =========================================================================
     // FIN DE REEMPLAZO DEFINITIVO: SOLUCIÓN TRIPLE CORRECCIÓN AGENTE
