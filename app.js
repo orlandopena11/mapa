@@ -1794,9 +1794,25 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
         // =========================================================================
 
     
-    // ANTI-DUPLICACIÓN: Si el botón ya fue congelado al inicio por seguridad, despachamos una única petición limpia
-    if (typeof ejecutarEnvioAppsScript === "function") { // --> Aqui inicia Despacho de Red Protegido SRE
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: COBERTURA ASÍNCRONA CON LIBERACIÓN DE INTERFAZ
+// =========================================================================
+    if (typeof ejecutarEnvioAppsScript === "function") { // --> Aqui inicia Canal de envío protegido SRE
         ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
+        
+        // SRE INTERFACE RELEASE: Liberamos el control tras un retraso prudencial para evitar congelamientos en pantalla
+        setTimeout(() => {
+            if (botonEnvioAgente) {
+                botonEnvioAgente.disabled = false;
+                botonEnvioAgente.innerText = "Contacte con un agente";
+            }
+        }, 2500);
+    } // <-- Aqui finaliza Canal de envío protegido SRE
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: COBERTURA ASÍNCRONA CON LIBERACIÓN DE INTERFAZ
+// =========================================================================
+
+        
     } // <-- Aqui finaliza Despacho de Red Protegido SRE
 } // <-- Aqui finaliza Función procesarFormularioAgente
     // =========================================================================
