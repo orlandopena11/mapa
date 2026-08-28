@@ -1754,27 +1754,35 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
         // SRE COMPATIBILITY FIX: Sincronización inmutable usando la lectura limpia de tu matriz de propiedades
     const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
     
+    // =========================================================================
+    // INICIO DE REEMPLAZO DEFINITIVO: SOLUCIÓN TRIPLE CORRECCIÓN AGENTE
+    // =========================================================================
+    // SRE COMPATIBILITY FIX: Localizamos la propiedad activa en el estado de la SPA
+    const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+
     const payloadContacto = {
         target_sheet: "visita",              
         usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
         propiedad_id_fk: state.propiedadSeleccionadaId, 
-        anuncio_id_fk: propAsociadaAgente?.anuncio_id || "", // Corregido: Apunta a la constante resuelta correcta
+        anuncio_id_fk: propAsociadaAgente?.anuncio_id || "", 
         fecha_visita: fechaFormateadaAhora,  
-        tipo_visita: "agente",               // Mantiene encendido el algoritmo de prelación y cuotas en Código.gs
-        distrito_propiedad: propAsociadaAgente?.distrito || "", // Corregido: Alimenta de forma limpia la zona para el filtro del backend
+        tipo_visita: "agente",               // Fuerza el ruteo comercial en el servidor
+        distrito_propiedad: propAsociadaAgente?.distrito ? String(propAsociadaAgente.distrito).trim() : "", // Alimenta la zona de forma directa
         estado_visita: "pendiente",
         estado_lead: "nuevo",
         telefono: campoTelefono,
         creado_por: state.usuarioActual?.correo || window.usuarioLogueado?.email || "",
         mensaje_usuario: campoMensaje
     };
-        // =========================================================================
-        // FIN DE CORRECCIÓN EXCLUSIVA: PAYLOAD COMERCIAL AGENTE CON ENLACES PUROS
-        // =========================================================================
 
-    
-    typeof ejecutarEnvioAppsScript === "function" && ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
+    // ANTI-DUPLICACIÓN: Si el botón ya fue congelado al inicio por seguridad, despachamos una única petición limpia
+    if (typeof ejecutarEnvioAppsScript === "function") { // --> Aqui inicia Despacho de Red Protegido SRE
+        ejecutarEnvioAppsScript(payloadContacto, "modal-agente-comercial", "form-contactar-agente", "¡Su mensaje ha sido enviado! Un agente especializado de la zona lo contactará a la brevedad.");
+    } // <-- Aqui finaliza Despacho de Red Protegido SRE
 } // <-- Aqui finaliza Función procesarFormularioAgente
+    // =========================================================================
+    // FIN DE REEMPLAZO DEFINITIVO: SOLUCIÓN TRIPLE CORRECCIÓN AGENTE
+    // =========================================================================
 
 function ejecutarEnvioAppsScript(payload, idModal, idForm, mensajeExito) { // --> Aqui inicia Función ejecutarEnvioAppsScript
     if (typeof urlMiScriptGoogle === "undefined") { return; }
