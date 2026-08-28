@@ -1576,11 +1576,47 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         } // <-- Aqui finaliza Verificación tecla Escape presionada
     }); // <-- Aqui finaliza Cierre de emergencia por tecla Escape
 
-    const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
+    /*const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
     if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
     if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
+    */
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: ESCUCHADORES DE FORMULARIOS ANTI-DUPLICACIÓN
+// =========================================================================
+const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
+const formAgente = document.getElementById("form-contactar-agente");
+
+if (formTourCompleto) { 
+    formTourCompleto.addEventListener("submit", (e) => { 
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const btnSubmit = formTourCompleto.querySelector('button[type="submit"]');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Procesando...";
+        }
+        typeof procesarFormularioTour === "function" && procesarFormularioTour(e); 
+    }); 
+}
+
+if (formAgente) { 
+    formAgente.addEventListener("submit", (e) => { 
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        const btnSubmit = formAgente.querySelector('button[type="submit"]');
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = "Procesando...";
+        }
+        typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); 
+    }); 
+}
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: ESCUCHADORES DE FORMULARIOS ANTI-DUPLICACIÓN
+// =========================================================================
+
 } // <-- Aqui finaliza Función inicializarEventosPopups
 
 // =========================================================================
