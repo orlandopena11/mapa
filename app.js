@@ -1439,12 +1439,25 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         });
     } // <-- Aqui finaliza Evento clic Tour Galería
 
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: PRE-LLENADO AUTOMÁTICO DE EMAIL EN MODAL
+    // =========================================================================
     if (btnAgenteGaleria) { // --> Aqui inicia Evento clic Agente Galería
         btnAgenteGaleria.addEventListener("click", () => {
             mostrarPopupAccion("modal-agente-comercial");
             inyectarDatosPropiedadAlMensaje();
+
+            // SRE CORE FILL: Buscamos el nodo input e inyectamos el email de la sesión activa
+            const inputEmailModal = document.getElementById("agente-email");
+            if (inputEmailModal) {
+                const emailSesionActiva = state.usuarioActual?.correo || window.usuarioLogueado?.email || "";
+                inputEmailModal.value = String(emailSesionActiva).trim();
+            }
         });
     } // <-- Aqui finaliza Evento clic Agente Galería
+    // =========================================================================
+    // FIN DE INYECCIÓN FRONTEND: PRE-LLENADO AUTOMÁTICO DE EMAIL EN MODAL
+    // =========================================================================
 
     const btnSiguiente = document.getElementById("btn-navegacion-siguiente-tour");
     if (btnSiguiente) { // --> Aqui inicia Evento clic Navegación Siguiente
