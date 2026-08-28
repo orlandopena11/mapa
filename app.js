@@ -243,17 +243,37 @@ function construirRielCarruselComponente(prop, esPopup = false)
         botonCorazon.style.zIndex = '10';
         botonCorazon.style.transition = 'background 0.2s, transform 0.1s';
 
-        // Evento interactivo para cambiar el estado del corazón al hacer clic
+
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
+// =========================================================================
         botonCorazon.addEventListener('click', (e) => {
-            e.stopPropagation(); // Evita clics no deseados hacia la tarjeta base
-            if (botonCorazon.innerHTML === '🤍') {
+            // SRE ABSOLUTE PREVENT: Frenamos cualquier propagación o navegación por defecto en cascada hacia la tarjeta base
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+            }
+            
+            // Invocación del Candado SRE: Si devuelve falso (usuario anónimo), corta el flujo en seco y levanta login
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) {
+                return;
+            }
+
+            // Flujo Ordinario Autorizado: Cambia el estado del corazón si el usuario es válido en Sheets
+            if (botonCorazon.innerHTML === '🖤') {
                 botonCorazon.innerHTML = '❤️';
                 botonCorazon.style.background = 'rgba(255, 255, 255, 0.9)';
             } else {
-                botonCorazon.innerHTML = '🤍';
+                botonCorazon.innerHTML = '🖤';
                 botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
             }
         });
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
+// =========================================================================
 
         contenedorFoto.appendChild(botonCorazon);
 
