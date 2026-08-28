@@ -360,43 +360,47 @@
         </div>
         <p class="modal-subtitulo-info" style="font-size: 14px; color: #54565a; margin-bottom: 20px;">Envíe un mensaje de interés. El sistema asignará automáticamente un asesor por prelación de zona y disponibilidad.</p>
         
+<!-- ========================================================================= -->
+<!-- INICIO DE INYECCIÓN HTML: CONTENEDOR CON SCROLLBAR INTERNO Y EMAIL LIBRE  -->
+<!-- ========================================================================= -->
         <form id="form-contactar-agente">
-            <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
-                <label for="agente-mensaje" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Mensaje</label>
-                <textarea id="agente-mensaje" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; font-family: sans-serif; box-sizing: border-box; resize: none;" required></textarea>
+            <!-- SRE INTERFACE FIX: Encapsulamos los campos en un contenedor con altura máxima y scrollbar dinámico -->
+            <div style="max-height: 400px; overflow-y: auto; padding-right: 8px; box-sizing: border-box;">
+                
+                <div class="campo-formulario" style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="agente-mensaje" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Mensaje</label>
+                    <textarea id="agente-mensaje" rows="5" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; font-family: sans-serif; box-sizing: border-box; resize: none;" required></textarea>
+                </div>
+
+                <div class="campo-formulario" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="agente-telefono" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Tu Teléfono Celular</label>
+                    <input type="tel" id="agente-telefono" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" placeholder="Ej. 999888777" required>
+                </div>
+
+                <div class="campo-formulario" style="margin-top: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
+                    <label for="agente-email" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Email*</label>
+                    <!-- SRE FIX: Removemos 'readonly' para permitir el ingreso manual y cambiamos el fondo a blanco libre -->
+                    <input type="email" id="agente-email" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box; background-color: #ffffff; color: #2a2a2a;" required>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="agente-financiamiento" style="width: 18px; height: 18px; cursor: pointer;">
+                    <label for="agente-financiamiento" style="font-size: 14px; font-weight: bold; color: #2a2a2a; cursor: pointer; user-select: none;">Quiero información de financiamiento</label>
+                </div>
+
+                <div style="margin-top: 15px; margin-bottom: 15px;">
+                    <button type="submit" style="width: 100%; background-color: #006aff; color: #ffffff; padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 15px;">Contacte con un agente</button>
+                </div>
+
+                <p style="font-size: 10px; color: #6a6a6a; line-height: 1.4; text-align: justify; margin-top: 10px; margin-bottom: 10px;">
+                    Al presionar Contacte con un agente, usted acepta que Inmobiliaria en Surco y sus filiales, y Profesionales Inmobiliarios Pueden llamarlo/enviarle un mensaje de texto sobre su consulta, lo que puede implicar el uso de medios automatizados y voces pregrabadas/artificiales. No necesita dar su consentimiento como condición para comprar cualquier propiedad, bienes o servicios. Se pueden aplicar tarifas de mensajes/datos. También aceptas nuestras Condiciones de uso. Inmobiliaria en Surco recibe una tarifa de los agentes con los que lo conectamos, sin costo alguno para usted. Inmobiliaria en Surco no respalda a ningún profesional inmobiliario. Podemos compartir información sobre su actividad reciente y futura con su agente para ayudarle a entender lo que está buscando en una propiedad.
+                </p>
             </div>
-
-            <div class="campo-formulario" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 6px;">
-                <label for="agente-telefono" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Tu Teléfono Celular</label>
-                <input type="tel" id="agente-telefono" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" placeholder="Ej. 999888777" required>
-                <!-- ========================================================================= -->
-                <!-- INICIO DE INYECCIÓN HTML: COMPLEMENTO DE CORREO, FINANCIAMIENTO Y TEXTO LEGAL -->
-                <!-- ========================================================================= -->
-            <div class="campo-formulario" style="margin-top: 16px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 6px;">
-                <label for="agente-email" style="font-size: 14px; font-weight: 600; color: #2a2a2a;">Email*</label>
-                <input type="email" id="agente-email" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box; background-color: #f7f8f9; color: #4a4a4a;" readonly>
-            </div>
-
-            <div style="margin-top: 15px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="agente-financiamiento" style="width: 18px; height: 18px; cursor: pointer;">
-                <label for="agente-financiamiento" style="font-size: 14px; font-weight: bold; color: #2a2a2a; cursor: pointer; user-select: none;">Quiero información de financiamiento</label>
-            </div>
-
-            <div style="margin-top: 15px; margin-bottom: 15px;">
-                <button type="submit" style="width: 100%; background-color: #006aff; color: #ffffff; padding: 12px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 15px;">Contacte con un agente</button>
-            </div>
-
-            <p style="font-size: 10px; color: #6a6a6a; line-height: 1.4; text-align: justify; margin-top: 10px; margin-bottom: 10px;">
-                Al presionar Contacte con un agente, usted acepta que Inmobiliaria en Surco y sus filiales, y Profesionales Inmobiliarios Pueden llamarlo/enviarle un mensaje de texto sobre su consulta, lo que puede implicar el uso de medios automatizados y voces pregrabadas/artificiales. No necesita dar su consentimiento como condición para comprar cualquier propiedad, bienes o servicios. Se pueden aplicar tarifas de mensajes/datos. También aceptas nuestras Condiciones de uso. Inmobiliaria en Surco recibe una tarifa de los agentes con los que lo conectamos, sin costo alguno para usted. Inmobiliaria en Surco no respalda a ningún profesional inmobiliario. Podemos compartir información sobre su actividad reciente y futura con su agente para ayudarle a entender lo que está buscando en una casa.
-            </p>
-            <!-- ========================================================================= -->
-            <!-- FIN DE INYECCIÓN HTML: COMPLEMENTO DE CORREO, FINANCIAMIENTO Y TEXTO LEGAL   -->
-            <!-- ========================================================================= -->
-
-            </div>
-
-            
         </form>
+        <!-- ========================================================================= -->
+        <!-- FIN DE INYECCIÓN HTML: CONTENEDOR CON SCROLLBAR INTERNO Y EMAIL LIBRE    -->
+        <!-- ========================================================================= -->
+
     </div>
 </div>
 
