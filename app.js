@@ -1749,18 +1749,15 @@ function procesarFormularioAgente(event) { // --> Aqui inicia Función procesarF
                                  String(fechaAhora.getMinutes()).padStart(2, '0');
 
         // =========================================================================
-        // INICIO DE CORRECCIÓN EXCLUSIVA: PAYLOAD COMERCIAL AGENTE CON ENLACES PUROS
+        // INICIO DE INYECCIÓN FRONTEND: VARIABLE DE AGENTE PURIFICADA SIN DUPLICAR
         // =========================================================================
-        // SRE COMPATIBILITY FIX: Sincronización inmutable usando la lectura limpia de tu matriz de propiedades
-    const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
-    
-    // =========================================================================
-    // INICIO DE REEMPLAZO DEFINITIVO: SOLUCIÓN TRIPLE CORRECCIÓN AGENTE
-    // =========================================================================
-    // SRE COMPATIBILITY FIX: Localizamos la propiedad activa en el estado de la SPA
-    const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
+        // SRE COMPATIBILITY FIX: Una sola declaración limpia de la propiedad activa para todo el bloque
+        const propAsociadaAgente = state.propiedades?.find(p => p.id === state.propiedadSeleccionadaId);
 
-    const payloadContacto = {
+        const payloadContacto = {
+        // =========================================================================
+        // FIN DE INYECCIÓN FRONTEND: VARIABLE DE AGENTE PURIFICADA SIN DUPLICAR
+        // ========================================================================= 
         target_sheet: "visita",              
         usuario_id_fk: (state.usuarioActual && state.usuarioActual.id) ? String(state.usuarioActual.id).trim() : "", 
         propiedad_id_fk: state.propiedadSeleccionadaId, 
