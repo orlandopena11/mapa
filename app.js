@@ -1583,6 +1583,21 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
 } // <-- Aqui finaliza Función inicializarEventosPopups
 
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: SOPORTE AUXILIAR DE VISUALIZACIÓN MODAL
+// =========================================================================
+function mostrarPopupAccion(idModal) { // --> Aqui inicia Activación de estilos overlay
+    const nodoOverlay = document.getElementById(idModal);
+    if (nodoOverlay) {
+        nodoOverlay.style.display = "flex";
+        nodoOverlay.setAttribute("aria-hidden", "false");
+    }
+}
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: SOPORTE AUXILIAR DE VISUALIZACIÓN MODAL
+// =========================================================================
+
+
 function calcularCalendarioTresCajas() { // --> Aqui inicia Función calcularCalendarioTresCajas
     const diasSemana = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
     const mesesAnio = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
