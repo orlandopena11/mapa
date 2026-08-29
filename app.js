@@ -1738,8 +1738,39 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
             } // <-- [Cierra Bloque FINALLY]
         }; // <-- [Cierra Callback onsubmit]
     } // <-- [Cierra IF formLoginSupabase]
+
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: ENLACE ACTIVO OAUTH GOOGLE Y FACEBOOK
+    // =========================================================================
+    const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
+    if (btnGoogleAuth) { // --> [Abre IF btnGoogleAuth]
+        btnGoogleAuth.addEventListener("pointerdown", async (e) => { // --> [Abre Callback Google]
+            e.preventDefault();
+            if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre Control Supabase Google]
+                console.log("[OAUTH] Redireccionando a Google...");
+                await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+            } // <-- [Cierra Control Supabase Google]
+        }); // <-- [Cierra Callback Google]
+    } // <-- [Cierra IF btnGoogleAuth]
+
+    const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
+    if (btnFacebookAuth) { // --> [Abre IF btnFacebookAuth]
+        btnFacebookAuth.addEventListener("pointerdown", async (e) => { // --> [Abre Callback Facebook]
+            e.preventDefault();
+            if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre Control Supabase Facebook]
+                console.log("[OAUTH] Redireccionando a Facebook...");
+                await supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+            } // <-- [Cierra Control Supabase Facebook]
+        }); // <-- [Cierra Callback Facebook]
+    } // <-- [Cierra IF btnFacebookAuth]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: NÚCLEO ASÍNCRONO DE DESTRABE DE PANTALLA
+// FIN DE INYECCIÓN FRONTEND: ENLACE ACTIVO OAUTH GOOGLE Y FACEBOOK
 // =========================================================================
 
 
