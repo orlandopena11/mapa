@@ -32,14 +32,23 @@ const state =
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; // --> [Coloca aquí tu URL de Supabase]
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; // --> [Coloca aquí tu clave anon pública]
 
-// Creación e instanciación del objeto global del cliente para evitar el colapso (ReferenceError)
+// Creación e instanciación del objeto global con función de rescate en caliente autorreparable
 let supabase = null;
-if (typeof createClient !== "undefined") { // --> [Abre IF control SDK CDN]
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-} // <-- [Cierra IF control SDK CDN]
-else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") { // --> [Abre Plan B de objeto flotante]
-    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-} // <-- [Cierra Plan B de objeto flotante]
+function obtenerClienteSupabase() {
+    if (supabase) return supabase;
+    if (typeof createClient !== "undefined") {
+        supabase = createClient(supabaseUrl, supabaseAnonKey);
+    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } else if (window.supabase && typeof window.supabase.createClient === "function") {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    }
+    return supabase;
+}
+// Ejecución del intento de enganche inicial síncrono
+obtenerClienteSupabase();
+
+
 // =========================================================================
 // FIN DE INYECCIÓN FRONTEND: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE
 // =========================================================================
