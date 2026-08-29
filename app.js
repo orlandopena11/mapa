@@ -240,95 +240,63 @@ function construirRielCarruselComponente(prop, esPopup = false)
         const dot = document.createElement('span');
         dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
         contenedorDots.appendChild(dot);
-        // =========================================================================
-        // BUENAS PRÁCTICAS SRE: BOTÓN DE CORAZÓN "ME GUSTA" INTEGRADO AL CONTENEDOR
-        // =========================================================================
-        contenedorFoto.style.position = 'relative';
-
-        const botonCorazon = document.createElement('button');
-        botonCorazon.innerHTML = '🤍';
-        botonCorazon.style.position = 'absolute';
-        botonCorazon.style.top = '12px';
-        botonCorazon.style.right = '12px';
-        botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
-        botonCorazon.style.border = 'none';
-        botonCorazon.style.borderRadius = '50%';
-        botonCorazon.style.width = '30px';
-        botonCorazon.style.height = '30px';
-        botonCorazon.style.cursor = 'pointer';
-        botonCorazon.style.fontSize = '15px';
-        botonCorazon.style.display = 'flex';
-        botonCorazon.style.alignItems = 'center';
-        botonCorazon.style.justifyContent = 'center';
-        botonCorazon.style.zIndex = '10';
-        botonCorazon.style.transition = 'background 0.2s, transform 0.1s';
-
-
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
+// INICIO DE INYECCIÓN FRONTEND: RESTRUCTURACIÓN ATÓMICA DE CORAZÓN ACL V5
 // =========================================================================
-        /*botonCorazon.addEventListener('click', (e) => {
-            // SRE ABSOLUTE PREVENT: Frenamos cualquier propagación o navegación por defecto en cascada hacia la tarjeta base
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (typeof e.stopImmediatePropagation === "function") {
-                    e.stopImmediatePropagation();
-                }
+        dotsArray.push(dot);
+    } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
+
+    // Instanciación ÚNICA del escudo comercial por fuera del bucle de imágenes
+    contenedorFoto.style.position = 'relative';
+    const botonCorazon = document.createElement('button');
+    botonCorazon.innerHTML = '🤍'; // Icono base nítido y universal
+    botonCorazon.style.position = 'absolute';
+    botonCorazon.style.top = '12px';
+    botonCorazon.style.right = '12px';
+    botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
+    botonCorazon.style.border = 'none';
+    botonCorazon.style.borderRadius = '50%';
+    botonCorazon.style.width = '32px';
+    botonCorazon.style.height = '32px';
+    botonCorazon.style.cursor = 'pointer';
+    botonCorazon.style.fontSize = '16px';
+    botonCorazon.style.display = 'flex';
+    botonCorazon.style.alignItems = 'center';
+    botonCorazon.style.justifyContent = 'center';
+    botonCorazon.style.zIndex = '10';
+    botonCorazon.style.transition = 'background 0.2s, transform 0.1s';
+
+    // Captura reactiva de toque inmediato para ganarle en velocidad a la tarjeta SPA
+    botonCorazon.addEventListener('pointerdown', (e) => { // --> [Abre Callback pointerdown Corazón]
+        if (e) { // --> [Abre IF control evento]
+            e.preventDefault();
+            e.stopPropagation(); // Frena en seco el evento para que la tarjeta de la casa no cambie de pantalla
+            if (typeof e.stopImmediatePropagation === "function") {
+                e.stopImmediatePropagation();
             }
-            
-            // Invocación del Candado SRE: Si devuelve falso (usuario anónimo), corta el flujo en seco y levanta login
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) {
-                return;
-            }
+        } // <-- [Cierra IF control evento]
 
-            // Flujo Ordinario Autorizado: Cambia el estado del corazón si el usuario es válido en Sheets
-            if (botonCorazon.innerHTML === '🖤') {
-                botonCorazon.innerHTML = '❤️';
-                botonCorazon.style.background = 'rgba(255, 255, 255, 0.9)';
-            } else {
-                botonCorazon.innerHTML = '🖤';
-                botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
-            }
-        });
-        */
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
-// =========================================================================
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: CONTROL TOTAL ACL (SUPABASE + GOOGLE SHEETS)
-// =========================================================================
-        botonCorazon.addEventListener('pointerdown', (e) => {
-            if (e) {
-                e.preventDefault();
-                e.stopPropagation(); // Frena en seco el pointerdown de la tarjeta contenedora
-                if (typeof e.stopImmediatePropagation === "function") {
-                    e.stopImmediatePropagation();
-                }
-            }
+        // Validación del candado central de autorización (Supabase Auth + Google Sheets)
+        if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) { // --> [Abre IF candado ACL]
+            return; // Cortocircuita la acción en seco para usuarios no autorizados o anónimos
+        } // <-- [Cierra IF candado ACL]
 
-            // EJECUCIÓN INMEDIATA DEL CANDADO DE AUTORIZACIÓN EN EL TOQUE
-            // Si no está logueado en Supabase, abre el modal flotante de inicio de sesión.
-            // Si está suspendido en Google Sheets, bloquea la acción por completo.
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) {
-                return; // Cortocircuita el flujo para usuarios no autorizados
-            }
+        // Flujo autorizado para cambiar el estado del me gusta de forma persistente
+        if (botonCorazon.innerHTML === '🤍') { // --> [Abre IF pintar activo]
+            botonCorazon.innerHTML = '❤️';
+            botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
+        } // <-- [Cierra IF pintar activo] 
+        else { // --> [Abre ELSE pintar pasivo]
+            botonCorazon.innerHTML = '🤍';
+            botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
+        } // <-- [Cierra ELSE pintar pasivo]
+    }); // <-- [Cierra Callback pointerdown Corazón]
 
-            // FLUJO EXCLUSIVO PARA USUARIOS AUTENTICADOS Y ACTIVOS
-            if (botonCorazon.innerHTML === '??') {
-                botonCorazon.innerHTML = '??';
-                botonCorazon.style.background = 'rgba(255, 255, 255, 0.9)';
-            } else {
-                botonCorazon.innerHTML = '??';
-                botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
-            }
-        });
+    contenedorFoto.appendChild(botonCorazon);
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: CONTROL TOTAL ACL (SUPABASE + GOOGLE SHEETS)
+// FIN DE INYECCIÓN FRONTEND: RESTRUCTURACIÓN ATÓMICA DE CORAZÓN ACL V5
 // =========================================================================
 
-        
-        contenedorFoto.appendChild(botonCorazon);
 
         dotsArray.push(dot);
     } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
