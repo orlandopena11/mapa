@@ -435,9 +435,6 @@
             <p style="font-size: 13px; color: #54565a; margin-top: 6px; margin-bottom: 0;">Explore números, guarde favoritos y agende citas ingresando a su cuenta.</p>
         </div>
 
-<!-- ========================================================================= --> 
-<!-- INICIO DE INYECCIÓN HTML: FORMULARIO BINDING Y LOGOS FEDERADOS CORREGIDOS -->
-<!-- ========================================================================= -->
         <!-- VÍA 1: FORMULARIO DE EMAIL + CONFIRMACIÓN MAGIC LINK -->
         <form id="form-login-email-supabase" style="margin: 0; padding: 0; display: block;">
             <div style="margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px;">
@@ -445,26 +442,24 @@
                 <input type="email" id="login-email-input" style="width: 100%; padding: 10px; border: 1px solid #ccd0d5; border-radius: 4px; font-size: 14px; box-sizing: border-box;" placeholder="ejemplo@correo.com" required>
             </div>
             <button type="submit" style="width: 100%; background-color: #006aff; color: #ffffff; padding: 10px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-bottom: 16px;">Enviar para confirmar email</button>
+            
+            <div style="display: flex; align-items: center; text-align: center; margin-bottom: 16px; color: #6a6a6a; font-size: 12px;">
+                <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
+                <span style="padding: 0 10px;">O conéctese con</span>
+                <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
+            </div>
+
+            <!-- VÍAS 2 Y 3: BOTONES FEDERADOS REESTRUCTURADOS CON URLS VECTORIALES NATIVAS COMPLETAS -->
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <button type="button" id="btn-login-google-supabase" style="width: 100%; background-color: #ffffff; color: #2a2a2a; border: 1px solid #ccd0d5; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
+                    <img src="https://vectorlogo.zone" alt="Google" style="width: 18px; height: 18px; min-width: 18px; display: inline-block; border: none;"> Continuar con Google
+                </button>
+                <button type="button" id="btn-login-facebook-supabase" style="width: 100%; background-color: #1877f2; color: #ffffff; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
+                    <img src="https://vectorlogo.zone" alt="Facebook" style="width: 18px; height: 18px; min-width: 18px; display: inline-block; border: none;"> Continuar con Facebook
+                </button>
+            </div>
         </form>
 
-        <div style="display: flex; align-items: center; text-align: center; margin-bottom: 16px; color: #6a6a6a; font-size: 12px;">
-            <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
-            <span style="padding: 0 10px;">O conéctese con</span>
-            <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
-        </div>
-
-        <!-- VÍAS 2 Y 3: BOTONES FEDERADOS CON RUTAS IMAGEN COMPLETAS -->
-        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-            <button type="button" id="btn-login-google-supabase" style="width: 100%; background-color: #ffffff; color: #2a2a2a; border: 1px solid #ccd0d5; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
-                <img src="https://vectorlogo.zone" alt="Google" style="width: 18px; height: 18px; min-width: 18px; display: inline-block; border: none;"> Continuar con Google
-            </button>
-            <button type="button" id="btn-login-facebook-supabase" style="width: 100%; background-color: #1877f2; color: #ffffff; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
-                <img src="https://vectorlogo.zone" alt="Facebook" style="width: 18px; height: 18px; min-width: 18px; display: inline-block; border: none;"> Continuar con Facebook
-            </button>
-        </div>
-<!-- ========================================================================= -->
-<!-- FIN DE INYECCIÓN HTML: FORMULARIO BINDING Y LOGOS FEDERADOS CORREGIDOS -->
-<!-- ========================================================================= -->
 
     </div>
 </div>
