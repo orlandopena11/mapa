@@ -1770,15 +1770,15 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); // <-- [Cierra Callback Facebook]
     } // <-- [Cierra IF btnFacebookAuth]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: ENLACE ACTIVO OAUTH GOOGLE Y FACEBOOK
+// INICIO DE INYECCIÓN FRONTEND: SELLO DEFINITIVO DE LLAVES CORE
+// =========================================================================
+} // <-- [Cierra la función principal inicializarEventosPopups]
+} // <-- [Cierra la estructura superior del archivo que se abrió en la línea 1586]
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: SELLO DEFINITIVO DE LLAVES CORE
 // =========================================================================
 
-
-
-    
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: SOPORTE AUXILIAR DE VISUALIZACIÓN MODAL
-// =========================================================================
+    // =========================================================================
 function mostrarPopupAccion(idModal) { // --> Aqui inicia Activación de estilos overlay
     const nodoOverlay = document.getElementById(idModal);
     if (nodoOverlay) {
