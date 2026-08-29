@@ -802,8 +802,11 @@ document.addEventListener("DOMContentLoaded", () =>
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
 // =========================================================================
-    if (typeof supabase !== "undefined") { 
-        supabase.auth.onAuthStateChange((event, session) => {
+/*    if (typeof supabase !== "undefined") { 
+        supabase.auth.onAuthStateChange((event, session) => { */
+    if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre validación estricta anti-colapso]
+       supabase.auth.onAuthStateChange((event, session) => {
+
             if (session && session.user) {
                 const correoUsuario = String(session.user.email).trim();
                 
