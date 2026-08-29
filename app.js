@@ -46,23 +46,26 @@ else if (typeof window.supabase !== "undefined" && typeof window.supabase.create
 
 
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO GENERAL DE CONTROL DE ACCESO
+// INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
 // =========================================================================
-function verificarAutorizacionAcceso() { // --> Aqui inicia Regla de Acceso Centralizada ACL
-    if (!state.usuarioActual || !state.usuarioActual.id) {
+function verificarAutorizacionAcceso() { // --> [Abre la función verificarAutorizacionAcceso]
+    if (!state.usuarioActual || !state.usuarioActual.id) { // --> [Abre IF usuario vacío]
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
-        typeof mostrarPopupAccion === "function" && mostrarPopupAccion("modal-autenticacion-supabase");
-        return false;
-    }
+        if (typeof mostrarPopupAccion === "function") { // --> [Abre IF mostrarPopupAccion]
+            mostrarPopupAccion("modal-autenticacion-supabase");
+        } // <-- [Cierra IF mostrarPopupAccion]
+        return false; // Corta el flujo de forma segura dentro de la función
+    } // <-- [Cierra IF usuario vacío]
     
-    if (state.usuarioActual.estado_cuenta === "suspendido") {
-        alert("Cuenta Suspendida: No tiene autorización para ver teléfonos, dar favoritos o agendar citas.");
-        return false;
-    }
-    return true;
-} // <-- Aqui finaliza Regla de Acceso Centralizada ACL
+    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") { // --> [Abre IF suspendido]
+        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
+        return false; // Corta el flujo de forma segura dentro de la función
+    } // <-- [Cierra IF suspendido]
+    
+    return true; // Autoriza el paso si superó los dos controles anteriores
+} // <-- [Cierra limpiamente la función verificarAutorizacionAcceso]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO GENERAL DE CONTROL DE ACCESO
+// FIN DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
 // =========================================================================
 
 
