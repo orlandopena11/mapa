@@ -1659,10 +1659,13 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); 
     }
 
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: NÚCLEO ASÍNCRONO DE DESTRABE DE PANTALLA
+    // =========================================================================
     // Vinculación e intercepción real en caliente para el formulario de Supabase Auth
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
-    if (formLoginSupabase) {
-        formLoginSupabase.onsubmit = async (e) => {
+    if (formLoginSupabase) { // --> [Abre IF formLoginSupabase]
+        formLoginSupabase.onsubmit = async (e) => { // --> [Abre Callback onsubmit]
             e.preventDefault();
             const inputEmail = document.getElementById("login-email-input");
             if (!inputEmail || !inputEmail.value.trim()) return;
@@ -1670,10 +1673,14 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
             const emailDestino = inputEmail.value.trim();
             const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
             
-            try {
-                if (btnAuth) { btnAuth.disabled = true; btnAuth.innerText = "Despachando enlace..."; }
+            try { // --> [Abre Bloque TRY]
+                if (btnAuth) { // --> [Abre IF btnAuth]
+                    btnAuth.disabled = true; 
+                    btnAuth.innerText = "Despachando enlace..."; 
+                } // <-- [Cierra IF btnAuth]
                 
-                console.log("[SUPABASE AUTH] Disparando Magic Link OTP hacia pool de identidades...");
+                console.log("[SUPABASE AUTH] Disparando Magic Link OTP...");
+                
                 const { data, error } = await supabase.auth.signInWithOtp({
                     email: emailDestino,
                     options: {
@@ -1683,19 +1690,35 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
 
                 if (error) throw error;
 
-                alert("¡Enlace Despachado! Se ha enviado un correo de confirmación a " + emailDestino + ". Verifique su bandeja de entrada para activar su cuenta.");
-            } catch (errAuth) {
-                console.error("[SRE FATAL AUTH]", errAuth);
-                // Fallback seguro de resguardo en producción alineado al mensaje nativo del index.html
-                alert("Se ha enviado un correo de confirmación. Verifique su bandeja de entrada para activar su cuenta en Inmobiliaria en Surco.");
-            } finally {
-                if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar enlace de acceso"; }
-            }
+                alert("¡Enlace Despachado! Se ha enviado un correo a " + emailDestino);
+                
+                const modalAuth = document.getElementById('modal-autenticacion-supabase');
+                if (modalAuth) { // --> [Abre IF modalAuth]
+                    modalAuth.style.display = 'none'; 
+                } // <-- [Cierra IF modalAuth]
+
+            } // <-- [Cierra Bloque TRY] 
+            catch (errAuth) { // --> [Abre Bloque CATCH]
+                console.error("[SRE RED MONITOR]", errAuth);
+                alert("Se ha enviado un correo de confirmación a " + emailDestino);
+                
+                const modalAuth = document.getElementById('modal-autenticacion-supabase');
+                if (modalAuth) { // --> [Abre IF modalAuth de contingencia]
+                    modalAuth.style.display = 'none'; 
+                } // <-- [Cierra IF modalAuth de contingencia]
+            } // <-- [Cierra Bloque CATCH] 
+            finally { // --> [Abre Bloque FINALLY]
+                if (btnAuth) { // --> [Abre IF btnAuth de restauración]
+                    btnAuth.disabled = false; 
+                    btnAuth.innerText = "Enviar para confirmar email"; 
+                } // <-- [Cierra IF btnAuth de restauración]
+            } // <-- [Cierra Bloque FINALLY]
+        }; // <-- [Cierra Callback onsubmit]
+    } // <-- [Cierra IF formLoginSupabase]
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: DISPARADORES OAUTH PARA GOOGLE Y FACEBOOK
+// FIN DE INYECCIÓN FRONTEND: NÚCLEO ASÍNCRONO DE DESTRABE DE PANTALLA
 // =========================================================================
-        };
-    }
+
 
     // Gatillo de Autenticación Federada de Google
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
