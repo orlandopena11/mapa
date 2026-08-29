@@ -1647,16 +1647,12 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
-    /*if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
-    if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
-*/
-} // <-- Aqui finaliza Función inicializarEventosPopups
 
 
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: GATILLOS DE ENVÍO TRANSACCIONAL Y SUPABASE OTP
+// INICIO DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
 // =========================================================================
-    if (formTourCompleto) { 
+    if (formTourCompleto) { // --> [Abre IF formTourCompleto]
         formTourCompleto.addEventListener("submit", (e) => { 
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -1667,9 +1663,9 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                 typeof procesarFormularioTour === "function" && procesarFormularioTour(e);
             }
         }); 
-    }
+    } // <-- [Cierra IF formTourCompleto]
 
-    if (formAgente) { 
+    if (formAgente) { // --> [Abre IF formAgente]
         formAgente.addEventListener("submit", (e) => { 
             e.preventDefault();
             e.stopImmediatePropagation();
@@ -1680,11 +1676,8 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                 typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e);
             }
         }); 
-    }
+    } // <-- [Cierra IF formAgente]
 
-    // =========================================================================
-    // INICIO DE INYECCIÓN FRONTEND: NÚCLEO ASÍNCRONO DE DESTRABE DE PANTALLA
-    // =========================================================================
     // Vinculación e intercepción real en caliente para el formulario de Supabase Auth
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
     if (formLoginSupabase) { // --> [Abre IF formLoginSupabase]
@@ -1697,86 +1690,73 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
             const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
             
             try { // --> [Abre Bloque TRY]
-                if (btnAuth) { // --> [Abre IF btnAuth]
+                if (btnAuth) { 
                     btnAuth.disabled = true; 
                     btnAuth.innerText = "Despachando enlace..."; 
-                } // <-- [Cierra IF btnAuth]
+                }
                 
                 console.log("[SUPABASE AUTH] Disparando Magic Link OTP...");
                 
                 const { data, error } = await supabase.auth.signInWithOtp({
                     email: emailDestino,
-                    options: {
-                        emailRedirectTo: window.location.origin + window.location.pathname
-                    }
+                    options: { emailRedirectTo: window.location.origin + window.location.pathname }
                 });
 
                 if (error) throw error;
-
                 alert("¡Enlace Despachado! Se ha enviado un correo a " + emailDestino);
                 
                 const modalAuth = document.getElementById('modal-autenticacion-supabase');
-                if (modalAuth) { // --> [Abre IF modalAuth]
-                    modalAuth.style.display = 'none'; 
-                } // <-- [Cierra IF modalAuth]
+                if (modalAuth) { modalAuth.style.display = 'none'; }
 
             } // <-- [Cierra Bloque TRY] 
             catch (errAuth) { // --> [Abre Bloque CATCH]
                 console.error("[SRE RED MONITOR]", errAuth);
                 alert("Se ha enviado un correo de confirmación a " + emailDestino);
-                
                 const modalAuth = document.getElementById('modal-autenticacion-supabase');
-                if (modalAuth) { // --> [Abre IF modalAuth de contingencia]
-                    modalAuth.style.display = 'none'; 
-                } // <-- [Cierra IF modalAuth de contingencia]
+                if (modalAuth) { modalAuth.style.display = 'none'; }
             } // <-- [Cierra Bloque CATCH] 
             finally { // --> [Abre Bloque FINALLY]
-                if (btnAuth) { // --> [Abre IF btnAuth de restauración]
+                if (btnAuth) { 
                     btnAuth.disabled = false; 
                     btnAuth.innerText = "Enviar para confirmar email"; 
-                } // <-- [Cierra IF btnAuth de restauración]
+                }
             } // <-- [Cierra Bloque FINALLY]
         }; // <-- [Cierra Callback onsubmit]
     } // <-- [Cierra IF formLoginSupabase]
 
-    // =========================================================================
-    // INICIO DE INYECCIÓN FRONTEND: ENLACE ACTIVO OAUTH GOOGLE Y FACEBOOK
-    // =========================================================================
+    // Gatillos de Autenticación Federada de Google y Facebook
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
     if (btnGoogleAuth) { // --> [Abre IF btnGoogleAuth]
-        btnGoogleAuth.addEventListener("pointerdown", async (e) => { // --> [Abre Callback Google]
+        btnGoogleAuth.addEventListener("pointerdown", async (e) => { 
             e.preventDefault();
-            if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre Control Supabase Google]
+            if (typeof supabase !== "undefined" && supabase !== null) {
                 console.log("[OAUTH] Redireccionando a Google...");
                 await supabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
-            } // <-- [Cierra Control Supabase Google]
-        }); // <-- [Cierra Callback Google]
+            }
+        }); 
     } // <-- [Cierra IF btnGoogleAuth]
 
     const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
     if (btnFacebookAuth) { // --> [Abre IF btnFacebookAuth]
-        btnFacebookAuth.addEventListener("pointerdown", async (e) => { // --> [Abre Callback Facebook]
+        btnFacebookAuth.addEventListener("pointerdown", async (e) => { 
             e.preventDefault();
-            if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre Control Supabase Facebook]
+            if (typeof supabase !== "undefined" && supabase !== null) {
                 console.log("[OAUTH] Redireccionando a Facebook...");
                 await supabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
-            } // <-- [Cierra Control Supabase Facebook]
-        }); // <-- [Cierra Callback Facebook]
+            }
+        }); 
     } // <-- [Cierra IF btnFacebookAuth]
+} // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: SELLO DEFINITIVO DE LLAVES CORE
+// FIN DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
 // =========================================================================
-} // <-- [Cierra la función principal inicializarEventosPopups]
-} // <-- [Cierra la estructura superior del archivo que se abrió en la línea 1586]
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: SELLO DEFINITIVO DE LLAVES CORE
-// =========================================================================
+
 
     // =========================================================================
 function mostrarPopupAccion(idModal) { // --> Aqui inicia Activación de estilos overlay
