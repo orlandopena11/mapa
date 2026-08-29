@@ -243,12 +243,13 @@ function construirRielCarruselComponente(prop, esPopup = false)
         const dot = document.createElement('span');
         dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
         contenedorDots.appendChild(dot);
+        dotsArray.push(dot);
+    } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
+    contenedorFoto.appendChild(contenedorDots);
+
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: RESTRUCTURACIÓN ATÓMICA DE CORAZÓN ACL V5
 // =========================================================================
-        dotsArray.push(dot);
-    } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
-
     // Instanciación ÚNICA del escudo comercial por fuera del bucle de imágenes
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
@@ -299,11 +300,6 @@ function construirRielCarruselComponente(prop, esPopup = false)
 // =========================================================================
 // FIN DE INYECCIÓN FRONTEND: RESTRUCTURACIÓN ATÓMICA DE CORAZÓN ACL V5
 // =========================================================================
-
-
-        dotsArray.push(dot);
-    } // <--Aqui finaliza Ciclo for renderizar fotos e indicadores
-    contenedorFoto.appendChild(contenedorDots);
 
     if (totalFotos > 1) 
     { // -->Aqui inicia Condicional si tiene más de 1 foto
@@ -357,6 +353,7 @@ function construirRielCarruselComponente(prop, esPopup = false)
     
     return contenedorFoto;
 } // <--Aqui finaliza Función construirRielCarruselComponente
+
 
 /**
  * @description Crea el componente visual de la tarjeta de propiedad (Catalogo Derecho - Pantalla 1).
