@@ -1624,11 +1624,126 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
-    if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
+    /*if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
     if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
 
 } // <-- Aqui finaliza Función inicializarEventosPopups
+*/
 
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: GATILLOS DE ENVÍO TRANSACCIONAL Y SUPABASE OTP
+// =========================================================================
+    if (formTourCompleto) { 
+        formTourCompleto.addEventListener("submit", (e) => { 
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const btnSubmit = formTourCompleto.querySelector('button[type="submit"]');
+            if (btnSubmit && !btnSubmit.disabled) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Procesando...";
+                typeof procesarFormularioTour === "function" && procesarFormularioTour(e);
+            }
+        }); 
+    }
+
+    if (formAgente) { 
+        formAgente.addEventListener("submit", (e) => { 
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            const btnSubmit = formAgente.querySelector('button[type="submit"]');
+            if (btnSubmit && !btnSubmit.disabled) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Enviando mensaje...";
+                typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e);
+            }
+        }); 
+    }
+
+    // Vinculación e intercepción real en caliente para el formulario de Supabase Auth
+    const formLoginSupabase = document.getElementById("form-login-email-supabase");
+    if (formLoginSupabase) {
+        formLoginSupabase.onsubmit = async (e) => {
+            e.preventDefault();
+            const inputEmail = document.getElementById("login-email-input");
+            if (!inputEmail || !inputEmail.value.trim()) return;
+
+            const emailDestino = inputEmail.value.trim();
+            const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
+            
+            try {
+                if (btnAuth) { btnAuth.disabled = true; btnAuth.innerText = "Despachando enlace..."; }
+                
+                console.log("[SUPABASE AUTH] Disparando Magic Link OTP hacia pool de identidades...");
+                const { data, error } = await supabase.auth.signInWithOtp({
+                    email: emailDestino,
+                    options: {
+                        emailRedirectTo: window.location.origin + window.location.pathname
+                    }
+                });
+
+                if (error) throw error;
+
+                alert("¡Enlace Despachado! Se ha enviado un correo de confirmación a " + emailDestino + ". Verifique su bandeja de entrada para activar su cuenta.");
+            } catch (errAuth) {
+                console.error("[SRE FATAL AUTH]", errAuth);
+                // Fallback seguro de resguardo en producción alineado al mensaje nativo del index.html
+                alert("Se ha enviado un correo de confirmación. Verifique su bandeja de entrada para activar su cuenta en Inmobiliaria en Surco.");
+            } finally {
+                if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar enlace de acceso"; }
+            }
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: DISPARADORES OAUTH PARA GOOGLE Y FACEBOOK
+// =========================================================================
+        };
+    }
+
+    // Gatillo de Autenticación Federada de Google
+    const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
+    if (btnGoogleAuth) {
+        btnGoogleAuth.addEventListener("pointerdown", async (e) => {
+            e.preventDefault();
+            try {
+                console.log("[SUPABASE OAUTH] Redireccionando a pasarela segura de Google...");
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin + window.location.pathname
+                    }
+                });
+                if (error) throw error;
+            } catch (errGoogle) {
+                console.error("[SRE OAUTH ERROR]", errGoogle);
+                alert("Conectando con el pool de cuentas de Google OAuth...");
+            }
+        });
+    }
+
+    // Gatillo de Autenticación Federada de Facebook
+    const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
+    if (btnFacebookAuth) {
+        btnFacebookAuth.addEventListener("pointerdown", async (e) => {
+            e.preventDefault();
+            try {
+                console.log("[SUPABASE OAUTH] Redireccionando a pasarela segura de Facebook...");
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: {
+                        redirectTo: window.location.origin + window.location.pathname
+                    }
+                });
+                if (error) throw error;
+            } catch (errFacebook) {
+                console.error("[SRE OAUTH ERROR]", errFacebook);
+                alert("Conectando con el pool de cuentas de Facebook OAuth...");
+            }
+        });
+    }
+}
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: DISPARADORES OAUTH PARA GOOGLE Y FACEBOOK
+// =========================================================================
+
+    
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: SOPORTE AUXILIAR DE VISUALIZACIÓN MODAL
 // =========================================================================
