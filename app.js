@@ -1646,13 +1646,24 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); 
     } // <-- [Cierra IF formAgente]
 
-    // Vinculación e intercepción real en caliente para el formulario de Supabase Auth
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: SISTEMA DE ESPÍAS DE RED SUPABASE AUTH V5
+// =========================================================================
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
+    console.log("%c [ESPÍA FORM 1] ¿Existe el formulario de login en el DOM?:", "background: #f59e0b; color: #000; padding: 2px;", !!formLoginSupabase);
+
     if (formLoginSupabase) { // --> [Abre IF formLoginSupabase]
         formLoginSupabase.onsubmit = async (e) => { // --> [Abre Callback onsubmit]
             e.preventDefault();
+            console.log("%c [ESPÍA CLICK 2] ¡Gatillo submit activado exitosamente por el usuario!", "background: #10b981; color: #fff; padding: 2px;");
+            
             const inputEmail = document.getElementById("login-email-input");
-            if (!inputEmail || !inputEmail.value.trim()) return;
+            console.log("[ESPÍA ENTRADA 3] Caja de texto detectada:", !!inputEmail, "Valor escrito:", inputEmail ? inputEmail.value : "NULO");
+
+            if (!inputEmail || !inputEmail.value.trim()) {
+                alert("[SRE ALERTA ESPÍA] El flujo se detuvo: La caja de texto del correo electrónico está vacía.");
+                return;
+            }
 
             const emailDestino = inputEmail.value.trim();
             const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
@@ -1663,23 +1674,35 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                     btnAuth.innerText = "Despachando enlace..."; 
                 }
                 
-                console.log("[SUPABASE AUTH] Disparando Magic Link OTP...");
+                console.log("%c [ESPÍA CONTROL CLIENTE 4] Estado del objeto cliente 'supabase':", "background: #3b82f6; color: #fff; padding: 2px;", supabase);
                 
+                if (!supabase) {
+                    alert("[SRE CRÍTICO ESPÍA] El flujo se detuvo de golpe: El objeto 'supabase' es NULL o no se inicializó en la línea 27.");
+                    if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar para confirmar email"; }
+                    return;
+                }
+
+                alert("[SRE ESPÍA INVOCACIÓN] Enviando credenciales del correo " + emailDestino + " hacia los servidores externos de Supabase...");
+                
+                // Disparo asíncrono directo al pool de identidades
                 const { data, error } = await supabase.auth.signInWithOtp({
                     email: emailDestino,
                     options: { emailRedirectTo: window.location.origin + window.location.pathname }
                 });
 
+                console.log("[ESPÍA RESPUESTA SERVER 5] Datos devueltos por Supabase:", data, "Error devuelto:", error);
+
                 if (error) throw error;
-                alert("¡Enlace Despachado! Se ha enviado un correo a " + emailDestino);
+                alert("¡ÉXITO TOTAL DE RED! Supabase aceptó el correo. El enlace de confirmación fue enviado a: " + emailDestino);
                 
                 const modalAuth = document.getElementById('modal-autenticacion-supabase');
                 if (modalAuth) { modalAuth.style.display = 'none'; }
 
             } // <-- [Cierra Bloque TRY] 
             catch (errAuth) { // --> [Abre Bloque CATCH]
-                console.error("[SRE RED MONITOR]", errAuth);
-                alert("Se ha enviado un correo de confirmación a " + emailDestino);
+                console.error("%c [ESPÍA ALERTA CAPTURADA 6] Error atrapado en el envío:", "background: #ef4444; color: #fff; padding: 2px;", errAuth);
+                alert("[ESPÍA ALERTA CONTROLADA] Falló el transporte del mensaje. Detalle técnico: " + errAuth.message);
+                
                 const modalAuth = document.getElementById('modal-autenticacion-supabase');
                 if (modalAuth) { modalAuth.style.display = 'none'; }
             } // <-- [Cierra Bloque CATCH] 
@@ -1688,9 +1711,13 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                     btnAuth.disabled = false; 
                     btnAuth.innerText = "Enviar para confirmar email"; 
                 }
+                console.log("%c [ESPÍA FINALIZADO 7] Flujo asíncrono completado. Interfaz liberada.", "background: #6b7280; color: #fff; padding: 2px;");
             } // <-- [Cierra Bloque FINALLY]
         }; // <-- [Cierra Callback onsubmit]
     } // <-- [Cierra IF formLoginSupabase]
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: SISTEMA DE ESPÍAS DE RED SUPABASE AUTH V5
+// =========================================================================
 
     // Gatillos de Autenticación Federada de Google y Facebook
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
