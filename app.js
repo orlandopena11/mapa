@@ -1774,51 +1774,6 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
 // =========================================================================
 
 
-    // Gatillo de Autenticación Federada de Google
-    const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
-    if (btnGoogleAuth) {
-        btnGoogleAuth.addEventListener("pointerdown", async (e) => {
-            e.preventDefault();
-            try {
-                console.log("[SUPABASE OAUTH] Redireccionando a pasarela segura de Google...");
-                const { data, error } = await supabase.auth.signInWithOAuth({
-                    provider: 'google',
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname
-                    }
-                });
-                if (error) throw error;
-            } catch (errGoogle) {
-                console.error("[SRE OAUTH ERROR]", errGoogle);
-                alert("Conectando con el pool de cuentas de Google OAuth...");
-            }
-        });
-    }
-
-    // Gatillo de Autenticación Federada de Facebook
-    const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
-    if (btnFacebookAuth) {
-        btnFacebookAuth.addEventListener("pointerdown", async (e) => {
-            e.preventDefault();
-            try {
-                console.log("[SUPABASE OAUTH] Redireccionando a pasarela segura de Facebook...");
-                const { data, error } = await supabase.auth.signInWithOAuth({
-                    provider: 'facebook',
-                    options: {
-                        redirectTo: window.location.origin + window.location.pathname
-                    }
-                });
-                if (error) throw error;
-            } catch (errFacebook) {
-                console.error("[SRE OAUTH ERROR]", errFacebook);
-                alert("Conectando con el pool de cuentas de Facebook OAuth...");
-            }
-        });
-    }
-}
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: DISPARADORES OAUTH PARA GOOGLE Y FACEBOOK
-// =========================================================================
 
     
 // =========================================================================
