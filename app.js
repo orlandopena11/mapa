@@ -247,7 +247,7 @@ function construirRielCarruselComponente(prop, esPopup = false)
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
 // =========================================================================
-        botonCorazon.addEventListener('click', (e) => {
+        /*botonCorazon.addEventListener('click', (e) => {
             // SRE ABSOLUTE PREVENT: Frenamos cualquier propagación o navegación por defecto en cascada hacia la tarjeta base
             if (e) {
                 e.preventDefault();
@@ -271,10 +271,43 @@ function construirRielCarruselComponente(prop, esPopup = false)
                 botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
             }
         });
+        */
 // =========================================================================
 // FIN DE INYECCIÓN FRONTEND: REPARACIÓN ANTIMUESTRAS GATILLO CORAZÓN V2
 // =========================================================================
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: CONTROL TOTAL ACL (SUPABASE + GOOGLE SHEETS)
+// =========================================================================
+        botonCorazon.addEventListener('pointerdown', (e) => {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation(); // Frena en seco el pointerdown de la tarjeta contenedora
+                if (typeof e.stopImmediatePropagation === "function") {
+                    e.stopImmediatePropagation();
+                }
+            }
 
+            // EJECUCIÓN INMEDIATA DEL CANDADO DE AUTORIZACIÓN EN EL TOQUE
+            // Si no está logueado en Supabase, abre el modal flotante de inicio de sesión.
+            // Si está suspendido en Google Sheets, bloquea la acción por completo.
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) {
+                return; // Cortocircuita el flujo para usuarios no autorizados
+            }
+
+            // FLUJO EXCLUSIVO PARA USUARIOS AUTENTICADOS Y ACTIVOS
+            if (botonCorazon.innerHTML === '??') {
+                botonCorazon.innerHTML = '??';
+                botonCorazon.style.background = 'rgba(255, 255, 255, 0.9)';
+            } else {
+                botonCorazon.innerHTML = '??';
+                botonCorazon.style.background = 'rgba(0, 0, 0, 0.35)';
+            }
+        });
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: CONTROL TOTAL ACL (SUPABASE + GOOGLE SHEETS)
+// =========================================================================
+
+        
         contenedorFoto.appendChild(botonCorazon);
 
         dotsArray.push(dot);
