@@ -1649,9 +1649,9 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
 
     /*if (formTourCompleto) { formTourCompleto.addEventListener("submit", (e) => { typeof procesarFormularioTour === "function" && procesarFormularioTour(e); }); }
     if (formAgente) { formAgente.addEventListener("submit", (e) => { typeof procesarFormularioAgente === "function" && procesarFormularioAgente(e); }); }
-
-} // <-- Aqui finaliza Función inicializarEventosPopups
 */
+} // <-- Aqui finaliza Función inicializarEventosPopups
+
 
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: GATILLOS DE ENVÍO TRANSACCIONAL Y SUPABASE OTP
