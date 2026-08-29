@@ -26,6 +26,26 @@ const state =
 }; // <--Aqui finaliza Objeto state global
 
 // =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE
+// =========================================================================
+// Declaración explícita de las constantes de conexión a la pasarela segura
+const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; // --> [Coloca aquí tu URL de Supabase]
+const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; // --> [Coloca aquí tu clave anon pública]
+
+// Creación e instanciación del objeto global del cliente para evitar el colapso (ReferenceError)
+let supabase = null;
+if (typeof createClient !== "undefined") { // --> [Abre IF control SDK CDN]
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+} // <-- [Cierra IF control SDK CDN]
+else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") { // --> [Abre Plan B de objeto flotante]
+    supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+} // <-- [Cierra Plan B de objeto flotante]
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE
+// =========================================================================
+
+
+// =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO GENERAL DE CONTROL DE ACCESO
 // =========================================================================
 function verificarAutorizacionAcceso() { // --> Aqui inicia Regla de Acceso Centralizada ACL
