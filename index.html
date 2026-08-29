@@ -442,15 +442,21 @@
             <hr style="flex: 1; border: none; border-top: 1px solid #e2e8f0;">
         </div>
 
-        <!-- VÍAS 2 Y 3: BOTONES FEDERADOS OAUTH (GOOGLE Y FACEBOOK) -->
+<!-- ========================================================================= -->
+<!-- INICIO DE INYECCIÓN HTML: BOTONES FEDERADOS OAUTH CON RECONOCIMIENTO DE ICONOS -->
+<!-- ========================================================================= -->
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button type="button" style="width: 100%; background-color: #ffffff; color: #2a2a2a; border: 1px solid #ccd0d5; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="alert('Redireccionando a la pasarela de autenticación segura de Google OAuth...');">
-                <span style="font-size: 16px;">?</span> Continuar con Google
+            <button type="button" id="btn-login-google-supabase" style="width: 100%; background-color: #ffffff; color: #2a2a2a; border: 1px solid #ccd0d5; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
+                <img src="https://wikimedia.org" alt="Google Icon" style="width: 18px; height: 18px; object-fit: contain;"> Continuar con Google
             </button>
-            <button type="button" style="width: 100%; background-color: #1877f2; color: #ffffff; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px;" onclick="alert('Redireccionando a la pasarela de autenticación segura de Facebook OAuth...');">
-                <span style="font-size: 16px;">?</span> Continuar con Facebook
+            <button type="button" id="btn-login-facebook-supabase" style="width: 100%; background-color: #1877f2; color: #ffffff; border: none; padding: 10px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-family: sans-serif;">
+                <img src="https://wikimedia.org" alt="Facebook Icon" style="width: 18px; height: 18px; object-fit: contain;"> Continuar con Facebook
             </button>
         </div>
+<!-- ========================================================================= -->
+<!-- FIN DE INYECCIÓN HTML: BOTONES FEDERADOS OAUTH CON RECONOCIMIENTO DE ICONOS -->
+<!-- ========================================================================= -->
+
 
     </div>
 </div>
