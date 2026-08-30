@@ -786,47 +786,44 @@ function procesarDatosDelMotor(data)
 document.addEventListener("DOMContentLoaded", () => 
 { // -->Aqui inicia Callback principal DOMContentLoaded
 
-
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
 // =========================================================================
-/*    if (typeof supabase !== "undefined") { 
-        supabase.auth.onAuthStateChange((event, session) => { */
-    if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre validación estricta anti-colapso]
-       supabase.auth.onAuthStateChange((event, session) => {
-
+    if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre control de sesión unificado]
+        supabase.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
                 const correoUsuario = String(session.user.email).trim();
                 
-                // Creamos un canal seguro JSONP flotante para eludir de raíz el bloqueo OPTIONS de Google
+                // Sincronización inmutable simétrica para dar soporte a ambos estilos de código
+                window.usuarioLogueado = session.user;
+
                 const idScriptSeguridad = "sre-jsonp-firewall-auth";
                 let scriptExistente = document.getElementById(idScriptSeguridad);
                 if (scriptExistente) { scriptExistente.remove(); }
                 
-                // Definimos la función receptora en el objeto global window
                 window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
                     if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
                         state.usuarioActual = null; 
-                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador debido al incumplimiento de las políticas.");
+                        window.usuarioLogueado = null;
+                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
                         await supabase.auth.signOut();
                         document.getElementById('modal-autenticacion-supabase').style.display = 'none';
                         return;
                     }
 
-                    // Poblamos dinámicamente la memoria RAM con control estricto de autorización
+                    // Seteamos el estado de memoria del pipeline de herencia estructurado
                     state.usuarioActual = {
                         id: String(session.user.id).trim(),
                         correo: correoUsuario,
                         nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "pendiente"
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
                     };
-                    console.log("[SRE SUCCESS] Sesión autorizada en Sheets bajo estado: " + state.usuarioActual.estado_cuenta);
                     
-                    // Cerramos la ventana flotante automáticamente tras el apretón de manos exitoso
+                    console.log("[SRE SUCCESS] Sincronización exitosa bajo estado: " + state.usuarioActual.estado_cuenta);
+                    
                     const modalAuth = document.getElementById('modal-autenticacion-supabase');
                     if (modalAuth) { modalAuth.style.display = 'none'; }
                     
-                    // Refrescamos inmediatamente el catálogo para recalcular permisos visuales
                     if (typeof ejecutarTuberiaSincronizada === 'function') {
                         ejecutarTuberiaSincronizada();
                     }
@@ -839,12 +836,12 @@ document.addEventListener("DOMContentLoaded", () =>
 
             } else {
                 state.usuarioActual = null;
+                window.usuarioLogueado = null;
             }
         });
-    }
+    } // <-- [Cierra control de sesión unificado]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
-// =========================================================================
+
 
 
         // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
