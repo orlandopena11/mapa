@@ -1757,12 +1757,15 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }; // <-- [Cierra Callback click manual anti-recarga]
     } // <-- [Cierra IF control puntero botón azul]
 
-    // GATILLOS FEDERADOS DIRECTOS RECONFIGURADOS
+    // =========================================================================
+    // SRE CORRECCIÓN: GATILLOS FEDERADOS SOCIALES ACTIVOS DIRECTO A GATEWAY
+    // =========================================================================
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase") || document.getElementById("btn-google");
     if (btnGoogleAuth) {
         btnGoogleAuth.onclick = (e) => {
             e.preventDefault();
-            alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
+            e.stopPropagation();
+            iniciarSesionSocialSupabase('google');
         };
     }
 
@@ -1770,9 +1773,11 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     if (btnFacebookAuth) {
         btnFacebookAuth.onclick = (e) => {
             e.preventDefault();
-            alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
+            e.stopPropagation();
+            iniciarSesionSocialSupabase('facebook');
         };
     }
+    
 // =========================================================================
 
     
@@ -2399,12 +2404,15 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 }
 
 
-function iniciarSesionSocialSupabase(proveedorOAuth) {
-    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://orlandopena11.github.io/mapa/");
-    console.warn("🚀 [SRE REDIRECT] Redirigiendo hardware a pasarela OAuth:", urlDestinoOAuth);
-    window.location.href = urlDestinoOAuth;
-}
 
+function iniciarSesionSocialSupabase(proveedorOAuth) {
+    // Se corrige la ruta construyendo el endpoint OAuth v1 oficial de Supabase con sus parámetros limpios
+    const urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://orlandopena11.github.io/mapa/")}`;
+    console.warn("[SRE REDIRECT] Redirigiendo hardware a pasarela OAuth segura:", urlDestinoOAuth);
+    
+    // Ejecución segura de redirección en el hilo principal
+    window.location.assign(urlDestinoOAuth);
+}
 
 
 // Vinculación explícita global superior
