@@ -1659,103 +1659,97 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
 // INICIO DE INYECCIÓN FRONTEND: SISTEMA DE ESPÍAS DE RED SUPABASE AUTH V5
 // =========================================================================
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
-    console.log("%c [ESPÍA FORM 1] ¿Existe el formulario de login en el DOM?:", "background: #f59e0b; color: #000; padding: 2px;", !!formLoginSupabase);
+    console.log("[SRE CONTROL] Evaluando formulario de login en el DOM:", !!formLoginSupabase);
 
-    if (formLoginSupabase) { // --> [Abre IF formLoginSupabase]
-        formLoginSupabase.onsubmit = async (e) => { // --> [Abre Callback onsubmit]
+    if (formLoginSupabase) {
+        formLoginSupabase.onsubmit = async (e) => {
             e.preventDefault();
-            console.log("%c [ESPÍA CLICK 2] ¡Gatillo submit activado exitosamente por el usuario!", "background: #10b981; color: #fff; padding: 2px;");
             
             const inputEmail = document.getElementById("login-email-input");
-            console.log("[ESPÍA ENTRADA 3] Caja de texto detectada:", !!inputEmail, "Valor escrito:", inputEmail ? inputEmail.value : "NULO");
-
             if (!inputEmail || !inputEmail.value.trim()) {
-                alert("[SRE ALERTA ESPÍA] El flujo se detuvo: La caja de texto del correo electrónico está vacía.");
+                alert("Por favor, ingrese un correo electrónico válido.");
                 return;
             }
 
             const emailDestino = inputEmail.value.trim();
             const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
             
-            try { // --> [Abre Bloque TRY]
+            try {
+                // Recuperación dinámica segura de la pasarela para evitar colapsos por red
+                const clienteActivoSupabase = obtenerClienteSupabase();
+                
                 if (btnAuth) { 
                     btnAuth.disabled = true; 
                     btnAuth.innerText = "Despachando enlace..."; 
                 }
                 
-                console.log("%c [ESPÍA CONTROL CLIENTE 4] Estado del objeto cliente 'supabase':", "background: #3b82f6; color: #fff; padding: 2px;", supabase);
-                
-                if (!supabase) {
-                    alert("[SRE CRÍTICO ESPÍA] El flujo se detuvo de golpe: El objeto 'supabase' es NULL o no se inicializó en la línea 27.");
+                if (!clienteActivoSupabase) {
+                    alert("[SRE CRÍTICO] El SDK de Supabase no se cargó en la ventana global a tiempo. Inténtelo de nuevo.");
                     if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar para confirmar email"; }
                     return;
                 }
 
-                alert("[SRE ESPÍA INVOCACIÓN] Enviando credenciales del correo " + emailDestino + " hacia los servidores externos de Supabase...");
+                alert("[SRE INVOKE] Solicitando Magic Link OTP para: " + emailDestino);
                 
-                // Disparo asíncrono directo al pool de identidades
-                const { data, error } = await supabase.auth.signInWithOtp({
+                const { data, error } = await clienteActivoSupabase.auth.signInWithOtp({
                     email: emailDestino,
                     options: { emailRedirectTo: window.location.origin + window.location.pathname }
                 });
 
-                console.log("[ESPÍA RESPUESTA SERVER 5] Datos devueltos por Supabase:", data, "Error devuelto:", error);
-
                 if (error) throw error;
-                alert("¡ÉXITO TOTAL DE RED! Supabase aceptó el correo. El enlace de confirmación fue enviado a: " + emailDestino);
+                alert("¡ÉXITO! Supabase aceptó el correo. Revise su bandeja de entrada en: " + emailDestino);
                 
                 const modalAuth = document.getElementById('modal-autenticacion-supabase');
                 if (modalAuth) { modalAuth.style.display = 'none'; }
 
-            } // <-- [Cierra Bloque TRY] 
-            catch (errAuth) { // --> [Abre Bloque CATCH]
-                console.error("%c [ESPÍA ALERTA CAPTURADA 6] Error atrapado en el envío:", "background: #ef4444; color: #fff; padding: 2px;", errAuth);
-                alert("[ESPÍA ALERTA CONTROLADA] Falló el transporte del mensaje. Detalle técnico: " + errAuth.message);
-                
-                const modalAuth = document.getElementById('modal-autenticacion-supabase');
-                if (modalAuth) { modalAuth.style.display = 'none'; }
-            } // <-- [Cierra Bloque CATCH] 
-            finally { // --> [Abre Bloque FINALLY]
+            } catch (errAuth) {
+                console.error("[SRE EXCEPCIÓN] Error en envío:", errAuth);
+                alert("Falló el transporte del mensaje. Detalle: " + errAuth.message);
+            } finally {
                 if (btnAuth) { 
                     btnAuth.disabled = false; 
                     btnAuth.innerText = "Enviar para confirmar email"; 
                 }
-                console.log("%c [ESPÍA FINALIZADO 7] Flujo asíncrono completado. Interfaz liberada.", "background: #6b7280; color: #fff; padding: 2px;");
-            } // <-- [Cierra Bloque FINALLY]
-        }; // <-- [Cierra Callback onsubmit]
-    } // <-- [Cierra IF formLoginSupabase]
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: SISTEMA DE ESPÍAS DE RED SUPABASE AUTH V5
-// =========================================================================
+            }
+        };
+    }
 
-    // Gatillos de Autenticación Federada de Google y Facebook
+    // GATILLOS FEDERADOS DE ACCESO OAUTH RECONSTRUIDOS CON RESOLVEDOR DINÁMICO
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
-    if (btnGoogleAuth) { // --> [Abre IF btnGoogleAuth]
-        btnGoogleAuth.addEventListener("pointerdown", async (e) => { 
+    if (btnGoogleAuth) {
+        btnGoogleAuth.addEventListener("click", async (e) => { 
             e.preventDefault();
-            if (typeof supabase !== "undefined" && supabase !== null) {
-                console.log("[OAUTH] Redireccionando a Google...");
-                await supabase.auth.signInWithOAuth({
+            const clienteActivoSupabase = obtenerClienteSupabase();
+            if (clienteActivoSupabase) {
+                console.log("[SRE OAUTH] Redireccionando a Google...");
+                await clienteActivoSupabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
+            } else {
+                alert("El servicio de autenticación no está listo. Intente de nuevo.");
             }
         }); 
-    } // <-- [Cierra IF btnGoogleAuth]
+    }
 
     const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
-    if (btnFacebookAuth) { // --> [Abre IF btnFacebookAuth]
-        btnFacebookAuth.addEventListener("pointerdown", async (e) => { 
+    if (btnFacebookAuth) {
+        btnFacebookAuth.addEventListener("click", async (e) => { 
             e.preventDefault();
-            if (typeof supabase !== "undefined" && supabase !== null) {
-                console.log("[OAUTH] Redireccionando a Facebook...");
-                await supabase.auth.signInWithOAuth({
+            const clienteActivoSupabase = obtenerClienteSupabase();
+            if (clienteActivoSupabase) {
+                console.log("[SRE OAUTH] Redireccionando a Facebook...");
+                await clienteActivoSupabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
+            } else {
+                alert("El servicio de autenticación no está listo. Intente de nuevo.");
             }
         }); 
-    } // <-- [Cierra IF btnFacebookAuth]
+    }
+
+    
 } // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
 // =========================================================================
 // FIN DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
