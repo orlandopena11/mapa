@@ -1701,7 +1701,9 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                 console.warn("[SRE RED] Invocando signInWithOtp de forma asíncrona hacia Supabase...");
                 const { data, error } = await clienteActivoSupabase.auth.signInWithOtp({
                     email: emailDestino,
-                    options: { emailRedirectTo: window.location.origin + window.location.pathname }
+                    options: { 
+                        emailRedirectTo: window.location.origin + window.location.pathname + "?auth_callback=true" 
+                    }
                 });
 
                 if (error) throw error;
