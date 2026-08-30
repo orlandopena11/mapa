@@ -1665,45 +1665,50 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
 
 
 // =========================================================================
-// SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR TÚNEL REST (SIN CDN)
+// SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR PUNTERO DIRECTO ANTI-REFRESH
 // =========================================================================
+    // Buscamos el formulario y el botón de manera independiente para doble escudo
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
-    console.warn("?? [SRE ESPÍA FRONT] Acoplando interceptor REST al modal de login...");
+    
+    if (formLoginSupabase) { // --> [Abre IF bloqueo nativo de formulario]
+        formLoginSupabase.onsubmit = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
+    } // <-- [Cierra IF bloqueo nativo de formulario]
 
-    if (formLoginSupabase) { // --> [Abre IF control formulario email]
-        formLoginSupabase.onsubmit = (e) => { // --> [Abre Callback submit nativo]
+    // Interceptamos directamente el click del botón por su tipo de ejecución en el DOM
+    const btnEnviarEmailAuth = document.querySelector('#form-login-email-supabase button[type="submit"]') || document.querySelector('button[type="submit"]');
+    console.warn("?? [SRE ESPÍA FRONT] Buscando botón físico de confirmación:", !!btnEnviarEmailAuth);
+
+    if (btnEnviarEmailAuth) { // --> [Abre IF control puntero botón azul]
+        btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual anti-recarga]
             e.preventDefault();
             e.stopPropagation();
             
-            console.log("%c ?? [SRE GATILLO REST] ¡Evento SUBMIT capturado en el hilo principal!", "background: #002E50; color: #fff; padding: 4px;");
+            console.log("%c ?? [SRE GATILLO CRÍTICO] ¡Pulsación capturada en frío! Frenando recarga de página.", "background: #d92323; color: #fff; padding: 4px;");
             
-            const inputEmail = document.getElementById("login-email-input");
+            const inputEmail = document.getElementById("login-email-input") || document.getElementById("input-usuario-email");
+            console.log("[SRE ESPÍA INPUT] Caja de texto detectada en DOM:", !!inputEmail);
+
             if (!inputEmail || !inputEmail.value.trim()) {
                 alert("Por favor, ingrese un correo electrónico válido.");
-                return;
+                return false;
             }
 
             const emailDestino = inputEmail.value.trim().toLowerCase();
-            const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
             
-            if (btnAuth) { 
-                btnAuth.disabled = true; 
-                btnAuth.innerText = "Despachando por túnel REST..."; 
-            }
+            btnEnviarEmailAuth.disabled = true; 
+            btnEnviarEmailAuth.innerText = "Despachando por túnel REST..."; 
 
-            // Nombre único para el disparador de respuesta JSONP global
             const idScriptSeguridad = "sre-jsonp-rest-auth";
             let scriptExistente = document.getElementById(idScriptSeguridad);
             if (scriptExistente) { scriptExistente.remove(); }
 
-            // Función de escape global (Callback) que recibirá la respuesta del Apps Script
+            // Callback receptor global del Apps Script
             window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
-                console.log("?? [SRE ESPÍA RED] Payload recibido del Apps Script:", respuestaServer);
+                console.log("?? [SRE ESPÍA RED] Respuesta síncrona del backend recibida:", respuestaServer);
                 
                 if (respuestaServer && respuestaServer.success) {
                     alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
                     
-                    // Inicializamos la sesión local de manera proactiva en estado activo
                     state.usuarioActual = {
                         correo: emailDestino,
                         estado_cuenta: "activo",
@@ -1711,50 +1716,49 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                     };
                     window.usuarioLogueado = { email: emailDestino };
 
-                    const modalAuth = document.getElementById('modal-autenticacion-supabase');
+                    const modalAuth = document.getElementById('modal-autenticacion-supabase') || document.getElementById('mi-modal-login');
                     if (modalAuth) { modalAuth.style.display = 'none'; }
                     
                     if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
                     if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
                 } else {
-                    console.error("X [SRE ALERTA SERVER] El servidor rechazó la solicitud HTTP REST.");
-                    alert("Error en el canal de autenticación. Detalle técnico: Código HTTP " + (respuestaServer?.http_code || "Desconocido"));
+                    console.error("X [SRE ALERTA SERVER] Respuesta fallida o rechazo REST.");
+                    alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
                 }
 
-                if (btnAuth) { 
-                    btnAuth.disabled = false; 
-                    btnAuth.innerText = "Enviar para confirmar email"; 
-                }
+                btnEnviarEmailAuth.disabled = false; 
+                btnEnviarEmailAuth.innerText = "Enviar para confirmar email"; 
             };
 
-            console.warn("[SRE NETWORK] Despachando script dinámico hacia el endpoint centralizado de Google...");
+            console.warn("[SRE TRANSPORT] Inyectando script JSONP inter-servidor...");
             
-            // Inyección limpia del elemento en el árbol DOM (Bypass absoluto de CORS OPTIONS)
             const scriptp = document.createElement('script');
             scriptp.id = idScriptSeguridad;
             scriptp.src = `${urlMiScriptGoogle}?accion=solicitar_magic_link_rest&correo=${encodeURIComponent(emailDestino)}&callback=procesarRespuestaMagicLinkREST`;
             document.body.appendChild(scriptp);
-        }; // <-- [Cierra Callback submit nativo]
-    } // <-- [Cierra IF control formulario email]
+            
+            return false;
+        }; // <-- [Cierra Callback click manual anti-recarga]
+    } // <-- [Cierra IF control puntero botón azul]
 
-    // GATILLOS FEDERADOS DIRECTOS RECONFIGURADOS CONTRA ERRORES FATALES EN RED
-    const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
-    if (btnGoogleAuth) { // --> [Abre IF control Google]
-        btnGoogleAuth.onpointerdown = (e) => {
+    // GATILLOS FEDERADOS DIRECTOS RECONFIGURADOS
+    const btnGoogleAuth = document.getElementById("btn-login-google-supabase") || document.getElementById("btn-google");
+    if (btnGoogleAuth) {
+        btnGoogleAuth.onclick = (e) => {
             e.preventDefault();
-            console.log("?? [SRE OAUTH] Flujo Google redirigido de manera segura.");
             alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
         };
-    } // <-- [Cierra IF control Google]
+    }
 
-    const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
-    if (btnFacebookAuth) { // --> [Abre IF control Facebook]
-        btnFacebookAuth.onpointerdown = (e) => {
+    const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase") || document.getElementById("btn-facebook");
+    if (btnFacebookAuth) {
+        btnFacebookAuth.onclick = (e) => {
             e.preventDefault();
-            console.log("?? [SRE OAUTH] Flujo Facebook redirigido de manera segura.");
             alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
         };
-    } // <-- [Cierra IF control Facebook]
+    }
+// =========================================================================
+
     
 } // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
 
