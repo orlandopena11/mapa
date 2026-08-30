@@ -1666,100 +1666,96 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); 
     } // <-- [Cierra IF formAgente]
 
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: SISTEMA DE ESPÍAS DE RED SUPABASE AUTH V5
+    // =========================================================================
+// SRE MONITOR: ESPÍAS MECÁNICOS DE CONTROL DE EVENTOS EN INTERFAZ
 // =========================================================================
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
-    console.log("[SRE CONTROL] Evaluando formulario de login en el DOM:", !!formLoginSupabase);
+    console.warn("?? [SRE ESPÍA 2] Inspeccionando nodos del modal flotante...");
+    console.log("[SRE ESPÍA 2.1] Formulario de Email detectado:", !!formLoginSupabase);
 
-    if (formLoginSupabase) {
-        formLoginSupabase.onsubmit = async (e) => {
+    if (formLoginSupabase) { // --> [Abre IF de control de formulario email]
+        formLoginSupabase.onsubmit = async (e) => { // --> [Abre Callback onsubmit de login]
+            console.log("%c ?? [SRE GATILLO] ¡Interceptado evento SUBMIT del formulario de email!", "background: #000; color: #00ff00; padding: 4px;");
             e.preventDefault();
+            e.stopPropagation();
             
             const inputEmail = document.getElementById("login-email-input");
+            console.log("[SRE GATILLO] Contenido leído de la caja de texto:", inputEmail ? `"${inputEmail.value}"` : "NULO o INEXISTENTE");
+
             if (!inputEmail || !inputEmail.value.trim()) {
-                alert("Por favor, ingrese un correo electrónico válido.");
+                alert("Ingrese un correo para la autenticación.");
                 return;
             }
 
             const emailDestino = inputEmail.value.trim();
             const btnAuth = formLoginSupabase.querySelector('button[type="submit"]');
             
-            try {
-                // Recuperación dinámica segura de la pasarela para evitar colapsos por red
+            try { // --> [Abre Bloque TRY de Magic Link]
                 const clienteActivoSupabase = obtenerClienteSupabase();
-                
-                if (btnAuth) { 
-                    btnAuth.disabled = true; 
-                    btnAuth.innerText = "Despachando enlace..."; 
-                }
-                
+                console.log("[SRE GATILLO] Estado del cliente recuperado para Magic Link:", !!clienteActivoSupabase);
+
+                if (btnAuth) { btnAuth.disabled = true; btnAuth.innerText = "Despachando..."; }
+
                 if (!clienteActivoSupabase) {
-                    alert("[SRE CRÍTICO] El SDK de Supabase no se cargó en la ventana global a tiempo. Inténtelo de nuevo.");
-                    if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar para confirmar email"; }
+                    console.error("X [SRE GATILLO ERROR] No se puede despachar: cliente de Supabase es NULL.");
                     return;
                 }
 
-                alert("[SRE INVOKE] Solicitando Magic Link OTP para: " + emailDestino);
-                
+                console.warn("[SRE RED] Invocando signInWithOtp de forma asíncrona hacia Supabase...");
                 const { data, error } = await clienteActivoSupabase.auth.signInWithOtp({
                     email: emailDestino,
                     options: { emailRedirectTo: window.location.origin + window.location.pathname }
                 });
 
                 if (error) throw error;
-                alert("¡ÉXITO! Supabase aceptó el correo. Revise su bandeja de entrada en: " + emailDestino);
-                
-                const modalAuth = document.getElementById('modal-autenticacion-supabase');
-                if (modalAuth) { modalAuth.style.display = 'none'; }
+                console.log("?? [SRE RED SUCCESS] Respuesta positiva del servidor:", data);
+                alert("¡Enlace enviado con éxito a: " + emailDestino);
 
-            } catch (errAuth) {
-                console.error("[SRE EXCEPCIÓN] Error en envío:", errAuth);
-                alert("Falló el transporte del mensaje. Detalle: " + errAuth.message);
-            } finally {
-                if (btnAuth) { 
-                    btnAuth.disabled = false; 
-                    btnAuth.innerText = "Enviar para confirmar email"; 
-                }
-            }
-        };
-    }
+            } // <-- [Cierra Bloque TRY de Magic Link]
+            catch (errAuth) { // --> [Abre Bloque CATCH de Magic Link]
+                console.error("X [SRE NETWORK EXCEPCIÓN] El túnel de Supabase falló:", errAuth);
+                alert("Error técnico de red: " + errAuth.message);
+            } // <-- [Cierra Bloque CATCH de Magic Link]
+            finally { // --> [Abre Bloque FINALLY de Magic Link]
+                if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar para confirmar email"; }
+            } // <-- [Cierra Bloque FINALLY de Magic Link]
+        }; // <-- [Cierra Callback onsubmit de login]
+    } // <-- [Cierra IF de control de formulario email]
 
-    // GATILLOS FEDERADOS DE ACCESO OAUTH RECONSTRUIDOS CON RESOLVEDOR DINÁMICO
+    // GATILLOS FEDERADOS CON TRAZA RADICAL DE POINTERDOWN E INYECCIÓN DE INSTANCIA DINÁMICA
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase");
-    if (btnGoogleAuth) {
-        btnGoogleAuth.addEventListener("click", async (e) => { 
+    console.log("[SRE ESPÍA 2.2] Botón físico Google detectado:", !!btnGoogleAuth);
+    if (btnGoogleAuth) { // --> [Abre IF de control botón Google]
+        btnGoogleAuth.addEventListener("pointerdown", async (e) => { // --> [Abre listener pointerdown Google]
+            console.log("%c ?? [SRE PULSACIÓN] ¡Puntero detectado sobre botón Google OAuth!", "background: #ea4335; color: #fff; padding: 2px;");
             e.preventDefault();
             const clienteActivoSupabase = obtenerClienteSupabase();
-            if (clienteActivoSupabase) {
-                console.log("[SRE OAUTH] Redireccionando a Google...");
+            console.log("[SRE PULSACIÓN] Cliente Supabase listo para Google:", !!clienteActivoSupabase);
+            if (clienteActivoSupabase) { // --> [Abre IF cliente de Supabase Google]
                 await clienteActivoSupabase.auth.signInWithOAuth({
                     provider: 'google',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
-            } else {
-                alert("El servicio de autenticación no está listo. Intente de nuevo.");
-            }
-        }); 
-    }
+            } // <-- [Cierra IF cliente de Supabase Google]
+        }); // <-- [Cierra listener pointerdown Google]
+    } // <-- [Cierra IF de control botón Google]
 
     const btnFacebookAuth = document.getElementById("btn-login-facebook-supabase");
-    if (btnFacebookAuth) {
-        btnFacebookAuth.addEventListener("click", async (e) => { 
+    console.log("[SRE ESPÍA 2.3] Botón físico Facebook detectado:", !!btnFacebookAuth);
+    if (btnFacebookAuth) { // --> [Abre IF de control botón Facebook]
+        btnFacebookAuth.addEventListener("pointerdown", async (e) => { // --> [Abre listener pointerdown Facebook]
+            console.log("%c ?? [SRE PULSACIÓN] ¡Puntero detectado sobre botón Facebook OAuth!", "background: #1877f2; color: #fff; padding: 2px;");
             e.preventDefault();
             const clienteActivoSupabase = obtenerClienteSupabase();
-            if (clienteActivoSupabase) {
-                console.log("[SRE OAUTH] Redireccionando a Facebook...");
+            console.log("[SRE PULSACIÓN] Cliente Supabase listo para Facebook:", !!clienteActivoSupabase);
+            if (clienteActivoSupabase) { // --> [Abre IF cliente de Supabase Facebook]
                 await clienteActivoSupabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: { redirectTo: window.location.origin + window.location.pathname }
                 });
-            } else {
-                alert("El servicio de autenticación no está listo. Intente de nuevo.");
-            }
-        }); 
-    }
-
+            } // <-- [Cierra IF cliente de Supabase Facebook]
+        }); // <-- [Cierra listener pointerdown Facebook]
+    } // <-- [Cierra IF de control botón Facebook]
     
 } // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
 // =========================================================================
