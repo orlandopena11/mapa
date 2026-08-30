@@ -2399,9 +2399,12 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 }
 
 function iniciarSesionSocialSupabase(proveedorOAuth) {
-    const urlDestinoOAuth = `${SUPABASE_API_URL}/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://github.io")}`;
+    // Apuntamos al endpoint oficial de la API de autenticación federada
+    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co/auth/v1/authorize?provider=" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://github.io");
+    console.warn("🚀 [SRE REDIRECT] Redirigiendo hardware a pasarela OAuth:", urlDestinoOAuth);
     window.location.href = urlDestinoOAuth;
 }
+
 
 // Vinculación explícita global superior
 window.ejecutarAutenticacionTunelRestSRE = ejecutarAutenticacionTunelRestSRE;
