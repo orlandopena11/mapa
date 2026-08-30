@@ -786,7 +786,7 @@ function procesarDatosDelMotor(data)
 document.addEventListener("DOMContentLoaded", () => {
 
 
-{ // -->Aqui inicia Callback principal DOMContentLoaded
+/*{ // -->Aqui inicia Callback principal DOMContentLoaded */
 
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
