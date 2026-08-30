@@ -2332,79 +2332,60 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
 // =========================================================================
 // SRE MONITOR: CANAL HÍBRIDA 100% SRE AISLADO AUTO-EJECUTABLE (PRODUCCIÓN)
 // =========================================================================
-(function() { // --> [Abre Ámbito Aislado de Memoria RAM]
-    const registrarEscudoRestSRE = () => {
-        const btnEnviarEmailAuth = document.getElementById("btn-autenticar");
-        const inputEmail = document.getElementById("input-usuario-email");
+// =========================================================================
+// SRE EMBEDDED TACTICAL LOCK: CAPTURADOR INTEGRADO POR HARDWARE (MÉTODO HÍBRIDO)
+// =========================================================================
+// =========================================================================
+// SRE PRODUCTION SHIP: TUNEL REST DEFINITIVO GLOBAL (SIN BÚNKERS)
+// =========================================================================
+function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
+    if (eventoHTML) { eventoHTML.preventDefault(); eventoHTML.stopPropagation(); }
+    
+    alert("🚀 [SRE TÚNEL REST] ¡Petición interceptada! Conectando Backend-to-Backend con Google Sheets.");
+    
+    const inputMail = document.getElementById("input-usuario-email") || document.getElementById("login-email-input");
+    const btnAuth = document.getElementById("btn-autenticar");
 
-        if (btnEnviarEmailAuth && inputEmail) { // --> [Abre IF match de IDs en HTML]
-            btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual]
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log("%c 🚀 [SRE TÚNEL DIRECTO] Pulsación interceptada con éxito en canal aislado.", "background: #002E50; color: #fff; padding: 4px;");
-                
-                if (!inputEmail.value.trim()) {
-                    alert("Por favor, ingrese un correo electrónico válido.");
-                    return false;
-                }
+    if (!inputMail || !inputMail.value.trim()) {
+        alert("Por favor, ingrese un correo electrónico válido.");
+        return false;
+    }
 
-                const emailDestino = inputEmail.value.trim().toLowerCase();
-                btnEnviarEmailAuth.disabled = true; 
-                btnEnviarEmailAuth.innerText = "Despachando por túnel REST..."; 
+    const emailDestino = inputMail.value.trim().toLowerCase();
+    if (btnAuth) {
+        btnAuth.disabled = true;
+        btnAuth.innerText = "Despachando por túnel REST...";
+    }
 
-                const idScriptSeguridad = "sre-jsonp-rest-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) { scriptExistente.remove(); }
+    const idScriptSeguridad = "sre-jsonp-rest-auth";
+    let scriptExistente = document.getElementById(idScriptSeguridad);
+    if (scriptExistente) { scriptExistente.remove(); }
 
-                window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
-                    console.log("📡 [SRE PIPELINE NET] Respuesta del Apps Script recibida:", respuestaServer);
-                    
-                    if (respuestaServer && respuestaServer.success) {
-                        alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
-                        
-                        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
-                        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
-                        
-                        const modalLogin = document.getElementById('mi-modal-login');
-                        if (modalLogin) { modalLogin.style.display = 'none'; }
-                        
-                        if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
-                        if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
-                    } else {
-                        alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
-                    }
-
-                    btnEnviarEmailAuth.disabled = false; 
-                    btnEnviarEmailAuth.innerText = "Continuar"; 
-                };
-
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=solicitar_magic_link_rest&correo=${encodeURIComponent(emailDestino)}&callback=procesarRespuestaMagicLinkREST`;
-                document.body.appendChild(scriptp);
-                
-                return false;
-            }; // <-- [Cierra Callback click manual]
-
-            const btnGoogle = document.getElementById("btn-google");
-            if (btnGoogle) { btnGoogle.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
-            const btnFacebook = document.getElementById("btn-facebook");
-            if (btnFacebook) { btnFacebook.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
+    window.procesarRespuestaMagicLinkREST = function(respuestaServer) {
+        if (respuestaServer && respuestaServer.success) {
+            alert("¡ÉXITO TOTAL! El enlace de confirmación fue enviado a: " + emailDestino);
+            if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
+            if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
             
-            console.log("✨ [SRE SUCCESS] Túnel REST acoplado de forma 100% aislada.");
-        } // <-- [Cierra IF match de IDs en HTML]
-        else {
-            setTimeout(registrarEscudoRestSRE, 200);
+            const modalLogin = document.getElementById('mi-modal-login') || document.getElementById('modal-autenticacion-supabase');
+            if (modalLogin) { modalLogin.style.display = 'none'; }
+        } else {
+            alert("Error de pasarela REST. Código HTTP devuelto por Google: " + (respuestaServer?.http_code || "Desconocido"));
+        }
+        if (btnAuth) {
+            btnAuth.disabled = false;
+            btnAuth.innerText = "Enviar para confirmar email";
         }
     };
 
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", registrarEscudoRestSRE);
-    } else {
-        registrarEscudoRestSRE();
-    }
-})(); // <-- [Cierra Ámbito Aislado de Memoria RAM]
-// =========================================================================
+    const scriptp = document.createElement('script');
+    scriptp.id = idScriptSeguridad;
+    scriptp.src = urlMiScriptGoogle + "?accion=solicitar_magic_link_rest&correo=" + encodeURIComponent(emailDestino) + "&callback=procesarRespuestaMagicLinkREST";
+    document.body.appendChild(scriptp);
 
-                    
+    return false;
+}
+
+// Vinculación explícita para asegurar compatibilidad total en JSFiddle
+window.ejecutarAutenticacionTunelRestSRE = ejecutarAutenticacionTunelRestSRE;
+// =========================================================================
