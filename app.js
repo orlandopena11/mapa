@@ -80,27 +80,71 @@ obtenerClienteSupabase();
 
 
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
+// INICIO DE INYECCIÓN FRONTEND: CANDADO ACL REFORZADO CON DOBLE ESCUDO SRE
 // =========================================================================
-function verificarAutorizacionAcceso() { // --> [Abre la función verificarAutorizacionAcceso]
+function verificarAutorizacionAcceso(callbackAccionAutorizada = null) { // --> [Abre la función verificarAutorizacionAcceso]
+    
+    // Control 1: Validación de Sesión Básica
     if (!state.usuarioActual || !state.usuarioActual.id) { // --> [Abre IF usuario vacío]
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
         if (typeof mostrarPopupAccion === "function") { // --> [Abre IF mostrarPopupAccion]
             mostrarPopupAccion("modal-autenticacion-supabase");
         } // <-- [Cierra IF mostrarPopupAccion]
-        return false; // Corta el flujo de forma segura dentro de la función
+        return false; 
     } // <-- [Cierra IF usuario vacío]
     
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") { // --> [Abre IF suspendido]
+    // Control 2: Validación preventiva en memoria RAM local
+    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") { // --> [Abre IF RAM suspendido]
         alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
-        return false; // Corta el flujo de forma segura dentro de la función
-    } // <-- [Cierra IF suspendido]
+        return false; 
+    } // <-- [Cierra IF RAM suspendido]
     
-    return true; // Autoriza el paso si superó los dos controles anteriores
+    // Control 3: Validación en Caliente directo contra el Libro Maestro de Google Sheets
+    const correoUsuario = state.usuarioActual.correo;
+    const idScriptSeguridad = "sre-jsonp-candado-live";
+    let scriptExistente = document.getElementById(idScriptSeguridad);
+    if (scriptExistente) { scriptExistente.remove(); }
+    
+    // Callback receptor que procesa la respuesta del servidor en tiempo real
+    window.procesarValidacionCandadoLive = async (respuestaServer) => { // --> [Abre Callback procesarValidacionCandadoLive]
+        const estadoActualizado = respuestaServer?.estado_cuenta || "pendiente";
+        
+        if (estadoActualizado === "suspendido") { // --> [Abre IF server suspendido]
+            state.usuarioActual = null;
+            window.usuarioLogueado = null;
+            alert("Acceso Denegado: Su cuenta ha sido SUSPENDIDA por el administrador.");
+            
+            if (typeof supabase !== "undefined" && supabase !== null) {
+                await supabase.auth.signOut();
+            }
+            
+            // Pintamos el banner de bloqueo y cerramos cualquier modal comercial activo
+            interceptarFirewallSeguridadUsuario([{ correo: correoUsuario, estado_cuenta: "suspendido" }], correoUsuario);
+            document.querySelectorAll('.modal-accion-overlay').forEach(m => m.classList.remove('modal-activo'));
+            return;
+        } // <-- [Cierra IF server suspendido]
+        
+        // Sincronizamos la RAM con el estado real del Excel
+        state.usuarioActual.estado_cuenta = estadoActualizado;
+        
+        // ¡ÉXITO! Si el usuario está activo y pasamos una acción, se ejecuta de inmediato
+        if (estadoActualizado === "activo" && typeof callbackAccionAutorizada === "function") { // --> [Abre IF callback ejecucion]
+            callbackAccionAutorizada();
+        } // <-- [Cierra IF callback ejecucion]
+    }; // <-- [Cierra Callback procesarValidacionCandadoLive]
+
+    // Despachamos la consulta en frío al backend de Apps Script
+    const scriptCheck = document.createElement('script');
+    scriptCheck.id = idScriptSeguridad;
+    scriptCheck.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarValidacionCandadoLive`;
+    document.body.appendChild(scriptCheck);
+    
+    return true; 
 } // <-- [Cierra limpiamente la función verificarAutorizacionAcceso]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
+// FIN DE INYECCIÓN FRONTEND: CANDADO ACL REFORZADO CON DOBLE ESCUDO SRE
 // =========================================================================
+
 
 
 // URL de conexión segura con el backend relacional de Google Apps Script
