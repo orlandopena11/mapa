@@ -783,90 +783,8 @@ function procesarDatosDelMotor(data)
 } // <--Aqui finaliza Función procesarDatosDelMotor
 
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
-document.addEventListener("DOMContentLoaded", () => { // --> [Mantiene abierto el punto de inicio nativo de tu SPA]
+document.addEventListener("DOMContentLoaded", () => {
 
-    // =========================================================================
-    // INYECCIÓN DE ALTA PRIORIDAD RE: CAPTURADOR REST ANTI-PARÁLISIS CENTRAL (MÉTODO HÍBRIDO 100% SRE)
-    // =========================================================================
-    console.warn("⚠️ [SRE BOOTSTRAP] Inyectando interceptor REST en caliente directo en la raíz del DOM...");
-
-    const ejecutarEnlaceFisicoAutenticacionSRE = () => {
-        const btnEnviarEmailAuth = document.getElementById("btn-autenticar");
-        const inputEmail = document.getElementById("input-usuario-email");
-        
-        console.log("🔍 [SRE BOOTSTRAP LOG] Buscando 'btn-autenticar' en RAM:", !!btnEnviarEmailAuth, "| 'input-usuario-email':", !!inputEmail);
-
-        if (btnEnviarEmailAuth && inputEmail) { // --> [Abre IF enganche perfecto de IDs]
-            // Forzamos el borrado de cualquier listener antiguo re-escribiendo la propiedad de hardware
-            btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click directo anti-recarga]
-                e.preventDefault();
-                e.stopPropagation();
-                
-                console.log("%c 🚀 [SRE TÚNEL ACTIVADO] Pulsación capturada con éxito en producción.", "background: #002E50; color: #fff; padding: 4px;");
-                
-                if (!inputEmail.value.trim()) {
-                    alert("Por favor, ingrese un correo electrónico válido.");
-                    return false;
-                }
-
-                const emailDestino = inputEmail.value.trim().toLowerCase();
-                btnEnviarEmailAuth.disabled = true; 
-                btnEnviarEmailAuth.innerText = "Despachando por túnel REST..."; 
-
-                const idScriptSeguridad = "sre-jsonp-rest-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) { scriptExistente.remove(); }
-
-                // Callback global síncrono enlazado al backend de Google Sheets
-                window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
-                    console.log("📡 [SRE PIPELINE NET] Respuesta del Apps Script recibida con éxito:", respuestaServer);
-                    
-                    if (respuestaServer && respuestaServer.success) {
-                        alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
-                        
-                        // Seteo explícito de variables globales para dar soporte a tu motor comercial
-                        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
-                        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
-                        
-                        const modalLogin = document.getElementById('mi-modal-login') || document.getElementById('modal-autenticacion-supabase');
-                        if (modalLogin) { modalLogin.style.display = 'none'; }
-                        
-                        if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
-                        if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
-                    } else {
-                        console.error("X [SRE ALERTA SERVER] Error HTTP o rechazo del gateway inter-servidor.");
-                        alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
-                    }
-
-                    btnEnviarEmailAuth.disabled = false; 
-                    btnEnviarEmailAuth.innerText = "Continuar"; 
-                };
-
-                console.warn("[SRE TRANSPORT] Despachando transporte JSONP seguro hacia urlMiScriptGoogle...");
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=solicitar_magic_link_rest&correo=${encodeURIComponent(emailDestino)}&callback=procesarRespuestaMagicLinkREST`;
-                document.body.appendChild(scriptp);
-                
-                return false;
-            }; // <-- [Cierra Callback click directo anti-recarga]
-            
-            // Re-configuración preventiva anti-colapso de los botones de Google y Facebook
-            const btnGoogle = document.getElementById("btn-google");
-            if (btnGoogle) { btnGoogle.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento migratorio. Use Correo Electrónico."); }; }
-            const btnFacebook = document.getElementById("btn-facebook");
-            if (btnFacebook) { btnFacebook.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento migratorio. Use Correo Electrónico."); }; }
-            
-            console.log("✨ [SRE SUCCESS] Escudo anti-recarga y túnel REST acoplados sólidamente al bootstrap.");
-        } // <-- [Cierra IF enganche perfecto de IDs]
-        else {
-            // Si el modal aún no se dibuja, reintentamos el enganche por intervalo asíncrono corto (Espera Activa)
-            setTimeout(ejecutarEnlaceFisicoAutenticacionSRE, 250);
-        }
-    };
-    // Disparamos la primera traza de enganche de hardware
-    ejecutarEnlaceFisicoAutenticacionSRE();
-    // =========================================================================
 
 { // -->Aqui inicia Callback principal DOMContentLoaded
 
@@ -2396,5 +2314,83 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
 
     cortina.classList.add('cortina-activa');
 } // <-- Aqui finaliza Función gestionarCortinaSPA
+
+// =========================================================================
+// SRE MONITOR: CANAL HÍBRIDA 100% SRE AISLADO AUTO-EJECUTABLE (PRODUCCIÓN)
+// =========================================================================
+(function() { // --> [Abre Ámbito Aislado de Memoria RAM]
+    const registrarEscudoRestSRE = () => {
+        const btnEnviarEmailAuth = document.getElementById("btn-autenticar");
+        const inputEmail = document.getElementById("input-usuario-email");
+
+        if (btnEnviarEmailAuth && inputEmail) { // --> [Abre IF match de IDs en HTML]
+            btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual]
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log("%c 🚀 [SRE TÚNEL DIRECTO] Pulsación interceptada con éxito en canal aislado.", "background: #002E50; color: #fff; padding: 4px;");
+                
+                if (!inputEmail.value.trim()) {
+                    alert("Por favor, ingrese un correo electrónico válido.");
+                    return false;
+                }
+
+                const emailDestino = inputEmail.value.trim().toLowerCase();
+                btnEnviarEmailAuth.disabled = true; 
+                btnEnviarEmailAuth.innerText = "Despachando por túnel REST..."; 
+
+                const idScriptSeguridad = "sre-jsonp-rest-auth";
+                let scriptExistente = document.getElementById(idScriptSeguridad);
+                if (scriptExistente) { scriptExistente.remove(); }
+
+                window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
+                    console.log("📡 [SRE PIPELINE NET] Respuesta del Apps Script recibida:", respuestaServer);
+                    
+                    if (respuestaServer && respuestaServer.success) {
+                        alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
+                        
+                        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
+                        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
+                        
+                        const modalLogin = document.getElementById('mi-modal-login');
+                        if (modalLogin) { modalLogin.style.display = 'none'; }
+                        
+                        if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
+                        if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
+                    } else {
+                        alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
+                    }
+
+                    btnEnviarEmailAuth.disabled = false; 
+                    btnEnviarEmailAuth.innerText = "Continuar"; 
+                };
+
+                const scriptp = document.createElement('script');
+                scriptp.id = idScriptSeguridad;
+                scriptp.src = `${urlMiScriptGoogle}?accion=solicitar_magic_link_rest&correo=${encodeURIComponent(emailDestino)}&callback=procesarRespuestaMagicLinkREST`;
+                document.body.appendChild(scriptp);
+                
+                return false;
+            }; // <-- [Cierra Callback click manual]
+
+            const btnGoogle = document.getElementById("btn-google");
+            if (btnGoogle) { btnGoogle.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
+            const btnFacebook = document.getElementById("btn-facebook");
+            if (btnFacebook) { btnFacebook.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
+            
+            console.log("✨ [SRE SUCCESS] Túnel REST acoplado de forma 100% aislada.");
+        } // <-- [Cierra IF match de IDs en HTML]
+        else {
+            setTimeout(registrarEscudoRestSRE, 200);
+        }
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", registrarEscudoRestSRE);
+    } else {
+        registrarEscudoRestSRE();
+    }
+})(); // <-- [Cierra Ámbito Aislado de Memoria RAM]
+// =========================================================================
 
                     
