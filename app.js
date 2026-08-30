@@ -2398,12 +2398,13 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
     return false;
 }
 
+
 function iniciarSesionSocialSupabase(proveedorOAuth) {
-    // Apuntamos al endpoint oficial de la API de autenticación federada
-    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co/auth/v1/authorize?provider=" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://orlandopena11.github.io/mapa/");
+    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://orlandopena11.github.io/mapa/");
     console.warn("🚀 [SRE REDIRECT] Redirigiendo hardware a pasarela OAuth:", urlDestinoOAuth);
     window.location.href = urlDestinoOAuth;
 }
+
 
 
 // Vinculación explícita global superior
