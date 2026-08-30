@@ -32,21 +32,32 @@ const state =
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; // --> [Coloca aquí tu URL de Supabase]
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; // --> [Coloca aquí tu clave anon pública]
 
-// Creación e instanciación del objeto global con función de rescate en caliente autorreparable
+// =========================================================================
+// SRE MONITOR: ESPÍAS DE INICIALIZACIÓN GLOBAL DE PASARELA
+// =========================================================================
+console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal de app.js...");
+console.log("[SRE ESPÍA 1.1] ¿La librería 'createClient' existe en el window?:", typeof window.createClient !== "undefined" || typeof createClient !== "undefined");
+console.log("[SRE ESPÍA 1.2] ¿Existe la propiedad 'supabase' previa en window?:", typeof window.supabase !== "undefined");
+
 let supabase = null;
 function obtenerClienteSupabase() {
+    console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase(). Estado actual interno:", !!supabase);
     if (supabase) return supabase;
+    
     if (typeof createClient !== "undefined") {
+        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante createClient plano de la CDN.");
         supabase = createClient(supabaseUrl, supabaseAnonKey);
     } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
+        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante window.supabase de la CDN.");
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    } else if (window.supabase && typeof window.supabase.createClient === "function") {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } else {
+        console.error("X [SRE ESPÍA ALERTA] ¡Catástrofe de Red! El script de la CDN de Supabase no se encuentra cargado en el árbol DOM.");
     }
     return supabase;
 }
-// Ejecución del intento de enganche inicial síncrono
 obtenerClienteSupabase();
+// =========================================================================
+
 
 
 // =========================================================================
