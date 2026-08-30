@@ -2360,7 +2360,7 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
         },
         body: JSON.stringify({ 
             email: emailDestino,
-            options: { redirectTo: "https://github.io" }
+            options: { redirectTo: "https://orlandopena11.github.io/mapa/" }
         })
     })
     .then(respuestaRaw => {
@@ -2400,7 +2400,7 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 
 function iniciarSesionSocialSupabase(proveedorOAuth) {
     // Apuntamos al endpoint oficial de la API de autenticación federada
-    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co/auth/v1/authorize?provider=" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://github.io");
+    const urlDestinoOAuth = "https://aohizylvnnrjhgplsods.supabase.co/auth/v1/authorize?provider=" + proveedorOAuth + "&redirect_to=" + encodeURIComponent("https://orlandopena11.github.io/mapa/");
     console.warn("🚀 [SRE REDIRECT] Redirigiendo hardware a pasarela OAuth:", urlDestinoOAuth);
     window.location.href = urlDestinoOAuth;
 }
