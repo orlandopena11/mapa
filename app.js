@@ -53,7 +53,8 @@ console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo princ
 console.log("[SRE ESPÍA 1.1] ¿La librería 'createClient' existe en el window?:", typeof window.createClient !== "undefined" || typeof createClient !== "undefined");
 console.log("[SRE ESPÍA 1.2] ¿Existe la propiedad 'supabase' previa en window?:", typeof window.supabase !== "undefined");
 
-let supabase = null;
+// SRE FIX: Inicializamos la variable interna en el ámbito de window para evitar colisiones con la CDN
+window.supabaseInstance = null;
 function obtenerClienteSupabase() {
     console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase(). Estado actual interno:", !!supabase);
     if (supabase) return supabase;
