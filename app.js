@@ -844,8 +844,6 @@ function procesarDatosDelMotor(data)
 document.addEventListener("DOMContentLoaded", () => {
 
 
-/*{ // -->Aqui inicia Callback principal DOMContentLoaded */
-
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
 // =========================================================================
@@ -901,6 +899,45 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     } // <-- [Cierra control de sesión unificado]
 // =========================================================================
+
+            // =========================================================================
+        // INICIO DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
+        // =========================================================================
+        const splitViewContenedor = document.querySelector('.split-view'); // --> [Abre bloque de construcción del botón móvil]
+
+        if (splitViewContenedor) { // --> [Abre IF contenedor existente]
+            
+            // Creamos el botón flotante de forma dinámica para no ensuciar el index.html
+            const botonFlotante = document.createElement('button');
+            botonFlotante.type = 'button';
+            botonFlotante.className = 'btn-conmutador-flotante-zillow';
+            botonFlotante.innerHTML = '📋 Lista'; // Icono e identificación inicial purista
+            document.body.appendChild(botonFlotante);
+
+            // Evento interactivo táctil/clic para alternar las pantallas en el celular
+            botonFlotante.addEventListener('click', () => { // --> [Abre callback click botón conmutador]
+                
+                // Alternamos la clase responsiva en el contenedor principal
+                const mostrandoLista = splitViewContenedor.classList.toggle('ver-lista');
+                
+                if (mostrandoLista) { // --> [Abre IF cambiando a vista catálogo]
+                    botonFlotante.innerHTML = '🗺️ Mapa';
+                } // <-- [Cierra IF cambiando a vista catálogo]
+                else { // --> [Abre ELSE cambiando a vista mapa]
+                    botonFlotante.innerHTML = '📋 Lista';
+                    
+                    // Recalculamos síncronamente el tamaño de Leaflet para evitar parpadeos grises
+                    if (window.map) {
+                        setTimeout(() => { window.map.invalidateSize({ animate: true }); }, 50);
+                    }
+                } // <-- [Cierra ELSE cambiando a vista mapa]
+                
+            }); // <-- [Cierra callback click botón conmutador]
+            
+        } // <-- [Cierra IF contenedor existente]
+        // =========================================================================
+        // FIN DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
+        // =========================================================================
 
 
 
