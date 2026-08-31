@@ -2365,9 +2365,7 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 }
 
 
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: DISPARADOR OAUTH CON SELECCIÓN DE CUENTAS
-// =========================================================================
+// INICIA ELIMINACIÓN DESDE ESTA LÍNEA LITERAMENTE:
 function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función iniciarSesionSocialSupabase]
     
     // Base de la URI para la autorización federada oficial de Supabase v1
@@ -2394,5 +2392,6 @@ function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función 
 window.ejecutarAutenticacionTunelRestSRE = ejecutarAutenticacionTunelRestSRE;
 window.iniciarSesionSocialSupabase = iniciarSesionSocialSupabase;
     
-//} // <-- SRE FIX: Cerramos la llave que se quedó abierta desde la línea 815
+} // <-- SRE FIX: Cerramos la llave que se quedó abierta desde la línea 815
 // =========================================================================
+// TERMINA ELIMINACIÓN EN ESTA LÍNEA LITERAMENTE
