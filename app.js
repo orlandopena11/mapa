@@ -1325,7 +1325,7 @@ function evaluarCriteriosDeFiltrado(prop)
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${estado_publicacion}"`);
 
     // REGLA DE VACÍO ABSOLUTO INTERNA: Si el usuario desmarca todo en la UI, cortamos el flujo inmediatamente
-    if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0)
+    )
     
     {
         return false; 
