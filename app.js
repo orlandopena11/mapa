@@ -815,12 +815,8 @@ function renderizarCatalogoTarjetas()
 } // <--Aqui finaliza Función renderizarCatalogoTarjetas
 
 
-/**
-* ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
-*/
-// PARTE: 5-5 (CALLBACK DE RED CON ESPÍA CABEZÓN ACTIVADO)
 // =========================================================================
-// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
+// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS (1/3)
 // =========================================================================
 function procesarDatosDelMotor(data) 
 { // -->Aqui inicia Función procesarDatosDelMotor
@@ -830,184 +826,53 @@ function procesarDatosDelMotor(data)
     // Invocación en ráfaga e inmediata de la UI en cuanto los datos pisan la RAM
     if (typeof renderizarMapaZillow === "function") { // --> [Abre control de rendering live]
     
-    // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
-    console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
-    console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
-    console.log("Estructura completa entrante:", data);
+        // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
+        console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
+        console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
+        console.log("Estructura completa entrante:", data);
+        
+        if (data && data.propiedades) 
+        { // -->Aqui inicia Condicional mostrar tabla interactiva
+            console.table(data.propiedades); 
+        } // <--Aqui finaliza Condicional mostrar tabla interactiva
+        console.log("====================================================");
+
+        if (!data || !data.propiedades || !Array.isArray(data.propiedades)) 
+        { // -->Aqui inicia Condicional validar estructura rota
+            console.error("X [ESPÍA CABEZÓN] - ERROR: Estructura del backend corrupta.");
+            return;
+        } // <--Aqui finaliza Condicional validar estructura rota
+
+                // Ejecuta el mapeo relacional hacia Cloudinary
+        state.propiedades = data.propiedades.map(normalizarPropiedad);
+
+        // ESPÍA CABEZÓN 2: Inspecciona cómo quedó el estado protegido después de la limpieza
+        console.log("====================================================");
+        console.info(" [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
+        console.log("Arreglo procesado final:", state.propiedades);
+
+        if (state.propiedades.length > 0) 
+        { // -->Aqui inicia Condicional comprobar fotos del primer índice
+            console.log(" REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
+            console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
+        } // <--Aqui finaliza Condicional comprobar fotos del primer índice
+
+                // Ejecuta el renderizado sincronizado de las vistas
+        renderizarMapaZillow();
+        renderizarCatalogoTarjetas();
+
+        // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
+        interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
+        
+    } // <-- SRE FIX: Cierre riguroso de la condicional del IF de renderizarMapaZillow
     
-    if (data && data.propiedades) 
-    { // -->Aqui inicia Condicional mostrar tabla interactiva
-        console.table(data.propiedades); 
-    } // <--Aqui finaliza Condicional mostrar tabla interactiva
-    console.log("====================================================");
-
-    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) 
-    { // -->Aqui inicia Condicional validar estructura rota
-        console.error("X [ESPÍA CABEZÓN] - ERROR: Estructura del backend corrupta.");
-        return;
-    } // <--Aqui finaliza Condicional validar estructura rota
-
-    // Ejecuta el mapeo relacional hacia Cloudinary
-    state.propiedades = data.propiedades.map(normalizarPropiedad);
-
-    // ESPÍA CABEZÓN 2: Inspecciona cómo quedó el estado protegido después de la limpieza
-    console.log("====================================================");
-    console.info(" [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
-    console.log("Arreglo procesado final:", state.propiedades);
-
-    if (state.propiedades.length > 0) 
-    { // -->Aqui inicia Condicional comprobar fotos del primer índice
-        console.log(" REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
-        console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
-    } // <--Aqui finaliza Condicional comprobar fotos del primer índice
-
-
-    // Ejecuta el renderizado sincronizado de las vistas
-    renderizarMapaZillow();
-    renderizarCatalogoTarjetas();
-
-    // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
-    interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
 } // <--Aqui finaliza Función procesarDatosDelMotor
-
-// Inicializador estructural del ecosistema al estar el árbol DOM listo
-document.addEventListener("DOMContentLoaded", () => {
-
-
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
-// =========================================================================
-    if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre control de sesión unificado]
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                const correoUsuario = String(session.user.email).trim();
-                
-                // Sincronización inmutable simétrica para dar soporte a ambos estilos de código
-                window.usuarioLogueado = session.user;
-
-                const idScriptSeguridad = "sre-jsonp-firewall-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) { scriptExistente.remove(); }
-                
-                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
-                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
-                        state.usuarioActual = null; 
-                        window.usuarioLogueado = null;
-                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
-                        await supabase.auth.signOut();
-                        document.getElementById('modal-autenticacion-supabase').style.display = 'none';
-                        return;
-                    }
-
-                    // Seteamos el estado de memoria del pipeline de herencia estructurado
-                    state.usuarioActual = {
-                        id: String(session.user.id).trim(),
-                        correo: correoUsuario,
-                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
-                    };
-                    
-                    console.log("[SRE SUCCESS] Sincronización exitosa bajo estado: " + state.usuarioActual.estado_cuenta);
-                    
-                    const modalAuth = document.getElementById('modal-autenticacion-supabase');
-                    if (modalAuth) { modalAuth.style.display = 'none'; }
-                    
-                    if (typeof ejecutarTuberiaSincronizada === 'function') {
-                        ejecutarTuberiaSincronizada();
-                    }
-                };
-
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
-                document.body.appendChild(scriptp);
-
-            } else {
-                state.usuarioActual = null;
-                window.usuarioLogueado = null;
-            }
-        });
-    } // <-- [Cierra control de sesión unificado]
+// FIN DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS (3/3)
 // =========================================================================
 
-        // =========================================================================
-        // INICIO DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
-        // =========================================================================
-        const splitViewContenedor = document.querySelector('.split-view'); // --> [Abre bloque de construcción del botón móvil]
 
-        if (splitViewContenedor) { // --> [Abre IF contenedor existente]
-            
-            // Creamos el botón flotante de forma dinámica para no ensuciar el index.html
-            const botonFlotante = document.createElement('button');
-            botonFlotante.type = 'button';
-            botonFlotante.className = 'btn-conmutador-flotante-zillow';
-            botonFlotante.innerHTML = '📋 Lista'; 
-            document.body.appendChild(botonFlotante);
 
-            // Evento interactivo táctil/clic para alternar las pantallas en el celular
-            botonFlotante.addEventListener('click', () => { // --> [Abre callback click botón conmutador]
-                
-                // Alternamos la clase responsiva en el contenedor principal
-                const mostrandoLista = splitViewContenedor.classList.toggle('ver-lista');
-                
-                if (mostrandoLista) { // --> [Abre IF cambiando a vista catálogo]
-                    botonFlotante.innerHTML = '🗺️ Mapa';
-                } // <-- [Cierra IF cambiando a vista catálogo]
-                else { // --> [Abre ELSE cambiando a vista mapa]
-                    botonFlotante.innerHTML = '📋 Lista';
-                    
-                    // Recalculamos síncronamente el tamaño de Leaflet para evitar parpadeos grises
-                    if (window.map) { // --> [Abre IF check mapa]
-                        setTimeout(() => { window.map.invalidateSize({ animate: true }); }, 50);
-                    } // <-- [Cierra IF check mapa]
-                } // <-- [Cierra ELSE cambiando a vista mapa]
-                
-            }); // <-- [Cierra callback click botón conmutador]
-            
-        } // <-- [Cierra IF contenedor existente]
-        // =========================================================================
-        // FIN DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
-        // =========================================================================
-
-        // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
-        if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
-        { // -->Aqui inicia Condicional inicializar mapa Leaflet
-            
-            // =========================================================================
-            // INICIO DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
-            // =========================================================================
-            window.map = L.map('map-instance', { // --> [Abre constructor nativo de Leaflet]
-                zoomControl: true,
-                tap: false, // <-- CLAVE INQUEBRANTABLE: Desactiva el doble clic fantasma en celulares y iPhones
-                tapTolerance: 30 // Da mayor margen de error al dedo del interesado al pulsar la burbuja
-            }).setView([-12.125, -76.995], 13); // <-- [Cierra constructor nativo de Leaflet]
-            // =========================================================================
-            // FIN DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
-            // =========================================================================
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-        } // <--Aqui finaliza Condicional inicializar mapa Leaflet
-
-        //  ¡BUENAS PRÁCTICAS SRE! Retardo controlado para asegurar que el DOM y el Mapa estén listos
-        setTimeout(() => { // --> [Abre callback setTimeout inicialización]
-            console.log("⏱️ [SRE] Inicializando eventos y listeners del ecosistema...");
-            
-            // 1. Enlazamos los eventos de los menús desplegables (Dropdowns)
-            inicializarEventosDeFiltros();
-            
-            // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
-            if (window.map) { // --> [Abre IF listener moveend]
-                window.map.on('moveend', renderizarMapaZillow);
-            } // <-- [Cierra IF listener moveend]
-            
-            // 3. Disparo inicial asincronizado de red para traer los datos del Excel
-            cargarDatosDesdeAppsScript();
-            
-        }, 100); // <-- [Cierra callback setTimeout inicialización]
-
-    }); // <--Aqui finaliza Callback principal DOMContentLoaded
-
-// PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
 
     function inicializarEventosDeFiltros() 
 { // -->Aqui inicia Función inicializarEventosDeFiltros
