@@ -853,6 +853,17 @@ function procesarDatosDelMotor(data)
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
 
+        // =========================================================================
+        // INICIO DE CORRECCIÓN SRE: DISPARO SINCRÓNICO INMEDIATO DE BURBUJAS
+        // =========================================================================
+        if (window.map && typeof renderizarMapaZillow === "function") { // --> [Abre control de carga ráfaga]
+            console.log("[SRE PERF] Despachando píldoras de precio en ráfaga junto al mapa base");
+            renderizarMapaZillow();
+            renderizarCatalogoTarjetas(); // Sincroniza también el panel lateral en paralelo
+        } // <-- [Cierra control de carga ráfaga]
+        // =========================================================================
+        // FIN DE CORRECCIÓN SRE: DISPARO SINCRÓNICO INMEDIATO DE BURBUJAS
+        // =========================================================================
 
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
