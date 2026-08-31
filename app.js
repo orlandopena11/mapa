@@ -2448,15 +2448,29 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 }
 
 
-
-function iniciarSesionSocialSupabase(proveedorOAuth) {
-    // Se corrige la ruta construyendo el endpoint OAuth v1 oficial de Supabase con sus parámetros limpios
-    const urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://orlandopena11.github.io/mapa/")}`;
-    console.warn("[SRE REDIRECT] Redirigiendo hardware a pasarela OAuth segura:", urlDestinoOAuth);
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: DISPARADOR OAUTH CON SELECCIÓN DE CUENTAS
+// =========================================================================
+function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función iniciarSesionSocialSupabase]
     
-    // Ejecución segura de redirección en el hilo principal
+    // Base de la URI para la autorización federada oficial de Supabase v1
+    let urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://github.io")}`;
+    
+    // SRE ADVANCED FIX: Si el usuario elige Google, forzamos el parámetro prompt para exigir el selector de perfiles
+    if (proveedorOAuth === 'google') { // --> [Abre IF proveedor google]
+        urlDestinoOAuth += `&queryParams=${encodeURIComponent("prompt=select_account")}`;
+    } // <-- [Cierra IF proveedor google]
+    
+    console.warn("[SRE REDIRECT] Despachando hardware a pasarela OAuth con selector activo:", urlDestinoOAuth);
+    
+    // Ejecución segura y rígida en el hilo principal del dispositivo móvil
     window.location.assign(urlDestinoOAuth);
-}
+    
+} // <-- [Cierra limpiamente la función iniciarSesionSocialSupabase]
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: DISPARADOR OAUTH CON SELECCIÓN DE CUENTAS
+// =========================================================================
+
 
 
 // Vinculación explícita global superior
