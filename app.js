@@ -55,21 +55,31 @@ console.log("[SRE ESPÍA 1.2] ¿Existe la propiedad 'supabase' previa en window?
 
 // SRE FIX: Inicializamos la variable interna en el ámbito de window para evitar colisiones con la CDN
 window.supabaseInstance = null;
-function obtenerClienteSupabase() {
-    console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase(). Estado actual interno:", !!supabase);
-    if (supabase) return supabase;
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: CONFIGURACIÓN OFICIAL CDN SUPABASE V2 SRE
+// =========================================================================
+function obtenerClienteSupabase() { // --> [Abre la función obtenerClienteSupabase]
+    console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase().");
     
-    if (typeof createClient !== "undefined") {
-        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante createClient plano de la CDN.");
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
-    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
-        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante window.supabase de la CDN.");
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    } else {
-        console.error("X [SRE ESPÍA ALERTA] ¡Catástrofe de Red! El script de la CDN de Supabase no se encuentra cargado en el árbol DOM.");
-    }
-    return supabase;
-}
+    // Si ya existe la instancia en memoria, la retornamos de inmediato para no duplicar hardware
+    if (window.supabaseInstance) { // --> [Abre IF check instancia]
+        return window.supabaseInstance;
+    } // <-- [Cierra IF check instancia]
+    
+    // Verificamos el objeto global oficial inyectado por la CDN en la línea 11 de index.html
+    if (typeof supabase !== "undefined" && typeof supabase.createClient === "function") { // --> [Abre IF validación CDN empaquetada]
+        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante createClient oficial empaquetado.");
+        window.supabaseInstance = supabase.createClient(supabaseUrl, supabaseAnonKey);
+        return window.supabaseInstance;
+    } // <-- [Cierra IF validación CDN empaquetada]
+    
+    console.error("❌ [SRE CRITICAL] No se pudo instanciar el cliente de Supabase. Objeto no encontrado.");
+    return null;
+} // <-- [Cierra limpiamente la función obtenerClienteSupabase]
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: CONFIGURACIÓN OFICIAL CDN SUPABASE V2 SRE
+// =========================================================================
+
 obtenerClienteSupabase();
 // =========================================================================
 
