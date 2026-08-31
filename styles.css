@@ -1236,7 +1236,7 @@ div.leaflet-marker-icon.map-price-pill span {
 /* ========================================================================
    INICIO DE PARCHE RESPONSIVO SRE: ADAPTACIÓN MÓVIL ESTILO ZILLOW - NO IMPORTANT
    ======================================================================== */
-@media (max-width: 768px) { // --> [Abre la Capa Protectora para Pantallas Móviles]
+@media (max-width: 768px) {     /* --> [Abre la Capa Protectora para Pantallas Móviles] */
 
     /* Sobreescritura controlada: En celulares el split-view es relativo */
     body .split-view {
@@ -1344,7 +1344,7 @@ div.leaflet-marker-icon.map-price-pill span {
 } // <-- [Cierra limpiamente la Capa Protectora para Pantallas Móviles]
 
 /* Ocultamiento absoluto del botón flotante en pantallas grandes sin usar !important */
-@media (min-width: 769px) { // --> [Abre la Capa Protectora para Pantallas de Escritorio]
+@media (min-width: 769px) {  /* --> [Abre la Capa Protectora para Pantallas de Escritorio] */
     body .btn-conmutador-flotante-zillow {
         display: none;
     }
