@@ -810,8 +810,14 @@ function renderizarCatalogoTarjetas()
 // PARTE: 5-5 (CALLBACK DE RED CON ESPÍA CABEZÓN ACTIVADO)
 function procesarDatosDelMotor(data) 
 { // -->Aqui inicia Función procesarDatosDelMotor
+    // Asignación de variables al estado global de la app
+    state.propiedades = data.propiedades || [];
+    
+    // Invocación en ráfaga e inmediata de la UI en cuanto los datos pisan la RAM
+    if (typeof renderizarMapaZillow === "function") { // --> [Abre control de rendering live]
+    
     // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
-    console.log("====================================================");
+    console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
     console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
     console.log("Estructura completa entrante:", data);
     
@@ -853,17 +859,6 @@ function procesarDatosDelMotor(data)
 // Inicializador estructural del ecosistema al estar el árbol DOM listo
 document.addEventListener("DOMContentLoaded", () => {
 
-        // =========================================================================
-        // INICIO DE CORRECCIÓN SRE: DISPARO SINCRÓNICO INMEDIATO DE BURBUJAS
-        // =========================================================================
-        if (window.map && typeof renderizarMapaZillow === "function") { // --> [Abre control de carga ráfaga]
-            console.log("[SRE PERF] Despachando píldoras de precio en ráfaga junto al mapa base");
-            renderizarMapaZillow();
-            renderizarCatalogoTarjetas(); // Sincroniza también el panel lateral en paralelo
-        } // <-- [Cierra control de carga ráfaga]
-        // =========================================================================
-        // FIN DE CORRECCIÓN SRE: DISPARO SINCRÓNICO INMEDIATO DE BURBUJAS
-        // =========================================================================
 
 // =========================================================================
 // INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
