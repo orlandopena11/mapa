@@ -919,7 +919,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } // <-- [Cierra control de sesión unificado]
 // =========================================================================
 
-            // =========================================================================
+        // =========================================================================
         // INICIO DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
         // =========================================================================
         const splitViewContenedor = document.querySelector('.split-view'); // --> [Abre bloque de construcción del botón móvil]
@@ -930,7 +930,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const botonFlotante = document.createElement('button');
             botonFlotante.type = 'button';
             botonFlotante.className = 'btn-conmutador-flotante-zillow';
-            botonFlotante.innerHTML = '📋 Lista'; // Icono e identificación inicial purista
+            botonFlotante.innerHTML = '📋 Lista'; 
             document.body.appendChild(botonFlotante);
 
             // Evento interactivo táctil/clic para alternar las pantallas en el celular
@@ -946,9 +946,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     botonFlotante.innerHTML = '📋 Lista';
                     
                     // Recalculamos síncronamente el tamaño de Leaflet para evitar parpadeos grises
-                    if (window.map) {
+                    if (window.map) { // --> [Abre IF check mapa]
                         setTimeout(() => { window.map.invalidateSize({ animate: true }); }, 50);
-                    }
+                    } // <-- [Cierra IF check mapa]
                 } // <-- [Cierra ELSE cambiando a vista mapa]
                 
             }); // <-- [Cierra callback click botón conmutador]
@@ -958,53 +958,47 @@ document.addEventListener("DOMContentLoaded", () => {
         // FIN DE INYECCIÓN FRONTEND: MOTOR DE CONMUTACIÓN MÓVIL MAPA/LISTA SRE
         // =========================================================================
 
-
-
         // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
         if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
         { // -->Aqui inicia Condicional inicializar mapa Leaflet
-            /*window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13); */
-        // =========================================================================
-        // INICIO DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
-        // =========================================================================
-        window.map = L.map('map-instance', { // --> [Abre constructor nativo de Leaflet]
-            zoomControl: true,
-            tap: false, // <-- CLAVE INQUEBRANTABLE: Desactiva el doble clic fantasma en celulares y iPhones
-            tapTolerance: 30 // Da mayor margen de error al dedo del interesado al pulsar la burbuja
-        }).setView([-12.125, -76.995], 13); // <-- [Cierra constructor nativo de Leaflet]
-        // =========================================================================
-        // FIN DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
-        // =========================================================================
+            
+            // =========================================================================
+            // INICIO DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
+            // =========================================================================
+            window.map = L.map('map-instance', { // --> [Abre constructor nativo de Leaflet]
+                zoomControl: true,
+                tap: false, // <-- CLAVE INQUEBRANTABLE: Desactiva el doble clic fantasma en celulares y iPhones
+                tapTolerance: 30 // Da mayor margen de error al dedo del interesado al pulsar la burbuja
+            }).setView([-12.125, -76.995], 13); // <-- [Cierra constructor nativo de Leaflet]
+            // =========================================================================
+            // FIN DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
+            // =========================================================================
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
         } // <--Aqui finaliza Condicional inicializar mapa Leaflet
 
         //  ¡BUENAS PRÁCTICAS SRE! Retardo controlado para asegurar que el DOM y el Mapa estén listos
-        setTimeout(() => {
+        setTimeout(() => { // --> [Abre callback setTimeout inicialización]
             console.log("⏱️ [SRE] Inicializando eventos y listeners del ecosistema...");
             
             // 1. Enlazamos los eventos de los menús desplegables (Dropdowns)
             inicializarEventosDeFiltros();
-
-            // ===================================================================
-            // ENLACE AGREGADO: Inicializa los listeners de tus nuevos popups
-            // ===================================================================
-            //inicializarEventosPopups();
             
             // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
-            if (window.map) {
+            if (window.map) { // --> [Abre IF listener moveend]
                 window.map.on('moveend', renderizarMapaZillow);
-            }
+            } // <-- [Cierra IF listener moveend]
             
             // 3. Disparo inicial asincronizado de red para traer los datos del Excel
             cargarDatosDesdeAppsScript();
             
-        }, 100);
+        }, 100); // <-- [Cierra callback setTimeout inicialización]
 
     }); // <--Aqui finaliza Callback principal DOMContentLoaded
 
 // PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
-function inicializarEventosDeFiltros() 
+
+    function inicializarEventosDeFiltros() 
 { // -->Aqui inicia Función inicializarEventosDeFiltros
 
 
