@@ -2371,7 +2371,7 @@ function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
 function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función iniciarSesionSocialSupabase]
     
     // Base de la URI para la autorización federada oficial de Supabase v1
-    let urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://github.io")}`;
+    let urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://orlandopena11.github.io/mapa/")}`;
     
     // SRE ADVANCED FIX: Si el usuario elige Google, forzamos el parámetro prompt para exigir el selector de perfiles
     if (proveedorOAuth === 'google') { // --> [Abre IF proveedor google]
