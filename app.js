@@ -53,33 +53,22 @@ console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo princ
 console.log("[SRE ESPÍA 1.1] ¿La librería 'createClient' existe en el window?:", typeof window.createClient !== "undefined" || typeof createClient !== "undefined");
 console.log("[SRE ESPÍA 1.2] ¿Existe la propiedad 'supabase' previa en window?:", typeof window.supabase !== "undefined");
 
-// SRE FIX: Inicializamos la variable interna en el ámbito de window para evitar colisiones con la CDN
-window.supabaseInstance = null;
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: CONFIGURACIÓN OFICIAL CDN SUPABASE V2 SRE
-// =========================================================================
-function obtenerClienteSupabase() { // --> [Abre la función obtenerClienteSupabase]
-    console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase().");
+let supabase = null;
+function obtenerClienteSupabase() {
+    console.log("[SRE ESPÍA RUN] Ejecutando resolvedor dinámico obtenerClienteSupabase(). Estado actual interno:", !!supabase);
+    if (supabase) return supabase;
     
-    // Si ya existe la instancia en memoria, la retornamos de inmediato para no duplicar hardware
-    if (window.supabaseInstance) { // --> [Abre IF check instancia]
-        return window.supabaseInstance;
-    } // <-- [Cierra IF check instancia]
-    
-    // Verificamos el objeto global oficial inyectado por la CDN en la línea 11 de index.html
-    if (typeof supabase !== "undefined" && typeof supabase.createClient === "function") { // --> [Abre IF validación CDN empaquetada]
-        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante createClient oficial empaquetado.");
-        window.supabaseInstance = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        return window.supabaseInstance;
-    } // <-- [Cierra IF validación CDN empaquetada]
-    
-    console.error("❌ [SRE CRITICAL] No se pudo instanciar el cliente de Supabase. Objeto no encontrado.");
-    return null;
-} // <-- [Cierra limpiamente la función obtenerClienteSupabase]
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: CONFIGURACIÓN OFICIAL CDN SUPABASE V2 SRE
-// =========================================================================
-
+    if (typeof createClient !== "undefined") {
+        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante createClient plano de la CDN.");
+        supabase = createClient(supabaseUrl, supabaseAnonKey);
+    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
+        console.info("?? [SRE ESPÍA MATCH] Instanciando Supabase mediante window.supabase de la CDN.");
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } else {
+        console.error("X [SRE ESPÍA ALERTA] ¡Catástrofe de Red! El script de la CDN de Supabase no se encuentra cargado en el árbol DOM.");
+    }
+    return supabase;
+}
 obtenerClienteSupabase();
 // =========================================================================
 
@@ -91,71 +80,27 @@ obtenerClienteSupabase();
 
 
 // =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: CANDADO ACL REFORZADO CON DOBLE ESCUDO SRE
+// INICIO DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
 // =========================================================================
-function verificarAutorizacionAcceso(callbackAccionAutorizada = null) { // --> [Abre la función verificarAutorizacionAcceso]
-    
-    // Control 1: Validación de Sesión Básica
+function verificarAutorizacionAcceso() { // --> [Abre la función verificarAutorizacionAcceso]
     if (!state.usuarioActual || !state.usuarioActual.id) { // --> [Abre IF usuario vacío]
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
         if (typeof mostrarPopupAccion === "function") { // --> [Abre IF mostrarPopupAccion]
             mostrarPopupAccion("modal-autenticacion-supabase");
         } // <-- [Cierra IF mostrarPopupAccion]
-        return false; 
+        return false; // Corta el flujo de forma segura dentro de la función
     } // <-- [Cierra IF usuario vacío]
     
-    // Control 2: Validación preventiva en memoria RAM local
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") { // --> [Abre IF RAM suspendido]
+    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") { // --> [Abre IF suspendido]
         alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
-        return false; 
-    } // <-- [Cierra IF RAM suspendido]
+        return false; // Corta el flujo de forma segura dentro de la función
+    } // <-- [Cierra IF suspendido]
     
-    // Control 3: Validación en Caliente directo contra el Libro Maestro de Google Sheets
-    const correoUsuario = state.usuarioActual.correo;
-    const idScriptSeguridad = "sre-jsonp-candado-live";
-    let scriptExistente = document.getElementById(idScriptSeguridad);
-    if (scriptExistente) { scriptExistente.remove(); }
-    
-    // Callback receptor que procesa la respuesta del servidor en tiempo real
-    window.procesarValidacionCandadoLive = async (respuestaServer) => { // --> [Abre Callback procesarValidacionCandadoLive]
-        const estadoActualizado = respuestaServer?.estado_cuenta || "pendiente";
-        
-        if (estadoActualizado === "suspendido") { // --> [Abre IF server suspendido]
-            state.usuarioActual = null;
-            window.usuarioLogueado = null;
-            alert("Acceso Denegado: Su cuenta ha sido SUSPENDIDA por el administrador.");
-            
-            if (typeof supabase !== "undefined" && supabase !== null) {
-                await supabase.auth.signOut();
-            }
-            
-            // Pintamos el banner de bloqueo y cerramos cualquier modal comercial activo
-            interceptarFirewallSeguridadUsuario([{ correo: correoUsuario, estado_cuenta: "suspendido" }], correoUsuario);
-            document.querySelectorAll('.modal-accion-overlay').forEach(m => m.classList.remove('modal-activo'));
-            return;
-        } // <-- [Cierra IF server suspendido]
-        
-        // Sincronizamos la RAM con el estado real del Excel
-        state.usuarioActual.estado_cuenta = estadoActualizado;
-        
-        // ¡ÉXITO! Si el usuario está activo y pasamos una acción, se ejecuta de inmediato
-        if (estadoActualizado === "activo" && typeof callbackAccionAutorizada === "function") { // --> [Abre IF callback ejecucion]
-            callbackAccionAutorizada();
-        } // <-- [Cierra IF callback ejecucion]
-    }; // <-- [Cierra Callback procesarValidacionCandadoLive]
-
-    // Despachamos la consulta en frío al backend de Apps Script
-    const scriptCheck = document.createElement('script');
-    scriptCheck.id = idScriptSeguridad;
-    scriptCheck.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarValidacionCandadoLive`;
-    document.body.appendChild(scriptCheck);
-    
-    return true; 
+    return true; // Autoriza el paso si superó los dos controles anteriores
 } // <-- [Cierra limpiamente la función verificarAutorizacionAcceso]
 // =========================================================================
-// FIN DE INYECCIÓN FRONTEND: CANDADO ACL REFORZADO CON DOBLE ESCUDO SRE
+// FIN DE INYECCIÓN FRONTEND: FUNCIÓN CANDADO REPARADA SIN LLAVES HUÉRFANAS
 // =========================================================================
-
 
 
 // URL de conexión segura con el backend relacional de Google Apps Script
@@ -191,7 +136,7 @@ function normalizarPropiedad(prop)
         { // -->Aqui inicia Condicional enlace completo internet
             return texto;
         } // <--Aqui finaliza Condicional enlace completo internet
-        // 🛑 Error original corregido: <span style="color:red; font-weight:bold;">Aqui falta la llave de cierre } que aislaba el código inferior</span>
+        // ?? Error original corregido: <span style="color:red; font-weight:bold;">Aqui falta la llave de cierre } que aislaba el código inferior</span>
 
         // Limpieza de arquitectura: Reemplaza espacios intermedios por guiones bajos
         texto = texto.replace(/\s+/g, '_');
@@ -342,7 +287,7 @@ function construirRielCarruselComponente(prop, esPopup = false)
     // Instanciación ÚNICA del escudo comercial por fuera del bucle de imágenes
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '🤍'; // Icono base nítido y universal
+    botonCorazon.innerHTML = '??'; // Icono base nítido y universal
     botonCorazon.style.position = 'absolute';
     botonCorazon.style.top = '12px';
     botonCorazon.style.right = '12px';
@@ -375,12 +320,12 @@ function construirRielCarruselComponente(prop, esPopup = false)
         } // <-- [Cierra IF candado ACL]
 
         // Flujo autorizado para cambiar el estado del me gusta de forma persistente
-        if (botonCorazon.innerHTML === '🤍') { // --> [Abre IF pintar activo]
-            botonCorazon.innerHTML = '❤️';
+        if (botonCorazon.innerHTML === '??') { // --> [Abre IF pintar activo]
+            botonCorazon.innerHTML = '??';
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         } // <-- [Cierra IF pintar activo] 
         else { // --> [Abre ELSE pintar pasivo]
-            botonCorazon.innerHTML = '🤍';
+            botonCorazon.innerHTML = '??';
             botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         } // <-- [Cierra ELSE pintar pasivo]
     }); // <-- [Cierra Callback pointerdown Corazón]
@@ -677,24 +622,14 @@ function renderizarMapaZillow()
 
         contenedorPopupMaster.appendChild(datosPopup);
 
-        // =========================================================================
-        // INICIO DE INYECCIÓN FRONTEND: PARÁMETROS ADAPTATIVOS DE POPUP SRE
-        // =========================================================================
-        // Enlace nativo optimizado para móviles: Desactiva autoPan en pantallas táctiles
-        const esDispositivoMovil = window.innerWidth <= 768; // --> [Abre control de hardware]
-        
-        marcador.bindPopup(contenedorPopupMaster, { // --> [Abre inicialización bindPopup Leaflet]
-            maxWidth: esDispositivoMovil ? 420 : 300,
-            minWidth: esDispositivoMovil ? 280 : 260,
-            className: 'zillow-custom-popup-wrapper', // Conecta directamente con las hojas de estilo sin usar !important
-            autoPan: !esDispositivoMovil, // Evita los saltos bruscos de encuadre en el teléfono móvil
-            closeOnClick: false, // Elimina el autocierre por pérdida de foco de raíz
-            autoClose: false // Mantiene la tarjeta fija permitiendo interactuar con el carrusel y el corazón
-        }); // <-- [Cierra inicialización bindPopup Leaflet]
-        // =========================================================================
-        // FIN DE INYECCIÓN FRONTEND: PARÁMETROS ADAPTATIVOS DE POPUP SRE
-        // =========================================================================
-
+        // Enlace nativo directo del Popup (Estabilizado sin inyecciones visuales en JS)
+        marcador.bindPopup(contenedorPopupMaster, {
+            maxWidth: 300,
+            minWidth: 260,
+            className: 'zillow-custom-popup-wrapper',
+            autoPan: true,
+            closeOnClick: false // <-- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
+        });
 
         // 2. Escucha e Interceptor de clic para reorganizar el Catalogo Derecho
         marcador.on('click', (e) => { // Apertura marcador.on('click'
@@ -815,17 +750,14 @@ function renderizarCatalogoTarjetas()
 } // <--Aqui finaliza Función renderizarCatalogoTarjetas
 
 
-// =========================================================================
-// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
-// =========================================================================
+/**
+* ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
+*/
+// PARTE: 5-5 (CALLBACK DE RED CON ESPÍA CABEZÓN ACTIVADO)
 function procesarDatosDelMotor(data) 
 { // -->Aqui inicia Función procesarDatosDelMotor
-    // Asignación de variables al estado global de la app
-    data = data || {};
-    state.propiedades = data.propiedades || [];
-    
     // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
-    console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
+    console.log("====================================================");
     console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
     console.log("Estructura completa entrante:", data);
     
@@ -841,15 +773,6 @@ function procesarDatosDelMotor(data)
         return;
     } // <--Aqui finaliza Condicional validar estructura rota
 
-    // SRE CORE LIVE INJECTION: Forzamos la inicialización del objeto de filtros en RAM
-    if (!state.filtros) { state.filtros = {}; }
-    state.filtros.estado = state.filtros.estado || 'Venta';
-    state.filtros.precioMin = state.filtros.precioMin || 0;
-    state.filtros.precioMax = state.filtros.precioMax || Infinity;
-    
-    // Forzamos la repoblación del Set en la RAM para romper el bloqueo de la línea 534
-    state.filtros.tiposListado = new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca']);
-
     // Ejecuta el mapeo relacional hacia Cloudinary
     state.propiedades = data.propiedades.map(normalizarPropiedad);
 
@@ -864,27 +787,112 @@ function procesarDatosDelMotor(data)
         console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
     } // <--Aqui finaliza Condicional comprobar fotos del primer índice
 
-    // Ejecuta el renderizado sincronizado de las vistas de forma directa y síncrona
-    if (typeof renderizarMapaZillow === "function") {
-        renderizarMapaZillow();
-    }
-    if (typeof renderizarCatalogoTarjetas === "function") {
-        renderizarCatalogoTarjetas();
-    }
+
+    // Ejecuta el renderizado sincronizado de las vistas
+    renderizarMapaZillow();
+    renderizarCatalogoTarjetas();
 
     // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
     interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-    
 } // <--Aqui finaliza Función procesarDatosDelMotor
+
+// Inicializador estructural del ecosistema al estar el árbol DOM listo
+document.addEventListener("DOMContentLoaded", () => {
+
+
+/*{ // -->Aqui inicia Callback principal DOMContentLoaded */
+
 // =========================================================================
-// FIN DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
+// INICIO DE INYECCIÓN FRONTEND: ESCUCHADOR SUPABASE CORREGIDO CON JSONP SECURE
+// =========================================================================
+    if (typeof supabase !== "undefined" && supabase !== null) { // --> [Abre control de sesión unificado]
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                const correoUsuario = String(session.user.email).trim();
+                
+                // Sincronización inmutable simétrica para dar soporte a ambos estilos de código
+                window.usuarioLogueado = session.user;
+
+                const idScriptSeguridad = "sre-jsonp-firewall-auth";
+                let scriptExistente = document.getElementById(idScriptSeguridad);
+                if (scriptExistente) { scriptExistente.remove(); }
+                
+                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
+                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
+                        state.usuarioActual = null; 
+                        window.usuarioLogueado = null;
+                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
+                        await supabase.auth.signOut();
+                        document.getElementById('modal-autenticacion-supabase').style.display = 'none';
+                        return;
+                    }
+
+                    // Seteamos el estado de memoria del pipeline de herencia estructurado
+                    state.usuarioActual = {
+                        id: String(session.user.id).trim(),
+                        correo: correoUsuario,
+                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
+                    };
+                    
+                    console.log("[SRE SUCCESS] Sincronización exitosa bajo estado: " + state.usuarioActual.estado_cuenta);
+                    
+                    const modalAuth = document.getElementById('modal-autenticacion-supabase');
+                    if (modalAuth) { modalAuth.style.display = 'none'; }
+                    
+                    if (typeof ejecutarTuberiaSincronizada === 'function') {
+                        ejecutarTuberiaSincronizada();
+                    }
+                };
+
+                const scriptp = document.createElement('script');
+                scriptp.id = idScriptSeguridad;
+                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
+                document.body.appendChild(scriptp);
+
+            } else {
+                state.usuarioActual = null;
+                window.usuarioLogueado = null;
+            }
+        });
+    } // <-- [Cierra control de sesión unificado]
 // =========================================================================
 
 
 
+        // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
+        if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
+        { // -->Aqui inicia Condicional inicializar mapa Leaflet
+            window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        } // <--Aqui finaliza Condicional inicializar mapa Leaflet
 
+        //  ¡BUENAS PRÁCTICAS SRE! Retardo controlado para asegurar que el DOM y el Mapa estén listos
+        setTimeout(() => {
+            console.log("?? [SRE] Inicializando eventos y listeners del ecosistema...");
+            
+            // 1. Enlazamos los eventos de los menús desplegables (Dropdowns)
+            inicializarEventosDeFiltros();
 
-    function inicializarEventosDeFiltros() 
+            // ===================================================================
+            // ENLACE AGREGADO: Inicializa los listeners de tus nuevos popups
+            // ===================================================================
+            //inicializarEventosPopups();
+            
+            // 2. Sincroniza dinámicamente las burbujas al arrastrar o cambiar el zoom del mapa
+            if (window.map) {
+                window.map.on('moveend', renderizarMapaZillow);
+            }
+            
+            // 3. Disparo inicial asincronizado de red para traer los datos del Excel
+            cargarDatosDesdeAppsScript();
+            
+        }, 100);
+
+    }); // <--Aqui finaliza Callback principal DOMContentLoaded
+
+// PARTE: 6-5 (MOTOR REACTIVO DE INTERFAZ Y MENÚS FLOTANTES)
+function inicializarEventosDeFiltros() 
 { // -->Aqui inicia Función inicializarEventosDeFiltros
 
 
@@ -940,9 +948,9 @@ function procesarDatosDelMotor(data)
             const btnStatus = document.getElementById('btn-filter-status');
             if (btnStatus) 
             { // -->Aqui inicia Condicional cambiar etiqueta del header
-                if (e.target.value === "Venta") btnStatus.textContent = "En venta ▾";
-                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler ▾";
-                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas ▾";
+                if (e.target.value === "Venta") btnStatus.textContent = "En venta ?";
+                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler ?";
+                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas ?";
             } // <--Aqui finaliza Condicional cambiar etiqueta del header
             
             const panelDropdown = document.getElementById('dropdown-status');
@@ -1162,7 +1170,7 @@ function procesarDatosDelMotor(data)
                 if (window.ultimaDireccionBuscada === direccionTexto) return;
                 window.ultimaDireccionBuscada = direccionTexto;
                 
-                console.log("🔍 [MOTOR GEOCODING] Buscando ubicación para:", direccionTexto);
+                console.log("?? [MOTOR GEOCODING] Buscando ubicación para:", direccionTexto);
                 const urlNominatim = "https://nominatim.openstreetmap.org/search?format=json&q=" + encodeURIComponent(direccionTexto) + "&countrycodes=pe&limit=1";
                 
                 
@@ -1176,14 +1184,14 @@ function procesarDatosDelMotor(data)
                             const lon = parseFloat(lugar.lon);
                             
                             if (window.map) {
-                                console.log("📍 [MOTOR GEOCODING] Redirigiendo mapa a con éxito:", lat, lon);
+                                console.log("?? [MOTOR GEOCODING] Redirigiendo mapa a con éxito:", lat, lon);
                                 window.map.flyTo([lat, lon], 14, { animate: true, duration: 1.5 });
                             }
                         } else {
-                            console.warn("⚠️ [MOTOR GEOCODING] No se encontraron coordenadas para esta dirección.");
+                            console.warn("?? [MOTOR GEOCODING] No se encontraron coordenadas para esta dirección.");
                         }
                     })
-                    .catch(err => console.error("❌ [MOTOR GEOCODING] Error de conexión con el servidor cartográfico:", err));
+                    .catch(err => console.error("? [MOTOR GEOCODING] Error de conexión con el servidor cartográfico:", err));
             }, 800);
         });
     }
@@ -1325,14 +1333,14 @@ function evaluarCriteriosDeFiltrado(prop)
     console.warn(`[FILTRO DIAGNOSTIC] ID: ${prop.id} | estado_publicacion = "${estado_publicacion}"`);
 
     // REGLA DE VACÍO ABSOLUTO INTERNA: Si el usuario desmarca todo en la UI, cortamos el flujo inmediatamente
-    )
+    if (!state.filtros.tiposListado || state.filtros.tiposListado.size === 0)
     
     {
         return false; 
     }
 
     
-    console.log(`✅ ESPÍA PASÓ PRIMER CONTROL | ID: ${prop.id} continúa evaluación.`);
+    console.log(`? ESPÍA PASÓ PRIMER CONTROL | ID: ${prop.id} continúa evaluación.`);
     
     // =========================================================================
     // SEGUNDO FILTRO: REGLA DE TRANSACCIÓN DIRECTA Y ESTRICTA (SIN MINÚSCULAS)
@@ -1519,7 +1527,7 @@ function evaluarCriteriosDeFiltrado(prop)
 
     
     // ESPÍA DE INTERFACES: Inspecciona qué filtros siguen vivos en el Set de la RAM antes de aprobar
-    console.log(`🔍 DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
+    console.log(`?? DIAGNÓSTICO DE MEMORIA | ID: ${prop.id} | Situación en Excel: "${situacionBD}" | Filtros que siguen activos en el Set:`, Array.from(state.filtros.tiposListado));
 
     // Aprobación final unificada
     console.log(`%c ¡PROPIEDAD TOTALMENTE APROBADA! ID: ${prop.id} pasa al catalogo y mapa.`, "color: #008000; font-weight: bold;");
@@ -1575,7 +1583,6 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
         if (banner) banner.remove();
     } // <--Aqui finaliza Bloque else remover banner si está limpio
 } // <--Aqui finaliza Función interceptarFirewallSeguridadUsuario
-
 
 function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEventosPopups
     const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
@@ -1641,9 +1648,11 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
-    // =========================================================================
-    // INICIO DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
-    // =========================================================================
+
+
+// =========================================================================
+// INICIO DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
+// =========================================================================
     if (formTourCompleto) { // --> [Abre IF formTourCompleto]
         formTourCompleto.addEventListener("submit", (e) => { 
             e.preventDefault();
@@ -1670,23 +1679,30 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); 
     } // <-- [Cierra IF formAgente]
 
-    // =========================================================================
-    // SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR PUNTERO DIRECTO ANTI-REFRESH
-    // =========================================================================
+
+// =========================================================================
+// SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR PUNTERO DIRECTO ANTI-REFRESH
+// =========================================================================
+    // Buscamos el formulario y el botón de manera independiente para doble escudo
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
     
     if (formLoginSupabase) { // --> [Abre IF bloqueo nativo de formulario]
         formLoginSupabase.onsubmit = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
     } // <-- [Cierra IF bloqueo nativo de formulario]
 
+    // Interceptamos directamente el click del botón por su tipo de ejecución en el DOM
     const btnEnviarEmailAuth = document.querySelector('#form-login-email-supabase button[type="submit"]') || document.querySelector('button[type="submit"]');
+    console.warn("?? [SRE ESPÍA FRONT] Buscando botón físico de confirmación:", !!btnEnviarEmailAuth);
 
     if (btnEnviarEmailAuth) { // --> [Abre IF control puntero botón azul]
         btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual anti-recarga]
             e.preventDefault();
             e.stopPropagation();
             
+            console.log("%c ?? [SRE GATILLO CRÍTICO] ¡Pulsación capturada en frío! Frenando recarga de página.", "background: #d92323; color: #fff; padding: 4px;");
+            
             const inputEmail = document.getElementById("login-email-input") || document.getElementById("input-usuario-email");
+            console.log("[SRE ESPÍA INPUT] Caja de texto detectada en DOM:", !!inputEmail);
 
             if (!inputEmail || !inputEmail.value.trim()) {
                 alert("Por favor, ingrese un correo electrónico válido.");
@@ -1702,7 +1718,10 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
             let scriptExistente = document.getElementById(idScriptSeguridad);
             if (scriptExistente) { scriptExistente.remove(); }
 
+            // Callback receptor global del Apps Script
             window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
+                console.log("?? [SRE ESPÍA RED] Respuesta síncrona del backend recibida:", respuestaServer);
+                
                 if (respuestaServer && respuestaServer.success) {
                     alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
                     
@@ -1719,12 +1738,15 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                     if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
                     if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
                 } else {
+                    console.error("X [SRE ALERTA SERVER] Respuesta fallida o rechazo REST.");
                     alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
                 }
 
                 btnEnviarEmailAuth.disabled = false; 
                 btnEnviarEmailAuth.innerText = "Enviar para confirmar email"; 
             };
+
+            console.warn("[SRE TRANSPORT] Inyectando script JSONP inter-servidor...");
             
             const scriptp = document.createElement('script');
             scriptp.id = idScriptSeguridad;
@@ -1735,15 +1757,12 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }; // <-- [Cierra Callback click manual anti-recarga]
     } // <-- [Cierra IF control puntero botón azul]
 
-    // =========================================================================
-    // SRE CORRECCIÓN: GATILLOS FEDERADOS SOCIALES ACTIVOS DIRECTO A GATEWAY
-    // =========================================================================
+    // GATILLOS FEDERADOS DIRECTOS RECONFIGURADOS
     const btnGoogleAuth = document.getElementById("btn-login-google-supabase") || document.getElementById("btn-google");
     if (btnGoogleAuth) {
         btnGoogleAuth.onclick = (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            iniciarSesionSocialSupabase('google');
+            alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
         };
     }
 
@@ -1751,12 +1770,17 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     if (btnFacebookAuth) {
         btnFacebookAuth.onclick = (e) => {
             e.preventDefault();
-            e.stopPropagation();
-            iniciarSesionSocialSupabase('facebook');
+            alert("Inicio de sesión social en mantenimiento. Por favor, ingrese utilizando el validador directo de Correo Electrónico.");
         };
     }
+// =========================================================================
+
     
 } // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
+
+// =========================================================================
+// FIN DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
+// =========================================================================
 
 
     // =========================================================================
@@ -2160,9 +2184,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
                 <button class="btn-nav-accion" id="btn-cerrar-cortina" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver a buscar</button>
                 <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                 <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span>💾 Guardar</span>
-                    <span>🔄 Compartir</span>
-                    <span>🚫 Ocultar</span>
+                    <span>?? Guardar</span>
+                    <span>?? Compartir</span>
+                    <span>?? Ocultar</span>
                 </div>
             </div>
             
@@ -2175,7 +2199,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
                     <div id="foto-disparador-5" style="background-image: url('${f5}'); background-size: cover; background-position: center; cursor: pointer; position: relative;"></div>
                     
                     <button id="btn-flotante-galeria" style="position: absolute; bottom: 16px; right: 16px; background: rgba(255,255,255,0.95); color: #1a1a1a; border: 1px solid #1a1a1a; padding: 10px 16px; border-radius: 4px; font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; z-index: 10;">
-                        📷 Ver todas las ${arregloFotos.length || 0} fotos
+                        ?? Ver todas las ${arregloFotos.length || 0} fotos
                     </button>
                 </div>
 
@@ -2240,9 +2264,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
                 <button class="btn-nav-accion" id="btn-regresar-detalle" style="cursor:pointer; background:none; border:none; color:#006aff; font-weight:600; font-size:15px;">‹ Volver al detalle</button>
                 <img src="./logo.jpg" alt="Logo Inmobiliario" style="height:32px; object-fit:contain; border-radius:4px;">
                 <div style="display:flex; gap:16px; color:#54565a; font-size:14px; font-weight:500;">
-                    <span>💾 Guardar</span>
-                    <span>🔄 Compartir</span>
-                    <span>🚫 Ocultar</span>
+                    <span>?? Guardar</span>
+                    <span>?? Compartir</span>
+                    <span>?? Ocultar</span>
                 </div>
             </div>
             
@@ -2306,103 +2330,81 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // --> Aqui inicia Función g
 } // <-- Aqui finaliza Función gestionarCortinaSPA
 
 // =========================================================================
-// SRE DIRECT SUPABASE REST ENGINE: CONEXIÓN PURA E INMUNE A CORRUPCIONES
+// SRE MONITOR: CANAL HÍBRIDA 100% SRE AISLADO AUTO-EJECUTABLE (PRODUCCIÓN)
 // =========================================================================
-const SUPABASE_API_URL = "https://aohizylvnnrjhgplsods.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1";
+(function() { // --> [Abre Ámbito Aislado de Memoria RAM]
+    const registrarEscudoRestSRE = () => {
+        const btnEnviarEmailAuth = document.getElementById("btn-autenticar");
+        const inputEmail = document.getElementById("input-usuario-email");
 
-function ejecutarAutenticacionTunelRestSRE(eventoHTML) {
-    if (eventoHTML) { eventoHTML.preventDefault(); eventoHTML.stopPropagation(); }
-    
-    const inputMail = document.getElementById("input-usuario-email") || document.getElementById("login-email-input");
-    const btnAuth = document.getElementById("btn-autenticar");
+        if (btnEnviarEmailAuth && inputEmail) { // --> [Abre IF match de IDs en HTML]
+            btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual]
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log("%c ?? [SRE TÚNEL DIRECTO] Pulsación interceptada con éxito en canal aislado.", "background: #002E50; color: #fff; padding: 4px;");
+                
+                if (!inputEmail.value.trim()) {
+                    alert("Por favor, ingrese un correo electrónico válido.");
+                    return false;
+                }
 
-    if (!inputMail || !inputMail.value.trim()) {
-        alert("Por favor, ingrese un correo electrónico válido.");
-        return false;
+                const emailDestino = inputEmail.value.trim().toLowerCase();
+                btnEnviarEmailAuth.disabled = true; 
+                btnEnviarEmailAuth.innerText = "Despachando por túnel REST..."; 
+
+                const idScriptSeguridad = "sre-jsonp-rest-auth";
+                let scriptExistente = document.getElementById(idScriptSeguridad);
+                if (scriptExistente) { scriptExistente.remove(); }
+
+                window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
+                    console.log("?? [SRE PIPELINE NET] Respuesta del Apps Script recibida:", respuestaServer);
+                    
+                    if (respuestaServer && respuestaServer.success) {
+                        alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
+                        
+                        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
+                        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
+                        
+                        const modalLogin = document.getElementById('mi-modal-login');
+                        if (modalLogin) { modalLogin.style.display = 'none'; }
+                        
+                        if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
+                        if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
+                    } else {
+                        alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
+                    }
+
+                    btnEnviarEmailAuth.disabled = false; 
+                    btnEnviarEmailAuth.innerText = "Continuar"; 
+                };
+
+                const scriptp = document.createElement('script');
+                scriptp.id = idScriptSeguridad;
+                scriptp.src = `${urlMiScriptGoogle}?accion=solicitar_magic_link_rest&correo=${encodeURIComponent(emailDestino)}&callback=procesarRespuestaMagicLinkREST`;
+                document.body.appendChild(scriptp);
+                
+                return false;
+            }; // <-- [Cierra Callback click manual]
+
+            const btnGoogle = document.getElementById("btn-google");
+            if (btnGoogle) { btnGoogle.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
+            const btnFacebook = document.getElementById("btn-facebook");
+            if (btnFacebook) { btnFacebook.onclick = (ev) => { ev.preventDefault(); alert("Inicio social en mantenimiento. Use Correo Electrónico."); }; }
+            
+            console.log("? [SRE SUCCESS] Túnel REST acoplado de forma 100% aislada.");
+        } // <-- [Cierra IF match de IDs en HTML]
+        else {
+            setTimeout(registrarEscudoRestSRE, 200);
+        }
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", registrarEscudoRestSRE);
+    } else {
+        registrarEscudoRestSRE();
     }
-
-    const emailDestino = inputMail.value.trim().toLowerCase();
-    if (btnAuth) { btnAuth.disabled = true; btnAuth.innerText = "Solicitando Magic Link..."; }
-
-    // RUTA REST DIRECTA A SUPABASE V1 (Sin pasar por Google Apps Script ni JSONP)
-    fetch(`${SUPABASE_API_URL}/otp`, {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify({ 
-            email: emailDestino,
-            options: { redirectTo: "https://orlandopena11.github.io/mapa/" }
-        })
-    })
-    .then(respuestaRaw => {
-        if (!respuestaRaw.ok) throw new Error("Error en canal de red de Supabase");
-        return respuestaRaw.json();
-    })
-    .then(datosServer => {
-        alert("¡ÉXITO TOTAL! El enlace de confirmación fue enviado a: " + emailDestino + "\nRevisa tu bandeja de entrada.");
-        
-        // Seteo de estado local inmutable
-        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
-        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
-        if (typeof state !== "undefined") state.usuarioActual = { correo: emailDestino, estado: "activo" };
-
-        const modalLogin = document.getElementById('mi-modal-login') || document.getElementById('modal-autenticacion-supabase');
-        if (modalLogin) { modalLogin.style.display = 'none'; }
-        
-        if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
-        if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
-    })
-    .catch(err => {
-        console.error("Fallo de comunicación REST:", err);
-        alert("Petición procesada de manera síncrona. Revisa tu bandeja de entrada en unos instantes en: " + emailDestino);
-        
-        // Liberación de contingencia comercial inmediata
-        if (typeof usuarioAutenticado !== "undefined") usuarioAutenticado = true;
-        if (typeof correoUsuarioLogueado !== "undefined") correoUsuarioLogueado = emailDestino;
-        const modalLogin = document.getElementById('mi-modal-login');
-        if (modalLogin) { modalLogin.style.display = 'none'; }
-    })
-    .finally(() => {
-        if (btnAuth) { btnAuth.disabled = false; btnAuth.innerText = "Enviar para confirmar email"; }
-    });
-
-    return false;
-}
-
-
-// INICIA ELIMINACIÓN DESDE ESTA LÍNEA LITERAMENTE:
-function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función iniciarSesionSocialSupabase]
-    
-    // Base de la URI para la autorización federada oficial de Supabase v1
-    let urlDestinoOAuth = `${supabaseUrl}/auth/v1/authorize?provider=${proveedorOAuth}&redirect_to=${encodeURIComponent("https://orlandopena11.github.io/mapa/")}`;
-    
-    // SRE ADVANCED FIX: Si el usuario elige Google, forzamos el parámetro prompt para exigir el selector de perfiles
-    if (proveedorOAuth === 'google') { // --> [Abre IF proveedor google]
-        urlDestinoOAuth += `&queryParams=${encodeURIComponent("prompt=select_account")}`;
-    } // <-- [Cierra IF proveedor google]
-    
-    console.warn("[SRE REDIRECT] Despachando hardware a pasarela OAuth con selector activo:", urlDestinoOAuth);
-    
-    // Ejecución segura y rígida en el hilo principal del dispositivo móvil
-    window.location.assign(urlDestinoOAuth);
-    
-} // <-- [Cierra limpiamente la función iniciarSesionSocialSupabase]
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: DISPARADOR OAUTH CON SELECCIÓN DE CUENTAS
+})(); // <-- [Cierra Ámbito Aislado de Memoria RAM]
 // =========================================================================
 
-
-
-// Vinculación explícita global superior
-/*window.ejecutarAutenticacionTunelRestSRE = ejecutarAutenticacionTunelRestSRE;
-window.iniciarSesionSocialSupabase = iniciarSesionSocialSupabase;
-    
-} // <-- SRE FIX: Cerramos la llave que se quedó abierta desde la línea 815
-*/
-// =========================================================================
-// TERMINA ELIMINACIÓN EN ESTA LÍNEA LITERAMENTE
+                    
