@@ -1566,6 +1566,7 @@ function interceptarFirewallSeguridadUsuario(listaUsuariosBackend, emailUsuarioL
     } // <--Aqui finaliza Bloque else remover banner si está limpio
 } // <--Aqui finaliza Función interceptarFirewallSeguridadUsuario
 
+
 function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEventosPopups
     const btnTourGaleria = document.getElementById("btn-solicitar-tour-galeria");
     const btnAgenteGaleria = document.getElementById("btn-contactar-agente-galeria");
@@ -1630,11 +1631,9 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
     const formTourCompleto = document.getElementById("form-solicitar-tour-completo");
     const formAgente = document.getElementById("form-contactar-agente");
 
-
-
-// =========================================================================
-// INICIO DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
-// =========================================================================
+    // =========================================================================
+    // INICIO DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
+    // =========================================================================
     if (formTourCompleto) { // --> [Abre IF formTourCompleto]
         formTourCompleto.addEventListener("submit", (e) => { 
             e.preventDefault();
@@ -1661,30 +1660,23 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         }); 
     } // <-- [Cierra IF formAgente]
 
-
-// =========================================================================
-// SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR PUNTERO DIRECTO ANTI-REFRESH
-// =========================================================================
-    // Buscamos el formulario y el botón de manera independiente para doble escudo
+    // =========================================================================
+    // SRE MONITOR: AUTENTICACIÓN HÍBRIDA 100% SRE POR PUNTERO DIRECTO ANTI-REFRESH
+    // =========================================================================
     const formLoginSupabase = document.getElementById("form-login-email-supabase");
     
     if (formLoginSupabase) { // --> [Abre IF bloqueo nativo de formulario]
         formLoginSupabase.onsubmit = (e) => { e.preventDefault(); e.stopPropagation(); return false; };
     } // <-- [Cierra IF bloqueo nativo de formulario]
 
-    // Interceptamos directamente el click del botón por su tipo de ejecución en el DOM
     const btnEnviarEmailAuth = document.querySelector('#form-login-email-supabase button[type="submit"]') || document.querySelector('button[type="submit"]');
-    console.warn("?? [SRE ESPÍA FRONT] Buscando botón físico de confirmación:", !!btnEnviarEmailAuth);
 
     if (btnEnviarEmailAuth) { // --> [Abre IF control puntero botón azul]
         btnEnviarEmailAuth.onclick = (e) => { // --> [Abre Callback click manual anti-recarga]
             e.preventDefault();
             e.stopPropagation();
             
-            console.log("%c ?? [SRE GATILLO CRÍTICO] ¡Pulsación capturada en frío! Frenando recarga de página.", "background: #d92323; color: #fff; padding: 4px;");
-            
             const inputEmail = document.getElementById("login-email-input") || document.getElementById("input-usuario-email");
-            console.log("[SRE ESPÍA INPUT] Caja de texto detectada en DOM:", !!inputEmail);
 
             if (!inputEmail || !inputEmail.value.trim()) {
                 alert("Por favor, ingrese un correo electrónico válido.");
@@ -1700,10 +1692,7 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
             let scriptExistente = document.getElementById(idScriptSeguridad);
             if (scriptExistente) { scriptExistente.remove(); }
 
-            // Callback receptor global del Apps Script
             window.procesarRespuestaMagicLinkREST = (respuestaServer) => {
-                console.log("?? [SRE ESPÍA RED] Respuesta síncrona del backend recibida:", respuestaServer);
-                
                 if (respuestaServer && respuestaServer.success) {
                     alert("¡ÉXITO TOTAL! El túnel inter-servidor procesó la solicitud. Revisa tu bandeja de entrada en: " + emailDestino);
                     
@@ -1720,15 +1709,12 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
                     if (typeof renderizarMapaZillow === 'function') { renderizarMapaZillow(); }
                     if (typeof actualizarBotonCuenta === 'function') { actualizarBotonCuenta(); }
                 } else {
-                    console.error("X [SRE ALERTA SERVER] Respuesta fallida o rechazo REST.");
                     alert("Error en el canal de autenticación. Código HTTP: " + (respuestaServer?.http_code || "Desconocido"));
                 }
 
                 btnEnviarEmailAuth.disabled = false; 
                 btnEnviarEmailAuth.innerText = "Enviar para confirmar email"; 
             };
-
-            console.warn("[SRE TRANSPORT] Inyectando script JSONP inter-servidor...");
             
             const scriptp = document.createElement('script');
             scriptp.id = idScriptSeguridad;
@@ -1760,14 +1746,7 @@ function inicializarEventosPopups() { // --> Aqui inicia Función inicializarEve
         };
     }
     
-// =========================================================================
-
-    
 } // <-- [Cierre ÚNICO y definitivo de la función contenedora inicializarEventosPopups]
-
-// =========================================================================
-// FIN DE INYECCIÓN FRONTEND: PARCHE SIMÉTRICO INTEGRAL ANTI-DUPLICADOS
-// =========================================================================
 
 
     // =========================================================================
