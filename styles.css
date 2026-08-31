@@ -1348,6 +1348,34 @@ div.leaflet-marker-icon.map-price-pill span {
     body .btn-conmutador-flotante-zillow {
         display: none;
     }
+    /* ========================================================================
+       INICIO DE CORRECCIÓN: APERTURA INTERACTIVA DE TARJETA POPUP SRE
+       ======================================================================== */
+    /* Fuerza de cascada limpia: Evita que el popup herede el ocultamiento del panel */
+    body div.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper .tarjeta-casa.popup-card {
+        display: block;
+        visibility: visible;
+        opacity: 1;
+        width: 100%;
+    }
+
+    /* Asegura que los datos internos de la propiedad se distribuyan con luz propia */
+    body div.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper .datos-casa {
+        display: block;
+        background-color: #ffffff;
+    }
+
+    /* Ajuste táctil para cerrar la tarjeta cómodamente con la 'X' nativa de Leaflet */
+    body div.zillow-custom-popup-wrapper a.leaflet-popup-close-button {
+        padding: 8px 12px;
+        font-size: 20px;
+        color: #334155;
+        z-index: 4600;
+    }
+    /* ========================================================================
+       FIN DE CORRECCIÓN: APERTURA INTERACTIVA DE TARJETA POPUP SRE
+       ======================================================================== */
+
 } // <-- [Cierra limpiamente la Capa Protectora para Pantallas de Escritorio]
 /* ========================================================================
    FIN DE PARCHE RESPONSIVO SRE: ADAPTACIÓN MÓVIL ESTILO ZILLOW - NO IMPORTANT
