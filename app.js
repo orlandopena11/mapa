@@ -2403,5 +2403,6 @@ function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función 
 window.iniciarSesionSocialSupabase = iniciarSesionSocialSupabase;
     
 } // <-- SRE FIX: Cerramos la llave que se quedó abierta desde la línea 815
+*/
 // =========================================================================
 // TERMINA ELIMINACIÓN EN ESTA LÍNEA LITERAMENTE
