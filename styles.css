@@ -1341,7 +1341,7 @@ div.leaflet-marker-icon.map-price-pill span {
         height: 160px; 
     }
 
-} // <-- [Cierra limpiamente la Capa Protectora para Pantallas Móviles]
+}  /* <-- [Cierra limpiamente la Capa Protectora para Pantallas Móviles] */
 
 /* Ocultamiento absoluto del botón flotante en pantallas grandes sin usar !important */
 @media (min-width: 769px) {  /* --> [Abre la Capa Protectora para Pantallas de Escritorio] */
@@ -1376,7 +1376,7 @@ div.leaflet-marker-icon.map-price-pill span {
        FIN DE CORRECCIÓN: APERTURA INTERACTIVA DE TARJETA POPUP SRE
        ======================================================================== */
 
-}  /* <-- [Cierra limpiamente la Capa Protectora para Pantallas de Escritorio]
+}  /* <-- [Cierra limpiamente la Capa Protectora para Pantallas de Escritorio] */
 /* ========================================================================
    FIN DE PARCHE RESPONSIVO SRE: ADAPTACIÓN MÓVIL ESTILO ZILLOW - NO IMPORTANT
    ======================================================================== */
