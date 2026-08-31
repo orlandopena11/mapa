@@ -666,14 +666,24 @@ function renderizarMapaZillow()
 
         contenedorPopupMaster.appendChild(datosPopup);
 
-        // Enlace nativo directo del Popup (Estabilizado sin inyecciones visuales en JS)
-        marcador.bindPopup(contenedorPopupMaster, {
-            maxWidth: 300,
-            minWidth: 260,
-            className: 'zillow-custom-popup-wrapper',
-            autoPan: true,
-            closeOnClick: false // <-- ESTO ELIMINA EL AUTOCIERRE POR PÉRDIDA DE FOCO DE RAÍZ
-        });
+        // =========================================================================
+        // INICIO DE INYECCIÓN FRONTEND: PARÁMETROS ADAPTATIVOS DE POPUP SRE
+        // =========================================================================
+        // Enlace nativo optimizado para móviles: Desactiva autoPan en pantallas táctiles
+        const esDispositivoMovil = window.innerWidth <= 768; // --> [Abre control de hardware]
+        
+        marcador.bindPopup(contenedorPopupMaster, { // --> [Abre inicialización bindPopup Leaflet]
+            maxWidth: esDispositivoMovil ? 420 : 300,
+            minWidth: esDispositivoMovil ? 280 : 260,
+            className: 'zillow-custom-popup-wrapper', // Conecta directamente con las hojas de estilo sin usar !important
+            autoPan: !esDispositivoMovil, // Evita los saltos bruscos de encuadre en el teléfono móvil
+            closeOnClick: false, // Elimina el autocierre por pérdida de foco de raíz
+            autoClose: false // Mantiene la tarjeta fija permitiendo interactuar con el carrusel y el corazón
+        }); // <-- [Cierra inicialización bindPopup Leaflet]
+        // =========================================================================
+        // FIN DE INYECCIÓN FRONTEND: PARÁMETROS ADAPTATIVOS DE POPUP SRE
+        // =========================================================================
+
 
         // 2. Escucha e Interceptor de clic para reorganizar el Catalogo Derecho
         marcador.on('click', (e) => { // Apertura marcador.on('click'
