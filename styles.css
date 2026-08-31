@@ -1232,3 +1232,124 @@ div.leaflet-marker-icon.map-price-pill span {
 /* ========================================================================
    FIN DEL MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES
    ======================================================================== */
+
+/* ========================================================================
+   INICIO DE PARCHE RESPONSIVO SRE: ADAPTACIÓN MÓVIL ESTILO ZILLOW
+   ======================================================================== */
+@media (max-width: 768px) { // --> [Abre la Capa Protectora para Pantallas Móviles]
+
+    /* Sobreescritura controlada: En celulares el split-view es relativo */
+    .split-view {
+        position: relative;
+        height: calc(100vh - 60px);
+        width: 100vw;
+    }
+
+    /* El mapa se estira al 100% de la pantalla en primera plana */
+    .map-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+        border-right: none !important;
+    }
+
+    /* El panel de tarjetas se esconde atrás del mapa por defecto */
+    .properties-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 4000; 
+        background-color: #ffffff;
+        display: none; 
+    }
+
+    /* Clase reactiva: Si JS activa '.ver-lista', el panel tapa al mapa */
+    .split-view.ver-lista .properties-panel {
+        display: block !important;
+    }
+
+    /* Botón flotante inferior idéntico al de la interfaz oficial de Zillow */
+    .btn-conmutador-flotante-zillow {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 4500; 
+        background-color: #ffffff;
+        color: #006aff;
+        border: 1px solid #ccd0d5;
+        padding: 10px 20px;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: sans-serif;
+        transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .btn-conmutador-flotante-zillow:active {
+        transform: translateX(-50%) scale(0.95);
+        background-color: #f7f8f9;
+    }
+
+    /* El popup nativo de Leaflet rompe su globo y se ancla abajo como tarjeta */
+    .zillow-custom-popup-wrapper.leaflet-popup {
+        position: fixed !important;
+        bottom: 80px !important; 
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        margin: 0 auto !important;
+        width: 90% !important; 
+        max-width: 420px !important;
+        transform: none !important; 
+        z-index: 4400 !important;
+    }
+
+    /* Ocultamos la flecha triangular clásica de la burbuja */
+    .zillow-custom-popup-wrapper .leaflet-popup-tip-container {
+        display: none !important;
+    }
+
+    /* Rediseño redondeado de la minitarjeta flotante */
+    .zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
+        border-radius: 16px !important; 
+        overflow: hidden !important;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.12) !important;
+        padding: 0 !important;
+        background-color: #ffffff !important;
+    }
+
+    .zillow-custom-popup-wrapper .leaflet-popup-content {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    .zillow-custom-popup-wrapper .tarjeta-casa.popup-card {
+        height: auto !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+
+    .zillow-custom-popup-wrapper .contenedor-foto {
+        height: 160px !important; 
+    }
+
+} // <-- [Cierra limpiamente la Capa Protectora para Pantallas Móviles]
+
+/* Ocultamiento absoluto del botón flotante en pantallas grandes */
+@media (min-width: 769px) { // --> [Abre la Capa Protectora para Pantallas de Escritorio]
+    .btn-conmutador-flotante-zillow {
+        display: none !important;
+    }
+} // <-- [Cierra limpiamente la Capa Protectora para Pantallas de Escritorio]
+/* ========================================================================
+   FIN DE PARCHE RESPONSIVO SRE: ADAPTACIÓN MÓVIL ESTILO ZILLOW
+   ======================================================================== */
+
