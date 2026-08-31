@@ -808,6 +808,9 @@ function renderizarCatalogoTarjetas()
 * ESPÍA CONTROLADO (Estrategia ESCONCOR): Callback de red global de Google Apps Script
 */
 // PARTE: 5-5 (CALLBACK DE RED CON ESPÍA CABEZÓN ACTIVADO)
+// =========================================================================
+// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
+// =========================================================================
 function procesarDatosDelMotor(data) 
 { // -->Aqui inicia Función procesarDatosDelMotor
     // Asignación de variables al estado global de la app
