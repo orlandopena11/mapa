@@ -2538,4 +2538,6 @@ function iniciarSesionSocialSupabase(proveedorOAuth) { // --> [Abre la función 
 // Vinculación explícita global superior
 window.ejecutarAutenticacionTunelRestSRE = ejecutarAutenticacionTunelRestSRE;
 window.iniciarSesionSocialSupabase = iniciarSesionSocialSupabase;
+    
+} // <-- SRE FIX: Cerramos la llave que se quedó abierta desde la línea 815
 // =========================================================================
