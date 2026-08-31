@@ -963,7 +963,19 @@ document.addEventListener("DOMContentLoaded", () => {
         // Sincronización nativa con el ID real del contenedor del mapa: 'map-instance'
         if (typeof L !== 'undefined' && document.getElementById('map-instance')) 
         { // -->Aqui inicia Condicional inicializar mapa Leaflet
-            window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+            /*window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13); */
+        // =========================================================================
+        // INICIO DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
+        // =========================================================================
+        window.map = L.map('map-instance', { // --> [Abre constructor nativo de Leaflet]
+            zoomControl: true,
+            tap: false, // <-- CLAVE INQUEBRANTABLE: Desactiva el doble clic fantasma en celulares y iPhones
+            tapTolerance: 30 // Da mayor margen de error al dedo del interesado al pulsar la burbuja
+        }).setView([-12.125, -76.995], 13); // <-- [Cierra constructor nativo de Leaflet]
+        // =========================================================================
+        // FIN DE INYECCIÓN FRONTEND: CONTROL INCONDICIONAL DE EVENTOS TÁCTILES Leaflet
+        // =========================================================================
+
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
         } // <--Aqui finaliza Condicional inicializar mapa Leaflet
 
