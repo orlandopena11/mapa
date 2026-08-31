@@ -816,60 +816,70 @@ function renderizarCatalogoTarjetas()
 
 
 // =========================================================================
-// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS (1/3)
+// INICIO DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
 // =========================================================================
 function procesarDatosDelMotor(data) 
 { // -->Aqui inicia Función procesarDatosDelMotor
     // Asignación de variables al estado global de la app
+    data = data || {};
     state.propiedades = data.propiedades || [];
     
-    // Invocación en ráfaga e inmediata de la UI en cuanto los datos pisan la RAM
-    if (typeof renderizarMapaZillow === "function") { // --> [Abre control de rendering live]
+    // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
+    console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
+    console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
+    console.log("Estructura completa entrante:", data);
     
-        // ESPÍA CABEZÓN 1: Inspecciona el JSON crudo del Apps Script antes de tocarlo
-        console.log("[SRE PERF] Datos consolidados en memoria RAM. Despachando mapa.");
-        console.warn(" [ESPÍA CABEZÓN 1] - RECIBIENDO DATOS CRUDOS DE GOOGLE SHEETS:");
-        console.log("Estructura completa entrante:", data);
-        
-        if (data && data.propiedades) 
-        { // -->Aqui inicia Condicional mostrar tabla interactiva
-            console.table(data.propiedades); 
-        } // <--Aqui finaliza Condicional mostrar tabla interactiva
-        console.log("====================================================");
+    if (data && data.propiedades) 
+    { // -->Aqui inicia Condicional mostrar tabla interactiva
+        console.table(data.propiedades); 
+    } // <--Aqui finaliza Condicional mostrar tabla interactiva
+    console.log("====================================================");
 
-        if (!data || !data.propiedades || !Array.isArray(data.propiedades)) 
-        { // -->Aqui inicia Condicional validar estructura rota
-            console.error("X [ESPÍA CABEZÓN] - ERROR: Estructura del backend corrupta.");
-            return;
-        } // <--Aqui finaliza Condicional validar estructura rota
+    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) 
+    { // -->Aqui inicia Condicional validar estructura rota
+        console.error("X [ESPÍA CABEZÓN] - ERROR: Estructura del backend corrupta.");
+        return;
+    } // <--Aqui finaliza Condicional validar estructura rota
 
-                // Ejecuta el mapeo relacional hacia Cloudinary
-        state.propiedades = data.propiedades.map(normalizarPropiedad);
+    // SRE CORE LIVE INJECTION: Forzamos la inicialización del objeto de filtros en RAM
+    if (!state.filtros) { state.filtros = {}; }
+    state.filtros.estado = state.filtros.estado || 'Venta';
+    state.filtros.precioMin = state.filtros.precioMin || 0;
+    state.filtros.precioMax = state.filtros.precioMax || Infinity;
+    
+    // Forzamos la repoblación del Set en la RAM para romper el bloqueo de la línea 534
+    state.filtros.tiposListado = new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca']);
 
-        // ESPÍA CABEZÓN 2: Inspecciona cómo quedó el estado protegido después de la limpieza
-        console.log("====================================================");
-        console.info(" [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
-        console.log("Arreglo procesado final:", state.propiedades);
+    // Ejecuta el mapeo relacional hacia Cloudinary
+    state.propiedades = data.propiedades.map(normalizarPropiedad);
 
-        if (state.propiedades.length > 0) 
-        { // -->Aqui inicia Condicional comprobar fotos del primer índice
-            console.log(" REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
-            console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
-        } // <--Aqui finaliza Condicional comprobar fotos del primer índice
+    // ESPÍA CABEZÓN 2: Inspecciona cómo quedó el estado protegido después de la limpieza
+    console.log("====================================================");
+    console.info(" [ESPÍA CABEZÓN 2] - ESTADO PURIFICADO EN MEMORIA RAM (STATE):");
+    console.log("Arreglo procesado final:", state.propiedades);
 
-                // Ejecuta el renderizado sincronizado de las vistas
+    if (state.propiedades.length > 0) 
+    { // -->Aqui inicia Condicional comprobar fotos del primer índice
+        console.log(" REVISIÓN DE FOTOS DE LA PRIMERA CASA (PROP-001):");
+        console.log("¿Qué tiene el arreglo de fotos adentro?:", state.propiedades[0].fotos);
+    } // <--Aqui finaliza Condicional comprobar fotos del primer índice
+
+    // Ejecuta el renderizado sincronizado de las vistas de forma directa y síncrona
+    if (typeof renderizarMapaZillow === "function") {
         renderizarMapaZillow();
+    }
+    if (typeof renderizarCatalogoTarjetas === "function") {
         renderizarCatalogoTarjetas();
+    }
 
-        // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
-        interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-        
-    } // <-- SRE FIX: Cierre riguroso de la condicional del IF de renderizarMapaZillow
+    // Invoca el firewall pasando la lista y el correo del usuario logueado en Supabase
+    interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
     
 } // <--Aqui finaliza Función procesarDatosDelMotor
 // =========================================================================
-// FIN DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS (3/3)
+// FIN DE PARCHE PERF SRE: RENDERIZADO AL RETORNO DE DATOS MAESTROS
 // =========================================================================
+
 
 
 
