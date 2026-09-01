@@ -34,14 +34,11 @@ body, html {
     width: 100vw;
 }
 
-
-
-
 /* ==========================================================================
-   REPARACIÓN NATURAL: ESPECIFICIDAD DE SELECTORES PARA EL LOGO Y EL MAPA
+   ARQUITECTURA DE CONTENEDORES UNIFICADA (LÓGICA NATURAL CASCADA)
    ========================================================================== */
 
-/* 1. Control del contenedor de la barra superior */
+/* 1. Barra de Filtros Superior Fija */
 header.navbar-global {
     position: fixed;
     top: 0;
@@ -53,26 +50,26 @@ header.navbar-global {
     justify-content: flex-start;
     gap: 16px;
     padding: 10px 24px;
-    background-color: var(--blanco, #ffffff);
-    border-bottom: 1px solid var(--gris-borde, #e2e8f0);
-    box-shadow: var(--shadow-soft, 0 4px 12px rgba(0, 0, 0, 0.05));
+    background-color: var(--blanco);
+    border-bottom: 1px solid var(--gris-borde);
+    box-shadow: var(--shadow-soft);
     z-index: 2000;
     box-sizing: border-box;
+    white-space: nowrap;
 }
 
-/* 2. Especificidad pura: Se ataca la imagen desde su etiqueta padre */
-header.navbar-global img.navbar-brand-logo,
-header.navbar-global #app-main-logo {
+/* 2. Dimensionamiento del Logo Comercial mediante Especificidad de ID */
+header.navbar-global #app-main-logo,
+header.navbar-global .navbar-brand-logo {
     height: 32px;
-    width: 120px;
+    width: auto;
     max-height: 32px;
-    max-width: 120px;
     object-fit: contain;
     flex-shrink: 0;
     display: inline-block;
 }
 
-/* 3. Posicionamiento del cuerpo de la aplicación */
+/* 3. Contenedor Maestro de Panel Dividido (Split-View Desktop) */
 main.split-view {
     display: flex;
     position: absolute;
@@ -85,107 +82,35 @@ main.split-view {
     box-sizing: border-box;
 }
 
-/* 4. Dimensionamiento del mapa y el panel */
+/* 4. Distribución Proporcional e Inyección Cartográfica */
 main.split-view .map-wrapper {
     width: 45%;
     height: 100%;
     position: relative;
+    border-right: 1px solid var(--gris-borde);
+    box-sizing: border-box;
 }
 
 main.split-view #map-instance {
     width: 100%;
     height: 100%;
+    min-height: 100%;
     display: block;
+    z-index: 1;
 }
 
 main.split-view .properties-panel {
     width: 55%;
     height: 100%;
     overflow-y: auto;
-    background-color: var(--blanco, #ffffff);
+    background-color: var(--blanco);
     padding: 24px;
     box-sizing: border-box;
 }
 
-/* ==========================================================================
-   CORRECCIÓN QUIRÚRGICA: DIMENSIONAMIENTO RIGIDO DE LOGO Y MAPA BASE
-   ========================================================================== */
-
-/* 1. Encapsular el logo para que mida exactamente 32px de alto como en Zillow */
-.navbar-brand-logo, #app-main-logo {
-    height: 32px !important;
-    width: auto !important;
-    max-height: 32px !important;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-/* 2. Forzar al mapa a ocupar el espacio correcto y asegurar que sea visible */
-.split-view {
-    display: flex;
-    flex: 1;
-    height: calc(100vh - 60px);
-    margin-top: 60px; /* Empuja el mapa debajo de la barra de filtros */
-    width: 100vw;
-    position: relative;
-}
-
-.map-wrapper {
-    width: 45%;
-    height: 100%;
-    min-height: calc(100vh - 60px);
-    position: relative;
-}
-
-#map-instance {
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
-    display: block !important;
-    z-index: 1;
-}
-
-.properties-panel {
-    width: 55%;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #ffffff;
-    padding: 24px;
-}
 
 
-/* INTERFAZ SPLIT-VIEW (VISTA PREDETERMINADA PARA LAPTOPS) */
-/*.split-view {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    position: relative;
-    height: calc(100vh - 60px);
-    width: 100vw;
-}  
 
-.map-wrapper {
-    width: 45%;
-    height: 100%;
-    position: relative;
-    border-right: 1px solid var(--gris-borde);
-}
-
-#map-instance {
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-    display: block;
-    z-index: 1;
-}  
-
-.properties-panel {
-    width: 55%;
-    height: 100%;
-    overflow-y: auto;
-    background-color: #ffffff;
-    padding: 24px;
-}  */
 
 .properties-grid {
     display: grid;
@@ -519,34 +444,35 @@ div.leaflet-marker-icon.map-price-pill {
         display: none !important; /* Apaga el panel rígido derecho en el celular */
     }
 
-    /* 3. ARQUITECTURA DE LA TARJETA FLOTANTE OVERLAY (ESTILO ZILLOW MÓVIL) */
+        /* 3. ARQUITECTURA DE LA TARJETA FLOTANTE OVERLAY (ESTILO ZILLOW MÓVIL) */
     #tarjeta-flotante-movil-sre {
         position: absolute;
         bottom: 20px;
         left: 5%;
         width: 90%;
-        background-color: #ffffff;
+        background-color: var(--blanco);
         border-radius: 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        z-index: 4000; /* Flota holgadamente por encima del mapa Leaflet */
+        z-index: 4000;
         padding: 14px;
         box-sizing: border-box;
         transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
         cursor: pointer;
     }
 
-    /* Estados de animación controlados por el cambio de clase en app.js */
-    .tarjeta-movil-sre-oculta {
+    /* Control de visibilidad mediante herencia de clase dinámicamente inyectada */
+    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-oculta {
         transform: translateY(150%);
         opacity: 0;
         pointer-events: none;
     }
 
-    .tarjeta-movil-sre-visible {
+    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-visible {
         transform: translateY(0);
         opacity: 1;
         pointer-events: auto;
     }
+
 
     /* Botón X de Cierre en la Esquina Superior Derecha de la Tarjeta Flotante */
     .btn-cerrar-sre-flotante {
