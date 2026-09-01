@@ -568,17 +568,29 @@ function evaluarCriteriosDeFiltrado(prop) {
     const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    if (checkMaestro && checkMaestro.checked === true) {} 
-    else if (Array.from(checkboxesFisicosEnPantaclean).filter(cb => cb.checked).length === 0) return false;
-    else {
+    if (checkMaestro && checkMaestro.checked === true) {
+        // Selecciona todos habilitado: Permite el paso libre de la propiedad
+    } else if (Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length === 0) {
+        // Si no hay ningún checkbox seleccionado en la UI, no muestra nada (firewall preventivo)
+        return false;
+    } else {
         const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
         const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
         if (situacionBD !== filtroUnicoUI) return false;
     }
     return true;
-}
+} // <-- Cierra de forma limpia evaluarCriteriosDeFiltrado
 
-function ejecutarTuberiaSincronizada() { renderizarMapaZillow(); renderizarCatalogoTarjetas(); }
+// Declaración e inicialización robusta de la tubería de sincronización mutua
+function ejecutarTuberiaSincronizada() { 
+    if (typeof renderizarMapaZillow === "function") {
+        renderizarMapaZillow(); 
+    }
+    if (typeof renderizarCatalogoTarjetas === "function") {
+        renderizarCatalogoTarjetas(); 
+    }
+} // <-- Cierra ejecutarTuberiaSincronizada
+
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
 function inicializarEventosPopups() {
