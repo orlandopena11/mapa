@@ -564,22 +564,33 @@ function evaluarCriteriosDeFiltrado(prop) {
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
+    // Solución de Carga en Frío: Validación dinámica de Filtros Avanzados sin congelamiento
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-    const checkboxActivo = Array.from(checkboxesFisicosEnPantalla).find(cb => cb.checked);
+    const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
+    // Regla de Negocio: Si "Seleccione todos" está activo o no se ha interactuado, no se bloquea la data
     if (checkMaestro && checkMaestro.checked === true) {
-        // Selecciona todos habilitado: Permite el paso libre de la propiedad
-    } else if (Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked).length === 0) {
-        // Si no hay ningún checkbox seleccionado en la UI, no muestra nada (firewall preventivo)
+        return true;
+    } 
+    
+    // Si el usuario desmarcó todo manualmente en la UI, se aplica el firewall visual restrictivo
+    if (checkboxesMarcados.length === 0) {
         return false;
-    } else {
-        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-        const filtroUnicoUI = checkboxActivo ? String(checkboxActivo.value).toLowerCase().trim() : "";
-        if (situacionBD !== filtroUnicoUI) return false;
     }
+
+    // Filtrar de forma natural evaluando la columna situacion_propiedad de Supabase PostgreSQL
+    if (checkboxesMarcados.length > 0 && (!checkMaestro || !checkMaestro.checked)) {
+        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+        // Evaluar si la situación de la propiedad está contenida en el set de filtros activos
+        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
+        if (!coincideFiltro) return false;
+    }
+
     return true;
+    
 } // <-- Cierra de forma limpia evaluarCriteriosDeFiltrado
+
 
 // Declaración e inicialización robusta de la tubería de sincronización mutua
 function ejecutarTuberiaSincronizada() { 
