@@ -1,10 +1,5 @@
-/* ==========================================================================
-   PARTE: 1-5 (VARIABLES Y RESETS NATIVOS)
-   Arquitectura de Diseño Fluido Estilo Zillow V2 - Sin Colisiones de Cascada
-   ========================================================================== */
-
+/* PARTE 1 DE 5: ARQUITECTURA DE DISEÑO FLUIDO Y RESETS MAESTROS */
 :root {
-    /* Paleta de Colores Oficiales */
     --azul-zillow: #006aff;
     --azul-oscuro: #002e50;
     --rojo-alerta: #d92323;
@@ -12,17 +7,12 @@
     --gris-fondo: #f6f6f9;
     --gris-borde: #e2e8f0;
     --blanco: #ffffff;
-    
-    /* Tipografía y Contraste Semántico */
     --texto-principal: #111827;
     --texto-secundario: #475569;
-    
-    /* Capas de Sombras Flotantes */
     --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
     --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
-/* Reset Estructural Obligatorio */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -37,7 +27,6 @@ body, html {
     overflow: hidden;
 }
 
-/* Contenedor Semántico Global */
 .app-container {
     display: flex;
     flex-direction: column;
@@ -45,96 +34,7 @@ body, html {
     width: 100vw;
 }
 
-
-/* ==========================================================================
-   PARTE: 2-5 (BARRA SUPERIOR ALINEADA EN UNA SOLA LÍNEA ESTILO ZILLOW)
-   ========================================================================== */
-
-.navbar-global {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 60px;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    padding: 10px 24px;
-    background-color: var(--blanco);
-    border-bottom: 1px solid var(--gris-borde);
-    box-shadow: var(--shadow-soft);
-    z-index: 2000; /* Prioridad sobre Leaflet (1000) y paneles SPA (5000 al activarse) */
-    white-space: nowrap;
-    box-sizing: border-box;
-    pointer-events: none; /* Hace invisible la barra para que los clics pasen directo al mapa */
-}
-
-/* Permitimos que solo los elementos hijos interactivos (filtros, inputs y botones) escuchen clics */
-.navbar-global > * {
-    pointer-events: auto;
-}
-
-
-.navbar-brand-logo {
-    height: 32px;
-    width: auto;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-/* Fila de controles alineada de forma horizontal e indestructible */
-.search-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    flex-wrap: nowrap;
-}
-
-.search-input {
-    padding: 8px 14px;
-    border: 1px solid var(--gris-borde);
-    border-radius: 8px;
-    font-size: 14px;
-    width: 220px;
-    flex-shrink: 0;
-}
-
-.filter-dropdown-wrapper {
-    position: relative;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-/* Píldoras ovaladas idénticas a la interfaz oficial de Zillow */
-.filter-btn {
-    background-color: var(--blanco);
-    border: 1px solid var(--gris-borde);
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--texto-principal);
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s, border-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-btn:hover {
-    border-color: var(--azul-zillow);
-    background-color: rgba(0, 106, 255, 0.04);
-}
-
-.filter-btn.active {
-    border-color: var(--azul-zillow);
-    background-color: rgba(0, 106, 255, 0.08);
-    color: var(--azul-zillow);
-}
-
-/* Core del Split-View */
+/* INTERFAZ SPLIT-VIEW (VISTA PREDETERMINADA PARA LAPTOPS) */
 .split-view {
     display: flex;
     flex: 1;
@@ -173,79 +73,111 @@ body, html {
     gap: 20px;
 }
 
-/* 1. Oculta todos los paneles de opciones por defecto al cargar la página (Limpio) */
+/* PARTE 2 DE 5: DISEÑO DE PÍLDORAS DE FILTRADO Y ALINEACIÓN DE DROPDOWNS */
+.navbar-global {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 10px 24px;
+    background-color: var(--blanco);
+    border-bottom: 1px solid var(--gris-borde);
+    box-shadow: var(--shadow-soft);
+    z-index: 2000;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
+
+.navbar-brand-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.search-input {
+    padding: 8px 14px;
+    border: 1px solid var(--gris-borde);
+    border-radius: 8px;
+    font-size: 14px;
+    width: 220px;
+}
+
+.filter-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-btn {
+    background-color: var(--blanco);
+    border: 1px solid var(--gris-borde);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texto-principal);
+    border-radius: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-btn:hover, .filter-btn.active {
+    border-color: var(--azul-zillow);
+    background-color: rgba(0, 106, 255, 0.04);
+}
+
 .dropdown-content-panel {
     display: none; 
     position: absolute;
     top: 100%; 
     left: 0;
-    z-index: 9999; /* Prioridad por encima de los marcadores del mapa Leaflet */
+    z-index: 9999;
     background-color: #ffffff;
-    min-width: 200px;
+    min-width: 240px;
     border-radius: 8px;
     padding: 16px;
     margin-top: 4px;
-    /* Eliminamos box-shadow de aquí para que no genere líneas fantasmas al estar oculto */
+    border: 1px solid #e2e8f0;
 }
-    
-/* 2. Muestra el panel y aplica la sombra ÚNICAMENTE cuando está activo y visible */
+
 .dropdown-content-panel.show {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Espaciado uniforme entre En venta, Alquiler y Vendida */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* La sombra nace exclusivamente aquí */
-    border: 1px solid #e2e8f0; /* Borde gris tenue estructural */
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-
-/* =========================================================================
-   ALINEACIÓN VERTICAL NATIVA PARA CONTENIDOS INTERNOS DE FILTROS
-   ========================================================================= */
-
-/* 1. Fuerza a que los grupos de opciones (radios y checkboxes) se listen uno debajo del otro */
-div.dropdown-content-panel div.filter-group-options {
+.filter-group-options {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px; /* Espaciado uniforme y elegante entre cada opción */
+    gap: 10px;
     width: 100%;
 }
 
-/* 2. Asegura que las etiquetas de texto no se encimen ni se corten horizontalmente */
-label.filter-checkbox-label {
+.filter-checkbox-label {
     display: flex;
     align-items: center;
     gap: 8px;
-    white-space: nowrap; /* Evita que el texto salte de línea de forma desordenada */
     cursor: pointer;
-    font-size: 14px;
+    font-size: 13px;
     color: #334155;
 }
 
-/* 3. Ampliamos sutilmente el ancho de los menús complejos para albergar textos largos */
-#dropdown-status, #dropdown-more-filters, #dropdown-type {
-    min-width: 240px; /* Le da el espacio necesario a "Nueva construcción" o "Para el alquiler" */
-}
-
-/* Forzamos el contenedor del filtro a tener posición relativa para anclar el despliegue */
-.filter-buttons-group,
-.filter-group-options {
-    position: relative;
-}
-
-/* Alineación limpia del menú hacia la izquierda tomando como eje el borde derecho del botón */
-#dropdown-more-filters {
-    position: absolute;
-    right: 0;
-    left: auto;
-    transform: translateX(-15px); /* Desplazamiento extra de seguridad hacia el centro */
-}
-
-/* ==========================================================================
-   PARTE: 3-5 (MOTOR DEL MICRO-CARRUSEL SLIDER)
-   Arquitectura del Riel del Deslizador y Animaciones de Transición Fluida
-   ========================================================================== */
-
+/* PARTE 3 DE 5: CONSTRUCTOR DE RIEL MULTIMEDIA TRANSICIÓN TRIDIMENSIONAL INFALIBLE */
 .tarjeta-casa {
     background-color: var(--blanco);
     border: 1px solid var(--gris-borde);
@@ -254,7 +186,7 @@ label.filter-checkbox-label {
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    height: 380px;
+    height: 340px;
     position: relative;
 }
 
@@ -263,642 +195,106 @@ label.filter-checkbox-label {
     box-shadow: var(--shadow-card);
 }
 
-/* Viewport Rígido del Carrusel */
 .contenedor-foto {
     width: 100%;
-    height: 200px;
+    height: 180px;
     background-color: var(--gris-fondo);
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
 }
 
-/* Riel Continuo Desplazable por Transform */
 .carrusel-imagenes {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
-}
-
-.carrusel-imagenes img {
-    height: 100%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-/* Botones de Navegación Atenuados del Carrusel */
-.flecha-carrusel {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.45);
-    color: var(--blanco);
-    border: none;
-    width: 28px;
-    height: 36px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    font-weight: bold;
-    opacity: 0;
-    transition: opacity 0.2s ease, background-color 0.2s ease;
-    z-index: 15;
-}
-
-.flecha-carrusel:hover {
-    background-color: rgba(0, 0, 0, 0.75);
-}
-
-.flecha-izq {
-    left: 0;
-    border-radius: 0 4px 4px 0;
-}
-
-.flecha-der {
-    right: 0;
-    border-radius: 4px 0 0 4px;
-}
-
-/* Revelado Reactivo de Flechas al Pasar el Cursor */
-.contenedor-foto:hover .flecha-carrusel {
-    opacity: 1;
-}
-
-/* Contenedor Flotante Central de Puntos (Dots Indicadores) */
-.indicadores-carrusel {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.25);
-    padding: 4px 8px;
-    border-radius: 10px;
-}
-
-.punto-indicador {
-    width: 6px;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    transition: transform 0.2s ease, background-color 0.2s ease;
-}
-
-.punto-indicador.activo {
-    background-color: var(--blanco);
-    transform: scale(1.2);
-}
-
-/* ==========================================================================
-   PARTE: 4-5 (CAPAS FLOTANTES Y DETALLE)
-   Diseño de Etiquetas Informativas Coincidentes con la Captura Real de Zillow
-   ========================================================================== */
-
-/* Badges de Estado (Esquina Superior Izquierda) */
-.badge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background-color: var(--gris-neutro);
-    color: var(--blanco);
-    padding: 4px 8px;
-    font-size: 11px;
-    font-weight: 700;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    z-index: 20;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.badge-nuevo {
-    background-color: var(--rojo-alerta);
-}
-
-.badge-vendido {
-    background-color: var(--gris-neutro);
-}
-
-/* Botón Favorito de Corazón Flotante (Esquina Superior Derecha) */
-.corazon-favorito {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255, 255, 255, 0.85);
-    border: none;
-    border-radius: 50%;
-    width: 34px;
-    height: 34px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: var(--texto-secundario);
-    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-    z-index: 20;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.corazon-favorito:hover {
-    transform: scale(1.1);
-    background-color: var(--blanco);
-}
-
-.corazon-favorito.activo {
-    color: var(--rojo-alerta);
-}
-
-/* Letrero Descriptivo Atenuado (Pie Interno de la Foto) */
-.letrero-descriptivo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-    color: var(--blanco);
-    padding: 20px 12px 8px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    z-index: 10;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Bloque Inferior de Contenido de Texto */
-.datos-casa {
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex: 1;
-}
-
-.precio {
-    font-size: 22px;
-    font-weight: 800;
-    color: var(--texto-principal);
-    letter-spacing: -0.5px;
-}
-
-/* ==========================================================================
-   PARTE: 5-5 (BURBUJAS MAPA Y POPUP INJECT)
-   Sobreescrituras Estrictas de Leaflet para Inyección Limpia de Tarjetas Dom
-   ========================================================================== */
-
-/* Píldoras de Precio de Alta Especificidad NAtiva */
-div.leaflet-marker-icon.map-price-pill {
-    background-color: var(--azul-oscuro);
-    color: var(--blanco);
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-    text-align: center;
-    border-radius: 14px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--blanco);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.15s ease, background-color 0.15s ease;
-    cursor: pointer;
-    z-index: 1000;
-}
-
-div.leaflet-marker-icon.map-price-pill.nuevo {
-    background-color: var(--rojo-alerta);
-}
-
-div.leaflet-marker-icon.map-price-pill:hover {
-    transform: scale(1.1);
-    background-color: var(--azul-zillow);
-    z-index: 2000;
-}
-
-div.leaflet-marker-icon.map-price-pill span {
-    color: var(--blanco);
-    font-weight: 700;
-    pointer-events: none; /* Evita interrupción del clic por capas internas */
-}
-
-/* Reseteo Quirúrgico de los Contenedores Nativos de Leaflet Popups */
-.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
-    padding: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
-}
-
-.zillow-custom-popup-wrapper .leaflet-popup-content {
-    margin: 0;
-    width: 280px; /* Dimensionamiento adaptativo idéntico al catálogo */
-}
-
-/* Adaptación Milimétrica de la Tarjeta al ser Inyectada en el Popup */
-.zillow-custom-popup-wrapper .tarjeta-casa.popup-card {
-    border: none;
-    border-radius: 0;
-    height: 320px; /* Compactación vertical para optimizar espacio del mapa */
-}
-
-
-.hidden-layout, .oculta-global {
-    display: none !important;
-}
-
-
-/* Nuevas clases estructurales para la Pantalla 3 de Galería Expandida */
-
-.galeria-izquierda-mosaico {
-    width: 65%;
-    height: 100%;
-    overflow-y: scroll;
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-.panel-derecho-comercial {
-    width: 35%;
-    height: 100%;
-    background-color: var(--blanco);
-    border-left: 1px solid var(--gris-borde);
-    padding: 24px;
-    box-sizing: border-box;
-    position: sticky;
-    top: 0;
-}
-
-/* ========================================================================
-   [SRE FIX] CONTROL DE VISIBILIDAD DE LA CABECERA COMPARTIDA
-   Asegura que el header comercial no colisione con el menú de filtros inicial
-   ======================================================================== */
-
-.nav-ficha-zillow {
-    position: fixed; 
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 60px;
-    background-color: var(--blanco, #ffffff);
-    border-bottom: 1px solid var(--gris-borde, #e2e2e2);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    box-sizing: border-box;
-    z-index: 5500; 
-}
-
-/* Clase utilitaria de ocultamiento absoluto por defecto */
-.nav-ficha-zillow.oculta-global {
-    display: none !important; /* Forzado exclusivamente aquí para evitar parpadeos en el inicio */
-}
-
-
-/* Modificamos el contenedor inferior de texto para espaciarse correctamente */
-.mosaico-galeria-zillow {
-    margin-top: 16px;
-    padding: 0 40px; /* Trasladamos el padding elegante aquí */
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    max-height: 480px;
-    box-sizing: border-box;
-}
-
-/* ========================================================================
-   [NUEVA INSERCIÓN] ALINEACIÓN EXACTA DEL MOSAICO FOTOGRÁFICO
-   ======================================================================== */
-
-/* Foto principal de la izquierda (50% del ancho) */
-.mosaico-galeria-zillow .foto-principal-bloque {
-    flex: 1;
-    width: 50%;
-    height: 480px;
-}
-
-.mosaico-galeria-zillow .foto-principal-bloque img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 4px 0 0 4px;
-}
-
-/* Contenedor de las 4 fotos secundarias de la derecha (50% del ancho) */
-.mosaico-galeria-zillow .fotos-secundarias-grid {
-    flex: 1;
-    width: 50%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 8px;
-    height: 480px;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-.mosaico-galeria-zillow .fotos-secundarias-grid .caja-minifoto {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    box-sizing: border-box;
-}
-
-.mosaico-galeria-zillow .fotos-secundarias-grid .caja-minifoto img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-/* Ajustes de bordes redondeados para simetría pura */
-.mosaico-galeria-zillow .fotos-secundarias-grid .caja-minifoto:nth-child(2) img {
-    border-radius: 0 4px 0 0;
-}
-.mosaico-galeria-zillow .fotos-secundarias-grid .caja-minifoto:nth-child(4) img {
-    border-radius: 0 0 4px 0;
-}
-
-.contenedor-ficha-datos-texto {
-    padding: 0 40px;
-}
-
-/* Dimensionamiento estricto de tu logo local */
-.logo-centro-ficha {
-    height: 34px;
-    width: auto;
-    object-fit: contain;
-}
-
-/* Contenedor derecho de acciones comerciales */
-.acciones-nav-ficha {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.btn-nav-accion {
-    background: none;
-    border: none;
-    color: var(--azul-zillow);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    transition: background-color 0.15s ease;
-}
-
-.btn-nav-accion:hover {
-    background-color: rgba(0, 106, 255, 0.05);
-}
-
-.btn-nav-accion span {
-    font-family: inherit;
-}
-
-/* Comportamiento dinámico para el botón de favorito guardado */
-.btn-corazon-ficha.activo {
-    color: var(--rojo-alerta);
-}
-
-.bloque-foto-principal {
-    width: 50%;
-    height: 100%;
-    position: relative;
-    background-color: var(--gris-fondo);
-}
-
-.bloque-foto-principal img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.bloque-secundarias-grid {
-    width: 50%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.caja-minifoto-item {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    background-color: var(--gris-fondo);
-}
-
-.caja-minifoto-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* BOTÓN DE INTERACCIÓN: "Ver las N° fotos" */
-.btn-ver-mas-fotos {
-    position: absolute;
-    bottom: 16px;
-    right: 16px;
-    background-color: #ffffff;
-    color: #111111;
-    border: 1px solid #2c2c2c;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    z-index: 100;
-    transition: background-color 0.15s ease, transform 0.15s ease;
-}
-
-.btn-ver-mas-fotos:hover {
-    background-color: #f4f4f4;
-    transform: scale(1.02);
-}
-
-/* Bloque de Información Inferior */
-.contenedor-ficha-datos-texto {
-    margin-top: 24px;
-}
-
-.fila-metricas-zillow {
-    display: flex;
-    align-items: baseline;
-    gap: 24px;
-    margin-bottom: 6px;
-}
-
-.texto-precio-ficha {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--texto-principal);
-}
-
-.texto-specs-ficha {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--texto-secundario);
-}
-
-.fila-direccion-ficha {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--texto-secundario);
-}
-
-/* ==========================================================================
-   PARTE: 4-5 (COMPONENTE AVANZADO: MICRO-CARRUSEL INTERACTIVO DOBLE - CLEAN)
-   ========================================================================== */
-
-/* 1. MÁSCARA DEL VISOR (Aplica tanto a las tarjetas de la derecha como a los popups) */
-.tarjeta-casa .contenedor-foto,
-.zillow-custom-popup-wrapper .contenedor-foto {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    background-color: #f1f5f9;
-}
-
-/* 2. RIEL DE IMÁGENES (FLEXBOX PURO): Fuerza la alineación horizontal de las 5 fotos en una fila */
-.tarjeta-casa .carrusel-imagenes,
-.zillow-custom-popup-wrapper .carrusel-imagenes {
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     height: 100%;
     width: 100%;
-    margin: 0;
-    padding: 0;
     transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Reducción estricta y colapsado de cada una de las 5 fotos dentro del flex row */
-.tarjeta-casa .carrusel-imagenes img,
-.zillow-custom-popup-wrapper .carrusel-imagenes img {
+.carrusel-imagenes img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     flex-shrink: 0;
-    display: block;
 }
 
-/* 3. CONTROLES INTERACTIVOS FLOTANTES (Flechas laterales < y > en capas superiores) */
-.tarjeta-casa .flecha-carrusel,
-.zillow-custom-popup-wrapper .flecha-carrusel {
+.flecha-carrusel {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.85);
+    background-color: rgba(255, 255, 255, 0.9);
     color: #1e293b;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    width: 28px;
-    height: 28px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 12px;
-    z-index: 10; /* Eleva las flechas limpiamente por encima de la foto de Cloudinary */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-    transition: background-color 0.2s, color 0.2s;
+    font-size: 11px;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tarjeta-casa .flecha-carrusel:hover,
-.zillow-custom-popup-wrapper .flecha-carrusel:hover {
-    background-color: #ffffff;
-    color: #006aff;
+.contenedor-foto:hover .flecha-carrusel {
+    opacity: 1;
 }
 
-.tarjeta-casa .flecha-izq, .zillow-custom-popup-wrapper .flecha-izq { left: 8px; }
-.tarjeta-casa .flecha-der, .zillow-custom-popup-wrapper .flecha-der { right: 8px; }
+.flecha-izq { left: 8px; }
+.flecha-der { right: 8px; }
 
-/* 4. COMPONENTES FLOTANTES ACCESORIOS (Letreros descriptivos, Corazones y Badges) */
-.tarjeta-casa .letrero-descriptivo,
-.zillow-custom-popup-wrapper .letrero-descriptivo {
+.indicadores-carrusel {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-    color: #ffffff;
-    padding: 24px 12px 6px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    z-index: 5;
-    pointer-events: none;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 5px;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 3px 6px;
+    border-radius: 8px;
 }
 
-.tarjeta-casa .corazon-favorito,
-.zillow-custom-popup-wrapper .corazon-favorito {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: #d92323;
-    font-size: 22px;
-    cursor: pointer;
-    z-index: 8;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-    padding: 0;
-    line-height: 1;
+.punto-indicator {
+    width: 5px;
+    height: 5px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
 }
 
-.tarjeta-casa .badge,
-.zillow-custom-popup-wrapper .badge {
+.punto-indicator.activo {
+    background-color: var(--blanco);
+}
+
+.etiqueta-foto-zillow {
     position: absolute;
     top: 10px;
     left: 10px;
-    color: #ffffff;
-    padding: 3px 8px;
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #1e293b;
+    padding: 4px 8px;
     font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     border-radius: 3px;
-    z-index: 8;
 }
 
-/* --- Desplazamiento del Riel controlado por Atributos de Datos --- */
+/* TRANSFORMACIONES MODULARES POR ATRIBUTO DE DATO */
 .carrusel-imagenes[data-foto-activa="0"] { transform: translateX(0%); }
 .carrusel-imagenes[data-foto-activa="1"] { transform: translateX(-100%); }
 .carrusel-imagenes[data-foto-activa="2"] { transform: translateX(-200%); }
 .carrusel-imagenes[data-foto-activa="3"] { transform: translateX(-300%); }
 .carrusel-imagenes[data-foto-activa="4"] { transform: translateX(-400%); }
 
-/* --- Altura del carrusel en el contexto del Popup del Mapa --- */
-.popup-carrusel-context {
-    height: 150px;
-}
-
-
-/**
- * REGLAS DE DISEÑO DE BURBUJAS DE MAPA (SRE REFACTOR)
- * Mapea los tres colores de transacción requeridos usando los códigos hexadecimales exactos.
- * Se añade al final de styles.css para respetar la cascada nativa sin sobreescribir código base.
- */
+/* PARTE 4 DE 5: COLORES HEXADECIMALES DE BURBUJAS LEAFLET Y CAPAS MODALES */
 .leaflet-marker-icon.map-price-pill.venta-azul {
     background-color: #062E48;
     color: #ffffff;
@@ -917,153 +313,18 @@ div.leaflet-marker-icon.map-price-pill span {
     border: 1.5px solid #ffffff;
 }
 
-
-/* ========================================================================
-   MODULOS DE ACCIÓN COMERCIAL (REFACTORIZACIÓN DE SEGURIDAD SRE)
-   Control purista de visibilidad mediante opacidad, transiciones nativas y z-index
-   ======================================================================== */
-
-/* CAPA OSCURA DE FONDO (OVERLAY) - Modificado para iniciar oculto de forma segura */
-.modal-accion-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(3px);
-    display: none; /* SRE FIX: Apagado absoluto por defecto para liberar el catálogo */
+div.leaflet-marker-icon.map-price-pill {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 12px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 6000;
-    opacity: 0;
-    transition: opacity 0.25s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-/* Nueva clase controladora para encender los modales solo cuando sea necesario */
-.modal-accion-overlay.modal-activo {
-    display: flex !important;
-    opacity: 1;
-}
-
-/* ESTADO ACTIVO: Gatillado limpiamente por JavaScript agregando esta clase */
-.modal-accion-overlay.modal-activo {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* CAJA CENTRAL DEL POPUP - Con animación de escalado integrada */
-.modal-accion-contenido {
-  background-color: #ffffff;
-  width: 90%;
-  max-width: 420px; 
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15); /* Sombra suavizada para mayor realismo */
-  position: relative;
-  font-family: inherit;
-  transform: scale(0.93); /* Efecto pop-up inicial */
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Transición fluida de la caja al activarse el overlay */
-.modal-accion-overlay.modal-activo .modal-accion-contenido {
-  transform: scale(1);
-}
-
-/* BOTÓN DE CIERRE EN LA ESQUINA (X) - PRESERVADO INTACTO */
-.btn-cerrar-popup {
-  position: absolute;
-  top: 12px;
-  right: 16px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  z-index: 10; 
-  transition: color 0.15s ease;
-}
-
-.btn-cerrar-popup:hover {
-  color: #111111; /* Mayor contraste al pasar el mouse */
-}
-
-
-/* TIPOGRAFÍAS DE LOS POPUPS */
-.modal-accion-contenido h3 {
-  margin: 0 0 6px 0;
-  font-size: 20px;
-  color: #2a2a2a;
-}
-
-.modal-subtitulo-info {
-  margin: 0 0 20px 0;
-  font-size: 13px;
-  color: #666666;
-  line-height: 1.4;
-}
-
-/* ELEMENTOS DEL FORMULARIO INTERNO */
-.campo-formulario {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.campo-formulario label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #444444;
-}
-
-.campo-formulario input,
-.campo-formulario select,
-.campo-formulario textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #cccccc;
-  border-radius: 4px;
-  font-size: 14px;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-
-.campo-formulario input:focus,
-.campo-formulario select:focus,
-.campo-formulario textarea:focus {
-  border-color: #006aff;
-  outline: none;
-}
-
-/* BOTÓN DE ENVÍO DE ACCIÓN */
-.btn-enviar-formulario {
-  width: 100%;
-  background-color: #006aff;
-  color: #ffffff;
-  border: none;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: bold;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: background-color 0.2s ease;
-}
-
-.btn-enviar-formulario:hover {
-  background-color: #0052c4;
-}
-
-/* ==========================================================================
-   CORTINA SPA MECÁNICA (PANTALLAS 2 Y 3 UNIFICADAS)
-   Diseño de panel deslizante puro sobrepuesto que no altera el mapa base.
-   ========================================================================== */
-
-/* Estado inicial: El contenedor ocupa toda la pantalla pero está escondido a la derecha */
+/* ESTRUCTURA DE PANELES CORTINA SPA (PANTALLAS 2 Y 3) */
 .cortina-escondida {
     position: fixed;
     top: 0;
@@ -1071,110 +332,17 @@ div.leaflet-marker-icon.map-price-pill span {
     width: 100vw;
     height: 100vh;
     background-color: #ffffff;
-    z-index: 5000; /* Queda por encima del Navbar (2000) y del mapa base (1000) */
-    transform: translateX(100vw); /* Desplazado completamente fuera del monitor */
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Animación de deslizamiento suave */
-    overflow-y: auto; /* Permite scroll vertical interno independiente */
-    box-sizing: border-box;
-}
-
-/* Estado activo: Desliza el panel hacia adentro cambiando su posición en el eje X */
-.cortina-escondida.cortina-activa {
-    transform: translateX(0); /* Se acomoda de forma natural ocupando la pantalla */
-}
-
-/* ==========================================================================
-   COMPONENTES INTERNOS DE LA CORTINA (VISTAS COMPARTIDAS)
-   ========================================================================== */
-
-/* Barra de navegación superior fija dentro de la cortina */
-.nav-ficha-zillow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 60px;
-    background-color: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 24px;
-    z-index: 6000; /* Asegura estar por encima del contenido interno de la cortina */
-    box-sizing: border-box;
-}
-
-/* Cuerpo de la Pantalla 2: Añade un espacio superior para no ser tapado por su navbar de 60px */
-.cuerpo-ficha-detalle {
-    margin-top: 60px;
-    padding: 24px;
-    box-sizing: border-box;
-}
-
-/* Estructura Split 65/35 de la Pantalla 3 (Galería Expandida) */
-.galeria-split-zillow {
-    display: flex;
-    width: 100%;
-    height: calc(100vh - 60px);
-    margin-top: 60px;
-    overflow: hidden;
-}
-
-/* Lado izquierdo de la Pantalla 3: Mosaico de fotos vertical con scroll propio */
-.galeria-izquierda-mosaico {
-    width: 65%;
-    height: 100%;
-    overflow-y: scroll;
-    background-color: #111111; /* Fondo oscuro para resaltar las fotografías */
-    padding: 20px;
-    box-sizing: border-box;
-}
-
-/* Lado derecho de la Pantalla 3: Columna comercial estática con información */
-.panel-derecho-comercial {
-    width: 35%;
-    height: 100%;
-    background-color: #ffffff;
-    border-left: 1px solid #e2e8f0;
-    padding: 32px;
-    box-sizing: border-box;
+    z-index: 5000;
+    transform: translateX(100vw);
+    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     overflow-y: auto;
 }
 
-/* CORRECCIÓN DE POSICIÓN DE LOS BOTONES DE ZOOM (+ y -) */
-.leaflet-top.leaflet-left {
-    top: 80px !important;  /* Modifica este valor (ej. 70px, 90px) para bajar el zoom lo necesario */
-    left: 15px !important; /* Mantiene una separación limpia del borde izquierdo */
+.cortina-escondida.cortina-activa {
+    transform: translateX(0);
 }
 
-/* =========================================================================
-   COMPONENTE DE ETIQUETA FLOTANTE SOBRE FOTOS (ESTILO PURISTA ZILLOW)
-   ========================================================================= */
-.etiqueta-foto-zillow {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 10;
-    background-color: rgba(255, 255, 255, 0.95);
-    color: #1e293b;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    border-radius: 4px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    font-family: sans-serif;
-    pointer-events: none;
-}
-
-/* ... Tus estilos originales del mapa, filtros y catalogo (Intactos arriba) ... */
-
-/* ========================================================================
-   MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES (PRODUCTION V3)
-   Inyectar al final del archivo styles.css sin alterar clases superiores
-   ======================================================================== */
-
-/* Contenedor Overlay de fondo oscuro para modales */
+/* ESTRUCTURAS POPUP MODALES COMERCIALES */
 .modal-accion-overlay {
     position: fixed;
     top: 0;
@@ -1186,49 +354,97 @@ div.leaflet-marker-icon.map-price-pill span {
     align-items: center;
     justify-content: center;
     z-index: 7000;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
 }
 
-/* Activación de visibilidad limpia por ID compuesta (Sin usar !important) */
-#modal-tour-comercial.modal-activo,
-#modal-agente-comercial.modal-activo {
-    display: flex;
-    opacity: 1;
-}
+/* PARTE 5 DE 5: MEDIA QUERIES - OPTIMIZACIÓN ABSOLUTA PARA CELULARES ESTILO ZILLOW */
+@media (max-width: 768px) {
+    /* 1. Barra superior en modo móvil: Scroll horizontal limpio */
+    .navbar-global {
+        padding: 6px 12px;
+        gap: 8px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .navbar-brand-logo {
+        height: 24px;
+    }
 
-/* Contenedor interno scrollable para flujos multipaso */
-.modal-tour-body-scroll {
-    max-height: 65vh;
-    overflow-y: auto;
-    padding-right: 6px;
-    margin-bottom: 12px;
-}
+    .search-input {
+        width: 150px;
+        font-size: 12px;
+    }
 
-/* Ocultación y despliegue secuencial SPA */
-.seccion-modal-paso {
-    display: none;
-}
+    .filter-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
 
-#modal-tour-comercial .seccion-modal-paso.activo {
-    display: block;
-}
+    /* 2. RESOLUCIÓN DEL COLAPSO: Oculta el catálogo de laptop y expande el mapa al 100% */
+    .split-view {
+        height: calc(100vh - 60px);
+        width: 100vw;
+        display: block; /* Rompe la grilla flexbox */
+    }
 
-/* Animación de entrada sutil para la alerta visual de teléfono */
-.error-mensaje-input {
-    animation: unificarAlertaSlidIn 0.25s ease-out forwards;
-}
+    .map-wrapper {
+        width: 100% !important;
+        height: 100% !important;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
 
-@keyframes unificarAlertaSlidIn {
-    from {
+    .properties-panel {
+        display: none !important; /* Apaga el panel rígido derecho en el celular */
+    }
+
+    /* 3. ARQUITECTURA DE LA TARJETA FLOTANTE OVERLAY (ESTILO ZILLOW MÓVIL) */
+    #tarjeta-flotante-movil-sre {
+        position: absolute;
+        bottom: 20px;
+        left: 5%;
+        width: 90%;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        z-index: 4000; /* Flota holgadamente por encima del mapa Leaflet */
+        padding: 14px;
+        box-sizing: border-box;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
+        cursor: pointer;
+    }
+
+    /* Estados de animación controlados por el cambio de clase en app.js */
+    .tarjeta-movil-sre-oculta {
+        transform: translateY(150%);
         opacity: 0;
-        transform: translateY(-4px);
+        pointer-events: none;
     }
-    to {
-        opacity: 1;
+
+    .tarjeta-movil-sre-visible {
         transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Botón X de Cierre en la Esquina Superior Derecha de la Tarjeta Flotante */
+    .btn-cerrar-sre-flotante {
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        background: none;
+        border: none;
+        font-size: 22px;
+        color: #718096;
+        cursor: pointer;
+        line-height: 1;
+        z-index: 10;
+    }
+    
+    /* Reposicionamiento del control Zoom de Leaflet para no obstruir los filtros móviles */
+    .leaflet-top.leaflet-left {
+        top: 75px !important;
+        left: 10px !important;
     }
 }
-/* ========================================================================
-   FIN DEL MÓDULO SRE: PARCHE DE ESTADOS VISUALES COMERCIALES
-   ======================================================================== */
