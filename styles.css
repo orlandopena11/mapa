@@ -34,15 +34,62 @@ body, html {
     width: 100vw;
 }
 
-/* INTERFAZ SPLIT-VIEW (VISTA PREDETERMINADA PARA LAPTOPS) */
+/* ==========================================================================
+   CORRECCIÓN QUIRÚRGICA: DIMENSIONAMIENTO RIGIDO DE LOGO Y MAPA BASE
+   ========================================================================== */
+
+/* 1. Encapsular el logo para que mida exactamente 32px de alto como en Zillow */
+.navbar-brand-logo, #app-main-logo {
+    height: 32px !important;
+    width: auto !important;
+    max-height: 32px !important;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* 2. Forzar al mapa a ocupar el espacio correcto y asegurar que sea visible */
 .split-view {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 60px);
+    margin-top: 60px; /* Empuja el mapa debajo de la barra de filtros */
+    width: 100vw;
+    position: relative;
+}
+
+.map-wrapper {
+    width: 45%;
+    height: 100%;
+    min-height: calc(100vh - 60px);
+    position: relative;
+}
+
+#map-instance {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    display: block !important;
+    z-index: 1;
+}
+
+.properties-panel {
+    width: 55%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: #ffffff;
+    padding: 24px;
+}
+
+
+/* INTERFAZ SPLIT-VIEW (VISTA PREDETERMINADA PARA LAPTOPS) */
+/*.split-view {
     display: flex;
     flex: 1;
     min-height: 0;
     position: relative;
     height: calc(100vh - 60px);
     width: 100vw;
-}
+}  
 
 .map-wrapper {
     width: 45%;
@@ -57,7 +104,7 @@ body, html {
     min-height: 100%;
     display: block;
     z-index: 1;
-}
+}  
 
 .properties-panel {
     width: 55%;
@@ -65,7 +112,7 @@ body, html {
     overflow-y: auto;
     background-color: #ffffff;
     padding: 24px;
-}
+}  */
 
 .properties-grid {
     display: grid;
