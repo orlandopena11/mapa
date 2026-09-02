@@ -618,7 +618,7 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
         ejecutarTuberiaSincronizada(); 
     });
     configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.baÃ±os = parseFloat(valor) || 0; 
+        state.filtros.banos = parseFloat(valor) || 0; 
         ejecutarTuberiaSincronizada(); 
     });
 
