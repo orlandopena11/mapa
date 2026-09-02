@@ -614,27 +614,18 @@ function evaluarCriteriosDeFiltrado(prop) {
     // Regla de Negocio: Si "Seleccione todos" está activo o no se ha interactuado, no se bloquea la data
     if (checkMaestro && checkMaestro.checked === true) {
         return true;
-    } 
-    
-    // Si el usuario desmarcó todo manualmente en la UI, se aplica el firewall visual restrictivo
-    if (checkboxesMarcados.length === 0) {
+    } else if (checkboxesMarcados.length === 0) {
         return false;
+    } else {
+        if (checkboxesMarcados.length > 0) {
+            const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
+            const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
+            if (!coincideFiltro) return false;
+        }
     }
-
-    // Filtrar de forma natural evaluando la columna situacion_propiedad de Supabase PostgreSQL
-    if (checkboxesMarcados.length > 0 && (!checkMaestro || !checkMaestro.checked)) {
-        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-        // Evaluar si la situación de la propiedad está contenida en el set de filtros activos
-        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
-        if (!coincideFiltro) return false;
-    }
-
     return true;
-    
-} // <-- Cierra de forma limpia evaluarCriteriosDeFiltrado
+} // <-- Sella de forma natural y limpia evaluarCriteriosDeFiltrado
 
-
-// Declaración e inicialización robusta de la tubería de sincronización mutua
 function ejecutarTuberiaSincronizada() { 
     if (typeof renderizarMapaZillow === "function") {
         renderizarMapaZillow(); 
@@ -642,7 +633,7 @@ function ejecutarTuberiaSincronizada() {
     if (typeof renderizarCatalogoTarjetas === "function") {
         renderizarCatalogoTarjetas(); 
     }
-} // <-- Cierra ejecutarTuberiaSincronizada
+} // <-- Sella ejecutarTuberiaSincronizada
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
