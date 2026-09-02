@@ -37,7 +37,7 @@ const state = {
     limpiadoresDOM: new Map()
 }; // Fin de asignación del objeto global state
 
-};
+/* }; */
 
 
 // ==========================================================================
