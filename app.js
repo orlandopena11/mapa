@@ -416,31 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-                              // PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
-    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-    }
-
-    setTimeout(() => {
-        inicializarEventosDeFiltros();
-        if (window.map) {
-            window.map.on('moveend', renderizarMapaZillow);
-            window.map.invalidateSize(); // Forzado síncrono para asegurar la carga completa en el celular
-        }
-        cargarDatosDesdeAppsScript();
-
-        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
-        if (btnCerrarTarjetaMovil) {
-            btnCerrarTarjetaMovil.onclick = (e) => {
-                e.stopPropagation();
-                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-                if (cajaFlotanteMovil) cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
-            };
-        }
-    }, 100);
-});
-
+// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
 function inicializarEventosDeFiltros() {
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
     wrappers.forEach(wrapper => {
@@ -467,29 +443,33 @@ function inicializarEventosDeFiltros() {
             state.filtros.estado = e.target.value;
             const btnStatus = document.getElementById('btn-filter-status');
             if (btnStatus) {
-                if (e.target.value === "Venta") btnStatus.textContent = "En venta ▾";
-                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler ▾";
-                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas ▾";
+                if (e.target.value === "Venta") btnStatus.textContent = "En venta";
+                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler";
+                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas";
             }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            ejecutarTuberiaSincronizada();
         });
     });
 
-    // PARTE 14 DE 15: CAPTURA DEL BOTÓN APLICAR DE TIPOS DE PROPIEDAD Y FILTROS AVANZADOS
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
     const handlerPrecios = () => {
         state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
         state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
-        if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+        ejecutarTuberiaSincronizada();
     };
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
 
-    if (typeof configurarSegmentado === 'function') {
-        configurarSegmentado('row-beds', (valor) => { state.filtros.camas = parseInt(valor) || 0; ejecutarTuberiaSincronizada(); });
-        configurarSegmentado('row-baths', (valor) => { state.filtros.banos = parseFloat(valor) || 0; ejecutarTuberiaSincronizada(); });
-    }
+    // Inicializar segmentados con resguardo nativo de existencia de función
+    configurarSegmentado('row-beds', (valor) => { 
+        state.filtros.camas = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    });
+    configurarSegmentado('row-baths', (valor) => { 
+        state.filtros.baños = parseFloat(valor) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    });
 
     const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
@@ -536,6 +516,68 @@ function inicializarEventosDeFiltros() {
     });
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof supabase !== "undefined" && supabase !== null) {
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                const correoUsuario = String(session.user.email).trim();
+                window.usuarioLogueado = session.user;
+
+                const idScriptSeguridad = "sre-jsonp-firewall-auth";
+                let scriptExistente = document.getElementById(idScriptSeguridad);
+                if (scriptExistente) scriptExistente.remove();
+                
+                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
+                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
+                        state.usuarioActual = null; window.usuarioLogueado = null;
+                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
+                        await supabase.auth.signOut(); return;
+                    }
+                    state.usuarioActual = {
+                        id: String(session.user.id).trim(), correo: correoUsuario,
+                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
+                    };
+                    ejecutarTuberiaSincronizada();
+                };
+
+                const scriptp = document.createElement('script');
+                scriptp.id = idScriptSeguridad;
+                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
+                document.body.appendChild(scriptp);
+            } else {
+                state.usuarioActual = null; window.usuarioLogueado = null;
+            }
+        });
+    }
+
+    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
+        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+    }
+
+    setTimeout(() => {
+        inicializarEventosDeFiltros();
+        if (window.map) {
+            window.map.on('moveend', renderizarMapaZillow);
+            window.map.invalidateSize(); 
+        }
+        cargarDatosDesdeAppsScript();
+
+        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
+        if (btnCerrarTarjetaMovil) {
+            btnCerrarTarjetaMovil.onclick = (e) => {
+                e.stopPropagation();
+                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+                if (cajaFlotanteMovil) {
+                    cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
+                }
+            };
+        }
+    }, 100);
+});
+
+    
 function configurarSegmentado(idContenedor, callback) {
     const contenedor = document.getElementById(idContenedor); if (!contenedor) return;
     contenedor.addEventListener('click', (e) => {
