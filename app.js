@@ -1,12 +1,24 @@
 /* jshint esversion: 11 */
+
+// ==========================================================================
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
+// ==========================================================================
+
 let usuarioAutenticado = false;
 let correoUsuarioLogueado = "";
-if (typeof window.usuarioAutenticado === "undefined") { window.usuarioAutenticado = false; }
-if (typeof window.correoUsuarioLogueado === "undefined") { window.correoUsuarioLogueado = ""; }
+
+if (typeof window.usuarioAutenticado === "undefined") { 
+    window.usuarioAutenticado = false; 
+}
+
+if (typeof window.correoUsuarioLogueado === "undefined") { 
+    window.correoUsuarioLogueado = ""; 
+}
 
 if (typeof actualizarBotonCuenta !== "function") {
-    var actualizarBotonCuenta = function() { console.log("[SRE] Simulación de actualización de botón de cuenta."); };
+    var actualizarBotonCuenta = function() { // Inicia Function actualizarBotonCuenta
+        console.log("[SRE] SimulaciÃ³n de actualizaciÃ³n de botÃ³n de cuenta."); 
+    }; // Fin de Function actualizarBotonCuenta
 }
 
 const state = {
@@ -18,78 +30,101 @@ const state = {
         precioMax: Infinity, 
         camas: 0, 
         camasExactas: false, 
-        baños: 0, 
+        baÃ±os: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
     limpiadoresDOM: new Map()
 };
 
-// PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
+
+// ==========================================================================
+// PARTE 2 DE 15: INITIALIZACIÃ“N CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
+// ==========================================================================
+
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; 
 
-console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
+console.warn("?? [SRE ESPÃA 1] Iniciando traza de compilaciÃ³n en el hilo principal...");
 
 let supabase = null;
-function obtenerClienteSupabase() {
+
+function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
     if (supabase) return supabase;
+    
     if (typeof createClient !== "undefined") {
         supabase = createClient(supabaseUrl, supabaseAnonKey);
     } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
+    
     return supabase;
-}
+} // Fin de Function obtenerClienteSupabase
+
 obtenerClienteSupabase();
 
+
+// ==========================================================================
 // PARTE 3 DE 15: FIREWALLS DE ACCESO ACL Y TRANSPORTE JSONP APPS SCRIPT
-function verificarAutorizacionAcceso() {
+// ==========================================================================
+
+function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
+        alert("Acceso Restringido: Debe iniciar sesiÃ³n con su cuenta para realizar esta acciÃ³n.");
         if (typeof mostrarPopupAccion === "function") {
             mostrarPopupAccion("modal-autenticacion-supabase");
         }
         return false;
     }
+    
     if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
+        alert("Cuenta Suspendida: No tiene autorizaciÃ³n para realizar esta acciÃ³n.");
         return false;
     }
+    
     return true;
-}
+} // Fin de Function verificarAutorizacionAcceso
 
 const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
 
-function cargarDatosDesdeAppsScript() {
+function cargarDatosDesdeAppsScript() { // Inicia Function cargarDatosDesdeAppsScript
     const script = document.createElement('script');
     script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`; 
     document.body.appendChild(script);
-}
+} // Fin de Function cargarDatosDesdeAppsScript
 
-// PARTE 4 DE 15: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
-function normalizarPropiedad(prop) {
+
+// ==========================================================================
+// PARTE 4 DE 15: MOTOR DE NORMALIZACIÃ“N RELACIONAL Y CONCATENACIÃ“N DE IMÃGENES
+// ==========================================================================
+
+function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     const id = prop.id || String(Math.random());
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
-    const asegurarUrlCompleta = (ruta) => {
+    const asegurarUrlCompleta = (ruta) => { // Inicia Arrow Function asegurarUrlCompleta
         if (!ruta) return "";
         let texto = String(ruta).trim();
+        
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
+        
         texto = texto.replace(/\s+/g, '_');
-        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png')
-        && !texto.toLowerCase().endsWith('.webp') && !texto.toLowerCase().endsWith('.jpeg')) {
+        
+        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && 
+            !texto.toLowerCase().endsWith('.webp') && !texto.toLowerCase().endsWith('.jpeg')) {
             texto = texto + '.jpg';
         }
+        
         return urlBaseCloudinary + texto;
-    };
+    }; // Fin de Arrow Function asegurarUrlCompleta
 
     let fotosUnificadas = [];
     if (prop.fotos && Array.isArray(prop.fotos)) {
         fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
     }
+    
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push("https://cloudinary.comFoto15_havrr3.webp");
     }
@@ -122,23 +157,31 @@ function normalizarPropiedad(prop) {
         telefono: prop.telefono || "",
         contacto_nombre: prop.contacto_nombre || "Contacto"
     };
-}
+} // Fin de Function normalizarPropiedad
 
-// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÓN DE RIEL MULTIMEDIA
-function formatearPrecioCompleto(precio) {
+
+// ==========================================================================
+// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÃ“N DE RIEL MULTIMEDIA
+// ==========================================================================
+
+function formatearPrecioCompleto(precio) { // Inicia Function formatearPrecioCompleto
     const num = parseFloat(precio);
     if (isNaN(num) || num === 0) return 'Consultar';
     return num.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
-}
+} // Fin de Function formatearPrecioCompleto
 
-function formatearPrecioCompacto(precio) {
+function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCompacto
     if (precio >= 1000000) return `$. ${(precio / 1000000).toFixed(2)}M`;
     if (precio >= 1000) return `$. ${(precio / 1000).toFixed(0)}K`;
     return `$. ${precio}`;
-}
+} // Fin de Function formatearPrecioCompacto
 
-// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
-function construirRielCarruselComponente(prop, esPopup = false) {
+
+// ==========================================================================
+// PARTE 6 DE 15: CONSTRUCTOR DINÃMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÃ“N ACL
+// ==========================================================================
+
+function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
     const propiedad = prop;
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
@@ -166,101 +209,155 @@ function construirRielCarruselComponente(prop, esPopup = false) {
     }
     contenedorFoto.appendChild(contenedorDots);
 
-    // PARTE 7 DE 15: CANDADO DEL BOTÓN CORAZÓN DE FAVORITOS Y DESPLAZADORES CIRCULARES
+
+    // ==========================================================================
+    // PARTE 7 DE 15: CANDADO DEL BOTÃ“N CORAZÃ“N DE FAVORITOS Y DESPLAZADORES CIRCULARES
+    // ==========================================================================
+    
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '♡'; 
+    botonCorazon.innerHTML = 'â™¡'; 
     botonCorazon.className = 'corazon-favorito';
-    botonCorazon.style = "position:absolute; top:12px; right:12px; background:rgba(0,0,0,0.45); border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; z-index:10; color:#fff;";
+    botonCorazon.style.position = "absolute";
+    botonCorazon.style.top = "12px";
+    botonCorazon.style.right = "12px";
+    botonCorazon.style.background = "rgba(0,0,0,0.45)";
+    botonCorazon.style.border = "none";
+    botonCorazon.style.borderRadius = "50%";
+    botonCorazon.style.width = "32px";
+    botonCorazon.style.height = "32px";
+    botonCorazon.style.cursor = "pointer";
+    botonCorazon.style.fontSize = "16px";
+    botonCorazon.style.display = "flex";
+    botonCorazon.style.alignItems = "center";
+    botonCorazon.style.justifyContent = "center";
+    botonCorazon.style.zIndex = "10";
+    botonCorazon.style.color = "#fff";
 
-    botonCorazon.addEventListener('pointerdown', (e) => {
+    botonCorazon.addEventListener('pointerdown', (e) => { // Inicia Callback heart pointerdown
         if (e) {
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault(); 
+            e.stopPropagation();
             if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         }
+        
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        if (botonCorazon.innerHTML === '♡') {
-            botonCorazon.innerHTML = '♥'; botonCorazon.style.color = '#d92323'; botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
+        if (botonCorazon.innerHTML === 'â™¡') {
+            botonCorazon.innerHTML = 'â™¥'; 
+            botonCorazon.style.color = '#d92323'; 
+            botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         } else {
-            botonCorazon.innerHTML = '♡'; botonCorazon.style.color = '#ffffff'; botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
+            botonCorazon.innerHTML = 'â™¡'; 
+            botonCorazon.style.color = '#ffffff'; 
+            botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         }
-    });
+    }); // Fin de Callback heart pointerdown
     contenedorFoto.appendChild(botonCorazon);
 
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
         const btnlzq = document.createElement('button');
-        btnlzq.className = 'flecha-carrusel flecha-izq'; btnlzq.textContent = '<';
+        btnlzq.className = 'flecha-carrusel flecha-izq'; 
+        btnlzq.textContent = '<';
+        
         const btnDer = document.createElement('button');
-        btnDer.className = 'flecha-carrusel flecha-der'; btnDer.textContent = '>';
+        btnDer.className = 'flecha-carrusel flecha-der'; 
+        btnDer.textContent = '>';
 
-        const desplazarRiel = (direction) => {
+        const desplazarRiel = (direction) => { // Inicia Arrow Function desplazarRiel
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
             dotsArray.forEach((d, idx) => {
                 if (idx === indiceFotoActual) d.classList.add('activo');
                 else d.classList.remove('activo');
             });
-        };
+        }; // Fin de Arrow Function desplazarRiel
+        
         btnlzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
         btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(1); });
-        contenedorFoto.appendChild(btnlzq); contenedorFoto.appendChild(btnDer);
+        contenedorFoto.appendChild(btnlzq); 
+        contenedorFoto.appendChild(btnDer);
     }
 
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
     etiquetaFlotante.textContent = prop.titulo || '';
     contenedorFoto.appendChild(etiquetaFlotante);
+    
     return contenedorFoto;
-}
+} // Fin de Function construirRielCarruselComponente
 
-// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
-function crearComponenteTarjetaZillow(prop) {
+
+// ==========================================================================
+// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÃLOGO DE ESCRITORIO
+// ==========================================================================
+
+function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponenteTarjetaZillow
     const tarjeta = document.createElement('div');
-    tarjeta.className = 'tarjeta-casa'; tarjeta.setAttribute('data-id', prop.id);
+    tarjeta.className = 'tarjeta-casa'; 
+    tarjeta.setAttribute('data-id', prop.id);
 
     const contenedorVisualFoto = construirRielCarruselComponente(prop, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    const clickSPAHandler = (e) => {
+    const clickSPAHandler = (e) => { // Inicia Arrow Function clickSPAHandler
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
         if (window.map) window.map.closePopup();
         state.propiedadSeleccionadaId = prop.id;
         gestionarCortinaSPA('detalle', prop);
-    };
+    }; // Fin de Arrow Function clickSPAHandler
+    
     contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
 
     const datosCasa = document.createElement('div');
-    datosCasa.className = 'datos-casa'; datosCasa.style.padding = '12px';
+    datosCasa.className = 'datos-casa'; 
+    datosCasa.style.padding = '12px';
     datosCasa.addEventListener('pointerdown', clickSPAHandler);
 
     const precioTexto = document.createElement('div');
-    precioTexto.className = 'precio'; style = "font-size:18px; font-weight:bold; color:#1e293b;";
+    precioTexto.className = 'precio';
+    precioTexto.style.fontSize = '18px'; 
+    precioTexto.style.fontWeight = 'bold'; 
+    precioTexto.style.color = '#1e293b';
     precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
     datosCasa.appendChild(precioTexto);
 
     const caracteristicasTexto = document.createElement('div');
-    caracteristicasTexto.className = 'caracteristicas-inmueble'; style = "font-size:13px; color:#475569; margin-top:4px;";
-    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
+    caracteristicasTexto.className = 'caracteristicas-inmueble';
+    caracteristicasTexto.style.fontSize = '13px'; 
+    caracteristicasTexto.style.color = '#475569'; 
+    caracteristicasTexto.style.marginTop = '4px';
+    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} BaÃ±os | AC: ${prop.area_construida || 0} mÂ² | AT: ${prop.area_terreno || 0} mÂ²`;
     datosCasa.appendChild(caracteristicasTexto);
 
     const adicionalesTexto = document.createElement('div');
-    adicionalesTexto.className = 'adicionales-inmueble'; style = "font-size:12px; color:#64748b; margin-top:2px;";
-    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | Año: ${prop.ano_construccion || 0}`;
+    adicionalesTexto.className = 'adicionales-inmueble';
+    adicionalesTexto.style.fontSize = '12px'; 
+    adicionalesTexto.style.color = '#64748b'; 
+    adicionalesTexto.style.marginTop = '2px';
+    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | AÃ±o: ${prop.ano_construccion || 0}`;
     datosCasa.appendChild(adicionalesTexto);
 
     const ubicacionTexto = document.createElement('div');
-    ubicacionTexto.className = 'ubicacion-direccion-directa'; style = "font-size:14px; color:#1e293b; font-weight:600; margin-top:4px;";
+    ubicacionTexto.className = 'ubicacion-direccion-directa';
+    ubicacionTexto.style.fontSize = '14px'; 
+    ubicacionTexto.style.color = '#1e293b'; 
+    ubicacionTexto.style.fontWeight = '600'; 
+    ubicacionTexto.style.marginTop = '4px';
     ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "");
     datosCasa.appendChild(ubicacionTexto);
 
     tarjeta.appendChild(datosCasa);
     return tarjeta;
-}
+} // Fin de Function crearComponenteTarjetaZillow
 
-// PARTE 9 DE 15: INYECCIÓN DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
-function renderizarCatalogoTarjetas() {
+
+// ==========================================================================
+// PARTE 9 DE 15: INYECCIÃ“N DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
+// ==========================================================================
+
+function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTarjetas
     const contenedorRejilla = document.getElementById('properties-grid-target');
     if (!contenedorRejilla) return;
     contenedorRejilla.innerHTML = '';
@@ -272,7 +369,7 @@ function renderizarCatalogoTarjetas() {
         contenedorRejilla.innerHTML = `
             <div class="mensaje-sin-propiedades" style="padding: 60px 20px; text-align: center; width: 100%; box-sizing: border-box;">
                 <h3 style="font-size: 22px; color: #2d3748; font-weight: 700; font-family: sans-serif;">No existe este tipo de propiedades en este momento</h3>
-                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando más opciones.</p>
+                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando mÃ¡s opciones.</p>
             </div>
         `;
         if (contador) contador.textContent = `0 resultados disponibles`;
@@ -285,10 +382,14 @@ function renderizarCatalogoTarjetas() {
         contenedorRejilla.appendChild(fragmento);
         if (contador) contador.textContent = `${filtradas.length} resultados disponibles`;
     }
-}
+} // Fin de Function renderizarCatalogoTarjetas
 
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO CON DESVÍO DE EVENTO CELULAR OVERLAY
-function renderizarMapaZillow() {
+
+// ==========================================================================
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÃFICO CON DESVÃO DE EVENTO CELULAR OVERLAY
+// ==========================================================================
+
+function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     if (typeof window.capaMarcadores === 'undefined') window.capaMarcadores = null;
     if (!window.map || !document.getElementById('map-instance')) return;
 
@@ -300,7 +401,7 @@ function renderizarMapaZillow() {
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    filtradas.forEach(prop => {
+    filtradas.forEach(prop => { // Inicia Callback forEach filtradas
         if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
@@ -309,26 +410,33 @@ function renderizarMapaZillow() {
         const iconoBurbuja = L.divIcon({
             html: `<span>${precioCompacto}</span>`,
             className: `leaflet-marker-icon map-price-pill ${claseColorBurbuja}`,
-            iconSize: L.point(80, 30), iconAnchor: L.point(40, 15)
+            iconSize: L.point(80, 30), 
+            iconAnchor: L.point(40, 15)
         });
 
         const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
         const contenedorPopupMaster = document.createElement('div');
-        contenedorPopupMaster.className = 'tarjeta-casa popup-card'; contenedorPopupMaster.style.width = '260px';
+        contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
+        contenedorPopupMaster.style.width = '260px';
+        
         const carruselPopup = construirRielCarruselComponente(prop, true);
         contenedorPopupMaster.appendChild(carruselPopup);
 
         const datosPopup = document.createElement('div');
-        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} Baños</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
         contenedorPopupMaster.appendChild(datosPopup);
 
         if (window.innerWidth > 768) {
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
         }
 
-                              // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
-        marcador.on('click', (e) => {
+
+        // ==========================================================================
+        // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
+        // ==========================================================================
+        
+        marcador.on('click', (e) => { // Inicia Callback marker click
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
 
@@ -339,10 +447,10 @@ function renderizarMapaZillow() {
                 if (cajaFlotanteMovil && targetContenido) {
                     targetContenido.innerHTML = `
                         <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${prop.fotos[0]}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+                            <img src="${prop.fotos}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</span>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</span>
                                 <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                                 <span style="font-size:11px; font-weight:bold; text-transform:uppercase; color:${prop.estado_publicacion === 'vendida' ? '#b58900' : '#006aff'};">${prop.estado_publicacion === 'vendida' ? 'Vendida' : 'Disponible'}</span>
                             </div>
@@ -355,11 +463,12 @@ function renderizarMapaZillow() {
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
                 if (tarjetaDesktop) { 
                     tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    tarjetaDesktop.style.outline = '3px solid #006aff'; tarjetaDesktop.style.borderRadius = '12px';
+                    tarjetaDesktop.style.outline = '3px solid #006aff'; 
+                    tarjetaDesktop.style.borderRadius = '12px';
                     setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
                 }
             }
-        });
+        }); // Fin de Callback marker click
 
         carruselPopup.addEventListener('pointerdown', (ev) => {
             ev.stopPropagation();
@@ -370,20 +479,25 @@ function renderizarMapaZillow() {
         });
 
         window.capaMarcadores.addLayer(marcador);
-    });
-}
+    }); // Fin de Callback forEach filtradas
+} // Fin de Function renderizarMapaZillow
 
-// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
-function procesarDatosDelMotor(data) {
+
+// ==========================================================================
+// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÃ“N Y DOM CONTENT LOADED
+// ==========================================================================
+
+function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) return;
     state.propiedades = data.propiedades.map(normalizarPropiedad);
-    renderizarMapaZillow(); renderizarCatalogoTarjetas();
+    renderizarMapaZillow(); 
+    renderizarCatalogoTarjetas();
     interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-}
+} // Fin de Function procesarDatosDelMotor
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
-        supabase.auth.onAuthStateChange((event, session) => {
+        supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
             if (session && session.user) {
                 const correoUsuario = String(session.user.email).trim();
                 window.usuarioLogueado = session.user;
@@ -394,12 +508,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
                     if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
-                        state.usuarioActual = null; window.usuarioLogueado = null;
+                        state.usuarioActual = null; 
+                        window.usuarioLogueado = null;
                         alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
-                        await supabase.auth.signOut(); return;
+                        await supabase.auth.signOut(); 
+                        return;
                     }
                     state.usuarioActual = {
-                        id: String(session.user.id).trim(), correo: correoUsuario,
+                        id: String(session.user.id).trim(), 
+                        correo: correoUsuario,
                         nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
                         estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
                     };
@@ -411,13 +528,44 @@ document.addEventListener("DOMContentLoaded", () => {
                 scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
                 document.body.appendChild(scriptp);
             } else {
-                state.usuarioActual = null; window.usuarioLogueado = null;
+                state.usuarioActual = null; 
+                window.usuarioLogueado = null;
             }
-        });
+        }); // Fin de Callback onAuthStateChange
     }
 
-// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
-function inicializarEventosDeFiltros() {
+    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
+        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+    }
+
+    setTimeout(() => { // Inicia Timer de inicializaciÃ³n
+        inicializarEventosDeFiltros();
+        if (window.map) {
+            window.map.on('moveend', renderizarMapaZillow);
+            window.map.invalidateSize(); 
+        }
+        cargarDatosDesdeAppsScript();
+
+        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
+        if (btnCerrarTarjetaMovil) {
+            btnCerrarTarjetaMovil.onclick = (e) => {
+                e.stopPropagation();
+                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+                if (cajaFlotanteMovil) {
+                    cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
+                }
+            };
+        }
+    }, 100); // Fin de Timer de inicializaciÃ³n
+}); // Fin de EventListener DOMContentLoaded
+
+
+// ==========================================================================
+// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÃFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
+// ==========================================================================
+
+function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
     wrappers.forEach(wrapper => {
         const boton = wrapper.querySelector('.filter-btn');
@@ -428,7 +576,8 @@ function inicializarEventosDeFiltros() {
             e.stopPropagation();
             document.querySelectorAll('.dropdown-content-panel').forEach(p => { if (p !== panel) p.classList.remove('show'); });
             document.querySelectorAll('.filter-btn').forEach(b => { if (b !== boton) b.classList.remove('active'); });
-            panel.classList.toggle('show'); boton.classList.toggle('active');
+            panel.classList.toggle('show'); 
+            boton.classList.toggle('active');
         });
     });
 
@@ -453,6 +602,7 @@ function inicializarEventosDeFiltros() {
 
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
+    
     const handlerPrecios = () => {
         state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
         state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
@@ -461,13 +611,12 @@ function inicializarEventosDeFiltros() {
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
 
-    // Inicializar segmentados con resguardo nativo de existencia de función
     configurarSegmentado('row-beds', (valor) => { 
         state.filtros.camas = parseInt(valor, 10) || 0; 
         ejecutarTuberiaSincronizada(); 
     });
     configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.baños = parseFloat(valor) || 0; 
+        state.filtros.baÃ±os = parseFloat(valor) || 0; 
         ejecutarTuberiaSincronizada(); 
     });
 
@@ -507,88 +656,39 @@ function inicializarEventosDeFiltros() {
             if (e.target.checked) {
                 if (checkTodos) checkTodos.checked = false;
                 checkboxesListado.forEach(otroCb => { if (otroCb !== e.target) { otroCb.checked = false; state.filtros.tiposListado.delete(otroCb.value); } });
-                state.filtros.tiposListado.clear(); state.filtros.tiposListado.add(e.target.value);
+                state.filtros.tiposListado.clear(); 
+                state.filtros.tiposListado.add(e.target.value);
             } else {
                 state.filtros.tiposListado.delete(e.target.value);
             }
             ejecutarTuberiaSincronizada();
         });
     });
-}
+} // Fin de Function inicializarEventosDeFiltros
 
-document.addEventListener("DOMContentLoaded", () => {
-    if (typeof supabase !== "undefined" && supabase !== null) {
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user) {
-                const correoUsuario = String(session.user.email).trim();
-                window.usuarioLogueado = session.user;
 
-                const idScriptSeguridad = "sre-jsonp-firewall-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) scriptExistente.remove();
-                
-                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
-                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
-                        state.usuarioActual = null; window.usuarioLogueado = null;
-                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
-                        await supabase.auth.signOut(); return;
-                    }
-                    state.usuarioActual = {
-                        id: String(session.user.id).trim(), correo: correoUsuario,
-                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
-                    };
-                    ejecutarTuberiaSincronizada();
-                };
+// ==========================================================================
+// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÃ“N ÃšNICA
+// ==========================================================================
 
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
-                document.body.appendChild(scriptp);
-            } else {
-                state.usuarioActual = null; window.usuarioLogueado = null;
-            }
-        });
-    }
-
-    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-    }
-
-    setTimeout(() => {
-        inicializarEventosDeFiltros();
-        if (window.map) {
-            window.map.on('moveend', renderizarMapaZillow);
-            window.map.invalidateSize(); 
-        }
-        cargarDatosDesdeAppsScript();
-
-        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
-        if (btnCerrarTarjetaMovil) {
-            btnCerrarTarjetaMovil.onclick = (e) => {
-                e.stopPropagation();
-                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-                if (cajaFlotanteMovil) {
-                    cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
-                }
-            };
-        }
-    }, 100);
-});
-
-    
-function configurarSegmentado(idContenedor, callback) {
-    const contenedor = document.getElementById(idContenedor); if (!contenedor) return;
+function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
+    const contenedor = document.getElementById(idContenedor); 
+    if (!contenedor) return;
     contenedor.addEventListener('click', (e) => {
-        const botonNode = e.target.closest('.segmented-btn'); if (!botonNode) return;
+        const botonNode = e.target.closest('.segmented-btn'); 
+        if (!botonNode) return;
         contenedor.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
-        botonNode.classList.add('active'); callback(botonNode.getAttribute('data-val'));
+        botonNode.classList.add('active'); 
+        callback(botonNode.getAttribute('data-val'));
     });
-}
+} // Fin de Function configurarSegmentado
 
+
+// ==========================================================================
 // PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
-function evaluarCriteriosDeFiltrado(prop) {
+// ==========================================================================
+
+function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
         if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") return false;
@@ -622,56 +722,66 @@ function evaluarCriteriosDeFiltrado(prop) {
         }
     }
     return true;
-} // <-- AQUÍ SE SELLA DEFINITIVAMENTE evaluarCriteriosDeFiltrado REDUCIENDO EL ERROR DE LA LÍNEA 384
+} // Fin de Function evaluarCriteriosDeFiltrado
 
-} // <-- ESTA LLAVE CIERRA LA FUNCIÓN DE LA LÍNEA 384 (evaluarCriteriosDeFiltrado) Y LIMPIA EL ERROR DE JSHINT
-
-function ejecutarTuberiaSincronizada() { 
+function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
     if (typeof renderizarMapaZillow === "function") {
         renderizarMapaZillow(); 
     }
     if (typeof renderizarCatalogoTarjetas === "function") {
         renderizarCatalogoTarjetas(); 
     }
-} 
+} // Fin de Function ejecutarTuberiaSincronizada
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
-function inicializarEventosPopups() {
+function inicializarEventosPopups() { // Inicia Function inicializarEventosPopups
     document.getElementById("btn-solicitar-tour-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-tour-comercial"); calcularCalendarioTresCajas(); gestionarPasosModalTour(1);
+        mostrarPopupAccion("modal-tour-comercial"); 
+        if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas(); 
+        if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
     });
     document.getElementById("btn-contactar-agente-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-agente-comercial"); inyectarDatosPropiedadAlMensaje();
+        mostrarPopupAccion("modal-agent-comercial"); 
+        if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
     });
+} // Fin de Function inicializarEventosPopups
+
+function mostrarPopupAccion(id) { 
+    const n = document.getElementById(id); 
+    if (n) n.style.display = "flex"; 
 }
 
-function mostrarPopupAccion(id) { const n = document.getElementById(id); if (n) n.style.display = "flex"; }
-function cerrarPopupAccion(id) { const n = document.getElementById(id); if (n) n.style.display = "none"; }
+function cerrarPopupAccion(id) { 
+    const n = document.getElementById(id); 
+    if (n) n.style.display = "none"; 
+}
+
 function calcularCalendarioTresCajas() {}
 function gestionarPasosModalTour(p) {}
 function inyectarDatosPropiedadAlMensaje() {}
 function ejecutarEnvioAppsScript(p, m, f, mx) {}
 
-function gestionarCortinaSPA(tipoPantalla, prop) {
-    const cortina = document.getElementById('cortina-spa'); if (!cortina) return;
+function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarCortinaSPA
+    const cortina = document.getElementById('cortina-spa'); 
+    if (!cortina) return;
     if (tipoPantalla === 'cerrar') { cortina.classList.remove('cortina-activa'); return; }
 
     if (tipoPantalla === 'detalle') {
         cortina.innerHTML = `
             <div class="nav-ficha-zillow" style="position:fixed; top:0; left:0; width:100vw; height:60px; background:white; display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:6000; border-bottom:1px solid #ddd;">
-                <button id="btn-cerrar-cortina" style="color:#006aff; font-weight:bold; background:none; border:none; cursor:pointer;">‹ Volver a buscar</button>
+                <button id="btn-cerrar-cortina" style="color:#006aff; font-weight:bold; background:none; border:none; cursor:pointer;">â€¹ Volver a buscar</button>
                 <img src="./logo.jpg" style="height:32px;">
                 <div><span>Ficha Detalle</span></div>
             </div>
             <div style="margin-top:60px; padding:24px; max-width:1200px; margin-left:auto; margin-right:auto; font-family:sans-serif;">
                 <img src="${prop.fotos ? prop.fotos : ''}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
                 <h2 style="font-size:32px; margin:0 0 8px 0;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                <p style="font-size:18px; color:#4a5568; margin:0 0 16px 0;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</p>
+                <p style="font-size:18px; color:#4a5568; margin:0 0 16px 0;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</p>
                 <p style="font-size:16px; margin:0 0 24px 0; font-weight:bold;">${prop.direccion || prop.titulo}</p>
             </div>
         `;
         document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => gestionarCortinaSPA('cerrar'));
     }
     cortina.classList.add('cortina-activa');
-}
+} // Fin de Function gestionarCortinaSPA
