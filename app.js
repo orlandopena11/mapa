@@ -602,16 +602,14 @@ function evaluarCriteriosDeFiltrado(prop) {
     if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) return false;
     if (state.filtros.banos && (parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
 
-    if (state.filtros.tiposPropiedad.size > 0) {
+    if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    // Solución de Carga en Frío: Validación dinámica de Filtros Avanzados sin congelamiento
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    // Regla de Negocio: Si "Seleccione todos" está activo o no se ha interactuado, no se bloquea la data
     if (checkMaestro && checkMaestro.checked === true) {
         return true;
     } else if (checkboxesMarcados.length === 0) {
@@ -624,7 +622,7 @@ function evaluarCriteriosDeFiltrado(prop) {
         }
     }
     return true;
-} // <-- Sella de forma natural y limpia evaluarCriteriosDeFiltrado
+} // <-- AQUÍ SE SELLA DEFINITIVAMENTE evaluarCriteriosDeFiltrado REDUCIENDO EL ERROR DE LA LÍNEA 384
 
 function ejecutarTuberiaSincronizada() { 
     if (typeof renderizarMapaZillow === "function") {
@@ -633,7 +631,7 @@ function ejecutarTuberiaSincronizada() {
     if (typeof renderizarCatalogoTarjetas === "function") {
         renderizarCatalogoTarjetas(); 
     }
-} // <-- Sella ejecutarTuberiaSincronizada
+} 
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
@@ -665,7 +663,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                 <div><span>Ficha Detalle</span></div>
             </div>
             <div style="margin-top:60px; padding:24px; max-width:1200px; margin-left:auto; margin-right:auto; font-family:sans-serif;">
-                <img src="${prop.fotos[0]}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
+                <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
                 <h2 style="font-size:32px; margin:0 0 8px 0;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
                 <p style="font-size:18px; color:#4a5568; margin:0 0 16px 0;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</p>
                 <p style="font-size:16px; margin:0 0 24px 0; font-weight:bold;">${prop.direccion || prop.titulo}</p>
