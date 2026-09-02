@@ -624,6 +624,8 @@ function evaluarCriteriosDeFiltrado(prop) {
     return true;
 } // <-- AQUÍ SE SELLA DEFINITIVAMENTE evaluarCriteriosDeFiltrado REDUCIENDO EL ERROR DE LA LÍNEA 384
 
+} // <-- ESTA LLAVE CIERRA LA FUNCIÓN DE LA LÍNEA 384 (evaluarCriteriosDeFiltrado) Y LIMPIA EL ERROR DE JSHINT
+
 function ejecutarTuberiaSincronizada() { 
     if (typeof renderizarMapaZillow === "function") {
         renderizarMapaZillow(); 
@@ -663,7 +665,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                 <div><span>Ficha Detalle</span></div>
             </div>
             <div style="margin-top:60px; padding:24px; max-width:1200px; margin-left:auto; margin-right:auto; font-family:sans-serif;">
-                <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
+                <img src="${prop.fotos ? prop.fotos : ''}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
                 <h2 style="font-size:32px; margin:0 0 8px 0;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
                 <p style="font-size:18px; color:#4a5568; margin:0 0 16px 0;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</p>
                 <p style="font-size:16px; margin:0 0 24px 0; font-weight:bold;">${prop.direccion || prop.titulo}</p>
