@@ -140,10 +140,14 @@ main.split-view .properties-panel {
 
 .navbar-brand-logo {
     height: 32px;
-    width: auto;
+    width: 120px;
+    max-height: 32px;
+    max-width: 120px;
     object-fit: contain;
     flex-shrink: 0;
+    display: inline-block;
 }
+
 
 .search-controls {
     display: flex;
