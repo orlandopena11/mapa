@@ -30,11 +30,13 @@ const state = {
         precioMax: Infinity, 
         camas: 0, 
         camasExactas: false, 
-        baÃ±os: 0, 
+        baños: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
     limpiadoresDOM: new Map()
+}; // Fin de asignación del objeto global state
+
 };
 
 
