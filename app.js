@@ -746,13 +746,19 @@ function configurarSegmentado(idContenedor, callback) { // Inicia Function confi
 
 function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
     const filtroTransaccion = state.filtros.estado || "Venta";
+    
+    // REGLA DE NEGOCIO ESTRICTA SRE LIMA
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
+        // Venta requiere: tipo_anuncio = 'Venta' Y estado_publicacion = 'disponible'
         if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") return false;
     } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        // Alquiler requiere: tipo_anuncio = 'Alquiler' Y estado_publicacion = 'disponible'
         if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") return false;
     } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        // Vendido requiere: estado_publicacion = 'vendida'
         if (prop.estado_publicacion !== "vendida") return false;
     }
+
 
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
     if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) return false;
