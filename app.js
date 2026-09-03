@@ -132,21 +132,37 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     let fotosUnificadas = [];
+    
+    // Captura el riel unificado de Postgres o el fallback de la foto principal
     const origenFotos = prop.galeria_fotos || prop.foto_principal;
 
     if (origenFotos) {
-        const coleccionProcesable = Array.isArray(origenFotos) ? origenFotos : [origenFotos];
-        coleccionProcesable.forEach(nombreFoto => {
+        let coleccionCruda = [];
+        
+        // Si viene como Array nativo de Postgres (La Vista SQL agrupada)
+        if (Array.isArray(origenFotos)) {
+            coleccionCruda = origenFotos;
+        } else if (typeof origenFotos === 'string') {
+            // Si la celda de texto de la tabla arrastra comas internas, las pica en elementos individuales
+            coleccionCruda = origenFotos.includes(',') ? origenFotos.split(',') : [origenFotos];
+        }
+
+        // Procesamos y limpiamos cada fragmento de imagen obtenido de forma individual
+        coleccionCruda.forEach(nombreFoto => {
             if (!nombreFoto) return;
             let texto = String(nombreFoto).trim();
+            if (!texto) return;
+
             if (texto.startsWith('http://') || texto.startsWith('https://')) {
                 fotosUnificadas.push(texto);
             } else {
+                // Reemplaza los espacios en blanco accidentales por guiones bajos
                 texto = texto.replace(/\s+/g, '_');
                 fotosUnificadas.push(urlBaseCloudinary + texto);
             }
         });
     }
+
 
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
