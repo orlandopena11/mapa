@@ -17,7 +17,7 @@ if (typeof window.correoUsuarioLogueado === "undefined") {
 
 if (typeof actualizarBotonCuenta !== "function") {
     var actualizarBotonCuenta = function() { // Inicia Function actualizarBotonCuenta
-        console.log("[SRE] SimulaciÃ³n de actualizaciÃ³n de botÃ³n de cuenta."); 
+        console.log("[SRE] Simulación de actualización de botón de cuenta."); 
     }; // Fin de Function actualizarBotonCuenta
 }
 
@@ -30,17 +30,18 @@ const state = {
         precioMax: Infinity, 
         camas: 0, 
         camasExactas: false, 
-        baÃ±os: 0, 
+        baños: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
     limpiadoresDOM: new Map()
-}; // Fin de asignaciÃ³n del objeto global state
+}; // Fin de asignación del objeto global state
 
 
 // ==========================================================================
-// PARTE 2 DE 15: INITIALIZACIÃ“N CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
+// PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
 // ==========================================================================
+
 const supabaseUrl = 'https://supabase.co';
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
@@ -64,6 +65,7 @@ function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
 } // Fin de Function obtenerClienteSupabase
 
 obtenerClienteSupabase();
+
 
 
 
