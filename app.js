@@ -41,32 +41,30 @@ const state = {
 // ==========================================================================
 // PARTE 2 DE 15: INITIALIZACIÃ“N CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
 // ==========================================================================
+const supabaseUrl = 'https://supabase.co';
+const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
-const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
-const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; 
-
-console.warn("âš ï¸ [SRE ESPÃA 1] Iniciando traza de compilaciÃ³n en el hilo principal...");
+console.warn("⚠️ [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
 let supabase = null;
 
 function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
     if (supabase) return supabase;
-    
     if (typeof createClient !== "undefined") {
         supabase = createClient(supabaseUrl, supabaseAnonKey);
     } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
-    
     if (supabase) {
-        console.log("âœ… [SRE ESPÃA 2] Cliente Supabase vinculado y listo para peticiones.");
+        console.log("✅ [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("âŒ [SRE ESPÃA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+        console.error("❌ [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
     }
     return supabase;
 } // Fin de Function obtenerClienteSupabase
 
 obtenerClienteSupabase();
+
 
 
 // ==========================================================================
