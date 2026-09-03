@@ -105,9 +105,9 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
 
-        // Consultamos la tabla pública de inmuebles (Asegúrate que se llame 'propiedad' o cámbiala por su nombre exacto)
+        // Consultamos directamente la vista unificada del catálogo mapeado
         const { data, error } = await cliente
-            .from('propiedad') 
+            .from('vista_catalogo_mapa')
             .select('*');
 
         if (error) throw error;
@@ -127,9 +127,9 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 // ==========================================================================
 // PARTE 4 DE 15: MOTOR DE NORMALIZACIÃ“N RELACIONAL Y CONCATENACIÃ“N DE IMÃGENES
 // ==========================================================================
-
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
-    const id = prop.id || String(Math.random());
+    const id = prop.propiedad_id || prop.id || String(Math.random());
+
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     const asegurarUrlCompleta = (ruta) => { // Inicia Arrow Function asegurarUrlCompleta
