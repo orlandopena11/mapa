@@ -130,31 +130,42 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     const id = prop.propiedad_id || prop.id || String(Math.random());
 
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
+        // Ruta base unificada según el inventario de tu cuenta de Cloudinary
+    const urlBaseCloudinary = "https://cloudinary.com";
 
     const asegurarUrlCompleta = (ruta) => { // Inicia Arrow Function asegurarUrlCompleta
         if (!ruta) return "";
         let texto = String(ruta).trim();
         
+        // Si el registro ya viene con la URL completa de Internet, la deja pasar intacta
         if (texto.startsWith('http://') || texto.startsWith('https://')) {
             return texto;
         }
         
+        // Reemplaza los espacios por guiones bajos para no romper la URL del servidor
         texto = texto.replace(/\s+/g, '_');
         
+        // Si el Excel o la celda de Supabase no tiene la extensión, le añade .webp por defecto
         if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && 
             !texto.toLowerCase().endsWith('.webp') && !texto.toLowerCase().endsWith('.jpeg')) {
-            texto = texto + '.jpg';
+            texto = texto + '.webp';
         }
         
         return urlBaseCloudinary + texto;
     }; // Fin de Arrow Function asegurarUrlCompleta
 
     let fotosUnificadas = [];
-    if (prop.fotos && Array.isArray(prop.fotos)) {
+    
+    // Si tu vista o tabla entrega un string único con el nombre de la foto (ej: "Foto_14_f0lweb.webp")
+    if (prop.fotos && typeof prop.fotos === 'string') {
+        const urlProcesada = asegurarUrlCompleta(prop.fotos);
+        if (urlProcesada) fotosUnificadas.push(urlProcesada);
+    } else if (prop.fotos && Array.isArray(prop.fotos)) {
+        // Si en el futuro migras a un arreglo de imágenes en Supabase
         fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
     }
     
+    // Foto de respaldo corporativa en caso de que la celda de la base de datos esté vacía
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push("https://cloudinary.comFoto15_havrr3.webp");
     }
