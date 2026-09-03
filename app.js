@@ -30,14 +30,12 @@ const state = {
         precioMax: Infinity, 
         camas: 0, 
         camasExactas: false, 
-        baños: 0, 
+        baÃ±os: 0, 
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
     limpiadoresDOM: new Map()
-}; // Fin de asignación del objeto global state
-
-/* }; */
+}; // Fin de asignaciÃ³n del objeto global state
 
 
 // ==========================================================================
@@ -47,7 +45,7 @@ const state = {
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1'; 
 
-console.warn("?? [SRE ESPÃA 1] Iniciando traza de compilaciÃ³n en el hilo principal...");
+console.warn("âš ï¸ [SRE ESPÃA 1] Iniciando traza de compilaciÃ³n en el hilo principal...");
 
 let supabase = null;
 
@@ -60,6 +58,11 @@ function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
     
+    if (supabase) {
+        console.log("âœ… [SRE ESPÃA 2] Cliente Supabase vinculado y listo para peticiones.");
+    } else {
+        console.error("âŒ [SRE ESPÃA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+    }
     return supabase;
 } // Fin de Function obtenerClienteSupabase
 
@@ -71,7 +74,12 @@ obtenerClienteSupabase();
 // ==========================================================================
 
 function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
+    console.group("ðŸ›¡ï¸ [SRE ESPÃA ACL] Verificando credenciales de interacciÃ³n");
+    console.log("Usuario actual en estado:", state.usuarioActual);
+    
     if (!state.usuarioActual || !state.usuarioActual.id) {
+        console.warn("â›” ACL BLOQUEADO: SesiÃ³n inexistente.");
+        console.groupEnd();
         alert("Acceso Restringido: Debe iniciar sesiÃ³n con su cuenta para realizar esta acciÃ³n.");
         if (typeof mostrarPopupAccion === "function") {
             mostrarPopupAccion("modal-autenticacion-supabase");
@@ -80,16 +88,21 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     }
     
     if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
+        console.error("â›” ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
+        console.groupEnd();
         alert("Cuenta Suspendida: No tiene autorizaciÃ³n para realizar esta acciÃ³n.");
         return false;
     }
     
+    console.log("ðŸŸ¢ ACL PERMITIDO: Cuenta activa y autorizada.");
+    console.groupEnd();
     return true;
 } // Fin de Function verificarAutorizacionAcceso
 
 const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
 
 function cargarDatosDesdeAppsScript() { // Inicia Function cargarDatosDesdeAppsScript
+    console.log("ðŸš€ [SRE ESPÃA 3] Disparando transporte JSONP hacia Tunnel Gateway...");
     const script = document.createElement('script');
     script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`; 
     document.body.appendChild(script);
@@ -367,6 +380,8 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     const contador = document.getElementById('results-counter');
 
+    console.log(`ðŸ“Š [SRE ESPÃA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`);
+
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
             <div class="mensaje-sin-propiedades" style="padding: 60px 20px; text-align: center; width: 100%; box-sizing: border-box;">
@@ -402,6 +417,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     }
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+    console.log(`ðŸ—ºï¸ [SRE ESPÃA MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
         if (!prop.latitud || !prop.longitud) return;
@@ -441,6 +457,8 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         marcador.on('click', (e) => { // Inicia Callback marker click
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
+            
+            console.log(`ðŸ“± [SRE ESPÃA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
 
             if (window.innerWidth <= 768) {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
@@ -449,7 +467,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 if (cajaFlotanteMovil && targetContenido) {
                     targetContenido.innerHTML = `
                         <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${prop.fotos}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+                            <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
                                 <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</span>
@@ -490,8 +508,21 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 // ==========================================================================
 
 function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
-    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) return;
+    console.group("ðŸ“¥ [SRE ESPÃA INTERCEPTOR] Paquete crudo recibido desde el Motor");
+    console.log("Estructura completa de la carga Ãºtil:", data);
+    
+    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
+        console.error("âŒ Formato de datos invÃ¡lido o ausencia de la colecciÃ³n 'propiedades'.");
+        console.groupEnd();
+        return;
+    }
+    
     state.propiedades = data.propiedades.map(normalizarPropiedad);
+    
+    console.log("ðŸ“¦ Data normalizada en el frontend (state.propiedades):");
+    console.table(state.propiedades.slice(0, 5), ["id", "precio_base", "tipo_propiedad", "tipo_anuncio", "estado_publicacion"]);
+    console.groupEnd();
+
     renderizarMapaZillow(); 
     renderizarCatalogoTarjetas();
     interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
@@ -500,15 +531,20 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
         supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
+            console.log(`ðŸ” [SRE ESPÃA AUTH] Evento disparado: ${event}`);
+            
             if (session && session.user) {
                 const correoUsuario = String(session.user.email).trim();
                 window.usuarioLogueado = session.user;
+                console.log(`ðŸ‘¤ Usuario detectado en Supabase Auth: ${correoUsuario}`);
 
                 const idScriptSeguridad = "sre-jsonp-firewall-auth";
                 let scriptExistente = document.getElementById(idScriptSeguridad);
                 if (scriptExistente) scriptExistente.remove();
                 
                 window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
+                    console.log("ðŸ›¡ï¸ [SRE ESPÃA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
+                    
                     if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
                         state.usuarioActual = null; 
                         window.usuarioLogueado = null;
@@ -532,6 +568,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } else {
                 state.usuarioActual = null; 
                 window.usuarioLogueado = null;
+                console.log("ðŸ‘¤ Estado Auth: Sin sesiÃ³n de usuario activa.");
             }
         }); // Fin de Callback onAuthStateChange
     }
