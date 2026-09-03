@@ -99,14 +99,29 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     return true;
 } // Fin de Function verificarAutorizacionAcceso
 
-const urlMiScriptGoogle = "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
+async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
+    console.log("🚀 [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
+    try {
+        const cliente = obtenerClienteSupabase();
+        if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
 
-function cargarDatosDesdeAppsScript() { // Inicia Function cargarDatosDesdeAppsScript
-    console.log("ðŸš€ [SRE ESPÃA 3] Disparando transporte JSONP hacia Tunnel Gateway...");
-    const script = document.createElement('script');
-    script.src = `${urlMiScriptGoogle}?callback=procesarDatosDelMotor`; 
-    document.body.appendChild(script);
-} // Fin de Function cargarDatosDesdeAppsScript
+        // Consultamos la tabla pública de inmuebles (Asegúrate que se llame 'propiedad' o cámbiala por su nombre exacto)
+        const { data, error } = await cliente
+            .from('propiedad') 
+            .select('*');
+
+        if (error) throw error;
+
+        console.log("🔥 [SRE ESPÍA REST SUCCESS] Registros crudos obtenidos de Supabase:", data.length);
+        
+        // Estructuramos el paquete con el formato esperado por tu orquestador de UI
+        const paqueteData = { propiedades: data || [], usuarios: [] };
+        procesarDatosDelMotor(paqueteData);
+
+    } catch (err) {
+        console.error("❌ [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
+    }
+} // Fin de Function cargarDatosDesdeSupabase
 
 
 // ==========================================================================
@@ -584,9 +599,11 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             window.map.on('moveend', renderizarMapaZillow);
             window.map.invalidateSize(); 
         }
-        cargarDatosDesdeAppsScript();
+        // Invocación directa optimizada
+        cargarDatosDesdeSupabase();
 
         const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
+
         if (btnCerrarTarjetaMovil) {
             btnCerrarTarjetaMovil.onclick = (e) => {
                 e.stopPropagation();
