@@ -42,7 +42,7 @@ const state = {
 // PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
 // ==========================================================================
 
-const supabaseUrl = 'https://supabase.co';
+const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("⚠️ [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
