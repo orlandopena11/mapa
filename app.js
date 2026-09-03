@@ -851,20 +851,53 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
     if (tipoPantalla === 'cerrar') { cortina.classList.remove('cortina-activa'); return; }
 
     if (tipoPantalla === 'detalle') {
+        // Extraemos las fotos del arreglo unificado
+        const listaFotos = prop.fotos || [];
+        const fotoPrincipal = listaFotos[0] || "https://res.cloudinary.com/obw6ciov/image/upload/";
+        
+        // Construimos el bloque lateral de las 4 fotos secundarias
+        let subGridHtml = '';
+        for (let i = 1; i <= 4; i++) {
+            const fotoUrl = listaFotos[i] || "https://res.cloudinary.com/obw6ciov/image/upload/";
+            subGridHtml += `<img src="${fotoUrl}" style="width:100%; height:145px; object-fit:cover; border-radius:4px; background:#f0f2f5;">`;
+        }
+
         cortina.innerHTML = `
-            <div class="nav-ficha-zillow" style="position:fixed; top:0; left:0; width:100vw; height:60px; background:white; display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:6000; border-bottom:1px solid #ddd;">
-                <button id="btn-cerrar-cortina" style="color:#006aff; font-weight:bold; background:none; border:none; cursor:pointer;">â€¹ Volver a buscar</button>
-                <img src="./logo.jpg" style="height:32px;">
-                <div><span>Ficha Detalle</span></div>
+            <div class="nav-ficha-zillow" style="position:fixed; top:0; left:0; width:100vw; height:60px; background:white; display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:6000; border-bottom:1px solid #ddd; font-family:sans-serif;">
+                <button id="btn-cerrar-cortina" style="color:#006aff; font-size:15px; font-weight:bold; background:none; border:none; cursor:pointer;">‹ Volver a buscar</button>
+                <span style="font-weight:bold; color:#1a1a1a;">Ficha Detalle Inmobiliaria</span>
+                <div style="width:80px;"></div>
             </div>
-            <div style="margin-top:60px; padding:24px; max-width:1200px; margin-left:auto; margin-right:auto; font-family:sans-serif;">
-                <img src="${prop.fotos ? prop.fotos : ''}" style="width:100%; max-height:410px; object-fit:cover; border-radius:8px; margin-bottom:16px;">
-                <h2 style="font-size:32px; margin:0 0 8px 0;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                <p style="font-size:18px; color:#4a5568; margin:0 0 16px 0;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</p>
-                <p style="font-size:16px; margin:0 0 24px 0; font-weight:bold;">${prop.direccion || prop.titulo}</p>
+            
+            <div style="margin-top:60px; padding:16px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:sans-serif; box-sizing:border-box;">
+                
+                <!-- MOSAICO DE IMÁGENES ESTILO ZILLOW (1 Grande Izq / 4 Pequeñas Der) -->
+                <div class="mosaico-zillow-galeria" style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-bottom:20px; width:100%;">
+                    <!-- Foto Principal Grande -->
+                    <div class="foto-principal-wrapper">
+                        <img src="${fotoPrincipal}" style="width:100%; height:300px; object-fit:cover; border-radius:6px 0 0 6px; background:#f0f2f5; display:block;">
+                    </div>
+                    <!-- Sub-Grid de 4 Fotos Derecha -->
+                    <div class="foto-secundarias-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; height:300px; content-visibility:auto;">
+                        ${subGridHtml}
+                    </div>
+                </div>
+
+                <!-- BLOQUE DE INFORMACIÓN COMERCIAL -->
+                <div style="padding:4px 0;">
+                    <h2 style="font-size:34px; font-weight:800; margin:0 0 6px 0; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
+                    <p style="font-size:16px; color:#4a5568; margin:0 0 14px 0; font-weight:600;">
+                        <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd | 
+                        <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba | 
+                        <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
+                    </p>
+                    <p style="font-size:15px; margin:0 0 8px 0; color:#2d3748; font-weight:bold; letter-spacing:-0.2px;">${prop.direccion} (${prop.distrito})</p>
+                    <p style="font-size:14px; color:#718096; line-height:1.5; margin:12px 0 0 0; background:#f8fafc; padding:12px; border-radius:6px;">${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}</p>
+                </div>
             </div>
         `;
-        document.getElementById('btn-cerrar-cortina')?.addEventListener('click', () => gestionarCortinaSPA('cerrar'));
+        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
     }
+
     cortina.classList.add('cortina-activa');
 } // Fin de Function gestionarCortinaSPA
