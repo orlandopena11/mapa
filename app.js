@@ -128,75 +128,69 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 // PARTE 4 DE 15: MOTOR DE NORMALIZACIÃ“N RELACIONAL Y CONCATENACIÃ“N DE IMÃGENES
 // ==========================================================================
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
-    const id = prop.propiedad_id || prop.id || String(Math.random());
-
-        // Ruta base unificada según el inventario de tu cuenta de Cloudinary
-    const urlBaseCloudinary = "https://cloudinary.com";
-
-    const asegurarUrlCompleta = (ruta) => { // Inicia Arrow Function asegurarUrlCompleta
-        if (!ruta) return "";
-        let texto = String(ruta).trim();
-        
-        // Si el registro ya viene con la URL completa de Internet, la deja pasar intacta
-        if (texto.startsWith('http://') || texto.startsWith('https://')) {
-            return texto;
-        }
-        
-        // Reemplaza los espacios por guiones bajos para no romper la URL del servidor
-        texto = texto.replace(/\s+/g, '_');
-        
-        // Si el Excel o la celda de Supabase no tiene la extensión, le añade .webp por defecto
-        if (!texto.toLowerCase().endsWith('.jpg') && !texto.toLowerCase().endsWith('.png') && 
-            !texto.toLowerCase().endsWith('.webp') && !texto.toLowerCase().endsWith('.jpeg')) {
-            texto = texto + '.webp';
-        }
-        
-        return urlBaseCloudinary + texto;
-    }; // Fin de Arrow Function asegurarUrlCompleta
+    const id = prop.propiedad_id || String(Math.random());
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     let fotosUnificadas = [];
-    
-    // Si tu vista o tabla entrega un string único con el nombre de la foto (ej: "Foto_14_f0lweb.webp")
-    if (prop.fotos && typeof prop.fotos === 'string') {
-        const urlProcesada = asegurarUrlCompleta(prop.fotos);
-        if (urlProcesada) fotosUnificadas.push(urlProcesada);
-    } else if (prop.fotos && Array.isArray(prop.fotos)) {
-        // Si en el futuro migras a un arreglo de imágenes en Supabase
-        fotosUnificadas = prop.fotos.map(f => asegurarUrlCompleta(f)).filter(Boolean);
-    }
-    
-    // Foto de respaldo corporativa en caso de que la celda de la base de datos esté vacía
-    if (fotosUnificadas.length === 0) {
-        fotosUnificadas.push("https://cloudinary.comFoto15_havrr3.webp");
+    const origenFotos = prop.galeria_fotos || prop.foto_principal;
+
+    if (origenFotos) {
+        const coleccionProcesable = Array.isArray(origenFotos) ? origenFotos : [origenFotos];
+        coleccionProcesable.forEach(nombreFoto => {
+            if (!nombreFoto) return;
+            let texto = String(nombreFoto).trim();
+            if (texto.startsWith('http://') || texto.startsWith('https://')) {
+                fotosUnificadas.push(texto);
+            } else {
+                texto = texto.replace(/\s+/g, '_');
+                fotosUnificadas.push(urlBaseCloudinary + texto);
+            }
+        });
     }
 
+    if (fotosUnificadas.length === 0) {
+        fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
+    }
+
+    // RETORNO DE ATRIBUTOS EXACTOS PROVENIENTES DE POSTGRESQL (SIN ALTERAR NOMENCLATURA)
     return {
         id: String(id),
-        anuncio_id: prop.anuncio_id || "",
-        precio_base: parseFloat(prop.precio_base || 350000),
-        estado_publicacion: String(prop.estado_publicacion || prop.estado_anuncio || "disponible").trim(), 
-        tipo_anuncio: String(prop.tipo_anuncio || prop.tipoAnuncio || "Venta").trim(),             
-        estadoListado: prop.estado_publicacion || "Venta", 
-        titulo: String(prop.titulo || '').trim(), 
-        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(), 
+        propiedad_id: String(id),
+        usuario_id_fk: prop.usuario_id_fk || "",
+        ubicacion_id_fk: prop.ubicacion_id_fk || "",
+        titulo: String(prop.titulo || '').trim(),
+        precio_base: parseFloat(prop.precio_base || 0),
+        estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
+        tipo_anuncio: String(prop.tipo_anuncio || "Venta").trim(),
+        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
         subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
+        direccion: String(prop.direccion || "").trim(),
+        descripcion: String(prop.descripcion || "").trim(),
+        
+        // Características Físicas Sincronizadas
         area_terreno: parseFloat(prop.area_terreno || 0),
-        estacionamientos: parseInt(prop.estacionamientos, 10) || 0,
-        ano_construccion: parseInt(prop.ano_construccion, 10) || 0,
-        estado_propiedad: String(prop.estado_propiedad || "").trim(),
-        fotos: fotosUnificadas, 
-        latitud: parseFloat(prop.latitud || -12.125),
-        longitud: parseFloat(prop.longitud || -76.995),
+        area_construida: parseFloat(prop.area_construida || 0),
         habitaciones: parseInt(prop.habitaciones || 0, 10),
         banos: parseInt(prop.banos || 0, 10),
-        area_construida: parseFloat(prop.area_construida || 0),
-        situacion_propiedad: String(prop.situacion_propiedad || ""),
-        sotano: prop.sotano || "no",
-        almacen: prop.almacen || "no",
-        vista: prop.vista || "Ninguna",
-        creado_por: prop.creado_por || "",
-        telefono: prop.telefono || "",
-        contacto_nombre: prop.contacto_nombre || "Contacto"
+        estacionamientos: parseInt(prop.estacionamientos || 0, 10),
+        ano_construccion: parseInt(prop.ano_construccion || 0, 10),
+        estado_propiedad: String(prop.estado_propiedad || "").trim(),
+        moneda: String(prop.moneda || "USD").trim(),
+        
+        // Bloque de Control e Inventario Técnico
+        cuota_mantenimiento: parseFloat(prop.cuota_mantenimiento || 0),
+        situacion_propiedad: String(prop.situacion_propiedad || "").trim(),
+        sotano: String(prop.sotano || "no").trim(),
+        almacen: String(prop.almacen || "no").trim(),
+        vista: String(prop.vista || "Ninguna").trim(),
+        creado_por: String(prop.creado_por || "").trim(),
+        
+        // Georreferenciación y Colecciones Agregadas
+        distrito: String(prop.distrito || "").trim(),
+        latitud: parseFloat(prop.latitud || -12.125),
+        longitud: parseFloat(prop.longitud || -76.995),
+        fotos: fotosUnificadas,
+        amenidades: prop.amenidades || []
     };
 } // Fin de Function normalizarPropiedad
 
