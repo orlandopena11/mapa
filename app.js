@@ -919,14 +919,33 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
             // Disparador del efecto de movimiento cinematográfico continuo por hardware
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
         if (imgAnimar) {
-            imgAnimar.animate([
+        let indiceFotoSecuencia = 0;
+        const totalFotosInmueble = listaFotos.length;
+
+        function reproducirSecuenciaCinematografica() {
+            if (!imgAnimar || totalFotosInmueble === 0) return;
+
+            // 1. Asigna la foto correspondiente al índice actual
+            imgAnimar.src = listaFotos[indiceFotoSecuencia];
+
+            // 2. Dispara la animación de movimiento acelerada por hardware
+            const animacionCorriendo = imgAnimar.animate([
                 { transform: 'scale(1.0) translate(0%, 0%)' },
-                { transform: 'scale(1.12) translate(1%, -0.5%)' }
+                { transform: 'scale(1.18) translate(2%, -1.5%)' }
             ], {
-                duration: 24000,
-                iterations: Infinity,
-                direction: 'alternate',
+                duration: 8000, // 8 segundos de paneo continuo
+                iterations: 1,  // Se ejecuta una sola vez para dar paso al cambio
                 easing: 'ease-in-out'
             });
+
+            // 3. Captura el instante exacto en que termina la secuencia para pasar a la siguiente foto
+            animacionCorriendo.onfinish = () => {
+                indiceFotoSecuencia = (indiceFotoSecuencia + 1) % totalFotosInmueble;
+                reproducirSecuenciaCinematografica(); // Bucle infinito automático
+            };
+        }
+
+        // Iniciar la secuencia de reproducción automatizada
+        reproducirSecuenciaCinematografica();
         }
 } // Fin de Function gestionarCortinaSPA
