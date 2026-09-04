@@ -915,37 +915,36 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
         document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
     }
 
-    cortina.classList.add('cortina-activa');
-            // Disparador del efecto de movimiento cinematográfico continuo por hardware
+        // Disparador del efecto de movimiento y cambio de foto automatizado
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
-        if (imgAnimar) {
+        const fotosArregloSeguro = prop.fotos || [];
         let indiceFotoSecuencia = 0;
-        const totalFotosInmueble = listaFotos.length;
 
         function reproducirSecuenciaCinematografica() {
-            if (!imgAnimar || totalFotosInmueble === 0) return;
+            if (!imgAnimar || fotosArregloSeguro.length === 0) return;
 
-            // 1. Asigna la foto correspondiente al índice actual
-            imgAnimar.src = listaFotos[indiceFotoSecuencia];
+            // 1. Asigna la foto correspondiente de Supabase
+            imgAnimar.src = fotosArregloSeguro[indiceFotoSecuencia];
 
-            // 2. Dispara la animación de movimiento acelerada por hardware
+            // 2. Dispara el efecto Ken Burns de 8 segundos acelerado por GPU
             const animacionCorriendo = imgAnimar.animate([
                 { transform: 'scale(1.0) translate(0%, 0%)' },
                 { transform: 'scale(1.18) translate(2%, -1.5%)' }
             ], {
-                duration: 8000, // 8 segundos de paneo continuo
-                iterations: 1,  // Se ejecuta una sola vez para dar paso al cambio
+                duration: 8000,
+                iterations: 1,
                 easing: 'ease-in-out'
             });
 
-            // 3. Captura el instante exacto en que termina la secuencia para pasar a la siguiente foto
+            // 3. Transición automática al finalizar la secuencia
             animacionCorriendo.onfinish = () => {
-                indiceFotoSecuencia = (indiceFotoSecuencia + 1) % totalFotosInmueble;
-                reproducirSecuenciaCinematografica(); // Bucle infinito automático
+                indiceFotoSecuencia = (indiceFotoSecuencia + 1) % fotosArregloSeguro.length;
+                reproducirSecuenciaCinematografica();
             };
         }
 
-        // Iniciar la secuencia de reproducción automatizada
+        // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
+            
         }
 } // Fin de Function gestionarCortinaSPA
