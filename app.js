@@ -872,8 +872,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
                 <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
                     
                     <!-- Foto Única con Animación Cinematográfica Lenta -->
-                    <div class="contenedor-foto-animada" style="width: 100%; height: 100%; border-radius: 0;">
-                        <img src="${fotoPrincipal}" class="animacion-zoom-lento" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                    <div style="width: 100%; height: 100%; border-radius: 0; overflow: hidden; position: relative;">
+                        <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
                     </div>
 
                     <!-- Botón Flotante Volver Detrás -->
