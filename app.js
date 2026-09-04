@@ -916,4 +916,17 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
     }
 
     cortina.classList.add('cortina-activa');
+            // Disparador del efecto de movimiento cinematográfico continuo por hardware
+        const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
+        if (imgAnimar) {
+            imgAnimar.animate([
+                { transform: 'scale(1.0) translate(0%, 0%)' },
+                { transform: 'scale(1.12) translate(1%, -0.5%)' }
+            ], {
+                duration: 24000,
+                iterations: Infinity,
+                direction: 'alternate',
+                easing: 'ease-in-out'
+            });
+        }
 } // Fin de Function gestionarCortinaSPA
