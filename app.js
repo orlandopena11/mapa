@@ -913,7 +913,6 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
             </div>
         `;
         document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
-    }
 
         // Disparador del efecto de movimiento y cambio de foto automatizado
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
@@ -945,6 +944,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
 
         // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
-            
-        }
+    }
+
+    cortina.classList.add('cortina-activa');
 } // Fin de Function gestionarCortinaSPA
