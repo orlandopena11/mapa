@@ -851,55 +851,64 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
     if (tipoPantalla === 'cerrar') { cortina.classList.remove('cortina-activa'); return; }
 
     if (tipoPantalla === 'detalle') {
-        // Extraemos las fotos del arreglo unificado
         const listaFotos = prop.fotos || [];
         const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
         
-        // Construimos el bloque lateral de las 4 fotos secundarias con animación alternada
-        let subGridHtml = '';
-        const efectosSecundarios = ['animacion-paneo-lento', 'animacion-zoom-lento', 'animacion-paneo-reverso', 'animacion-zoom-atras'];
-        
-        for (let i = 1; i <= 4; i++) {
-            const fotoUrl = listaFotos[i] || "https://cloudinary.com";
-            const animacionClase = efectosSecundarios[(i - 1) % efectosSecundarios.length];
-            
-            subGridHtml += `
-                <div class="contenedor-foto-animada">
-                    <img src="${fotoUrl}" class="${animacionClase}" style="width:100%; height:145px; object-fit:cover; background:#f0f2f5;">
+        // Generamos los círculos de las miniaturas inferiores estilo Zillow
+        let miniaturasHtml = '';
+        const totalMiniaturas = Math.min(listaFotos.length, 5);
+        for (let i = 0; i < totalMiniaturas; i++) {
+            miniaturasHtml += `
+                <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: ${i === 0 ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'}; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <img src="${listaFotos[i]}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>`;
         }
 
         cortina.innerHTML = `
-            <div class="nav-ficha-zillow" style="position:fixed; top:0; left:0; width:100vw; height:60px; background:white; display:flex; align-items:center; justify-content:space-between; padding:0 24px; z-index:6000; border-bottom:1px solid #ddd; font-family:sans-serif;">
-                <button id="btn-cerrar-cortina" style="color:#006aff; font-size:15px; font-weight:bold; background:none; border:none; cursor:pointer;">‹ Volver a buscar</button>
-                <span style="font-weight:bold; color:#1a1a1a;">Ficha Detalle Inmobiliaria</span>
-                <div style="width:80px;"></div>
-            </div>
-            
-            <div style="margin-top:60px; padding:16px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:sans-serif; box-sizing:border-box;">
+            <!-- CONTENEDOR MAESTRO DE LA FICHA -->
+            <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
                 
-                <!-- MOSAICO DE IMÁGENES ESTILO ZILLOW CON CONTENEDORES ANTI-DESBORDANTE -->
-                <div class="mosaico-zillow-galeria" style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-bottom:20px; width:100%;">
-                    <!-- Foto Principal Grande con Zoom y Paneo Lento -->
-                    <div class="foto-principal-wrapper contenedor-foto-animada" style="border-radius:6px 0 0 6px;">
-                        <img src="${fotoPrincipal}" class="animacion-zoom-lento" style="width:100%; height:300px; object-fit:cover; background:#f0f2f5; display:block;">
+                <!-- SECCIÓN MULTIMEDIA PRINCIPAL (REPLICA ZILLOW SHOWCASE) -->
+                <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
+                    
+                    <!-- Foto Única con Animación Cinematográfica Lenta -->
+                    <div class="contenedor-foto-animada" style="width: 100%; height: 100%; border-radius: 0;">
+                        <img src="${fotoPrincipal}" class="animacion-zoom-lento" style="width: 100%; height: 100%; object-fit: cover; display: block;">
                     </div>
-                    <!-- Sub-Grid de 4 Fotos Derecha -->
-                    <div class="foto-secundarias-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; height:300px; content-visibility:auto;">
-                        ${subGridHtml}
+
+                    <!-- Botón Flotante Volver Detrás -->
+                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">‹</button>
+
+                    <!-- Botones Flotantes de Control (Esquina Derecha) -->
+                    <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 10;">
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">♥ Guardado</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">⤻ Compartir</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">••• Más</button>
                     </div>
+
+                    <!-- Flechas Laterales de Navegación -->
+                    <button style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">‹</button>
+                    <button style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">›</button>
+
+                    <!-- Carrusel de Miniaturas Flotante Inferior -->
+                    <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">
+                        ${miniaturasHtml}
+                    </div>
+
+                    <!-- Marca Flotante Inferior Derecha -->
+                    <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                <!-- BLOQUE DE INFORMACIÓN COMERCIAL -->
-                <div style="padding:4px 0;">
-                    <h2 style="font-size:34px; font-weight:800; margin:0 0 6px 0; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                    <p style="font-size:16px; color:#4a5568; margin:0 0 14px 0; font-weight:600;">
+                <!-- BLOQUE DE INFORMACIÓN COMERCIAL INFERIOR -->
+                <div style="padding: 24px; max-width: 1100px; margin: 0 auto; box-sizing: border-box;">
+                    <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
+                    <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
                         <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd | 
                         <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba | 
                         <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
                     </p>
-                    <p style="font-size:15px; margin:0 0 8px 0; color:#2d3748; font-weight:bold; letter-spacing:-0.2px;">${prop.direccion} (${prop.distrito})</p>
-                    <p style="font-size:14px; color:#718096; line-height:1.5; margin:12px 0 0 0; background:#f8fafc; padding:12px; border-radius:6px;">${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}</p>
+                    <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
+                    <p style="font-size: 14px; color: #718096; line-height: 1.6; margin: 16px 0 0 0; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}</p>
                 </div>
             </div>
         `;
