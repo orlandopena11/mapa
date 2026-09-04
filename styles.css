@@ -497,47 +497,49 @@ div.leaflet-marker-icon.map-price-pill {
         top: 75px !important;
         left: 10px !important;
     }
-    /* ==========================================================================
-   PARTE 6 DE 6: EFECTOS DE MOVIMIENTO CINEMATOGRÁFICO INTERIOR (ZILLOW SHOWCASE)
+
+/* ==========================================================================
+   PARTE 6 DE 6: EFECTOS DE MOVIMIENTO CINEMATOGRÁFICO (ZILLOW SHOWCASE)
    ========================================================================== */
 
-/* Contenedor que recorta los bordes para que las fotos no se desborden al expandirse */
-.contenedor-foto-animada {
-    overflow: hidden !important;
-    position: relative !important;
+/* Contenedor que recorta los bordes usando especificidad compuesta */
+.mosaico-zillow-galeria .contenedor-foto-animada,
+.foto-secundarias-grid .contenedor-foto-animada {
+    overflow: hidden;
+    position: relative;
     border-radius: 6px;
     background-color: var(--gris-borde);
 }
 
 /* Efecto 1: Zoom lento continuo hacia adelante */
-.animacion-zoom-lento {
-    animation: kenBurnsZoom 24s ease-in-out infinite alternate !important;
+.contenedor-foto-animada .animacion-zoom-lento {
+    animation: kenBurnsZoom 24s ease-in-out infinite alternate;
     transform-origin: center center;
     will-change: transform;
 }
 
 /* Efecto 2: Paneo horizontal lento hacia la izquierda */
-.animacion-paneo-lento {
-    animation: kenBurnsPaneo 28s ease-in-out infinite alternate !important;
+.contenedor-foto-animada .animacion-paneo-lento {
+    animation: kenBurnsPaneo 28s ease-in-out infinite alternate;
     transform-origin: left center;
     will-change: transform;
 }
 
 /* Efecto 3: Paneo horizontal lento hacia la derecha */
-.animacion-paneo-reverso {
-    animation: kenBurnsPaneoReverso 30s ease-in-out infinite alternate !important;
+.contenedor-foto-animada .animacion-paneo-reverso {
+    animation: kenBurnsPaneoReverso 30s ease-in-out infinite alternate;
     transform-origin: right center;
     will-change: transform;
 }
 
 /* Efecto 4: Zoom lento continuo de salida hacia atrás */
-.animacion-zoom-atras {
-    animation: kenBurnsZoomAtras 26s ease-in-out infinite alternate !important;
+.contenedor-foto-animada .animacion-zoom-atras {
+    animation: kenBurnsZoomAtras 26s ease-in-out infinite alternate;
     transform-origin: center center;
     will-change: transform;
 }
 
-/* --- LOGICA DIGITAL DE TRASLACIÓN DE PERSPECTIVA POR HARDWARE (GPU) --- */
+/* --- LÓGICA DIGITAL DE TRASLACIÓN DE PERSPECTIVA POR HARDWARE (GPU) --- */
 @keyframes kenBurnsZoom {
     0% { transform: scale(1.0); }
     100% { transform: scale(1.14) translate(1%, -1%); }
@@ -556,5 +558,4 @@ div.leaflet-marker-icon.map-price-pill {
 @keyframes kenBurnsZoomAtras {
     0% { transform: scale(1.16) translate(-1%, 1%); }
     100% { transform: scale(1.0); }
-}
 }
