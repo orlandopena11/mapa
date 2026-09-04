@@ -853,13 +853,20 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
     if (tipoPantalla === 'detalle') {
         // Extraemos las fotos del arreglo unificado
         const listaFotos = prop.fotos || [];
-        const fotoPrincipal = listaFotos[0] || "https://res.cloudinary.com/obw6ciov/image/upload/";
+        const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
         
-        // Construimos el bloque lateral de las 4 fotos secundarias
+        // Construimos el bloque lateral de las 4 fotos secundarias con animación alternada
         let subGridHtml = '';
+        const efectosSecundarios = ['animacion-paneo-lento', 'animacion-zoom-lento', 'animacion-paneo-reverso', 'animacion-zoom-atras'];
+        
         for (let i = 1; i <= 4; i++) {
-            const fotoUrl = listaFotos[i] || "https://res.cloudinary.com/obw6ciov/image/upload/";
-            subGridHtml += `<img src="${fotoUrl}" style="width:100%; height:145px; object-fit:cover; border-radius:4px; background:#f0f2f5;">`;
+            const fotoUrl = listaFotos[i] || "https://cloudinary.com";
+            const animacionClase = efectosSecundarios[(i - 1) % efectosSecundarios.length];
+            
+            subGridHtml += `
+                <div class="contenedor-foto-animada">
+                    <img src="${fotoUrl}" class="${animacionClase}" style="width:100%; height:145px; object-fit:cover; background:#f0f2f5;">
+                </div>`;
         }
 
         cortina.innerHTML = `
@@ -871,11 +878,11 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
             
             <div style="margin-top:60px; padding:16px; max-width:1100px; margin-left:auto; margin-right:auto; font-family:sans-serif; box-sizing:border-box;">
                 
-                <!-- MOSAICO DE IMÁGENES ESTILO ZILLOW (1 Grande Izq / 4 Pequeñas Der) -->
+                <!-- MOSAICO DE IMÁGENES ESTILO ZILLOW CON CONTENEDORES ANTI-DESBORDANTE -->
                 <div class="mosaico-zillow-galeria" style="display:grid; grid-template-columns: 2fr 1fr; gap:8px; margin-bottom:20px; width:100%;">
-                    <!-- Foto Principal Grande -->
-                    <div class="foto-principal-wrapper">
-                        <img src="${fotoPrincipal}" style="width:100%; height:300px; object-fit:cover; border-radius:6px 0 0 6px; background:#f0f2f5; display:block;">
+                    <!-- Foto Principal Grande con Zoom y Paneo Lento -->
+                    <div class="foto-principal-wrapper contenedor-foto-animada" style="border-radius:6px 0 0 6px;">
+                        <img src="${fotoPrincipal}" class="animacion-zoom-lento" style="width:100%; height:300px; object-fit:cover; background:#f0f2f5; display:block;">
                     </div>
                     <!-- Sub-Grid de 4 Fotos Derecha -->
                     <div class="foto-secundarias-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; height:300px; content-visibility:auto;">
