@@ -1367,7 +1367,105 @@ function inyectarCapacidadCompraZillow(prop) {
             document.getElementById('barra-segmento-seguro').style.width = `${pctSeg}%`;
         };
     }
+
+    // Disparador de inyección en cadena para el mapa Leaflet y escuelas
+    inyectarMapaYEscuelasZillow(prop);
 }
+
+        
 // ====================================================================================
 // FIN DE FUNCTION: inyectarCapacidadCompraZillow
+// ====================================================================================
+
+// ====================================================================================
+// INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
+// ====================================================================================
+function inyectarMapaYEscuelasZillow(prop) {
+    const slotMapa = document.getElementById('zillow-neighborhood-slot');
+    if (!slotMapa) return;
+
+    const lat = parseFloat(prop.latitud) || -12.1193; // Fallback Miraflores/Surco si viene vacío
+    const lng = parseFloat(prop.longitud) || -77.0294;
+    const distrito = prop.distrito || 'Lima';
+
+    slotMapa.innerHTML = `
+        <!-- SECCIÓN: MAPA DEL BARRIO INTERACTIVO -->
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">Barrio y ubicación</h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Explora los alrededores y la conectividad urbana en el distrito de ${distrito}.</p>
+            
+            <!-- Contenedor Físico del Mapa Leaflet -->
+            <div id="mapa-detalle-zillow-container" style="width: 100%; height: 320px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; z-index: 1; position: relative;"></div>
+        </div>
+
+        <!-- SECCIÓN: ESCUELAS CERCANAS -->
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 20px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">Escuelas cercanas</h4>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Calificaciones e instituciones educativas asignadas a esta zona residencial.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Escuela 1 -->
+                <div style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px; background: #ffffff;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="background: #10b981; color: white; font-weight: bold; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">8</span>
+                        <div>
+                            <strong style="font-size: 14px; color: #1e293b; display: block;">Colegio Saco Oliveros</strong>
+                            <span style="font-size: 12px; color: #64748b;">Primaria & Secundaria | A 0.4 km</span>
+                        </div>
+                    </div>
+                    <span style="font-size: 12px; color: #475569; font-weight: 600; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">Público calificado</span>
+                </div>
+
+                <!-- Escuela 2 -->
+                <div style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px; background: #ffffff;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="background: #10b981; color: white; font-weight: bold; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">7</span>
+                        <div>
+                            <strong style="font-size: 14px; color: #1e293b; display: block;">I.E. Juana Alarco de Dammert</strong>
+                            <span style="font-size: 12px; color: #64748b;">Solo Mujeres | A 0.9 km</span>
+                        </div>
+                    </div>
+                    <span style="font-size: 12px; color: #475569; font-weight: 600; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">Estatal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECEPTOR FINAL DE CARRUSELES DE PROPIEDADES CERCANAS/SIMILARES -->
+        <div id="zillow-similar-properties-carousel-slot"></div>
+    `;
+
+    // --- PROCESAMIENTO SRE: ASIGNACIÓN ASÍNCRONA DE MAPA EN EL DOM ---
+    setTimeout(() => {
+        const mapaDiv = document.getElementById('mapa-detalle-zillow-container');
+        if (!mapaDiv || typeof L === 'undefined') return;
+
+        try {
+            // Inicializamos el mapa Leaflet centrado en las coordenadas reales de Supabase
+            const mapDetalle = L.map('mapa-detalle-zillow-container', {
+                center: [lat, lng],
+                zoom: 15,
+                zoomControl: true,
+                scrollWheelZoom: false
+            });
+
+            // Cargamos la capa de diseño base gratuita de OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(mapDetalle);
+
+            // Añadimos un marcador circular estilizado para representar la propiedad
+            L.marker([lat, lng]).addTo(mapDetalle)
+                .bindPopup(`<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $${Number(prop.precio_base).toLocaleString('en-US')}`)
+                .openPopup();
+
+            // Forzamos el recalibrado de dimensiones para evitar cortes en el layout
+            setTimeout(() => { mapDetalle.invalidateSize(); }, 300);
+
+        } catch (error) {
+            console.error("SRE Error al renderizar mapa Leaflet secundario:", error);
+        }
+    }, 200);
+}
+// ====================================================================================
+// FIN DE FUNCTION: inyectarMapaYEscuelasZillow
 // ====================================================================================
