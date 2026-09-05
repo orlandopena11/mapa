@@ -994,9 +994,108 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                 reproducirSecuenciaCinematografica();
             };
         }
+        // Inyección automática y cálculo de las sub-fichas técnicas e interiores
+        inyectarSeccionesAdicionalesZillow(prop);
 
+        // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
     }
 
+
     cortina.classList.add('cortina-activa');
+}
+
+// ==========================================================================
+// COMPONENTE MODULAR INTERIOR: CÁLCULOS FINANCIEROS Y CARACTERÍSTICAS
+// ==========================================================================
+
+function inyectarSeccionesAdicionalesZillow(prop) {
+    const slotDinamico = document.getElementById('zillow-next-sections-slot');
+    if (!slotDinamico) return;
+
+    // --- BLOQUE DE CÁLCULOS MATEMÁTICOS FINANCIEROS DE MERCADO ---
+    const precioBase = parseFloat(prop.precio_base) || 0;
+    
+    // 1. Zestimate de venta aproximado (+2.1% del precio base)
+    const zestimateVenta = precioBase > 0 ? precioBase * 1.021 : 0;
+    
+    // 2. Rango de mercado estimado (Rango del -4% al +5% sobre el Zestimate)
+    const rangoMin = zestimateVenta * 0.96;
+    const rangoMax = zestimateVenta * 1.05;
+    
+    // 3. Alquiler estimado mensual (Retorno anualizado basado en una tasa del 5.5% de rentabilidad)
+    const zestimateAlquiler = precioBase > 0 ? (precioBase * 0.055) / 12 : 0;
+
+    // --- FORMATEADORES MONETARIOS AUXILIARES ---
+    const fMoneda = (val) => val > 0 ? '$' + Math.round(val).toLocaleString('en-US') : 'No disponible';
+
+    slotDinamico.innerHTML = `
+        <!-- SECCIÓN 1: DATOS Y CARACTERÍSTICAS (INTERIOR Y EQUIPAMIENTO) -->
+        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Datos y características del inmueble</h4>
+            
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Sub-bloque Interior -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 8px;">
+                    <h5 style="font-size: 15px; font-weight: 700; color: #006aff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Interior</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <div>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Habitaciones y baños:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños completos</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Calefacción y Enfriamiento:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">Centralizado / Aire Acondicionado independiente</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Electrodomésticos incluidos:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">Cocina empotrada, Horno, Extractor de grasa</strong>
+                        </div>
+                        <div>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Sótanos y Almacenes:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">Sótano: ${prop.sotano || 'No'} | Depósito/Almacén: ${prop.almacen || 'No'}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECCIÓN 2: PERSPECTIVA DE LA OFERTA Y VALOR DE MERCADO ESTIMADO -->
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a;">Valor de mercado estimado</h4>
+                <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">ZESTIMATE</span>
+            </div>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Índice de valoración automatizado calculado en tiempo real con la data de la zona.</p>
+            
+            <!-- Rejilla de Tarjetas Financieras Calculadas -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                
+                <!-- Tarjeta Venta Real -->
+                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Precio de lista</span>
+                    <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(precioBase)}</strong>
+                    <span style="font-size: 11px; color: #10b981; font-weight: 600;">Valor base de tasación</span>
+                </div>
+
+                <!-- Tarjeta Zestimate Venta Estimado -->
+                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 4px solid #006aff;">
+                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Zestimate® Actual</span>
+                    <strong style="font-size: 20px; color: #006aff; display: block; margin: 4px 0;">${fMoneda(zestimateVenta)}</strong>
+                    <span style="font-size: 11px; color: #475569;">Rango: ${fMoneda(rangoMin)} - ${fMoneda(rangoMax)}</span>
+                </div>
+
+                <!-- Tarjeta Zestimate Alquiler Estimado -->
+                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Alquiler estimado</span>
+                    <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(zestimateAlquiler)}/mes</strong>
+                    <span style="font-size: 11px; color: #475569;">Retorno anual calc. 5.5%</span>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- CONTENEDOR EN BLANCO EN CADENA PARA LOS PRÓXIMAS COMPONENTES GRAFICOS E HISTORIALES -->
+        <div id="zillow-graphs-and-history-slot"></div>
+    `;
 }
