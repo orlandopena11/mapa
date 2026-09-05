@@ -1115,9 +1115,17 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     const ubigeoPropiedad = (prop.codigo_ubigeo || '150140').trim(); 
     const distritoNombre = prop.distrito || 'el distrito';
 
-    let m2_2022 = 1650;
-    let m2_2024 = 1720;
-    let m2_2026 = 1850;
+    const periodosRequeridos = [
+        '2023-T1', '2023-T2', '2023-T3', '2023-T4',
+        '2024-T1', '2024-T2', '2024-T3', '2024-T4',
+        '2025-T1', '2025-T2', '2025-T3', '2025-T4', '2026-T1'
+    ];
+
+    let historialM2 = {
+        '2023-T1': 1650, '2023-T2': 1670, '2023-T3': 1690, '2023-T4': 1710,
+        '2024-T1': 1730, '2024-T2': 1750, '2024-T3': 1740, '2024-T4': 1760,
+        '2025-T1': 1780, '2025-T2': 1800, '2025-T3': 1820, '2025-T4': 1840, '2026-T1': 1850
+    };
 
     try {
         if (window.supabase) {
@@ -1125,96 +1133,110 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
                 .from('tasacion_distrital')
                 .select('trimestre_ano, venta_m2')
                 .eq('codigo_ubigeo', ubigeoPropiedad)
-                .in('trimestre_ano', ['2022-T1', '2024-T1', '2026-T1']);
+                .in('trimestre_ano', periodosRequeridos)
+                .order('trimestre_ano', { ascending: true });
 
             if (!error && data && data.length > 0) {
-                data.forEach(registro => {
-                    if (registro.trimestre_ano === '2022-T1') m2_2022 = parseFloat(registro.venta_m2);
-                    if (registro.trimestre_ano === '2024-T1') m2_2024 = parseFloat(registro.venta_m2);
-                    if (registro.trimestre_ano === '2026-T1') m2_2026 = parseFloat(registro.venta_m2);
+                data.forEach(reg => {
+                    if (historialM2[reg.trimestre_ano] !== undefined) {
+                        historialM2[reg.trimestre_ano] = parseFloat(reg.venta_m2);
+                    }
                 });
             }
         }
     } catch (err) {
-        console.warn("SRE Alerta: Error de red en tasacion_distrital, usando fallbacks.", err);
+        console.warn("SRE Alerta: Error consultando tasacion_distrital, operando con fallbacks.", err);
     }
 
-    const valorEstimado2022 = m2_2022 * areaConstruida;
-    const valorEstimado2024 = m2_2024 * areaConstruida;
-    const valorEstimado2026 = m2_2026 * areaConstruida;
+    const valoresInmueble = periodosRequeridos.map(p => historialM2[p] * areaConstruida);
+    const maxValor = Math.max(...valoresInmueble, precioActual) * 1.05; 
+    const minValor = Math.min(...valoresInmueble, precioActual) * 0.95; 
+    const rangoValores = maxValor - minValor;
+
+    const altoGrafico = 180;
+    const anchoGrafico = 600;
+    const pasoX = anchoGrafico / (periodosRequeridos.length - 1);
+
+    let coordenadasPuntos = [];
+    let tablaHtmlRows = '';
+
+    periodosRequeridos.forEach((periodo, i) => {
+        const valInmueble = valoresInmueble[i];
+        const puntoX = i * pasoX;
+        const puntoY = altoGrafico - (((valInmueble - minValor) / rangoValores) * altoGrafico);
+        coordenadasPuntos.push(`${puntoX},${puntoY}`);
+
+        tablaHtmlRows += `
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 16px; color: #475569; font-weight: 600;">${periodo}</td>
+                <td style="padding: 10px 16px; color: #1e293b;">$${historialM2[periodo].toLocaleString('en-US')} / m²</td>
+                <td style="padding: 10px 16px; font-weight: 700; color: #006aff;">$${Math.round(valInmueble).toLocaleString('en-US')}</td>
+            </tr>
+        `;
+    });
+
+    const pathString = `M ${coordenadasPuntos.join(' L ')}`;
+    const fM = (v) => '$' + Math.round(v).toLocaleString('en-US');
     const impuestoAnual = precioActual * 0.0042;
 
-    const fM = (v) => v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : 'No disponible';
-
-    slotHistorial.innerHTML = `
+        slotHistorial.innerHTML = `
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Historial de valor estimado (Zestimate real en ${distritoNombre})</h4>
-            
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 24px; border-radius: 8px; display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 160px; padding: 0 20px; border-bottom: 2px solid #cbd5e1; box-sizing: border-box;">
-                    
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
-                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">${fM(valorEstimado2022)}</span>
-                        <div style="width: 32px; height: 85px; background: #cbd5e1; border-radius: 4px 4px 0 0;"></div>
-                        <span style="font-size: 12px; color: #475569; font-weight: bold; margin-bottom: -24px;">2022</span>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
-                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">${fM(valorEstimado2024)}</span>
-                        <div style="width: 32px; height: 115px; background: #93c5fd; border-radius: 4px 4px 0 0;"></div>
-                        <span style="font-size: 12px; color: #475569; font-weight: bold; margin-bottom: -24px;">2024</span>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
-                        <span style="font-size: 11px; color: #006aff; font-weight: 700;">${fM(valorEstimado2026)}</span>
-                        <div style="width: 32px; height: 145px; background: #006aff; border-radius: 4px 4px 0 0; box-shadow: 0 4px 8px rgba(0,106,255,0.2);"></div>
-                        <span style="font-size: 12px; color: #006aff; font-weight: bold; margin-bottom: -24px;">2026 (Est.)</span>
-                    </div>
-
-                </div>
-                <div style="height: 12px;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate® (Últimos 3 años)</h4>
+                <span style="font-size: 12px; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">Ubigeo: ${ubigeoPropiedad}</span>
             </div>
-            <p style="font-size: 12px; color: #64748b; margin-top: 28px; text-align: center;">Valores calculados automáticamente sobre el área registrada de <strong>${areaConstruida} m²</strong>.</p>
+            
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 6px;">
+                    <span>Techo: ${fM(maxValor)}</span>
+                    <span>Piso: ${fM(minValor)}</span>
+                </div>
+
+                <div style="width: 100%; overflow-x: auto; position: relative;">
+                    <svg viewBox="0 0 ${anchoGrafico} ${altoGrafico}" style="width: 100%; height: auto; min-width: 550px; display: block; overflow: visible;">
+                        <line x1="0" y1="${altoGrafico * 0.25}" x2="${anchoGrafico}" y2="${altoGrafico * 0.25}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+                        <line x1="0" y1="${altoGrafico * 0.5}" x2="${anchoGrafico}" y2="${altoGrafico * 0.5}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+                        <line x1="0" y1="${altoGrafico * 0.75}" x2="${anchoGrafico}" y2="${altoGrafico * 0.75}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
+
+                        <path d="${pathString}" fill="none" stroke="#006aff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="${anchoGrafico}" cy="${coordenadasPuntos[coordenadasPuntos.length - 1].split(',')[1]}" r="5" fill="#006aff" stroke="#ffffff" stroke-width="2" />
+                    </svg>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; font-weight: bold; margin-top: 12px; padding: 0 10px;">
+                    <span>2023 (Inicio)</span>
+                    <span>2024 (Evolución)</span>
+                    <span>2025 (Crecimiento)</span>
+                    <span style="color: #006aff;">2026 (Actual)</span>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 10px;">Curva de tasación automatizada para el área construida de <strong>${areaConstruida} m²</strong> en ${distritoNombre}.</p>
         </div>
 
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 14px;">Historial de precios transaccionales</h4>
-            <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff;">
+        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Vista de la tabla analítica completa</h4>
+            <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; max-height: 280px; overflow-y: auto;">
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569; font-weight: 600;">
+                    <thead style="position: sticky; top: 0; background: #f8fafc; box-shadow: 0 1px 0 #e2e8f0;">
+                        <tr style="color: #475569; font-weight: 600;">
                             <th style="padding: 12px 16px;">Trimestre</th>
-                            <th style="padding: 12px 16px;">Valor por m²</th>
-                            <th style="padding: 12px 16px;">Valor Inmueble Estimado</th>
+                            <th style="padding: 12px 16px;">Valor m² (USD)</th>
+                            <th style="padding: 12px 16px;">Valor Comercial Estimado</th>
                         </tr>
                     </thead>
                     <tbody style="color: #1e293b;">
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 12px 16px; color: #64748b;">2026 - T1</td>
-                            <td style="padding: 12px 16px; font-weight: 600; color: #10b981;">$${m2_2026.toLocaleString('en-US')} / m²</td>
-                            <td style="padding: 12px 16px; font-weight: 700;">${fM(valorEstimado2026)}</td>
-                        </tr>
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td style="padding: 12px 16px; color: #64748b;">2024 - T1</td>
-                            <td style="padding: 12px 16px;">$${m2_2024.toLocaleString('en-US')} / m²</td>
-                            <td style="padding: 12px 16px;">${fM(valorEstimado2024)}</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px 16px; color: #64748b;">2022 - T1</td>
-                            <td style="padding: 12px 16px;">$${m2_2022.toLocaleString('en-US')} / m²</td>
-                            <td style="padding: 12px 16px;">${fM(valorEstimado2022)}</td>
-                        </tr>
+                        ${tablaHtmlRows}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 12px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos públicos estimados</h4>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 12px;">
+            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos públicos estimados</h4>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <span style="font-size: 13px; color: #64748b; display: block;">Autovalúo predial anualizado estimado:</span>
-                    <p style="font-size: 12px; color: #94a3b8; margin: 2px 0 0 0;">Cálculo arancelario automatizado para ${distritoNombre}.</p>
+                    <strong style="font-size: 13px; color: #1e293b; display: block;">Autovalúo predial estimado:</strong>
+                    <span style="font-size: 12px; color: #64748b;">Monto tributario anual proyectado de acuerdo a los aranceles vigentes de la zona.</span>
                 </div>
                 <strong style="font-size: 18px; color: #1e293b; white-space: nowrap;">${fM(impuestoAnual)} / año</strong>
             </div>
