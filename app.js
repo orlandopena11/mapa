@@ -845,16 +845,18 @@ function gestionarPasosModalTour(p) {}
 function inyectarDatosPropiedadAlMensaje() {}
 function ejecutarEnvioAppsScript(p, m, f, mx) {}
 
-function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarCortinaSPA
-    const cortina = document.getElementById('cortina-spa'); 
+function gestionarCortinaSPA(tipoPantalla, prop) {
+    const cortina = document.getElementById('cortina-spa');
     if (!cortina) return;
-    if (tipoPantalla === 'cerrar') { cortina.classList.remove('cortina-activa'); return; }
+    if (tipoPantalla === 'cerrar') {
+        cortina.classList.remove('cortina-activa');
+        return;
+    }
 
     if (tipoPantalla === 'detalle') {
         const listaFotos = prop.fotos || [];
         const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
-        
-        // Generamos los círculos de las miniaturas inferiores estilo Zillow
+
         let miniaturasHtml = '';
         const totalMiniaturas = Math.min(listaFotos.length, 5);
         for (let i = 0; i < totalMiniaturas; i++) {
@@ -865,56 +867,110 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
         }
 
         cortina.innerHTML = `
-            <!-- CONTENEDOR MAESTRO DE LA FICHA -->
             <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
                 
-                <!-- SECCIÓN MULTIMEDIA PRINCIPAL (REPLICA ZILLOW SHOWCASE) -->
                 <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
-                    
-                    <!-- Foto Única con Animación Cinematográfica Lenta -->
                     <div style="width: 100%; height: 100%; border-radius: 0; overflow: hidden; position: relative;">
                         <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
                     </div>
 
-                    <!-- Botón Flotante Volver Detrás -->
                     <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">‹</button>
 
-                    <!-- Botones Flotantes de Control (Esquina Derecha) -->
                     <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 10;">
-                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">♥ Guardado</button>
-                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">⤻ Compartir</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">💾 Guardado</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">🔄 Compartir</button>
                         <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">••• Más</button>
                     </div>
 
-                    <!-- Flechas Laterales de Navegación -->
                     <button style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">‹</button>
                     <button style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">›</button>
 
-                    <!-- Carrusel de Miniaturas Flotante Inferior -->
                     <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">
                         ${miniaturasHtml}
                     </div>
 
-                    <!-- Marca Flotante Inferior Derecha -->
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                <!-- BLOQUE DE INFORMACIÓN COMERCIAL INFERIOR -->
-                <div style="padding: 24px; max-width: 1100px; margin: 0 auto; box-sizing: border-box;">
-                    <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                    <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
-                        <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd | 
-                        <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba | 
-                        <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
-                    </p>
-                    <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
-                    <p style="font-size: 14px; color: #718096; line-height: 1.6; margin: 16px 0 0 0; background: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0;">${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}</p>
+                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: row; gap: 32px; box-sizing: border-box; flex-wrap: wrap;">
+                    
+                    <div style="flex: 1; min-width: 300px; max-width: 100%; flex-basis: 65%;">
+                        
+                        <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                            <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
+                            <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd | 
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba | 
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
+                            </p>
+                            <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
+                        </div>
+
+                        <div style="display: flex; gap: 24px; margin-bottom: 24px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 14px; color: #475569;">
+                                <strong style="color: #1e293b; font-size: 16px; display: block;">14</strong> Días en el portal
+                            </div>
+                            <div style="font-size: 14px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 24px;">
+                                <strong style="color: #1e293b; font-size: 16px; display: block;">1,248</strong> Vistas totales
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 28px;">
+                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Características esenciales</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
+                                <div>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Tipo</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.tipo_propiedad || 'Casa'}</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Área Terreno</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_terreno || 0} m²</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Área Const.</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_construida || 0} m²</strong>
+                                </div>
+                                <div>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Año Const.</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.ano_construccion || 'N/A'}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 32px;">
+                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">¿Qué es especial de este hogar?</h4>
+                            <p style="font-size: 14px; color: #4a5568; line-height: 1.6; background: #ffffff; padding: 0; margin: 0;">
+                                ${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}
+                            </p>
+                        </div>
+
+                        <div id="zillow-next-sections-slot"></div>
+
+                    </div>
+
+                    <div style="flex: 1; min-width: 300px; flex-basis: 30%; max-width: 100%; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                        <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; text-align: center;">Contactar con la inmobiliaria</h4>
+                        <button type="button" id="btn-solicitar-tour-galeria-spa" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
+                        <button type="button" id="btn-contactar-agente-galeria-spa" style="width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Contactar Agente</button>
+                    </div>
+
                 </div>
             </div>
         `;
-        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
 
-        // Disparador del efecto de movimiento y cambio de foto automatizado
+            document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
+
+        document.getElementById('btn-solicitar-tour-galeria-spa').onclick = () => {
+            mostrarPopupAccion("modal-tour-comercial");
+            if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas();
+            if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
+        };
+
+        document.getElementById('btn-contactar-agente-galeria-spa').onclick = () => {
+            mostrarPopupAccion("modal-agent-comercial");
+            if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
+        };
+
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
         const fotosArregloSeguro = prop.fotos || [];
         let indiceFotoSecuencia = 0;
@@ -922,10 +978,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
         function reproducirSecuenciaCinematografica() {
             if (!imgAnimar || fotosArregloSeguro.length === 0) return;
 
-            // 1. Asigna la foto correspondiente de Supabase
             imgAnimar.src = fotosArregloSeguro[indiceFotoSecuencia];
 
-            // 2. Dispara el efecto Ken Burns de 8 segundos acelerado por GPU
             const animacionCorriendo = imgAnimar.animate([
                 { transform: 'scale(1.0) translate(0%, 0%)' },
                 { transform: 'scale(1.18) translate(2%, -1.5%)' }
@@ -935,16 +989,14 @@ function gestionarCortinaSPA(tipoPantalla, prop) { // Inicia Function gestionarC
                 easing: 'ease-in-out'
             });
 
-            // 3. Transición automática al finalizar la secuencia
             animacionCorriendo.onfinish = () => {
                 indiceFotoSecuencia = (indiceFotoSecuencia + 1) % fotosArregloSeguro.length;
                 reproducirSecuenciaCinematografica();
             };
         }
 
-        // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
     }
 
     cortina.classList.add('cortina-activa');
-} // Fin de Function gestionarCortinaSPA
+}
