@@ -1098,4 +1098,254 @@ function inyectarSeccionesAdicionalesZillow(prop) {
         <!-- CONTENEDOR EN BLANCO EN CADENA PARA LOS PRÓXIMAS COMPONENTES GRAFICOS E HISTORIALES -->
         <div id="zillow-graphs-and-history-slot"></div>
     `;
+
+    // Inyección automática en cadena del historial con Supabase y la calculadora hipotecaria
+    inyectarHistorialesYImpuestosZillow(prop);
 }
+
+// ====================================================================================
+// INICIO DE FUNCTION: inyectarHistorialesYImpuestosZillow
+// ====================================================================================
+async function inyectarHistorialesYImpuestosZillow(prop) {
+    const slotHistorial = document.getElementById('zillow-graphs-and-history-slot');
+    if (!slotHistorial) return;
+
+    const precioActual = parseFloat(prop.precio_base) || 0;
+    const areaConstruida = parseFloat(prop.area_construida) || 100; 
+    const ubigeoPropiedad = (prop.codigo_ubigeo || '150140').trim(); 
+    const distritoNombre = prop.distrito || 'el distrito';
+
+    let m2_2022 = 1650;
+    let m2_2024 = 1720;
+    let m2_2026 = 1850;
+
+    try {
+        if (window.supabase) {
+            const { data, error } = await window.supabase
+                .from('tasacion_distrital')
+                .select('trimestre_ano, venta_m2')
+                .eq('codigo_ubigeo', ubigeoPropiedad)
+                .in('trimestre_ano', ['2022-T1', '2024-T1', '2026-T1']);
+
+            if (!error && data && data.length > 0) {
+                data.forEach(registro => {
+                    if (registro.trimestre_ano === '2022-T1') m2_2022 = parseFloat(registro.venta_m2);
+                    if (registro.trimestre_ano === '2024-T1') m2_2024 = parseFloat(registro.venta_m2);
+                    if (registro.trimestre_ano === '2026-T1') m2_2026 = parseFloat(registro.venta_m2);
+                });
+            }
+        }
+    } catch (err) {
+        console.warn("SRE Alerta: Error de red en tasacion_distrital, usando fallbacks.", err);
+    }
+
+    const valorEstimado2022 = m2_2022 * areaConstruida;
+    const valorEstimado2024 = m2_2024 * areaConstruida;
+    const valorEstimado2026 = m2_2026 * areaConstruida;
+    const impuestoAnual = precioActual * 0.0042;
+
+    const fM = (v) => v > 0 ? '$' + Math.round(v).toLocaleString('en-US') : 'No disponible';
+
+    slotHistorial.innerHTML = `
+        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Historial de valor estimado (Zestimate real en ${distritoNombre})</h4>
+            
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 24px; border-radius: 8px; display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; align-items: flex-end; justify-content: space-between; height: 160px; padding: 0 20px; border-bottom: 2px solid #cbd5e1; box-sizing: border-box;">
+                    
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">${fM(valorEstimado2022)}</span>
+                        <div style="width: 32px; height: 85px; background: #cbd5e1; border-radius: 4px 4px 0 0;"></div>
+                        <span style="font-size: 12px; color: #475569; font-weight: bold; margin-bottom: -24px;">2022</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">${fM(valorEstimado2024)}</span>
+                        <div style="width: 32px; height: 115px; background: #93c5fd; border-radius: 4px 4px 0 0;"></div>
+                        <span style="font-size: 12px; color: #475569; font-weight: bold; margin-bottom: -24px;">2024</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;">
+                        <span style="font-size: 11px; color: #006aff; font-weight: 700;">${fM(valorEstimado2026)}</span>
+                        <div style="width: 32px; height: 145px; background: #006aff; border-radius: 4px 4px 0 0; box-shadow: 0 4px 8px rgba(0,106,255,0.2);"></div>
+                        <span style="font-size: 12px; color: #006aff; font-weight: bold; margin-bottom: -24px;">2026 (Est.)</span>
+                    </div>
+
+                </div>
+                <div style="height: 12px;"></div>
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin-top: 28px; text-align: center;">Valores calculados automáticamente sobre el área registrada de <strong>${areaConstruida} m²</strong>.</p>
+        </div>
+
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 14px;">Historial de precios transaccionales</h4>
+            <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #475569; font-weight: 600;">
+                            <th style="padding: 12px 16px;">Trimestre</th>
+                            <th style="padding: 12px 16px;">Valor por m²</th>
+                            <th style="padding: 12px 16px;">Valor Inmueble Estimado</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: #1e293b;">
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px 16px; color: #64748b;">2026 - T1</td>
+                            <td style="padding: 12px 16px; font-weight: 600; color: #10b981;">$${m2_2026.toLocaleString('en-US')} / m²</td>
+                            <td style="padding: 12px 16px; font-weight: 700;">${fM(valorEstimado2026)}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 12px 16px; color: #64748b;">2024 - T1</td>
+                            <td style="padding: 12px 16px;">$${m2_2024.toLocaleString('en-US')} / m²</td>
+                            <td style="padding: 12px 16px;">${fM(valorEstimado2024)}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 16px; color: #64748b;">2022 - T1</td>
+                            <td style="padding: 12px 16px;">$${m2_2022.toLocaleString('en-US')} / m²</td>
+                            <td style="padding: 12px 16px;">${fM(valorEstimado2022)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 12px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos públicos estimados</h4>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="font-size: 13px; color: #64748b; display: block;">Autovalúo predial anualizado estimado:</span>
+                    <p style="font-size: 12px; color: #94a3b8; margin: 2px 0 0 0;">Cálculo arancelario automatizado para ${distritoNombre}.</p>
+                </div>
+                <strong style="font-size: 18px; color: #1e293b; white-space: nowrap;">${fM(impuestoAnual)} / año</strong>
+            </div>
+        </div>
+
+        <div id="zillow-buyability-and-neighborhood-slot"></div>
+    `;
+
+    if (typeof inyectarCapacidadCompraZillow === "function") {
+        inyectarCapacidadCompraZillow(prop);
+    }
+}
+// ====================================================================================
+// FIN DE FUNCTION: inyectarHistorialesYImpuestosZillow
+// ====================================================================================
+
+// ====================================================================================
+// INICIO DE FUNCTION: inyectarCapacidadCompraZillow
+// ====================================================================================
+function inyectarCapacidadCompraZillow(prop) {
+    const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
+    if (!slotBuyability) return;
+
+    const precioBase = parseFloat(prop.precio_base) || 0;
+    let porcentajeCuotaInicial = 20; 
+    const tasaAnual = 8.5; 
+    const plazoAnos = 20; 
+
+    function calcularCuotaMensual(precio, porcInicial) {
+        const cuotaInicial = precio * (porcInicial / 100);
+        const montoPrestamo = precio - cuotaInicial;
+        const tasaMensual = (tasaAnual / 12) / 100;
+        const totalMeses = plazoAnos * 12;
+
+        let principalInteres = 0;
+        if (tasaMensual > 0) {
+            principalInteres = montoPrestamo * (tasaMensual * Math.pow(1 + tasaMensual, totalMeses)) / (Math.pow(1 + tasaMensual, totalMeses) - 1);
+        } else {
+            principalInteres = montoPrestamo / totalMeses;
+        }
+
+        const impuestoMensual = precio * 0.00035;
+        const seguroMensual = montoPrestamo * 0.00015;
+        const pagoTotalMensual = principalInteres + impuestoMensual + seguroMensual;
+
+        return {
+            inicial: Math.round(cuotaInicial),
+            prestamo: Math.round(montoPrestamo),
+            pi: Math.round(principalInteres),
+            impuesto: Math.round(impuestoMensual),
+            seguro: Math.round(seguroMensual),
+            total: Math.round(pagoTotalMensual)
+        };
+    }
+
+    let r = calcularCuotaMensual(precioBase, porcentajeCuotaInicial);
+
+    slotBuyability.innerHTML = `
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a;">Capacidad de compra</h4>
+                <span style="background: #10b981; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">BuyAbility™</span>
+            </div>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Estima tu presupuesto mensual para este hogar con tasas referenciales del mercado local.</p>
+
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 24px;">
+                <div style="text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
+                    <span style="font-size: 14px; color: #475569; font-weight: 600;">Pago mensual estimado</span>
+                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #10b981; margin: 6px 0 0 0;">$${r.total.toLocaleString('en-US')}/mes</h3>
+                </div>
+
+                <div>
+                    <div style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #e2e8f0; margin-bottom: 16px;">
+                        <div id="barra-segmento-pi" style="width: 75%; background: #006aff; transition: width 0.2s;"></div>
+                        <div id="barra-segmento-impuesto" style="width: 15%; background: #f59e0b; transition: width 0.2s;"></div>
+                        <div id="barra-segmento-seguro" style="width: 10%; background: #10b981; transition: width 0.2s;"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <span style="display: inline-block; width: 10px; height: 10px; background: #006aff; border-radius: 50%; margin-right: 4px;"></span>
+                            <span style="color: #64748b;">P. e Int: <strong id="txt-costo-pi" style="color: #1e293b;">$${r.pi.toLocaleString('en-US')}</strong></span>
+                        </div>
+                        <div>
+                            <span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>
+                            <span style="color: #64748b;">Impuestos: <strong id="txt-costo-impuesto" style="color: #1e293b;">$${r.impuesto.toLocaleString('en-US')}</strong></span>
+                        </div>
+                        <div>
+                            <span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>
+                            <span style="color: #64748b;">Seguro: <strong id="txt-costo-seguro" style="color: #1e293b;">$${r.seguro.toLocaleString('en-US')}</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 16px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                            <span style="color: #475569; font-weight: 600;">Pago inicial (Cuota inicial)</span>
+                            <span id="txt-porcentaje-inicial-display" style="color: #006aff; font-weight: 700;">20% - $${r.inicial.toLocaleString('en-US')}</span>
+                        </div>
+                        <input type="range" id="slider-cuota-inicial-hipoteca" min="10" max="80" step="5" value="20" style="width: 100%; cursor: pointer; accent-color: #006aff;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="zillow-neighborhood-slot"></div>
+    `;
+
+    const slider = document.getElementById('slider-cuota-inicial-hipoteca');
+    if (slider) {
+        slider.oninput = function() {
+            const nuevoPorcentaje = parseInt(this.value);
+            const rx = calcularCuotaMensual(precioBase, nuevoPorcentaje);
+
+            document.getElementById('display-pago-total-hipoteca').innerText = `$${rx.total.toLocaleString('en-US')}/mes`;
+            document.getElementById('txt-porcentaje-inicial-display').innerText = `${nuevoPorcentaje}% - $${rx.inicial.toLocaleString('en-US')}`;
+            document.getElementById('txt-costo-pi').innerText = `$${rx.pi.toLocaleString('en-US')}`;
+            document.getElementById('txt-costo-impuesto').innerText = `$${rx.impuesto.toLocaleString('en-US')}`;
+            document.getElementById('txt-costo-seguro').innerText = `$${rx.seguro.toLocaleString('en-US')}`;
+
+            const pctPi = (rx.pi / rx.total) * 100;
+            const pctImp = (rx.impuesto / rx.total) * 100;
+            const pctSeg = (rx.seguro / rx.total) * 100;
+
+            document.getElementById('barra-segmento-pi').style.width = `${pctPi}%`;
+            document.getElementById('barra-segmento-impuesto').style.width = `${pctImp}%`;
+            document.getElementById('barra-segmento-seguro').style.width = `${pctSeg}%`;
+        };
+    }
+}
+// ====================================================================================
+// FIN DE FUNCTION: inyectarCapacidadCompraZillow
+// ====================================================================================
