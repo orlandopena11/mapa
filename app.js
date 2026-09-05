@@ -1261,8 +1261,10 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
     if (!slotBuyability) return;
 
     const precioBase = parseFloat(prop.precio_base) || 0;
-    const tipoProp = String(prop.tipo_propiedad || 'vivienda').toLowerCase().trim();
+    // Captura el valor exacto manteniendo las mayúsculas iniciales (ej: "Casa", "Departamento")
+    const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
 
+    
     // 1. Inyección de la maquetación HTML incluyendo el nuevo botón de Guardar
     slotBuyability.innerHTML = `
         <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
