@@ -1254,7 +1254,7 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION OPTIMIZADA DESDE VISTA SQL)
+// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSIÓN COMPLETA CON PERSISTENCIA)
 // ====================================================================================
 async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
@@ -1263,18 +1263,18 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
     const precioBase = parseFloat(prop.precio_base) || 0;
     const tipoProp = String(prop.tipo_propiedad || 'vivienda').toLowerCase().trim();
 
-    // Inyección de la maquetación HTML limpia de controles
+    // 1. Inyección de la maquetación HTML incluyendo el nuevo botón de Guardar
     slotBuyability.innerHTML = `
         <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a;">Simulador Hipotecario Inteligente</h4>
-                <span style="background: #10b981; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">VISTA SQL</span>
+                <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXIÓN DIRECTA</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Parámetros automáticos para propiedades de tipo <strong>${tipoProp}</strong>.</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Evaluación en base a las políticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
                 <div style="text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
                     <span style="font-size: 14px; color: #475569; font-weight: 600;">Cuota Mensual Total Estimada</span>
-                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #006aff; margin: 6px 0 0 0;">Calculando...</h3>
+                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #10b981; margin: 6px 0 0 0;">Calculando...</h3>
                     <p id="lov-comentario-dinamico" style="font-size: 11px; color: #64748b; margin: 6px 0 0 0; font-style: italic;"></p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
@@ -1299,23 +1299,29 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
                         <select id="combo-lov-inmueble" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                     </div>
                 </div>
-                <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px;">
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px;">
                     <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #1e293b;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #1e293b;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #1e293b;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #1e293b;">-</strong></div>
                 </div>
+                <!-- Botón de acción comercial -->
+                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;">💾 Guardar esta Simulación en mi Cuenta</button>
             </div>
         </div>
         <div id="zillow-neighborhood-slot"></div>
     `;
 
-        // Referencias del DOM vinculadas a los nuevos selectores
+    // 2. Vinculación de variables de control y escucha del DOM
     const cInicial = document.getElementById('combo-lov-inicial');
     const cPlazo = document.getElementById('combo-lov-plazo');
     const cTea = document.getElementById('combo-lov-tea');
     const cDesg = document.getElementById('combo-lov-desgravamen');
     const cInm = document.getElementById('combo-lov-inmueble');
+    const btnGuardar = document.getElementById('btn-guardar-simulacion-supabase');
+
+    // Variables numéricas globales al contexto de la función para ser reutilizadas en el salvado
+    let calculosGlobales = null;
 
     function ejecutarRecalculoHipoteca() { // Abre la sub-función matemática ejecutarRecalculoHipoteca
         const pctInicial = parseFloat(cInicial.value) || 0;
@@ -1333,102 +1339,146 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         // Conversión Exponencial SBS (TEA a TEM)
         const tasaMensualTEM = Math.pow(1 + valorTea, 1 / 12) - 1;
 
-        // Fórmula del Sistema Francés para Cuota Fija (Equivalente exacto a PMT/PAGO)
+        // Fórmula del Sistema Francés para Cuota Fija (Amortización)
         const cuotaBase = montoPrestamo * (tasaMensualTEM * Math.pow(1 + tasaMensualTEM, totalMeses)) / (Math.pow(1 + tasaMensualTEM, totalMeses) - 1);
 
-        // Cálculo de seguros en soles para el Mes 1
         const costoDesgravamen = montoPrestamo * pctDesg;
         const costoInmueble = precioBase * pctInm;
         const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
+        const ratioLtv = montoPrestamo / precioBase;
 
-        // Impresión de valores formateados en la interfaz de usuario
+        // Renderizado en pantalla de de los resultados en tiempo real
         document.getElementById('display-pago-total-hipoteca').innerText = `$/., ${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
         document.getElementById('txt-calc-prestamo').innerText = `$/., ${Math.round(montoPrestamo).toLocaleString('en-US')}`;
         document.getElementById('txt-calc-cuotabase').innerText = `$/., ${Math.round(cuotaBase).toLocaleString('en-US')}`;
         document.getElementById('txt-calc-segdesg').innerText = `$/., ${Math.round(costoDesgravamen).toLocaleString('en-US')}`;
         document.getElementById('txt-calc-seginm').innerText = `$/., ${Math.round(costoInmueble).toLocaleString('en-US')}`;
 
-        // Inyección del comentario correspondiente de la base de datos
         const opcionSeleccionada = cInicial.options[cInicial.selectedIndex];
         document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada ? opcionSeleccionada.getAttribute('data-comment') : '';
+
+        // Almacenamos el paquete de datos en memoria para el disparo del botón Guardar
+        calculosGlobales = {
+            pctInicial, montoInicial, montoPrestamo, totalMeses, valorTea, 
+            tasaMensualTEM, pctDesg, pctInm, cuotaBase, costoDesgravamen, 
+            costoInmueble, cuotaTotal, ratioLtv
+        };
     } // Cierra la sub-función matemática ejecutarRecalculoHipoteca
 
-    // Escuchadores de eventos para recalcular de inmediato ante cualquier selección
     [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
-        try { // Abre el manejador de excepciones de red try
-        const cliente = obtenerClienteSupabase();
-        if (!cliente) throw new Error("Supabase desvinculado.");
+        // 3. Evento Click para procesar el guardado transaccional en Supabase
+    btnGuardar.addEventListener('click', async () => { // Abre el EventListener del botón guardar
+        // Candado ACL: Validación obligatoria de seguridad implementada en tu app.js
+        if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+        if (!calculosGlobales) return;
 
-        // Petición única de alta velocidad a la vista SQL consolidada
+        btnGuardar.innerText = "⏳ Procesando registro...";
+        btnGuardar.disabled = true;
+
+        try { // Abre el bloque transaccional try
+            const cliente = obtenerClienteSupabase();
+            // Obtenemos el ID del usuario logueado en la ventana desde tu ecosistema de autenticación
+            const idUsuario = window.usuarioLogueado ? window.usuarioLogueado.id : 'anonimo_invitado';
+
+            const { data, error } = await cliente
+                .from('simulacion_hipotecaria')
+                .insert([{
+                    usuario_id_fk: idUsuario,
+                    propiedad_id_fk: String(prop.id),
+                    hipoteca_id_fk: 1,
+                    tipo_propiedad: tipoProp,
+                    precio_propiedad: precioBase,
+                    pago_inicial: calculosGlobales.montoInicial,
+                    porc_cuota_inicial: calculosGlobales.pctInicial,
+                    monto_prestamo: calculosGlobales.montoPrestamo,
+                    plazo_meses: calculosGlobales.totalMeses,
+                    tasa_tea: calculosGlobales.valorTea,
+                    tasa_tem: calculosGlobales.tasaMensualTEM,
+                    porc_seguro_desgravamen: calculosGlobales.pctDesg,
+                    porc_seguro_inmueble: calculosGlobales.pctInm,
+                    cuota_base_mensual: calculosGlobales.cuotaBase,
+                    seguro_desgravamen_mes1: calculosGlobales.costoDesgravamen,
+                    seguro_inmueble_mes1: calculosGlobales.costoInmueble,
+                    pago_mensual_estimado: calculosGlobales.cuotaTotal,
+                    ltv: calculosGlobales.ratioLtv
+                }])
+                .select();
+
+            if (error) throw error;
+
+            alert("🎉 ¡Simulación guardada con éxito! Podrás revisar esta corrida desde tu panel de cuenta en cualquier momento.");
+            btnGuardar.innerText = "✅ Simulación Almacenada Correctamente";
+            btnGuardar.style.background = "#059669";
+
+        } catch (err) { // Captura de error en inserción
+            console.error("Error al registrar simulación:", err.message);
+            alert("No se pudo guardar la simulación: " + err.message);
+            btnGuardar.innerText = "💾 Guardar esta Simulación en mi Cuenta";
+            btnGuardar.disabled = false;
+        } // Cierra el bloque transaccional catch
+    }); // Cierra el EventListener del botón guardar
+
+    // 4. Poblamiento inicial de combos consumiendo tu Vista SQL optimizada
+    try { // Abre bloque try de renderizado de combos
+        const cliente = obtenerClienteSupabase();
         const { data, error } = await cliente
             .from('vista_lov_hipoteca_consolidada')
             .select('*')
             .eq('tipo_propiedad', tipoProp);
 
         if (error) throw error;
-        if (!data || data.length === 0) throw new Error("Sin registros para este tipo.");
 
-        // Sets en memoria para agrupar valores únicos descartando duplicados
         const inicialesSet = new Map();
         const plazosSet = new Set();
         const teasSet = new Set();
         const desgravamenesSet = new Set();
         const inmueblesSet = new Set();
 
-        data.forEach(reg => { // Recorrido de normalización de la matriz
+        data?.forEach(reg => {
             inicialesSet.set(reg.cuota_inicial, reg.comentario_inicial);
             plazosSet.add(reg.plazo_anos);
             teasSet.add(reg.tasa_tea);
             desgravamenesSet.add(reg.seguro_desgravamen_mensual);
             inmueblesSet.add(reg.seguro_inmueble_mensual);
-        }); // Fin del recorrido de la matriz
+        });
 
-        // Alimentar selectores con ordenamiento numérico de menor a mayor
+        // Poblado ordenado numéricamente en el DOM
         Array.from(inicialesSet.keys()).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
+            const opt = document.createElement('option'); opt.value = val;
             opt.innerText = `${(val * 100).toFixed(0)}%`;
             opt.setAttribute('data-comment', inicialesSet.get(val));
             cInicial.appendChild(opt);
         });
 
         Array.from(plazosSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.innerText = `${val} Años`;
-            cPlazo.appendChild(opt);
+            const opt = document.createElement('option'); opt.value = val;
+            opt.innerText = `${val} Años`; cPlazo.appendChild(opt);
         });
 
         Array.from(teasSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(2)}% TEA`;
-            cTea.appendChild(opt);
+            const opt = document.createElement('option'); opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(2)}% TEA`; cTea.appendChild(opt);
         });
 
         Array.from(desgravamenesSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(3)}% mens.`;
-            cDesg.appendChild(opt);
+            const opt = document.createElement('option'); opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(3)}% mens.`; cDesg.appendChild(opt);
         });
 
         Array.from(inmueblesSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option');
-            opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(3)}% mens.`;
-            cInm.appendChild(opt);
+            const opt = document.createElement('option'); opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(3)}% mens.`; cInm.appendChild(opt);
         });
 
-        // Forzar cálculo inicial por defecto tras poblar la interfaz
+        // Disparador del recálculo automático inicial
         ejecutarRecalculoHipoteca();
 
-    } catch (err) { // Abre captura de error de red
-        console.error("Error de performance cargando vista hipotecaria:", err.message);
-    } // Cierra manejador de excepciones de red catch
+    } catch (err) {
+        console.error("Error al poblar selectores financieros:", err.message);
+    } // Cierra bloque try de renderizado de combos
 
-    // Continuación con la cadena de pintado nativa de la app
+    // Encadenamiento nativo de pintado cartográfico de la ficha descriptiva
     inyectarMapaYEscuelasZillow(prop);
 } 
 // ====================================================================================
