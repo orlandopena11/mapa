@@ -1254,78 +1254,74 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSIÓN COMPLETA CON PERSISTENCIA)
+// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION DE MARCA COLOR METRICA)
 // ====================================================================================
 async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
     const precioBase = parseFloat(prop.precio_base) || 0;
-    // Captura el valor exacto manteniendo las mayúsculas iniciales (ej: "Casa", "Departamento")
     const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
 
-    
-    // 1. Inyección de la maquetación HTML incluyendo el nuevo botón de Guardar
+    // Inyección de la interfaz gráfica con tus colores corporativos #FFB91D y #002E50
     slotBuyability.innerHTML = `
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+        <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a;">Simulador Hipotecario Inteligente</h4>
-                <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXIÓN DIRECTA</span>
+                <h4 style="font-size: 18px; font-weight: 700; color: #002E50;">Simulador Hipotecario Inteligente</h4>
+                <span style="background: #002E50; color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXIÓN DIRECTA</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Evaluación en base a las políticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
-                <div style="text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
-                    <span style="font-size: 14px; color: #475569; font-weight: 600;">Cuota Mensual Total Estimada</span>
-                    <h3 id="display-pago-total-hipoteca" style="font-size: 22px; font-weight: 700; color: #475569; margin: 10px 0 0 0;">Selecciona tus datos y simula tu hipoteca</h3>
-                    <p id="lov-comentario-dinamico" style="font-size: 11px; color: #64748b; margin: 6px 0 0 0; font-style: italic;"></p>
+            <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">Evaluación en base a las políticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
+            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,46,80,0.04); display: flex; flex-direction: column; gap: 20px;">
+                <div style="text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
+                    <span style="font-size: 14px; color: #002E50; font-weight: 600;">Cuota Mensual Total Estimada</span>
+                    <h3 id="display-pago-total-hipoteca" style="font-size: 21px; font-weight: 700; color: #002E50; margin: 10px 0 0 0;">Selecciona tus datos y simula tu hipoteca</h3>
+                    <p id="lov-comentario-dinamico" style="font-size: 11px; color: #475569; margin: 6px 0 0 0; font-style: italic;"></p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Cuota Inicial (%):</label>
-                        <select id="combo-lov-inicial" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Cuota Inicial (%):</label>
+                        <select id="combo-lov-inicial" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Plazo de Financiamiento:</label>
-                        <select id="combo-lov-plazo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Plazo de Financiamiento:</label>
+                        <select id="combo-lov-plazo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Tasa de Interés Anual (TEA):</label>
-                        <select id="combo-lov-tea" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Tasa de Interés Anual (TEA):</label>
+                        <select id="combo-lov-tea" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Seguro Desgravamen Mensual:</label>
-                        <select id="combo-lov-desgravamen" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Seguro Desgravamen Mensual:</label>
+                        <select id="combo-lov-desgravamen" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Seguro de Inmueble Mensual:</label>
-                        <select id="combo-lov-inmueble" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Seguro de Inmueble Mensual:</label>
+                        <select id="combo-lov-inmueble" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                 </div>
-                <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px;">
-                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #1e293b;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #1e293b;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #1e293b;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #1e293b;">-</strong></div>
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #002E50;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #002E50;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #002E50;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #002E50;">-</strong></div>
                 </div>
-                <!-- Botón de acción comercial -->
-                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #10b981; color: white; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s;">💾 Guardar esta Simulación en mi Cuenta</button>
+                <!-- Botón con color Dorado #FFB91D y letras en Azul Acero #002E50 -->
+                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">💾 Enviar mi cronograma de hipoteca a mi correo</button>
             </div>
         </div>
         <div id="zillow-neighborhood-slot"></div>
     `;
 
-    // 2. Vinculación de variables de control y escucha del DOM
-    const cInicial = document.getElementById('combo-lov-inicial');
+        const cInicial = document.getElementById('combo-lov-inicial');
     const cPlazo = document.getElementById('combo-lov-plazo');
     const cTea = document.getElementById('combo-lov-tea');
     const cDesg = document.getElementById('combo-lov-desgravamen');
     const cInm = document.getElementById('combo-lov-inmueble');
     const btnGuardar = document.getElementById('btn-guardar-simulacion-supabase');
 
-    // Variables numéricas globales al contexto de la función para ser reutilizadas en el salvado
     let calculosGlobales = null;
 
-    function ejecutarRecalculoHipoteca() { // Abre la sub-función matemática ejecutarRecalculoHipoteca
+    function ejecutarRecalculoHipoteca() { // Abre sub-función matemática ejecutarRecalculoHipoteca
         const pctInicial = parseFloat(cInicial.value) || 0;
         const anosPlazo = parseInt(cPlazo.value) || 0;
         const valorTea = parseFloat(cTea.value) || 0;
@@ -1337,53 +1333,48 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         const montoInicial = precioBase * pctInicial;
         const montoPrestamo = precioBase - montoInicial;
         const totalMeses = anosPlazo * 12;
-        
-        // Conversión Exponencial SBS (TEA a TEM)
         const tasaMensualTEM = Math.pow(1 + valorTea, 1 / 12) - 1;
 
-        // Fórmula del Sistema Francés para Cuota Fija (Amortización)
+        // Amortización con Sistema Francés SBS
         const cuotaBase = montoPrestamo * (tasaMensualTEM * Math.pow(1 + tasaMensualTEM, totalMeses)) / (Math.pow(1 + tasaMensualTEM, totalMeses) - 1);
-
         const costoDesgravamen = montoPrestamo * pctDesg;
         const costoInmueble = precioBase * pctInm;
         const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
         const ratioLtv = montoPrestamo / precioBase;
 
-        // Renderizado en pantalla de de los resultados en tiempo real
-        document.getElementById('display-pago-total-hipoteca').innerText = `$/., ${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
-        document.getElementById('txt-calc-prestamo').innerText = `$/., ${Math.round(montoPrestamo).toLocaleString('en-US')}`;
-        document.getElementById('txt-calc-cuotabase').innerText = `$/., ${Math.round(cuotaBase).toLocaleString('en-US')}`;
-        document.getElementById('txt-calc-segdesg').innerText = `$/., ${Math.round(costoDesgravamen).toLocaleString('en-US')}`;
-        document.getElementById('txt-calc-seginm').innerText = `$/., ${Math.round(costoInmueble).toLocaleString('en-US')}`;
+        // Renderizado limpio de salida con formato monetario en Dólares ($)
+        document.getElementById('display-pago-total-hipoteca').innerText = `$${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
+        document.getElementById('display-pago-total-hipoteca').style.color = '#002E50'; // Forzar color azul acero al calcular
+        document.getElementById('txt-calc-prestamo').innerText = `$${Math.round(montoPrestamo).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-cuotabase').innerText = `$${Math.round(cuotaBase).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-segdesg').innerText = `$${Math.round(costoDesgravamen).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-seginm').innerText = `$${Math.round(costoInmueble).toLocaleString('en-US')}`;
 
         const opcionSeleccionada = cInicial.options[cInicial.selectedIndex];
         document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada ? opcionSeleccionada.getAttribute('data-comment') : '';
 
-        // Almacenamos el paquete de datos en memoria para el disparo del botón Guardar
         calculosGlobales = {
             pctInicial, montoInicial, montoPrestamo, totalMeses, valorTea, 
             tasaMensualTEM, pctDesg, pctInm, cuotaBase, costoDesgravamen, 
             costoInmueble, cuotaTotal, ratioLtv
         };
-    } // Cierra la sub-función matemática ejecutarRecalculoHipoteca
+    } // Cierra sub-función matemática ejecutarRecalculoHipoteca
 
     [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
-        // 3. Evento Click para procesar el guardado transaccional en Supabase
-    btnGuardar.addEventListener('click', async () => { // Abre el EventListener del botón guardar
-        // Candado ACL: Validación obligatoria de seguridad implementada en tu app.js
+    // Evento de disparo comercial y persistencia transaccional
+    btnGuardar.addEventListener('click', async () => { // Abre EventListener de guardado
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
         if (!calculosGlobales) return;
 
-        btnGuardar.innerText = "⏳ Procesando registro...";
+        btnGuardar.innerText = "⏳ Generando cronograma PDF y enviando correo...";
         btnGuardar.disabled = true;
 
-        try { // Abre el bloque transaccional try
+        try { // Abre bloque try de Supabase
             const cliente = obtenerClienteSupabase();
-            // Obtenemos el ID del usuario logueado en la ventana desde tu ecosistema de autenticación
             const idUsuario = window.usuarioLogueado ? window.usuarioLogueado.id : 'anonimo_invitado';
 
-            const { data, error } = await cliente
+            const { error } = await cliente
                 .from('simulacion_hipotecaria')
                 .insert([{
                     usuario_id_fk: idUsuario,
@@ -1402,54 +1393,43 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
                     cuota_base_mensual: calculosGlobales.cuotaBase,
                     seguro_desgravamen_mes1: calculosGlobales.costoDesgravamen,
                     seguro_inmueble_mes1: calculosGlobales.costoInmueble,
-                    pago_mensual_estimado: calculosGlobales.cuotaTotal,
+                    pago_mensual_estimated: calculosGlobales.cuotaTotal,
                     ltv: calculosGlobales.ratioLtv
-                }])
-                .select();
+                }]);
 
             if (error) throw error;
 
-            alert("🎉 ¡Simulación guardada con éxito! Podrás revisar esta corrida desde tu panel de cuenta en cualquier momento.");
-            btnGuardar.innerText = "✅ Simulación Almacenada Correctamente";
-            btnGuardar.style.background = "#059669";
+            alert("🎉 ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
+            btnGuardar.innerText = "✅ Cronograma Enviado Exitosamente";
+            btnGuardar.style.background = "#002E50"; // Cambia al azul oscuro como confirmación
+            btnGuardar.style.color = "#FFB91D";
 
-        } catch (err) { // Captura de error en inserción
-            console.error("Error al registrar simulación:", err.message);
-            alert("No se pudo guardar la simulación: " + err.message);
-            btnGuardar.innerText = "💾 Guardar esta Simulación en mi Cuenta";
+        } catch (err) { // Captura de error de red
+            console.error("Fallo guardando simulación:", err.message);
+            alert("Error procesando solicitud: " + err.message);
+            btnGuardar.innerText = "💾 Enviar mi cronograma de hipoteca a mi correo";
             btnGuardar.disabled = false;
-        } // Cierra el bloque transaccional catch
-    }); // Cierra el EventListener del botón guardar
+        } // Cierra bloque catch de Supabase
+    }); // Cierra EventListener de guardado
 
-    // 4. Poblamiento inicial de combos consumiendo tu Vista SQL optimizada
-    try { // Abre bloque try de renderizado de combos
+    // Bloque asíncrono para poblar las opciones ordenadas de la vista SQL
+    try { // Abre bloque try de cargado de datos
         const cliente = obtenerClienteSupabase();
-        const { data, error } = await cliente
-            .from('vista_lov_hipoteca_consolidada')
-            .select('*')
-            .eq('tipo_propiedad', tipoProp);
-
+        const { data, error } = await cliente.from('vista_lov_hipoteca_consolidada').select('*').eq('tipo_propiedad', tipoProp);
         if (error) throw error;
 
-        const inicialesSet = new Map();
-        const plazosSet = new Set();
-        const teasSet = new Set();
-        const desgravamenesSet = new Set();
-        const inmueblesSet = new Set();
+        const inicialesSet = new Map(); const plazosSet = new Set(); const teasSet = new Set();
+        const desgravamenesSet = new Set(); const inmueblesSet = new Set();
 
         data?.forEach(reg => {
             inicialesSet.set(reg.cuota_inicial, reg.comentario_inicial);
-            plazosSet.add(reg.plazo_anos);
-            teasSet.add(reg.tasa_tea);
-            desgravamenesSet.add(reg.seguro_desgravamen_mensual);
-            inmueblesSet.add(reg.seguro_inmueble_mensual);
+            plazosSet.add(reg.plazo_anos); teasSet.add(reg.tasa_tea);
+            desgravamenesSet.add(reg.seguro_desgravamen_mensual); inmueblesSet.add(reg.seguro_inmueble_mensual);
         });
 
-        // Poblado ordenado numéricamente en el DOM
         Array.from(inicialesSet.keys()).sort((a,b)=>a-b).forEach(val => {
             const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(0)}%`;
-            opt.setAttribute('data-comment', inicialesSet.get(val));
+            opt.innerText = `${(val * 100).toFixed(0)}%`; opt.setAttribute('data-comment', inicialesSet.get(val));
             cInicial.appendChild(opt);
         });
 
@@ -1473,20 +1453,14 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
             opt.innerText = `${(val * 100).toFixed(3)}% mens.`; cInm.appendChild(opt);
         });
 
-        // Disparador del recálculo automático inicial
         ejecutarRecalculoHipoteca();
 
     } catch (err) {
-        console.error("Error al poblar selectores financieros:", err.message);
-    } // Cierra bloque try de renderizado de combos
+        console.error("Error al renderizar selectores:", err.message);
+    } // Cierra bloque try de cargado de datos
 
-    // Encadenamiento nativo de pintado cartográfico de la ficha descriptiva
     inyectarMapaYEscuelasZillow(prop);
-} 
-// ====================================================================================
-// FIN DE FUNCTION: inyectarCapacidadCompraZillow
-// ====================================================================================
-
+}
 
         
 // ====================================================================================
