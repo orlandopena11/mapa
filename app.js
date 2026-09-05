@@ -1254,123 +1254,187 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarCapacidadCompraZillow
+// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION OPTIMIZADA DESDE VISTA SQL)
 // ====================================================================================
-function inyectarCapacidadCompraZillow(prop) {
+async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
     const precioBase = parseFloat(prop.precio_base) || 0;
-    let porcentajeCuotaInicial = 20; 
-    const tasaAnual = 8.5; 
-    const plazoAnos = 20; 
+    const tipoProp = String(prop.tipo_propiedad || 'vivienda').toLowerCase().trim();
 
-    function calcularCuotaMensual(precio, porcInicial) {
-        const cuotaInicial = precio * (porcInicial / 100);
-        const montoPrestamo = precio - cuotaInicial;
-        const tasaMensual = (tasaAnual / 12) / 100;
-        const totalMeses = plazoAnos * 12;
-
-        let principalInteres = 0;
-        if (tasaMensual > 0) {
-            principalInteres = montoPrestamo * (tasaMensual * Math.pow(1 + tasaMensual, totalMeses)) / (Math.pow(1 + tasaMensual, totalMeses) - 1);
-        } else {
-            principalInteres = montoPrestamo / totalMeses;
-        }
-
-        const impuestoMensual = precio * 0.00035;
-        const seguroMensual = montoPrestamo * 0.00015;
-        const pagoTotalMensual = principalInteres + impuestoMensual + seguroMensual;
-
-        return {
-            inicial: Math.round(cuotaInicial),
-            prestamo: Math.round(montoPrestamo),
-            pi: Math.round(principalInteres),
-            impuesto: Math.round(impuestoMensual),
-            seguro: Math.round(seguroMensual),
-            total: Math.round(pagoTotalMensual)
-        };
-    }
-
-    let r = calcularCuotaMensual(precioBase, porcentajeCuotaInicial);
-
+    // Inyección de la maquetación HTML limpia de controles
     slotBuyability.innerHTML = `
         <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a;">Capacidad de compra</h4>
-                <span style="background: #10b981; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">BuyAbility™</span>
+                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a;">Simulador Hipotecario Inteligente</h4>
+                <span style="background: #10b981; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">VISTA SQL</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Estima tu presupuesto mensual para este hogar con tasas referenciales del mercado local.</p>
-
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 24px;">
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Parámetros automáticos para propiedades de tipo <strong>${tipoProp}</strong>.</p>
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
                 <div style="text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
-                    <span style="font-size: 14px; color: #475569; font-weight: 600;">Pago mensual estimado</span>
-                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #10b981; margin: 6px 0 0 0;">$${r.total.toLocaleString('en-US')}/mes</h3>
+                    <span style="font-size: 14px; color: #475569; font-weight: 600;">Cuota Mensual Total Estimada</span>
+                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #006aff; margin: 6px 0 0 0;">Calculando...</h3>
+                    <p id="lov-comentario-dinamico" style="font-size: 11px; color: #64748b; margin: 6px 0 0 0; font-style: italic;"></p>
                 </div>
-
-                <div>
-                    <div style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #e2e8f0; margin-bottom: 16px;">
-                        <div id="barra-segmento-pi" style="width: 75%; background: #006aff; transition: width 0.2s;"></div>
-                        <div id="barra-segmento-impuesto" style="width: 15%; background: #f59e0b; transition: width 0.2s;"></div>
-                        <div id="barra-segmento-seguro" style="width: 10%; background: #10b981; transition: width 0.2s;"></div>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; font-size: 13px; flex-wrap: wrap; gap: 8px;">
-                        <div>
-                            <span style="display: inline-block; width: 10px; height: 10px; background: #006aff; border-radius: 50%; margin-right: 4px;"></span>
-                            <span style="color: #64748b;">P. e Int: <strong id="txt-costo-pi" style="color: #1e293b;">$${r.pi.toLocaleString('en-US')}</strong></span>
-                        </div>
-                        <div>
-                            <span style="display: inline-block; width: 10px; height: 10px; background: #f59e0b; border-radius: 50%; margin-right: 4px;"></span>
-                            <span style="color: #64748b;">Impuestos: <strong id="txt-costo-impuesto" style="color: #1e293b;">$${r.impuesto.toLocaleString('en-US')}</strong></span>
-                        </div>
-                        <div>
-                            <span style="display: inline-block; width: 10px; height: 10px; background: #10b981; border-radius: 50%; margin-right: 4px;"></span>
-                            <span style="color: #64748b;">Seguro: <strong id="txt-costo-seguro" style="color: #1e293b;">$${r.seguro.toLocaleString('en-US')}</strong></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 16px; border-top: 1px solid #f1f5f9; padding-top: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                     <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
-                            <span style="color: #475569; font-weight: 600;">Pago inicial (Cuota inicial)</span>
-                            <span id="txt-porcentaje-inicial-display" style="color: #006aff; font-weight: 700;">20% - $${r.inicial.toLocaleString('en-US')}</span>
-                        </div>
-                        <input type="range" id="slider-cuota-inicial-hipoteca" min="10" max="80" step="5" value="20" style="width: 100%; cursor: pointer; accent-color: #006aff;">
+                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Cuota Inicial (%):</label>
+                        <select id="combo-lov-inicial" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                     </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Plazo de Financiamiento:</label>
+                        <select id="combo-lov-plazo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Tasa de Interés Anual (TEA):</label>
+                        <select id="combo-lov-tea" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Seguro Desgravamen Mensual:</label>
+                        <select id="combo-lov-desgravamen" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold; color: #475569; display: block; margin-bottom: 4px;">Seguro de Inmueble Mensual:</label>
+                        <select id="combo-lov-inmueble" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                    </div>
+                </div>
+                <div style="border-top: 1px solid #f1f5f9; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #1e293b;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #1e293b;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #1e293b;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #1e293b;">-</strong></div>
                 </div>
             </div>
         </div>
-
         <div id="zillow-neighborhood-slot"></div>
     `;
 
-    const slider = document.getElementById('slider-cuota-inicial-hipoteca');
-    if (slider) {
-        slider.oninput = function() {
-            const nuevoPorcentaje = parseInt(this.value);
-            const rx = calcularCuotaMensual(precioBase, nuevoPorcentaje);
+        // Referencias del DOM vinculadas a los nuevos selectores
+    const cInicial = document.getElementById('combo-lov-inicial');
+    const cPlazo = document.getElementById('combo-lov-plazo');
+    const cTea = document.getElementById('combo-lov-tea');
+    const cDesg = document.getElementById('combo-lov-desgravamen');
+    const cInm = document.getElementById('combo-lov-inmueble');
 
-            document.getElementById('display-pago-total-hipoteca').innerText = `$${rx.total.toLocaleString('en-US')}/mes`;
-            document.getElementById('txt-porcentaje-inicial-display').innerText = `${nuevoPorcentaje}% - $${rx.inicial.toLocaleString('en-US')}`;
-            document.getElementById('txt-costo-pi').innerText = `$${rx.pi.toLocaleString('en-US')}`;
-            document.getElementById('txt-costo-impuesto').innerText = `$${rx.impuesto.toLocaleString('en-US')}`;
-            document.getElementById('txt-costo-seguro').innerText = `$${rx.seguro.toLocaleString('en-US')}`;
+    function ejecutarRecalculoHipoteca() { // Abre la sub-función matemática ejecutarRecalculoHipoteca
+        const pctInicial = parseFloat(cInicial.value) || 0;
+        const anosPlazo = parseInt(cPlazo.value) || 0;
+        const valorTea = parseFloat(cTea.value) || 0;
+        const pctDesg = parseFloat(cDesg.value) || 0;
+        const pctInm = parseFloat(cInm.value) || 0;
 
-            const pctPi = (rx.pi / rx.total) * 100;
-            const pctImp = (rx.impuesto / rx.total) * 100;
-            const pctSeg = (rx.seguro / rx.total) * 100;
+        if (pctInicial === 0 || anosPlazo === 0 || valorTea === 0) return;
 
-            document.getElementById('barra-segmento-pi').style.width = `${pctPi}%`;
-            document.getElementById('barra-segmento-impuesto').style.width = `${pctImp}%`;
-            document.getElementById('barra-segmento-seguro').style.width = `${pctSeg}%`;
-        };
-    }
+        const montoInicial = precioBase * pctInicial;
+        const montoPrestamo = precioBase - montoInicial;
+        const totalMeses = anosPlazo * 12;
+        
+        // Conversión Exponencial SBS (TEA a TEM)
+        const tasaMensualTEM = Math.pow(1 + valorTea, 1 / 12) - 1;
 
-    // Disparador de inyección en cadena para el mapa Leaflet y escuelas
+        // Fórmula del Sistema Francés para Cuota Fija (Equivalente exacto a PMT/PAGO)
+        const cuotaBase = montoPrestamo * (tasaMensualTEM * Math.pow(1 + tasaMensualTEM, totalMeses)) / (Math.pow(1 + tasaMensualTEM, totalMeses) - 1);
+
+        // Cálculo de seguros en soles para el Mes 1
+        const costoDesgravamen = montoPrestamo * pctDesg;
+        const costoInmueble = precioBase * pctInm;
+        const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
+
+        // Impresión de valores formateados en la interfaz de usuario
+        document.getElementById('display-pago-total-hipoteca').innerText = `$/., ${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
+        document.getElementById('txt-calc-prestamo').innerText = `$/., ${Math.round(montoPrestamo).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-cuotabase').innerText = `$/., ${Math.round(cuotaBase).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-segdesg').innerText = `$/., ${Math.round(costoDesgravamen).toLocaleString('en-US')}`;
+        document.getElementById('txt-calc-seginm').innerText = `$/., ${Math.round(costoInmueble).toLocaleString('en-US')}`;
+
+        // Inyección del comentario correspondiente de la base de datos
+        const opcionSeleccionada = cInicial.options[cInicial.selectedIndex];
+        document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada ? opcionSeleccionada.getAttribute('data-comment') : '';
+    } // Cierra la sub-función matemática ejecutarRecalculoHipoteca
+
+    // Escuchadores de eventos para recalcular de inmediato ante cualquier selección
+    [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
+
+        try { // Abre el manejador de excepciones de red try
+        const cliente = obtenerClienteSupabase();
+        if (!cliente) throw new Error("Supabase desvinculado.");
+
+        // Petición única de alta velocidad a la vista SQL consolidada
+        const { data, error } = await cliente
+            .from('vista_lov_hipoteca_consolidada')
+            .select('*')
+            .eq('tipo_propiedad', tipoProp);
+
+        if (error) throw error;
+        if (!data || data.length === 0) throw new Error("Sin registros para este tipo.");
+
+        // Sets en memoria para agrupar valores únicos descartando duplicados
+        const inicialesSet = new Map();
+        const plazosSet = new Set();
+        const teasSet = new Set();
+        const desgravamenesSet = new Set();
+        const inmueblesSet = new Set();
+
+        data.forEach(reg => { // Recorrido de normalización de la matriz
+            inicialesSet.set(reg.cuota_inicial, reg.comentario_inicial);
+            plazosSet.add(reg.plazo_anos);
+            teasSet.add(reg.tasa_tea);
+            desgravamenesSet.add(reg.seguro_desgravamen_mensual);
+            inmueblesSet.add(reg.seguro_inmueble_mensual);
+        }); // Fin del recorrido de la matriz
+
+        // Alimentar selectores con ordenamiento numérico de menor a mayor
+        Array.from(inicialesSet.keys()).sort((a,b)=>a-b).forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(0)}%`;
+            opt.setAttribute('data-comment', inicialesSet.get(val));
+            cInicial.appendChild(opt);
+        });
+
+        Array.from(plazosSet).sort((a,b)=>a-b).forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `${val} Años`;
+            cPlazo.appendChild(opt);
+        });
+
+        Array.from(teasSet).sort((a,b)=>a-b).forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(2)}% TEA`;
+            cTea.appendChild(opt);
+        });
+
+        Array.from(desgravamenesSet).sort((a,b)=>a-b).forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(3)}% mens.`;
+            cDesg.appendChild(opt);
+        });
+
+        Array.from(inmueblesSet).sort((a,b)=>a-b).forEach(val => {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `${(val * 100).toFixed(3)}% mens.`;
+            cInm.appendChild(opt);
+        });
+
+        // Forzar cálculo inicial por defecto tras poblar la interfaz
+        ejecutarRecalculoHipoteca();
+
+    } catch (err) { // Abre captura de error de red
+        console.error("Error de performance cargando vista hipotecaria:", err.message);
+    } // Cierra manejador de excepciones de red catch
+
+    // Continuación con la cadena de pintado nativa de la app
     inyectarMapaYEscuelasZillow(prop);
-}
+} 
+// ====================================================================================
+// FIN DE FUNCTION: inyectarCapacidadCompraZillow
+// ====================================================================================
+
 
         
 // ====================================================================================
