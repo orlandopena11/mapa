@@ -1274,7 +1274,7 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
                 <div style="text-align: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
                     <span style="font-size: 14px; color: #475569; font-weight: 600;">Cuota Mensual Total Estimada</span>
-                    <h3 id="display-pago-total-hipoteca" style="font-size: 32px; font-weight: 800; color: #10b981; margin: 6px 0 0 0;">Calculando...</h3>
+                    <h3 id="display-pago-total-hipoteca" style="font-size: 22px; font-weight: 700; color: #475569; margin: 10px 0 0 0;">Selecciona tus datos y simula tu hipoteca</h3>
                     <p id="lov-comentario-dinamico" style="font-size: 11px; color: #64748b; margin: 6px 0 0 0; font-style: italic;"></p>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
