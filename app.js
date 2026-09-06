@@ -1542,17 +1542,31 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Al hacer clic sobre cualquier recomendación, tu catálogo web recargará la ficha con el nuevo ID
-            // Evento click interactivo para actualizar toda la cortina con el nuevo inmueble seleccionado
+            // Evento click interactivo corregido para actualizar toda la cortina con el nuevo inmueble seleccionado
             tarjeta.addEventListener('click', () => {
-                if (Array.isArray(window.state?.propiedades)) {
-                    // Buscamos la propiedad completa en el estado global usando el ID de la tarjeta
-                    const nuevaProp = window.state.propiedades.find(p => String(p.id) === String(item.id));
-                    if (nuevaProp && typeof window.gestionarCortinaSPA === 'function') {
-                        window.gestionarCortinaSPA(nuevaProp);
+                // Buscamos primero en el arreglo global de propiedades de la aplicacion
+                const listaPropiedades = window.catalogoPropiedadesCompleto || window.state?.propiedades || [];
+                
+                if (Array.isArray(listaPropiedades)) {
+                    // Buscamos la propiedad correspondiente haciendo la comparacion de IDs string
+                    const propiedadEncontrada = listaPropiedades.find(p => String(p.id) === String(item.id));
+                    
+                    if (propiedadEncontrada && typeof window.gestionarCortinaSPA === 'function') {
+                        // Limpiamos los contenedores anteriores para evitar duplicados visuales antes de recargar
+                        const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
+                        if (slotBuyability) slotBuyability.innerHTML = '';
+                        
+                        // Invocamos la funcion nativa de tu app para redibujar la segunda pantalla con el nuevo objeto
+                        window.gestionarCortinaSPA(propiedadEncontrada);
+                    } else {
+                        // Contingencia: Si no encuentra el objeto en memoria, recarga usando la estructura de la fila actual
+                        if (typeof window.gestionarCortinaSPA === 'function') {
+                            window.gestionarCortinaSPA(item);
+                        }
                     }
                 }
             });
+
 
             // Pintado estilizado con formato estricto en Dólares ($)
             // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
