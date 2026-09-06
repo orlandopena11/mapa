@@ -679,6 +679,7 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
+    const inputDireccionGlobal = document.getElementById('search-address');
     
     const handlerPrecios = () => {
         state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
@@ -687,6 +688,13 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
     };
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
+    
+    // --- NUEVO: ESCUCHADOR PARA EL BUSCADOR DE DIRECCIÓN ---
+    if (inputDireccionGlobal) {
+        inputDireccionGlobal.addEventListener('input', () => {
+            ejecutarTuberiaSincronizada();
+        });
+    }
 
     configurarSegmentado('row-beds', (valor) => { 
         state.filtros.camas = parseInt(valor, 10) || 0; 
