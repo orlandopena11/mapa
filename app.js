@@ -1546,10 +1546,24 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             });
 
             // Pintado estilizado con formato estricto en Dólares ($)
+            // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
+            let nombreFoto = String(item.imagen_principal || '').trim();
+            let urlFoto = '';
+
+            if (nombreFoto.startsWith('http://') || nombreFoto.startsWith('https://')) {
+                urlFoto = nombreFoto;
+            } else if (nombreFoto !== '') {
+                urlFoto = `https://res.cloudinary.com/obw6ciov/image/upload/{nombreFoto}`;
+            } else {
+                urlFoto = 'https://unsplash.com';
+            }
+
+            // Pintado de la tarjeta inyectando la url de Cloudinary reconstruida de forma segura
             tarjeta.innerHTML = `
                 <div style="position: relative; height: 130px; background: #e2e8f0;">
-                    <img src="${item.imagen_principal || 'img/placeholder-casa.jpg'}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
-                    <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial).toUpperCase()}</span>
+                    <img src="${urlFoto}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
+
+            <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial).toUpperCase()}</span>
                 </div>
                 <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
                     <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base).toLocaleString('en-US')}</h5>
