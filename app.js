@@ -949,6 +949,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     </div>
 
                     // MODIFICACIÓN EXACTA EN LA COLUMNA DE BOTONES DE TU CORTINA SPA
+                    
                     <div style="flex: 1; min-width: 300px; flex-basis: 30%; max-width: 100%; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 80px; z-index: 100;">
                         <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; text-align: center;">Contactar con la inmobiliaria</h4>
                         <button type="button" id="btn-solicitar-tour-galeria-spa" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
