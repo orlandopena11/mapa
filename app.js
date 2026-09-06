@@ -467,7 +467,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 const unico = coordenadasValidas[0];
                 window.map.setView([unico.latitud, unico.longitud], 15, { animate: true });
             } else {
-                window.map.fitBounds(limitesMapa, { padding:, maxZoom: 15, animate: true });
+                window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
             }
         }
     }
