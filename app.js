@@ -1548,15 +1548,15 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             // Pintado estilizado con formato estricto en Dólares ($)
             // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
             let nombreFoto = String(item.imagen_principal || '').trim();
-            let urlFoto = '';
+                let urlFoto = '';
+                if (nombreFoto.startsWith('http')) {
+                    urlFoto = nombreFoto;
+                } else if (nombreFoto !== '') {
+                    urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
+                } else {
+                    urlFoto = 'https://unsplash.com';
+                }
 
-            if (nombreFoto.startsWith('http://') || nombreFoto.startsWith('https://')) {
-                urlFoto = nombreFoto;
-            } else if (nombreFoto !== '') {
-                urlFoto = `https://res.cloudinary.com/obw6ciov/image/upload/{nombreFoto}`;
-            } else {
-                urlFoto = 'https://unsplash.com';
-            }
 
             // Pintado de la tarjeta inyectando la url de Cloudinary reconstruida de forma segura
             tarjeta.innerHTML = `
