@@ -1262,6 +1262,7 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 
     const precioBase = parseFloat(prop.precio_base) || 0;
     const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
+    try {
 
     // Inyección de la interfaz gráfica con tus colores corporativos #FFB91D y #002E50
     slotBuyability.innerHTML = `
@@ -1459,12 +1460,12 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         console.error("Error al renderizar selectores:", err.message);
     } // Cierra bloque try de cargado de datos
 
-        // Disparadores en cadena de las sub-secciones del panel secundario
+        // Disparadores en cadena del panel secundario
         inyectarPropiedadesCercanasZillow(prop);
         inyectarMapaYEscuelasZillow(prop);
-    } catch (err) {
+    } catch (err) { // <-- Ahora este catch ya reconoce al try superior
         console.error("Error en flujo secundario:", err.message);
-    }
+    } // Cierra el bloque de seguridad catch
 } // Cierra definitivamente la función principal inyectarCapacidadCompraZillow
         
 // ====================================================================================
