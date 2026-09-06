@@ -1811,8 +1811,9 @@ function inyectarMapaYEscuelasZillow(prop) {
     const slotMapa = document.getElementById('zillow-neighborhood-slot');
     if (!slotMapa) return;
 
-    const lat = parseFloat(prop.latitud) || -12.1193; // Fallback Miraflores/Surco si viene vacío
-    const lng = parseFloat(prop.longitud) || -77.0294;
+    const lat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142; 
+    const lng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
+
     const distrito = prop.distrito || 'Lima';
 
     slotMapa.innerHTML = `
