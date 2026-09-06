@@ -1459,13 +1459,120 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         console.error("Error al renderizar selectores:", err.message);
     } // Cierra bloque try de cargado de datos
 
-    inyectarMapaYEscuelasZillow(prop);
-}
-
+        // Disparadores en cadena de las sub-secciones del panel secundario
+        inyectarPropiedadesCercanasZillow(prop);
+        inyectarMapaYEscuelasZillow(prop);
+    } catch (err) {
+        console.error("Error en flujo secundario:", err.message);
+    }
+} // Cierra definitivamente la función principal inyectarCapacidadCompraZillow
         
 // ====================================================================================
 // FIN DE FUNCTION: inyectarCapacidadCompraZillow
 // ====================================================================================
+
+// ====================================================================================
+// INICIO DE FUNCTION: inyectarPropiedadesCercanasZillow (CARRUSEL GEOGRÁFICO POSTGIS)
+// ====================================================================================
+async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función principal de propiedades sugeridas
+    const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
+    if (!slotBuyability) return;
+
+    let contenedorCercanas = document.getElementById('zillow-nearby-homes-container');
+    if (!contenedorCercanas) {
+        contenedorCercanas = document.createElement('div');
+        contenedorCercanas.id = 'zillow-nearby-homes-container';
+        contenedorCercanas.style.marginTop = '40px';
+        contenedorCercanas.style.borderTop = '1px solid #e2e8f0';
+        contenedorCercanas.style.paddingTop = '24px';
+        slotBuyability.appendChild(contenedorCercanas);
+    }
+
+    // Inyección de la maquetación del contenedor con controles direccionales independientes
+    contenedorCercanas.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Propiedades Cercanas Sugeridas</h4>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" id="btn-prev-cercanas" style="border: 1px solid #cbd5e1; background: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #002E50;">&lt;</button>
+                <button type="button" id="btn-next-cercanas" style="border: 1px solid #cbd5e1; background: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #002E50;">&gt;</button>
+            </div>
+        </div>
+        <div id="grid-cercanas-items" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px;">
+            <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades en el cuadrante de proximidad de Supabase...</p>
+        </div>
+    `;
+
+        const gridItems = document.getElementById('grid-cercanas-items');
+
+    try { // Abre el bloque de petición de red try
+        const cliente = obtenerClienteSupabase();
+        
+        // Consumimos de forma directa tu función remota de cálculo espacial Haversine
+        const { data, error } = await cliente.rpc('buscar_propiedades_cercanas', {
+            target_id: String(prop.id),
+            target_lat: parseFloat(prop.latitud),
+            target_lng: parseFloat(prop.longitud),
+            target_tipo: String(prop.tipo_propiedad)
+        });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se encontraron otras propiedades del tipo ${prop.tipo_propiedad} cercanas en este perímetro.</p>`;
+            return;
+        }
+
+        gridItems.innerHTML = ''; // Limpiamos el mensaje guía de carga
+
+        data.forEach(item => { // Abre el bucle de renderizado de tarjetas de propiedades
+            const tarjeta = document.createElement('div');
+            tarjeta.style.background = '#ffffff';
+            tarjeta.style.border = '1px solid #e2e8f0';
+            tarjeta.style.borderRadius = '8px';
+            tarjeta.style.overflow = 'hidden';
+            tarjeta.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+            tarjeta.style.cursor = 'pointer';
+            tarjeta.style.transition = 'transform 0.2s';
+            
+            tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
+            tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
+            
+            // Al hacer clic sobre cualquier recomendación, tu catálogo web recargará la ficha con el nuevo ID
+            tarjeta.addEventListener('click', () => {
+                if (typeof abrirDetallePropiedadCatalogo === "function") {
+                    abrirDetallePropiedadCatalogo(item.id);
+                }
+            });
+
+            // Pintado estilizado con formato estricto en Dólares ($)
+            tarjeta.innerHTML = `
+                <div style="position: relative; height: 130px; background: #e2e8f0;">
+                    <img src="${item.imagen_principal || 'img/placeholder-casa.jpg'}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
+                    <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial).toUpperCase()}</span>
+                </div>
+                <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
+                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base).toLocaleString('en-US')}</h5>
+                    <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones} bd | ${item.banos} ba | ${Math.round(item.area_construida)} sqft</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion}</p>
+                    <span style="font-size: 10px; color: #10b981; font-weight: bold; margin-top: 4px;">📍 A ${(item.distancia_metros / 1000).toFixed(2)} km de distancia</span>
+                </div>
+            `;
+            gridItems.appendChild(tarjeta);
+        }); // Cierra el bucle de renderizado de tarjetas
+
+                // Activación de la navegación mediante el scroll lateral por pixeles
+        document.getElementById('btn-prev-cercanas').addEventListener('click', () => gridItems.scrollLeft -= 240);
+        document.getElementById('btn-next-cercanas').addEventListener('click', () => gridItems.scrollLeft += 240);
+
+    } catch (err) { // Captura de errores de red
+        console.error("Error al cargar propiedades cercanas:", err.message);
+        gridItems.innerHTML = `<p style="font-size: 12px; color: #ef4444;">No se pudieron desplegar los inmuebles de proximidad geométrica.</p>`;
+    } // Cierra el bloque de petición de red catch
+}
+// ====================================================================================
+// FIN DE FUNCTION: inyectarPropiedadesCercanasZillow
+// ====================================================================================
+
 
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
