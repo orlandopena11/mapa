@@ -1567,11 +1567,20 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
                         // Normalizamos el ID para mantener compatibilidad con el resto de tu app.js
                         propiedadData.id = propiedadData.propiedad_id;
                         
-                        // Forzamos el redibujado instantáneo de toda la segunda pantalla con el nuevo inmueble
+                        // 1. Forzamos el redibujado instantáneo de toda la segunda pantalla con el nuevo inmueble
                         window.gestionarCortinaSPA(propiedadData);
+
+                        // 2. Reinicio automático de Scroll al tope de la vista para mostrar la nueva ficha desde arriba
+                        const panelDetalle = document.getElementById('zillow-sidebar-spa-panel') || document.querySelector('.zillow-panel-scroll') || window;
+                        if (panelDetalle) {
+                            panelDetalle.scrollTo({ top: 0, behavior: 'smooth' });
+                        } else {
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
                     }
                 } catch (err) {
-                    console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
+
+                        console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
                 } // Cierra el bloque de consulta catch
             }); // Cierra el evento click asíncrono
 
