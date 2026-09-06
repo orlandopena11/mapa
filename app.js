@@ -1490,15 +1490,17 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
     }
 
     // Inyección de la maquetación del contenedor con controles direccionales independientes
+    // Inyección de la maquetación con carrusel horizontal estricto en una sola línea
     contenedorCercanas.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Propiedades Cercanas Sugeridas</h4>
             <div style="display: flex; gap: 8px;">
-                <button type="button" id="btn-prev-cercanas" style="border: 1px solid #cbd5e1; background: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #002E50;">&lt;</button>
-                <button type="button" id="btn-next-cercanas" style="border: 1px solid #cbd5e1; background: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #002E50;">&gt;</button>
+                <button type="button" id="btn-prev-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&lt;</button>
+                <button type="button" id="btn-next-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&gt;</button>
             </div>
         </div>
-        <div id="grid-cercanas-items" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px;">
+        <!-- Contenedor forzado a una sola línea con scroll horizontal invisible -->
+        <div id="grid-cercanas-items" style="display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px; -ms-overflow-style: none; scrollbar-width: none;">
             <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades en el cuadrante de proximidad de Supabase...</p>
         </div>
     `;
@@ -1530,6 +1532,8 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.style.background = '#ffffff';
             tarjeta.style.border = '1px solid #e2e8f0';
             tarjeta.style.borderRadius = '8px';
+            tarjeta.style.width = '240px'; // Asegura que la tarjeta no se deforme en la fila única
+
             tarjeta.style.overflow = 'hidden';
             tarjeta.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
             tarjeta.style.cursor = 'pointer';
@@ -1539,9 +1543,14 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
             // Al hacer clic sobre cualquier recomendación, tu catálogo web recargará la ficha con el nuevo ID
+            // Evento click interactivo para actualizar toda la cortina con el nuevo inmueble seleccionado
             tarjeta.addEventListener('click', () => {
-                if (typeof abrirDetallePropiedadCatalogo === "function") {
-                    abrirDetallePropiedadCatalogo(item.id);
+                if (Array.isArray(window.state?.propiedades)) {
+                    // Buscamos la propiedad completa en el estado global usando el ID de la tarjeta
+                    const nuevaProp = window.state.propiedades.find(p => String(p.id) === String(item.id));
+                    if (nuevaProp && typeof window.gestionarCortinaSPA === 'function') {
+                        window.gestionarCortinaSPA(nuevaProp);
+                    }
                 }
             });
 
