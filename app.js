@@ -1542,34 +1542,38 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Evento click interactivo corregido con el mapeo de ID de la consulta RPC
-            tarjeta.addEventListener('click', () => {
-                // Capturamos el ID real que devuelve la función de Supabase
+            // Evento click interactivo con consulta directa a Supabase para recarga SPA infalible
+            tarjeta.addEventListener('click', async () => { // Abre el evento click asíncrono
                 const idBuscado = String(item.id || item.propiedad_id || '').trim();
-                
-                // Obtenemos el arreglo completo de inmuebles cargados en tu aplicación
-                const listaPropiedades = window.catalogoPropiedadesCompleto || window.state?.propiedades || [];
-                
-                if (Array.isArray(listaPropiedades) && idBuscado !== '') {
-                    // Realizamos la búsqueda exacta comparando los IDs de tu catálogo original
-                    const propiedadEncontrada = listaPropiedades.find(p => String(p.id).trim() === idBuscado);
+                if (!idBuscado) return;
+
+                try { // Abre el bloque de consulta try
+                    const cliente = obtenerClienteSupabase();
                     
-                    if (propiedadEncontrada && typeof window.gestionarCortinaSPA === 'function') {
-                        // Limpiamos la sección anterior para evitar duplicados en el DOM antes del refresco
+                    // Consultamos directamente el registro de la propiedad seleccionada
+                    const { data: propiedadData, error } = await cliente
+                        .from('vista_catalogo_mapa')
+                        .select('*')
+                        .eq('propiedad_id', idBuscado)
+                        .single(); // Trae un único objeto limpio
+
+                    if (error) throw error;
+
+                    if (propiedadData && typeof window.gestionarCortinaSPA === 'function') {
+                        // Limpiamos los contenedores anteriores para evitar duplicaciones en el DOM
                         const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
                         if (slotBuyability) slotBuyability.innerHTML = '';
                         
+                        // Normalizamos el ID para mantener compatibilidad con el resto de tu app.js
+                        propiedadData.id = propiedadData.propiedad_id;
+                        
                         // Forzamos el redibujado instantáneo de toda la segunda pantalla con el nuevo inmueble
-                        window.gestionarCortinaSPA(propiedadEncontrada);
-                    } else {
-                        // Contingencia: Si no está en el catálogo global, intenta recargar con la estructura del item actual
-                        if (typeof window.gestionarCortinaSPA === 'function') {
-                            window.gestionarCortinaSPA(item);
-                        }
+                        window.gestionarCortinaSPA(propiedadData);
                     }
-                }
-            });
-
+                } catch (err) {
+                    console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
+                } // Cierra el bloque de consulta catch
+            }); // Cierra el evento click asíncrono
 
             // Pintado estilizado con formato estricto en Dólares ($)
             // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
