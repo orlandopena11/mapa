@@ -453,10 +453,25 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     }
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-    console.log(`ðŸ—ºï¸ [SRE ESPÃA MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
+    console.log(`ðŸ—ºï¸  [SRE ESPÃ A MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
+
+    // --- NUEVO: AUTO-AJUSTE DINÁMICO DEL MAPA SEGÚN FILTROS ---
+    if (filtradas.length > 0 && window.map) {
+        const coordenadasValidas = filtradas.filter(p => p.latitud && p.longitud);
+        if (coordenadasValidas.length > 0) {
+            const limitesMapa = L.latLngBounds(coordenadasValidas.map(p => [p.latitud, p.longitud]));
+            
+            // Si es un solo resultado, centramos con zoom específico; si son varios, encuadramos todos
+            if (coordenadasValidas.length === 1) {
+                window.map.setView([coordenadasValidas[0].latitud, coordenadasValidas[0].longitud], 15, { animate: true });
+            } else {
+                window.map.fitBounds(limitesMapa, { padding:, maxZoom: 15, animate: true });
+            }
+        }
+    }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
-        if (!prop.latitud || !prop.longitud) return;
+    if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
