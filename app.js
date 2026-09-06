@@ -894,9 +894,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 
                 // REEMPLAZA EL CONTENEDOR PADRE POR ESTE EN TU APP.JS:
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
-
                     
-                    <div style="flex: 1; min-width: 300px; max-width: 100%; flex-basis: 65%;">
+                    <div style="width: 100%; overflow: hidden;">
                         
                         <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
                             <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
@@ -950,9 +949,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 
                     </div>
 
-                    // MODIFICACIÓN EXACTA EN LA COLUMNA DE BOTONES DE TU CORTINA SPA
-                    
-                    <div style="flex: 1; min-width: 300px; flex-basis: 30%; max-width: 100%; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 80px; z-index: 100;">
+                    <div style="width: 100%; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 80px; z-index: 100; box-sizing: border-box;">
+
                         <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; text-align: center;">Contactar con la inmobiliaria</h4>
                         <button type="button" id="btn-solicitar-tour-galeria-spa" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
                         <button type="button" id="btn-contactar-agente-galeria-spa" style="width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Contactar Agente</button>
