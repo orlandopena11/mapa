@@ -1542,24 +1542,27 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Evento click interactivo corregido para actualizar toda la cortina con el nuevo inmueble seleccionado
+            // Evento click interactivo corregido con el mapeo de ID de la consulta RPC
             tarjeta.addEventListener('click', () => {
-                // Buscamos primero en el arreglo global de propiedades de la aplicacion
+                // Capturamos el ID real que devuelve la función de Supabase
+                const idBuscado = String(item.id || item.propiedad_id || '').trim();
+                
+                // Obtenemos el arreglo completo de inmuebles cargados en tu aplicación
                 const listaPropiedades = window.catalogoPropiedadesCompleto || window.state?.propiedades || [];
                 
-                if (Array.isArray(listaPropiedades)) {
-                    // Buscamos la propiedad correspondiente haciendo la comparacion de IDs string
-                    const propiedadEncontrada = listaPropiedades.find(p => String(p.id) === String(item.id));
+                if (Array.isArray(listaPropiedades) && idBuscado !== '') {
+                    // Realizamos la búsqueda exacta comparando los IDs de tu catálogo original
+                    const propiedadEncontrada = listaPropiedades.find(p => String(p.id).trim() === idBuscado);
                     
                     if (propiedadEncontrada && typeof window.gestionarCortinaSPA === 'function') {
-                        // Limpiamos los contenedores anteriores para evitar duplicados visuales antes de recargar
+                        // Limpiamos la sección anterior para evitar duplicados en el DOM antes del refresco
                         const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
                         if (slotBuyability) slotBuyability.innerHTML = '';
                         
-                        // Invocamos la funcion nativa de tu app para redibujar la segunda pantalla con el nuevo objeto
+                        // Forzamos el redibujado instantáneo de toda la segunda pantalla con el nuevo inmueble
                         window.gestionarCortinaSPA(propiedadEncontrada);
                     } else {
-                        // Contingencia: Si no encuentra el objeto en memoria, recarga usando la estructura de la fila actual
+                        // Contingencia: Si no está en el catálogo global, intenta recargar con la estructura del item actual
                         if (typeof window.gestionarCortinaSPA === 'function') {
                             window.gestionarCortinaSPA(item);
                         }
