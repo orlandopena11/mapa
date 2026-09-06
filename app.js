@@ -766,11 +766,27 @@ function configurarSegmentado(idContenedor, callback) { // Inicia Function confi
 // ==========================================================================
 
 function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
+    // --- NUEVO: FILTRO DE TEXTO DE DIRECCIÓN / DISTRITO / TITULO ---
+    const inputDireccion = document.getElementById('search-address');
+    if (inputDireccion && inputDireccion.value.trim() !== "") {
+        const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        
+        const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        // Si el texto ingresado no coincide con la dirección, ni con el distrito, ni con el título, se descarta
+        if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
+            return false;
+        }
+    }
+
     const filtroTransaccion = state.filtros.estado || "Venta";
     
     // REGLA DE NEGOCIO ESTRICTA SRE LIMA
     if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-        // Venta requiere: tipo_anuncio = 'Venta' Y estado_publicacion = 'disponible'
+
+// Venta requiere: tipo_anuncio = 'Venta' Y estado_publicacion = 'disponible'
         if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") return false;
     } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
         // Alquiler requiere: tipo_anuncio = 'Alquiler' Y estado_publicacion = 'disponible'
