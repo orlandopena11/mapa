@@ -119,7 +119,7 @@ main.split-view .properties-panel {
 }
 
 /* PARTE 2 DE 5: DISEÑO DE PÍLDORAS DE FILTRADO Y ALINEACIÓN DE DROPDOWNS */
-.navbar-global {
+/*.navbar-global {
     position: fixed;
     top: 0;
     left: 0;
@@ -136,7 +136,28 @@ main.split-view .properties-panel {
     z-index: 2000;
     white-space: nowrap;
     box-sizing: border-box;
+} */
+
+/* ACTUALIZACIÓN COMPLETA PARA FIJAR LA BARRA DE FILTROS SUPERIOR */
+header.navbar-global, .navbar-global {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 60px;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 10px 24px;
+    background-color: var(--blanco);
+    border-bottom: 1px solid var(--gris-borde);
+    box-shadow: var(--shadow-soft);
+    z-index: 9999; /* Elevamos el z-index para asegurar que las tarjetas de Leaflet pasen por debajo */
+    box-sizing: border-box;
+    white-space: nowrap;
 }
+
 
 .navbar-brand-logo {
     height: 32px;
