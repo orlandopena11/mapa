@@ -1542,41 +1542,42 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Evento click interactivo con consulta directa a Supabase para recarga SPA infalible
-            tarjeta.addEventListener('click', async () => { // Abre el evento click asíncrono
+            // Evento click optimizado: Consulta Supabase, normaliza el modelo de datos y recarga la SPA
+            tarjeta.addEventListener('click', async () => {
                 const idBuscado = String(item.id || item.propiedad_id || '').trim();
                 if (!idBuscado) return;
 
-                try { // Abre el bloque de consulta try
+                try {
                     const cliente = obtenerClienteSupabase();
-                    
-                    // Consultamos directamente el registro de la propiedad seleccionada
-                    const { data: propiedadData, error } = await cliente
+                    const { data: rawProp, error } = await cliente
                         .from('vista_catalogo_mapa')
                         .select('*')
                         .eq('propiedad_id', idBuscado)
-                        .single(); // Trae un único objeto limpio
+                        .single();
 
                     if (error) throw error;
 
-                    if (propiedadData && typeof window.gestionarCortinaSPA === 'function') {
-                        // Limpiamos los contenedores anteriores para evitar duplicaciones en el DOM
-                        const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
-                        if (slotBuyability) slotBuyability.innerHTML = '';
+                    if (rawProp && typeof window.gestionarCortinaSPA === 'function') {
+                        // 1. Convertimos el registro crudo de Postgres al formato de UI esperado por tu app.js
+                        const propiedadNormalizada = normalizarPropiedad(rawProp);
                         
-                        // Normalizamos el ID para mantener compatibilidad con el resto de tu app.js
-                        propiedadData.id = propiedadData.propiedad_id;
+                        // 2. Cerramos temporalmente el estado visual para forzar una recarga limpia en el DOM
+                        const cortina = document.getElementById('cortina-spa');
+                        if (cortina) cortina.innerHTML = '';
                         
-                        if (typeof window.gestionarCortinaSPA === 'function') {
-                            window.gestionarCortinaSPA(propiedadData);
+                        // 3. Forzamos el redibujado de la SPA con el nuevo objeto completamente estructurado
+                        window.gestionarCortinaSPA('detalle', propiedadNormalizada);
+                        
+                        // 4. Reinicio de Scroll al tope de la cortina lateral
+                        const panelCortinaReal = document.getElementById('modal-interior') || window;
+                        if (panelCortinaReal) {
+                            panelCortinaReal.scrollTo({ top: 0, behavior: 'smooth' });
                         }
                     }
-
                 } catch (err) {
-
-                        console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
-                } // Cierra el bloque de consulta catch
-            }); // Cierra el evento click asíncrono
+                    console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
+                }
+            });
 
             // Pintado estilizado con formato estricto en Dólares ($)
             // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
