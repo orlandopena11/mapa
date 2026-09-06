@@ -892,7 +892,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-direction: row; gap: 32px; box-sizing: border-box; flex-wrap: wrap;">
+                // REEMPLAZA EL CONTENEDOR PADRE POR ESTE EN TU APP.JS:
+                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
+
                     
                     <div style="flex: 1; min-width: 300px; max-width: 100%; flex-basis: 65%;">
                         
