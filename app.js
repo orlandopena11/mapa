@@ -456,7 +456,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     console.log(`ðŸ—ºï¸  [SRE ESPÃ A MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
 
 
-    // --- NUEVO: AUTO-AJUSTE DINÁMICO DEL MAPA SEGÚN FILTROS CORREGIDO ---
+    // --- NUEVO: AUTO-AJUSTE DINÁMICO DEL MAPA SEGÚN FILTROS 100% REPARADO ---
     if (filtradas.length > 0 && window.map) {
         const coordenadasValidas = filtradas.filter(p => p.latitud && p.longitud);
         if (coordenadasValidas.length > 0) {
