@@ -201,10 +201,12 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         vista: String(prop.vista || "Ninguna").trim(),
         creado_por: String(prop.creado_por || "").trim(),
         
-        // Georreferenciación y Colecciones Agregadas con Lectura Relacional Segura
+        // Georreferenciación Unificada Directa de la Nueva Tabla
         distrito: String(prop.distrito || "").trim(),
-        latitud: parseFloat(prop.ubicacion ? prop.ubicacion.latitud : (prop.latitud || -12.1142)),
-        longitud: parseFloat(prop.ubicacion ? prop.ubicacion.longitud : (prop.longitud || -76.9915)),
+        latitud: parseFloat(prop.latitud),
+        longitud: parseFloat(prop.longitud),
+        codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || '150140').trim(),
+        foto_principal: String(prop.foto_principal || ""),
         fotos: fotosUnificadas,
         amenidades: prop.amenidades || []
     };
