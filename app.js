@@ -866,23 +866,23 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    // --- INTEGRIDAD TÉCNICA SRE: CONTEO FILTRADO ESTRICTO DE TRANSACCIONES ---
+    // --- INTEGRIDAD DE DATOS CRUDOS SRE: CONTEO FILTRADO ESTRICTO ---
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    // Si el checkbox maestro está activo, solo valida los filtros superiores (Venta/Alquiler/Vendido)
+    // Si el checkbox maestro de listados está seleccionado, se respeta la transacción superior pura
     if (checkMaestro && checkMaestro.checked === true) {
         return true;
     }
 
-    // Si hay checkboxes específicos marcados, validamos la situación comercial interna
+    // Validación directa del string de situación comercial sin alteraciones de texto
     if (checkboxesMarcados.length > 0) {
-        const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
-        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
+        const situacionBD = String(prop.situacion_propiedad || "").trim();
+        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
         if (!coincideFiltro) return false;
     } else {
-        // Si no hay selección y el maestro está apagado, se oculta el registro de forma segura
+        // Si no hay checkboxes de situación marcados por el usuario, bloqueamos el registro de forma segura
         return false;
     }
 
