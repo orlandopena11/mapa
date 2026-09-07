@@ -112,9 +112,16 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 
         if (error) throw error;
 
-        console.log("🔥 [SRE ESPÍA REST SUCCESS] Registros crudos obtenidos de Supabase:", data.length);
+        // --- ESPÍA DE CONTROL 1: INSPECCIÓN DE RESPUESTA CRUDA SUPABASE ---
+        console.group("%cðŸ”Ž [SRE ESPÃ A 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
+        console.log("Cantidad total devuelta por la Vista SQL:", data.length);
+        if(data.length > 0) {
+            console.log("Estructura del primer registro (PROP-001):", data[0]);
+            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "SÃ" : "NO");
+            console.log("Campos de coordenadas en la raÃz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
+        }
+        console.groupEnd();
         
-        // Estructuramos el paquete con el formato esperado por tu orquestador de UI
         const paqueteData = { propiedades: data || [], usuarios: [] };
         procesarDatosDelMotor(paqueteData);
 
@@ -212,7 +219,11 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         fotos: fotosUnificadas,
         amenidades: prop.amenidades || []
     };
-
+    
+    // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
+    console.log(`%c?? [SRE ESPÃ A 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | TransacciÃ³n: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    
+    return res;
 } // Fin de Function normalizarPropiedad
 
 
@@ -458,7 +469,13 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     }
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-    console.log(`ðŸ—ºï¸  [SRE ESPÃ A MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
+    
+    // --- ESPÍA DE CONTROL 3: ANÁLISIS DE FILTRADO PARA EL MAPA ---
+    console.group("%cðŸ—ºï¸  [SRE ESPÃ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
+    console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
+    console.log("IDs de las propiedades que pasaron el filtro y van al mapa:", filtradas.map(p => p.id));
+    console.table(filtradas, ["id", "latitud", "longitud", "tipo_anuncio", "estado_publicacion"]);
+    console.groupEnd();
 
 
     // --- AUTO-AJUSTE DINÁMICO PURO CON DATOS PLANOS NATIVOS ---
