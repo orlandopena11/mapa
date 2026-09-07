@@ -508,20 +508,24 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
         console.groupEnd();
 
-        // Inicialización geométrica blindada contra colapsos
+        // Inicialización geométrica blindada convirtiendo los arreglos en objetos geográficos nativos L.latLng SRE
         if (coordenadasValidas.length > 0) {
             try {
-                const limitesMapa = L.latLngBounds(coordenadasValidas);
+                // Convertimos cada par de números planos en un objeto LatLng nativo oficial de Leaflet
+                const objetosLatLngOficiales = coordenadasValidas.map(coord => L.latLng(coord[0], coord[1]));
+                const limitesMapa = L.latLngBounds(objetosLatLngOficiales);
                 
                 if (coordenadasValidas.length === 1) {
-                    window.map.setView(coordenadasValidas, 15, { animate: true });
+                    window.map.setView(objetosLatLngOficiales[0], 15, { animate: true });
                 } else {
                     window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
                 }
+                console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
             } catch (errGeometrico) {
                 console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
             }
         }
+
     }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
