@@ -491,44 +491,57 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
     // ==========================================================================
     if (filtradas.length > 0 && window.map) {
-        console.group("%cðŸ”Ž [SRE ESPÃ A MATEMÃ TICO] AUDITORÃ A DE ITERACIÃ“N DE LÃ MITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
+        console.group("%c🕵️‍♂️ [SRE SÚPER ESPÍA] RASTREO TÉCNICO VARIABLE POR VARIABLE", "background: #002E50; color: #FFB91D; padding: 6px; font-weight: bold;");
         
         const coordenadasValidas = [];
         
-        filtradas.forEach(p => {
-            // Evaluamos detalladamente qué propiedades físicas existen en la raíz del objeto
-            console.log(`Propiedad ID: ${p.propiedad_id || p.id} | p.latitud raw: ${p.latitud} (tipo: ${typeof p.latitud}) | p.longitud raw: ${p.longitud} (tipo: ${typeof p.longitud})`);
+        filtradas.forEach((p, index) => {
+            // Captura de valores crudos directo del estado normalizado
+            const idProp = p.id || p.propiedad_id || `Índice-${index}`;
+            const latRaw = p.latitud;
+            const lngRaw = p.longitud;
             
-            const parsedLat = parseFloat(p.latitud);
-            const parsedLng = parseFloat(p.longitud);
+            const parsedLat = parseFloat(latRaw);
+            const parsedLng = parseFloat(lngRaw);
             
-            if (isNaN(parsedLat) || isNaN(parsedLng) || p.latitud === null || p.longitud === null) {
-                console.error(`%câšA DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
-            } else if (parsedLat !== 0 && parsedLng !== 0) {
-                // Si pasa la validación pura de números reales, se agrega al arreglo geométrico
-                coordenadasValidas.push([parsedLat, parsedLng]);
+            console.log(
+                `🏠 Propiedad: %c${idProp}%c\n` +
+                `   -> latitud cruda (raw): ${latRaw} (tipo: ${typeof latRaw})\n` +
+                `   -> longitud cruda (raw): ${lngRaw} (tipo: ${typeof lngRaw})\n` +
+                `   -> latitud procesada: ${parsedLat}\n` +
+                `   -> longitud procesada: ${parsedLng}`,
+                "color: #006aff; font-weight: bold;", "color: inherit;"
+            );
+            
+            // Validación e inyección segura
+            if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
+                if (parsedLat !== 0 && parsedLng !== 0) {
+                    coordenadasValidas.push([parsedLat, parsedLng]);
+                }
+            } else {
+                console.error(
+                    `🚨 %c¡ALERTA ENCONTRADA EN ID ${idProp}!%c Contiene una variable rota.\n` +
+                    `Detalle -> latitud: ${parsedLat} | longitud: ${parsedLng}`,
+                    "background: red; color: white; font-weight: bold;", "color: red;"
+                );
             }
         });
         
-        console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
+        console.log("📐 Matriz final que se enviará a fitBounds:", coordenadasValidas);
         console.groupEnd();
 
-        // Inicialización geométrica directa y nativa oficial de Leaflet SRE
         if (coordenadasValidas.length > 0) {
             try {
                 if (coordenadasValidas.length === 1) {
                     window.map.setView(coordenadasValidas[0], 15, { animate: true });
                 } else {
-                    // Leaflet acepta nativamente el arreglo de arreglos [[lat,lng], [lat,lng]] directo en fitBounds
-                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
+                    window.map.fitBounds(coordenadasValidas, { padding:, maxZoom: 15, animate: true });
                 }
-
-        console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
+                console.log("✨ [SRE ESPÍA] fitBounds ejecutado con las coordenadas limpias.");
             } catch (errGeometrico) {
-                console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
+                console.error("❌ Error interno de Leaflet al procesar límites geométricos:", errGeometrico.message);
             }
         }
-
     }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
