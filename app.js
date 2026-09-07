@@ -1076,12 +1076,19 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                 reproducirSecuenciaCinematografica();
             };
         }
-        // Inyección automática y cálculo de las sub-fichas técnicas e interiores
-        inyectarSeccionesAdicionalesZillow(prop);
+        
+        // --- ESCUDO CONDICIONAL SRE: SI NO HAY SELECCIÓN REAL, NO HACE NADA ---
+        if (prop && prop.propiedad_id) {
+            // Inyección automática y cálculo de las sub-fichas técnicas e interiores solo si se seleccionó una propiedad
+            inyectarSeccionesAdicionalesZillow(prop);
+        } else {
+            console.log("?? [SRE CONTROL] Inicialización pasiva de cortina. Esperando selección del interesado.");
+        }
 
         // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
     }
+
 
 
     cortina.classList.add('cortina-activa');
@@ -1339,6 +1346,12 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION DE MARCA COLOR METRICA)
 // ====================================================================================
 async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
+    // --- IF DE SEGURIDAD INTERNA: SI EL OBJETO ESTÁ VACÍO, DETIENE LA FUNCIÓN Y NO HACE NADA ---
+    if (!prop || !prop.propiedad_id || isNaN(parseFloat(prop.precio_base))) {
+        console.log("?? [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
+        return;
+    }
+
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
