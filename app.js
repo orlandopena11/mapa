@@ -530,17 +530,13 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 
         if (coordenadasValidas.length > 0) {
             try {
-                if (coordenadasValidas.length === 1) {
-                    window.map.setView(coordenadasValidas[0], 15, { animate: true });
-                } else {
-                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
-                }
-                console.log("✨ [SRE ESPÍA] fitBounds ejecutado con las coordenadas limpias.");
+                // Leaflet encuadra automáticamente el mapa, ya sea para 1 o para 100 propiedades
+                window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
+                console.log("✨ [SRE ESPÍA] Ajuste geométrico de límites del mapa procesado con éxito.");
             } catch (errGeometrico) {
                 console.error("❌ Error interno de Leaflet al procesar límites geométricos:", errGeometrico.message);
             }
         }
-    }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
     if (!prop.latitud || !prop.longitud) return;
