@@ -838,18 +838,20 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    // --- REGLA DE INTEGRIDAD TÉCNICA SRE: FILTRADO ESTRICTO DE SITUACIÓN COMERCIAL ---
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    // El checkMaestro solo gobierna los tipos de listado del panel extendido, nunca rompe los filtros base de arriba
-    if ((!checkMaestro || !checkMaestro.checked) && checkboxesMarcados.length > 0) {
+    // --- REGLA DE INTEGRIDAD TÉCNICA SRE DE PRODUCCIÓN ---
+    if (checkMaestro && checkMaestro.checked === true) {
+        return true;
+    }
+
+    if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
         const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
         if (!coincideFiltro) return false;
-    } else if ((!checkMaestro || !checkMaestro.checked) && checkboxesMarcados.length === 0) {
-        // Si no hay tipo de listado seleccionado y el maestro está apagado, no se muestra nada
+    } else {
         return false;
     }
 
