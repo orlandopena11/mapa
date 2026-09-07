@@ -205,7 +205,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         distrito: String(prop.distrito || "").trim(),
         latitud: parseFloat(prop.latitud),
         longitud: parseFloat(prop.longitud),
-        codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || '150140').trim(),
+        codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || "").trim(),
         foto_principal: String(prop.foto_principal || ""),
         fotos: fotosUnificadas,
         amenidades: prop.amenidades || []
