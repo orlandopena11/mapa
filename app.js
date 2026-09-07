@@ -859,6 +859,7 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
             return false;
         }
     }
+}
 
     // --- FILTROS DE RANGOS Y DIMENSIONES ---
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
