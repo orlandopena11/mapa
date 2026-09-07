@@ -496,7 +496,6 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         const coordenadasValidas = [];
         
         filtradas.forEach((p, index) => {
-            // Captura de valores crudos directo del estado normalizado
             const idProp = p.id || p.propiedad_id || `Índice-${index}`;
             const latRaw = p.latitud;
             const lngRaw = p.longitud;
@@ -513,7 +512,6 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 "color: #006aff; font-weight: bold;", "color: inherit;"
             );
             
-            // Validación e inyección segura
             if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
                 if (parsedLat !== 0 && parsedLng !== 0) {
                     coordenadasValidas.push([parsedLat, parsedLng]);
@@ -535,7 +533,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 if (coordenadasValidas.length === 1) {
                     window.map.setView(coordenadasValidas[0], 15, { animate: true });
                 } else {
-                    window.map.fitBounds(coordenadasValidas, { padding:, maxZoom: 15, animate: true });
+                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
                 }
                 console.log("✨ [SRE ESPÍA] fitBounds ejecutado con las coordenadas limpias.");
             } catch (errGeometrico) {
