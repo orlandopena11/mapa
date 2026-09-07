@@ -456,20 +456,21 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     console.log(`ðŸ—ºï¸  [SRE ESPÃ A MAPA] Pintando ${filtradas.length} pines compactos en Leaflet.`);
 
 
-    // --- NUEVO: AUTO-AJUSTE DINÁMICO DEL MAPA CON FILTRADO DE COORDENADAS ESTRICTO ---
+    // --- CORRECCIÓN DEFINITIVA: AUTO-AJUSTE DINÁMICO CON LECTURA RELACIONAL SEGURA ---
     if (filtradas.length > 0 && window.map) {
-        const coordenadasValidas = filtradas.filter(p => {
-            const lat = parseFloat(p.latitud);
-            const lng = parseFloat(p.longitud);
-            return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
-        });
+        // Mapeamos y extraemos las coordenadas reales de la tabla de ubicación anidada
+        const coordenadasValidas = filtradas.map(p => {
+            const lat = parseFloat(p.ubicacion ? p.ubicacion.latitud : p.latitud);
+            const lng = parseFloat(p.ubicacion ? p.ubicacion.longitud : p.longitud);
+            return { ...p, _realLat: lat, _realLng: lng };
+        }).filter(p => !isNaN(p._realLat) && !isNaN(p._realLng) && p._realLat !== 0 && p._realLng !== 0);
 
         if (coordenadasValidas.length > 0) {
-            const limitesMapa = L.latLngBounds(coordenadasValidas.map(p => [p.latitud, p.longitud]));
+            const limitesMapa = L.latLngBounds(coordenadasValidas.map(p => [p._realLat, p._realLng]));
             
             if (coordenadasValidas.length === 1) {
                 const unico = coordenadasValidas[0];
-                window.map.setView([unico.latitud, unico.longitud], 15, { animate: true });
+                window.map.setView([unico._realLat, unico._realLng], 15, { animate: true });
             } else {
                 window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
             }
