@@ -830,24 +830,22 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     // ==========================================================================
     // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
     // ==========================================================================
-    const filtroTransaccion = state.filtros.estado || "Venta";
+        const filtroTransaccion = state.filtros.estado || "Venta";
 
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-        // VENTA: estado_publicacion obligatorio "disponible" Y tipo_anuncio obligatorio "Venta"
-        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta") {
-            return false;
-        }
-    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // PARA ALQUILER: estado_publicacion obligatorio "disponible" Y tipo_anuncio obligatorio "Alquiler"
-        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler") {
-            return false;
-        }
-    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // VENDIDO: estado_publicacion obligatorio "vendida"
-        if (prop.estado_publicacion !== "vendida") {
-            return false;
-        }
+    // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
+    if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
+        return false;
     }
+
+    if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) {
+        return false;
+    }
+
+    if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
+        return false;
+    }
+    
+}
 
     // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
     const inputDireccion = document.getElementById('search-address');
