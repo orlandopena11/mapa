@@ -490,13 +490,10 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             iconAnchor: L.point(40, 15)
         });
 
-        // --- CORRECCIÓN DE COORDENADAS ANIDADAS PARA EL MARCADOR DE LEAFLET ---
-        const marcadorLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud);
-        const marcadorLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud);
+        // --- INSTANCIACIÓN DIRECTA DEL MARCADOR INDIVIDUAL ---
+        if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) return;
         
-        if (isNaN(marcadorLat) || isNaN(marcadorLng)) return; // Evita que explote la consola si falta un dato
-        
-        const marcador = L.marker([marcadorLat, marcadorLng], { icon: iconoBurbuja });
+        const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
 
 
         const contenedorPopupMaster = document.createElement('div');
@@ -1826,8 +1823,11 @@ function inyectarMapaYEscuelasZillow(prop) {
     const slotMapa = document.getElementById('zillow-neighborhood-slot');
     if (!slotMapa) return;
 
-    const lat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142; 
-    const lng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
+    // Lectura directa desde los atributos planos normalizados del objeto
+    const lat = parseFloat(prop.latitud);
+    const lng = parseFloat(prop.longitud);
+
+    if (isNaN(lat) || isNaN(lng) || lat === null || lng === null) return;
 
     const distrito = prop.distrito || 'Lima';
 
