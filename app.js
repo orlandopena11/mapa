@@ -1911,9 +1911,6 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
 // ====================================================================================
 
 
-// ====================================================================================
-// INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
-// ====================================================================================
 function inyectarMapaYEscuelasZillow(prop) {
     const slotMapa = document.getElementById('zillow-neighborhood-slot');
     if (!slotMapa) return;
