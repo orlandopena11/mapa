@@ -866,20 +866,23 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
+    // --- INTEGRIDAD TÉCNICA SRE: CONTEO FILTRADO ESTRICTO DE TRANSACCIONES ---
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    // --- REGLA DE INTEGRIDAD TÉCNICA SRE DE PRODUCCIÓN ---
+    // Si el checkbox maestro está activo, solo valida los filtros superiores (Venta/Alquiler/Vendido)
     if (checkMaestro && checkMaestro.checked === true) {
         return true;
     }
 
+    // Si hay checkboxes específicos marcados, validamos la situación comercial interna
     if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").toLowerCase().trim();
         const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).toLowerCase().trim() === situacionBD);
         if (!coincideFiltro) return false;
     } else {
+        // Si no hay selección y el maestro está apagado, se oculta el registro de forma segura
         return false;
     }
 
