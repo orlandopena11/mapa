@@ -649,6 +649,9 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             window.map.on('moveend', renderizarMapaZillow);
             window.map.invalidateSize(); 
         }
+        
+        // --- NUEVO: CONEXIÓN LIMPIA PARA DESPERTAR EL CATÁLOGO DE INMUEBLES SRE ---
+        cargarDatosDesdeSupabase();
 
         const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
 
