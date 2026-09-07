@@ -1596,9 +1596,9 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
         const rpcLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142;
         const rpcLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
         
-        // Consumimos de forma directa tu función remota de cálculo espacial Haversine
+        // --- SINCRONIZACIÓN SRE: IDENTIFICADOR OFICIAL ALINEADO A SUPABASE ---
         const { data, error } = await cliente.rpc('buscar_propiedades_cercanas', {
-            target_id: String(prop.id),
+            target_id: String(prop.propiedad_id || prop.id),
             target_lat: rpcLat,
             target_lng: rpcLng,
             target_tipo: String(prop.tipo_propiedad)
@@ -1747,9 +1747,9 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
     try {
         const cliente = obtenerClienteSupabase();
         
-        // Llamada remota pasando el ID, el distrito y el precio base del Google Sheets
+        // --- SINCRONIZACIÓN SRE: IDENTIFICADOR OFICIAL ALINEADO A SUPABASE ---
         const { data, error } = await cliente.rpc('buscar_propiedades_similares', {
-            target_id: String(prop.id),
+            target_id: String(prop.propiedad_id || prop.id),
             target_distrito: String(prop.distrito || ''),
             target_precio: parseFloat(prop.precio_base || 0)
         });
