@@ -182,7 +182,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
     const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
-    return {
+    const res = {
         id: idVerdadero,
         propiedad_id: idVerdadero,
         usuario_id_fk: prop.usuario_id_fk || "",
@@ -225,9 +225,11 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     };
     
     // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
-    console.log(`%c?? [SRE ESPÃ A 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | TransacciÃ³n: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
     
     return res;
+
+    
 } // Fin de Function normalizarPropiedad
 
 
@@ -1005,10 +1007,10 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                         ${miniaturasHtml}
                     </div>
 
+
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                // REEMPLAZA EL CONTENEDOR PADRE POR ESTE EN TU APP.JS:
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
                     
                     <div style="width: 100%; overflow: hidden;">
