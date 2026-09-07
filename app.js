@@ -1992,7 +1992,7 @@ function inyectarMapaYEscuelasZillow(prop) {
 
             // Añadimos un marcador circular estilizado para representar la propiedad
             L.marker([lat, lng]).addTo(mapDetalle)
-                .bindPopup(`<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $${Number(prop.precio_base).toLocaleString('en-US')}`)
+                .bindPopup('<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $' + Number(prop.precio_base).toLocaleString('en-US'))
                 .openPopup();
 
             // Forzamos el recalibrado de dimensiones para evitar cortes en el layout
