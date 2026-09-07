@@ -489,7 +489,14 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             iconAnchor: L.point(40, 15)
         });
 
-        const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
+        // --- CORRECCIÓN DE COORDENADAS ANIDADAS PARA EL MARCADOR DE LEAFLET ---
+        const marcadorLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud);
+        const marcadorLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud);
+        
+        if (isNaN(marcadorLat) || isNaN(marcadorLng)) return; // Evita que explote la consola si falta un dato
+        
+        const marcador = L.marker([marcadorLat, marcadorLng], { icon: iconoBurbuja });
+
 
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
@@ -502,17 +509,15 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
         contenedorPopupMaster.appendChild(datosPopup);
 
-        if (window.innerWidth > 768) {
+          if (window.innerWidth > 768) {
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
         }
-
 
         // ==========================================================================
         // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
         // ==========================================================================
-        
         marcador.on('click', (e) => { // Inicia Callback marker click
-            L.DomEvent.stopPropagation(e);
+          L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
             
             console.log(`ðŸ“± [SRE ESPÃA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
