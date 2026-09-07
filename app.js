@@ -508,19 +508,17 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
         console.groupEnd();
 
-        // Inicialización geométrica unificada con desglose numérico estricto SRE
+        // Inicialización geométrica directa y nativa oficial de Leaflet SRE
         if (coordenadasValidas.length > 0) {
             try {
-                // Desglosamos explícitamente el primer valor como latitud y el segundo como longitud
-                const objetosLatLngOficiales = coordenadasValidas.map(coord => L.latLng(coord[0], coord[1]));
-                const limitesMapa = L.latLngBounds(objetosLatLngOficiales);
-                
                 if (coordenadasValidas.length === 1) {
-                    window.map.setView(objetosLatLngOficiales[0], 15, { animate: true });
+                    window.map.setView(coordenadasValidas[0], 15, { animate: true });
                 } else {
-                    window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
+                    // Leaflet acepta nativamente el arreglo de arreglos [[lat,lng], [lat,lng]] directo en fitBounds
+                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
                 }
-                console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
+
+        console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
             } catch (errGeometrico) {
                 console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
             }
