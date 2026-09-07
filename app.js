@@ -478,7 +478,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     console.groupEnd();
 
 
-    // --- AUTO-AJUSTE DINÁMICO PURO CON DATOS PLANOS NATIVOS ---
+    // --- AUTO-AJUSTE DINÁMICO REPARADO CON DATOS PLANOS NATIVOS ---
     if (filtradas.length > 0 && window.map) {
         const coordenadasValidas = filtradas.filter(p => !isNaN(p.latitud) && !isNaN(p.longitud) && p.latitud !== null && p.longitud !== null);
 
