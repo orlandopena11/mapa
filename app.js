@@ -133,8 +133,8 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
 
     let fotosUnificadas = [];
     
-    // Captura el riel unificado de Postgres o el fallback de la foto principal
-    const origenFotos = prop.galeria_fotos || prop.foto_principal;
+    // Captura el riel unificado procesado por codigo.gs o las columnas nativas de Postgres
+    const origenFotos = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
 
     if (origenFotos) {
         let coleccionCruda = [];
