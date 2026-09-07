@@ -6,6 +6,9 @@
 
 let usuarioAutenticado = false;
 let correoUsuarioLogueado = "";
+// Declaración de respaldo para evitar colapsos por variables huérfanas
+const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
+
 
 if (typeof window.usuarioAutenticado === "undefined") { 
     window.usuarioAutenticado = false; 
