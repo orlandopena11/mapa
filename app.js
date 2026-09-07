@@ -643,14 +643,12 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
     }
 
-    setTimeout(() => { // Inicia Timer de inicializaciÃ³n
+    setTimeout(() => { // Inicia Timer de inicializaciÃ³n y sincronización limpia SRE
         inicializarEventosDeFiltros();
         if (window.map) {
             window.map.on('moveend', renderizarMapaZillow);
             window.map.invalidateSize(); 
         }
-        // Invocación directa optimizada
-        cargarDatosDesdeSupabase();
 
         const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
 
