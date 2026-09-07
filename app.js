@@ -201,10 +201,10 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         vista: String(prop.vista || "Ninguna").trim(),
         creado_por: String(prop.creado_por || "").trim(),
         
-        // Georreferenciación y Colecciones Agregadas
+        // Georreferenciación y Colecciones Agregadas con Lectura Relacional Segura
         distrito: String(prop.distrito || "").trim(),
-        latitud: parseFloat(prop.latitud || -12.125),
-        longitud: parseFloat(prop.longitud || -76.995),
+        latitud: parseFloat(prop.ubicacion ? prop.ubicacion.latitud : (prop.latitud || -12.1142)),
+        longitud: parseFloat(prop.ubicacion ? prop.ubicacion.longitud : (prop.longitud || -76.9915)),
         fotos: fotosUnificadas,
         amenidades: prop.amenidades || []
     };
