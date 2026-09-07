@@ -827,37 +827,42 @@ function configurarSegmentado(idContenedor, callback) { // Inicia Function confi
 // ==========================================================================
 
 function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
-    // --- NUEVO: FILTRO DE TEXTO DE DIRECCIÓN / DISTRITO / TITULO ---
+    // ==========================================================================
+    // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
+    // ==========================================================================
+    const filtroTransaccion = state.filtros.estado || "Venta";
+
+    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
+        // VENTA: estado_publicacion obligatorio "disponible" Y tipo_anuncio obligatorio "Venta"
+        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta") {
+            return false;
+        }
+    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        // PARA ALQUILER: estado_publicacion obligatorio "disponible" Y tipo_anuncio obligatorio "Alquiler"
+        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler") {
+            return false;
+        }
+    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        // VENDIDO: estado_publicacion obligatorio "vendida"
+        if (prop.estado_publicacion !== "vendida") {
+            return false;
+        }
+    }
+
+    // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
     const inputDireccion = document.getElementById('search-address');
     if (inputDireccion && inputDireccion.value.trim() !== "") {
         const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        
         const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        // Si el texto ingresado no coincide con la dirección, ni con el distrito, ni con el título, se descarta
         if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
             return false;
         }
     }
 
-    const filtroTransaccion = state.filtros.estado || "Venta";
-    
-    // REGLA DE NEGOCIO ESTRICTA SRE LIMA
-    if (filtroTransaccion === "Venta" || filtroTransaccion === "En venta") {
-
-// Venta requiere: tipo_anuncio = 'Venta' Y estado_publicacion = 'disponible'
-        if (prop.tipo_anuncio !== "Venta" || prop.estado_publicacion !== "disponible") return false;
-    } else if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
-        // Alquiler requiere: tipo_anuncio = 'Alquiler' Y estado_publicacion = 'disponible'
-        if (prop.tipo_anuncio !== "Alquiler" || prop.estado_publicacion !== "disponible") return false;
-    } else if (filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
-        // Vendido requiere: estado_publicacion = 'vendida'
-        if (prop.estado_publicacion !== "vendida") return false;
-    }
-
-
+    // --- FILTROS DE RANGOS Y DIMENSIONES ---
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
     if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) return false;
     if (state.filtros.banos && (parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
@@ -866,29 +871,27 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    // --- INTEGRIDAD DE DATOS CRUDOS SRE: CONTEO FILTRADO ESTRICTO ---
+    // --- FILTROS DE COMPLEMENTO EN EL PANEL EXTENDIDO ---
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
-    // Si el checkbox maestro de listados está seleccionado, se respeta la transacción superior pura
+    // El checkMaestro gobierna los listados secundarios dentro de la transacción ya aislada arriba
     if (checkMaestro && checkMaestro.checked === true) {
         return true;
     }
 
-    // Validación directa del string de situación comercial sin alteraciones de texto
     if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").trim();
         const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
         if (!coincideFiltro) return false;
     } else {
-        // Si no hay checkboxes de situación marcados por el usuario, bloqueamos el registro de forma segura
         return false;
     }
 
     return true;
-
 } // Fin de Function evaluarCriteriosDeFiltrado
+
 
 function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
     if (typeof renderizarMapaZillow === "function") {
