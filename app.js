@@ -508,10 +508,10 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
         console.groupEnd();
 
-        // Inicialización geométrica blindada convirtiendo los arreglos en objetos geográficos nativos L.latLng SRE
+        // Inicialización geométrica unificada con desglose numérico estricto SRE
         if (coordenadasValidas.length > 0) {
             try {
-                // Convertimos cada par de números planos en un objeto LatLng nativo oficial de Leaflet
+                // Desglosamos explícitamente el primer valor como latitud y el segundo como longitud
                 const objetosLatLngOficiales = coordenadasValidas.map(coord => L.latLng(coord[0], coord[1]));
                 const limitesMapa = L.latLngBounds(objetosLatLngOficiales);
                 
