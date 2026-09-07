@@ -507,10 +507,21 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             iconAnchor: L.point(40, 15)
         });
 
-        // --- INSTANCIACIÓN DIRECTA DEL MARCADOR INDIVIDUAL ---
-        if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) return;
-        
-        const marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
+        // --- NUEVO: ESPÍA DE CONTROL 4 CON CAPTURA DE COLAPSO GEOMÉTRICO SRE ---
+        let marcador;
+        try {
+            console.log(`%cðŸ“  [SRE ESPÃ A 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
+            
+            if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) {
+                console.error(`%câšA  ALERTA GEOMÃ‰TRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
+                return; // Evita el colapso síncrono saltando el registro corrupto
+            }
+            
+            marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
+        } catch (errBucle) {
+            console.error(`%câ Œ CRÃ TICO EN INSTANCIACIÃ“N LEAFLET: RompiÃ³ en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
+            return;
+        }
 
 
         const contenedorPopupMaster = document.createElement('div');
