@@ -828,17 +828,19 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     checkboxesListado.forEach(cb => {
         cb.addEventListener('change', (e) => {
+            if (checkTodos) checkTodos.checked = false;
+            
             if (e.target.checked) {
-                if (checkTodos) checkTodos.checked = false;
-                checkboxesListado.forEach(otroCb => { if (otroCb !== e.target) { otroCb.checked = false; state.filtros.tiposListado.delete(otroCb.value); } });
-                state.filtros.tiposListado.clear(); 
+                // Añade el nuevo filtro de forma acumulativa sin romper los demás
                 state.filtros.tiposListado.add(e.target.value);
             } else {
+                // Lo remueve limpiamente si el usuario lo desmarca
                 state.filtros.tiposListado.delete(e.target.value);
             }
             ejecutarTuberiaSincronizada();
         });
     });
+
 } // Fin de Function inicializarEventosDeFiltros
 
 
