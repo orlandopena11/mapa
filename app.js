@@ -1563,14 +1563,18 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
 
         const gridItems = document.getElementById('grid-cercanas-items');
 
-    try { // Abre el bloque de petición de red try
+    try { // Abre el bloque de petición de red try y sanitización estricta SRE
         const cliente = obtenerClienteSupabase();
+        
+        // Validación relacional cruzada de coordenadas para evitar argumentos NaN
+        const rpcLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142;
+        const rpcLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
         
         // Consumimos de forma directa tu función remota de cálculo espacial Haversine
         const { data, error } = await cliente.rpc('buscar_propiedades_cercanas', {
             target_id: String(prop.id),
-            target_lat: parseFloat(prop.latitud),
-            target_lng: parseFloat(prop.longitud),
+            target_lat: rpcLat,
+            target_lng: rpcLng,
             target_tipo: String(prop.tipo_propiedad)
         });
 
