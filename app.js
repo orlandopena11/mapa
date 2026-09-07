@@ -178,11 +178,15 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
     const latNum = parseFloat(prop.latitud);
     const lngNum = parseFloat(prop.longitud);
+    
+    // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
+    const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
     return {
-        id: String(id),
-        propiedad_id: String(id),
+        id: idVerdadero,
+        propiedad_id: idVerdadero,
         usuario_id_fk: prop.usuario_id_fk || "",
+
         titulo: String(prop.titulo || '').trim(),
         precio_base: parseFloat(prop.precio_base || 0),
         estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
