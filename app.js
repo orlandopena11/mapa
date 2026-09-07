@@ -168,12 +168,14 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
 
-    // RETORNO DE ATRIBUTOS EXACTOS PROVENIENTES DE POSTGRESQL (SIN ALTERAR NOMENCLATURA)
+    // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
+    const latNum = parseFloat(prop.latitud);
+    const lngNum = parseFloat(prop.longitud);
+
     return {
         id: String(id),
         propiedad_id: String(id),
         usuario_id_fk: prop.usuario_id_fk || "",
-        ubicacion_id_fk: prop.ubicacion_id_fk || "",
         titulo: String(prop.titulo || '').trim(),
         precio_base: parseFloat(prop.precio_base || 0),
         estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
@@ -201,15 +203,16 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         vista: String(prop.vista || "Ninguna").trim(),
         creado_por: String(prop.creado_por || "").trim(),
         
-        // Georreferenciación Unificada Directa de la Nueva Tabla
+        // Georreferenciación Plana Directa desde Supabase NUMERIC
         distrito: String(prop.distrito || "").trim(),
-        latitud: parseFloat(prop.latitud),
-        longitud: parseFloat(prop.longitud),
+        latitud: !isNaN(latNum) ? latNum : null,
+        longitud: !isNaN(lngNum) ? lngNum : null,
         codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || "").trim(),
         foto_principal: String(prop.foto_principal || ""),
         fotos: fotosUnificadas,
         amenidades: prop.amenidades || []
     };
+
 } // Fin de Function normalizarPropiedad
 
 
