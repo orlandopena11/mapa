@@ -482,18 +482,44 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     console.groupEnd();
 
 
-    // --- AUTO-AJUSTE DINÁMICO REPARADO CON DATOS PLANOS NATIVOS ---
+      // ==========================================================================
+    // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
+    // ==========================================================================
     if (filtradas.length > 0 && window.map) {
-        const coordenadasValidas = filtradas.filter(p => !isNaN(p.latitud) && !isNaN(p.longitud) && p.latitud !== null && p.longitud !== null);
-
-        if (coordenadasValidas.length > 0) {
-            const limitesMapa = L.latLngBounds(coordenadasValidas.map(p => [p.latitud, p.longitud]));
+        console.group("%cðŸ”Ž [SRE ESPÃ A MATEMÃ TICO] AUDITORÃ A DE ITERACIÃ“N DE LÃ MITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
+        
+        const coordenadasValidas = [];
+        
+        filtradas.forEach(p => {
+            // Evaluamos detalladamente qué propiedades físicas existen en la raíz del objeto
+            console.log(`Propiedad ID: ${p.propiedad_id || p.id} | p.latitud raw: ${p.latitud} (tipo: ${typeof p.latitud}) | p.longitud raw: ${p.longitud} (tipo: ${typeof p.longitud})`);
             
-            if (coordenadasValidas.length === 1) {
-                const unico = coordenadasValidas[0];
-                window.map.setView([unico.latitud, unico.longitud], 15, { animate: true });
-            } else {
-                window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
+            const parsedLat = parseFloat(p.latitud);
+            const parsedLng = parseFloat(p.longitud);
+            
+            if (isNaN(parsedLat) || isNaN(parsedLng) || p.latitud === null || p.longitud === null) {
+                console.error(`%câšA DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
+            } else if (parsedLat !== 0 && parsedLng !== 0) {
+                // Si pasa la validación pura de números reales, se agrega al arreglo geométrico
+                coordenadasValidas.push([parsedLat, parsedLng]);
+            }
+        });
+        
+        console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
+        console.groupEnd();
+
+        // Inicialización geométrica blindada contra colapsos
+        if (coordenadasValidas.length > 0) {
+            try {
+                const limitesMapa = L.latLngBounds(coordenadasValidas);
+                
+                if (coordenadasValidas.length === 1) {
+                    window.map.setView(coordenadasValidas, 15, { animate: true });
+                } else {
+                    window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 15, animate: true });
+                }
+            } catch (errGeometrico) {
+                console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
             }
         }
     }
