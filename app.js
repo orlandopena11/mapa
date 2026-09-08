@@ -663,17 +663,25 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
-    // Arranque directo e inmediato del motor SRE para bypass de caché y sesión
-(async function iniciarAplicacionInmobiliaria() {
-    console.log("🚀 [SRE CONTROL] Forzando inicio directo de datos sin intermediarios...");
+// --- DISPARADOR DE FLUJO PRINCIPAL BASADO EN EL ESTADO DE AUTENTICACIÓN ---
+supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log(`%c🔑 [SRE ESPÍA AUTH] Evento disparado: ${event}`, "color: #e67e22; font-weight: bold;");
+    
+    if (session) {
+        usuarioAutenticado = true;
+        correoUsuarioLogueado = session.user.email;
+        console.log(`👤 Estado Auth: Sesión activa para -> ${correoUsuarioLogueado}`);
+    } else {
+        usuarioAutenticado = false;
+        correoUsuarioLogueado = "";
+        console.log("👤 Estado Auth: Sin sesión de usuario activa.");
+    }
+
+    // Llamada directa al cargador maestro de datos
     if (typeof cargarDatosDesdeSupabase === 'function') {
         await cargarDatosDesdeSupabase();
-    } else if (typeof ejecutarTuberiaSincronizada === 'function') {
-        ejecutarTuberiaSincronizada();
-    } else {
-        console.error("❌ No se encontró la función de arranque maestro en el ámbito global.");
     }
-})();
+});
 
     
     }
