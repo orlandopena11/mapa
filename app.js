@@ -663,47 +663,19 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
-        supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
-            console.log(`ðŸ” [SRE ESPÃA AUTH] Evento disparado: ${event}`);
-            
-            if (session && session.user) {
-                const correoUsuario = String(session.user.email).trim();
-                window.usuarioLogueado = session.user;
-                console.log(`ðŸ‘¤ Usuario detectado en Supabase Auth: ${correoUsuario}`);
+    // Arranque directo e inmediato del motor SRE para bypass de caché y sesión
+(async function iniciarAplicacionInmobiliaria() {
+    console.log("🚀 [SRE CONTROL] Forzando inicio directo de datos sin intermediarios...");
+    if (typeof cargarDatosDesdeSupabase === 'function') {
+        await cargarDatosDesdeSupabase();
+    } else if (typeof ejecutarTuberiaSincronizada === 'function') {
+        ejecutarTuberiaSincronizada();
+    } else {
+        console.error("❌ No se encontró la función de arranque maestro en el ámbito global.");
+    }
+})();
 
-                const idScriptSeguridad = "sre-jsonp-firewall-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) scriptExistente.remove();
-                
-                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
-                    console.log("ðŸ›¡ï¸ [SRE ESPÃA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
-                    
-                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
-                        state.usuarioActual = null; 
-                        window.usuarioLogueado = null;
-                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
-                        await supabase.auth.signOut(); 
-                        return;
-                    }
-                    state.usuarioActual = {
-                        id: String(session.user.id).trim(), 
-                        correo: correoUsuario,
-                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
-                    };
-                    if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
-                };
-
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
-                document.body.appendChild(scriptp);
-            } else {
-                state.usuarioActual = null; 
-                window.usuarioLogueado = null;
-                console.log("ðŸ‘¤ Estado Auth: Sin sesiÃ³n de usuario activa.");
-            }
-        }); // Fin de Callback onAuthStateChange
+    
     }
 
     if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
