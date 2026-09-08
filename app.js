@@ -1949,26 +1949,29 @@ function inyectarMapaYEscuelasZillow(prop) {
         <div id="zillow-similar-properties-carousel-slot"></div>
     `;
 
-    // --- PROCESAMIENTO SRE: ASIGNACIÓN ASÍNCRONA DE MAPA EN EL DOM ---
     setTimeout(() => {
         const mapaDiv = document.getElementById('mapa-detalle-zillow-container');
         if (!mapaDiv || typeof L === 'undefined') return;
 
         try {
-            // Inicializamos el mapa Leaflet centrado en las coordenadas reales de Supabase
-            const mapDetalle = L.map('mapa-detalle-zillow-container', {
+            // Limpieza activa de instancias previas para evitar bloqueos silenciosos en Leaflet
+            if (window.mapDetalleInstance) {
+                window.mapDetalleInstance.remove();
+            }
+
+            const mapDetalle = L.map(mapaDiv, {
                 center: [lat, lng],
                 zoom: 15,
                 zoomControl: true,
                 scrollWheelZoom: false
             });
+            
+            window.mapDetalleInstance = mapDetalle;
 
-            // Cargamos la capa de diseño base gratuita de OpenStreetMap
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap'
             }).addTo(mapDetalle);
 
-            // Añadimos un marcador circular estilizado para representar la propiedad
             L.marker([lat, lng]).addTo(mapDetalle)
                 .bindPopup('<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $' + Number(prop.precio_base).toLocaleString('en-US'))
                 .openPopup();
