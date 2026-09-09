@@ -463,41 +463,40 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
     }
 } // Fin de Function renderizarCatalogoTarjetas
 
-
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÃFICO CON DESVÃO DE EVENTO CELULAR OVERLAY
 // ==========================================================================
 
-function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
-    if (typeof window.capaMarcadores === 'undefined') window.capaMarcadores = null;
-    if (!window.map || !document.getElementById('map-instance')) return;
+function renderizarMapaZillow() { // [Abre Function renderizarMapaZillow]
+    if (typeof window.capaMarcadores === 'undefined') { // [Abre if control capaMarcadores]
+        window.capaMarcadores = null;
+    } // [Cierra if control capaMarcadores]
+    
+    if (!window.map || !document.getElementById('map-instance')) { // [Abre if verificaciÃ³n mapa]
+        return;
+    } // [Cierra if verificaciÃ³n mapa]
 
-    if (!window.capaMarcadores) {
+    if (!window.capaMarcadores) { // [Abre if instanciaciÃ³n capaMarcadores]
         window.capaMarcadores = L.layerGroup().addTo(window.map);
-    } else {
+    } else { // [Equilibrio else capaMarcadores]
         window.capaMarcadores.clearLayers();
-    }
+    } // [Cierra if/else instanciaciÃ³n capaMarcadores]
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     
-    // --- ESPÍA DE CONTROL 3: ANÁLISIS DE FILTRADO PARA EL MAPA ---
-    console.group("%cðŸ—ºï¸  [SRE ESPÃ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
+    console.group("%cÃ°Å¸â€”ÂºÃ¯Â¸  [SRE ESPÃƒ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
     console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
     console.log("IDs de las propiedades que pasaron el filtro y van al mapa:", filtradas.map(p => p.id));
     console.table(filtradas, ["id", "latitud", "longitud", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
-
-      // ==========================================================================
-    // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
-    // ==========================================================================
-    if (filtradas.length > 0 && window.map) {
-        console.group("%c🕵️‍♂️ [SRE SÚPER ESPÍA] RASTREO TÉCNICO VARIABLE POR VARIABLE", "background: #002E50; color: #FFB91D; padding: 6px; font-weight: bold;");
+    if (filtradas.length > 0 && window.map) { // [Abre if control encuadre geomÃ©trico]
+        console.group("%c?????? [SRE SÃšPER ESPÃA] RASTREO TÃ‰CNICO VARIABLE POR VARIABLE", "background: #002E50; color: #FFB91D; padding: 6px; font-weight: bold;");
         
         const coordenadasValidas = [];
         
-        filtradas.forEach((p, index) => {
-            const idProp = p.id || p.propiedad_id || `Índice-${index}`;
+        filtradas.forEach((p, index) => { // [Abre forEach validaciÃ³n coordenadas]
+            const idProp = p.id || p.propiedad_id || `Ãndice-${index}`;
             const latRaw = p.latitud;
             const lngRaw = p.longitud;
             
@@ -505,42 +504,44 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             const parsedLng = parseFloat(lngRaw);
             
             console.log(
-                `🏠 Propiedad: %c${idProp}%c\n` +
+                `?? Propiedad: %c${idProp}%c\n` +
                 `   -> latitud cruda (raw): ${latRaw} (tipo: ${typeof latRaw})\n` +
                 `   -> longitud cruda (raw): ${lngRaw} (tipo: ${typeof lngRaw})\n` +
-                `   -> latitud procesada: ${parsedLat}\n` +
-                `   -> longitud procesada: ${parsedLng}`,
+                `   -> latitud processed: ${parsedLat}\n` +
+                `   -> longitud processed: ${parsedLng}`,
                 "color: #006aff; font-weight: bold;", "color: inherit;"
             );
             
-            if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
-                if (parsedLat !== 0 && parsedLng !== 0) {
+            if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) { // [Abre if verificaciÃ³n numÃ©ricos finitos]
+                if (parsedLat !== 0 && parsedLng !== 0) { // [Abre if exclusiÃ³n ceros]
                     coordenadasValidas.push([parsedLat, parsedLng]);
-                }
-            } else {
+                } // [Cierra if exclusiÃ³n ceros]
+            } else { // [Equilibrio else verificaciÃ³n numÃ©ricos finitos]
                 console.error(
-                    `🚨 %c¡ALERTA ENCONTRADA EN ID ${idProp}!%c Contiene una variable rota.\n` +
+                    `?? %cÂ¡ALERTA ENCONTRADA EN ID ${idProp}!%c Contiene una variable rota.\n` +
                     `Detalle -> latitud: ${parsedLat} | longitud: ${parsedLng}`,
                     "background: red; color: white; font-weight: bold;", "color: red;"
                 );
-            }
-        });
+            } // [Cierra if/else verificaciÃ³n numÃ©ricos finitos]
+        }); // [Cierra forEach validaciÃ³n coordenadas]
         
-        console.log("📐 Matriz final que se enviará a fitBounds:", coordenadasValidas);
+        console.log("?? Matriz final que se enviarÃ¡ a fitBounds:", coordenadasValidas);
         console.groupEnd();
 
-        if (coordenadasValidas.length > 0) {
-            try {
-                // Leaflet encuadra automáticamente el mapa, ya sea para 1 o para 100 propiedades
+        if (coordenadasValidas.length > 0) { // [Abre if ejecuciÃ³n fitBounds]
+            try { // [Abre try bounds]
                 window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
-                console.log("✨ [SRE ESPÍA] Ajuste geométrico de límites del mapa procesado con éxito.");
-            } catch (errGeometrico) {
-                console.error("❌ Error interno de Leaflet al procesar límites geométricos:", errGeometrico.message);
-            }
-        }
+                console.log("? [SRE ESPÃA] Ajuste geomÃ©trico de lÃ­mites del mapa procesado con Ã©xito.");
+            } catch (errGeometrico) { // [Abre catch bounds]
+                console.error("? Error interno de Leaflet al procesar lÃ­mites geomÃ©tricos:", errGeometrico.message);
+            } // [Cierra try/catch bounds]
+        } // [Cierra if ejecuciÃ³n fitBounds]
+    } // [Cierra if control encuadre geomÃ©trico]
 
-    filtradas.forEach(prop => { // Inicia Callback forEach filtradas
-    if (!prop.latitud || !prop.longitud) return;
+    filtradas.forEach(prop => { // [Abre forEach inyecciÃ³n de marcadores]
+        if (!prop.latitud || !prop.longitud) { // [Abre if salto coordenadas huÃ©rfanas]
+            return;
+        } // [Cierra if salto coordenadas huÃ©rfanas]
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
@@ -552,22 +553,20 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             iconAnchor: L.point(40, 15)
         });
 
-        // --- NUEVO: ESPÍA DE CONTROL 4 CON CAPTURA DE COLAPSO GEOMÉTRICO SRE ---
         let marcador;
-        try {
-            console.log(`%cðŸ“  [SRE ESPÃ A 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
+        try { // [Abre try instanciaciÃ³n marcador]
+            console.log(`%cÃ°Å¸â€œ  [SRE ESPÃƒ A 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
             
-            if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) {
-                console.error(`%câšA  ALERTA GEOMÃ‰TRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
-                return; // Evita el colapso síncrono saltando el registro corrupto
-            }
+            if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) { // [Abre if control colapso sÃ­ncrono]
+                console.error(`%cÃ¢Å¡A  ALERTA GEOMÃƒâ€°TRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
+                return; 
+            } // [Cierra if control colapso sÃ­ncrono]
             
             marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
-        } catch (errBucle) {
-            console.error(`%câ Œ CRÃ TICO EN INSTANCIACIÃ“N LEAFLET: RompiÃ³ en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
+        } catch (errBucle) { // [Abre catch instanciaciÃ³n marcador]
+            console.error(`%cÃ¢ Å’ CRÃƒ TICO EN INSTANCIACIÃƒâ€œN LEAFLET: RompiÃƒÂ³ en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
             return;
-        }
-
+        } // [Cierra try/catch instanciaciÃ³n marcador]
 
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
@@ -577,63 +576,321 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         contenedorPopupMaster.appendChild(carruselPopup);
 
         const datosPopup = document.createElement('div');
-        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃƒÂ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
         contenedorPopupMaster.appendChild(datosPopup);
 
-          if (window.innerWidth > 768) {
+        if (window.innerWidth > 768) { // [Abre if bindeo popup escritorio]
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
-        }
+        } // [Cierra if bindeo popup escritorio]
 
         // ==========================================================================
         // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
         // ==========================================================================
-        marcador.on('click', (e) => { // Inicia Callback marker click
-          L.DomEvent.stopPropagation(e);
+        marcador.on('click', (e) => { // [Abre Callback marker click]
+            L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
             
-            console.log(`ðŸ“± [SRE ESPÃA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
+            console.log(`Ã°Å¸â€œÂ± [SRE ESPÃƒ A CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
 
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 768) { // [Abre if renderizado mÃ³vil overlay]
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                 const targetContenido = document.getElementById("target-contenido-movil-sre");
 
-                if (cajaFlotanteMovil && targetContenido) {
+                if (cajaFlotanteMovil && targetContenido) { // [Abre if inyecciÃ³n nodos flotantes]
                     targetContenido.innerHTML = `
                         <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
                             <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</span>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÃ‚Â²</span>
                                 <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                                 <span style="font-size:11px; font-weight:bold; text-transform:uppercase; color:${prop.estado_publicacion === 'vendida' ? '#b58900' : '#006aff'};">${prop.estado_publicacion === 'vendida' ? 'Vendida' : 'Disponible'}</span>
                             </div>
                         </div>
                     `;
-                    targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
+                    targetContenido.onclick = () => { // [Abre click redirecciÃ³n SPA mÃ³vil]
+                        gestionarCortinaSPA('detalle', prop); 
+                    }; // [Cierra click redirecciÃ³n SPA mÃ³vil]
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
-                }
-            } else {
+                } // [Cierra if inyecciÃ³n nodos flotantes]
+            } else { // [Equilibrio else scrolling escritorio]
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
-                if (tarjetaDesktop) { 
+                if (tarjetaDesktop) { // [Abre if enfoque suave tarjeta]
                     tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     tarjetaDesktop.style.outline = '3px solid #006aff'; 
                     tarjetaDesktop.style.borderRadius = '12px';
-                    setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
-                }
-            }
-        }); // Fin de Callback marker click
+                    setTimeout(() => { // [Abre timer remociÃ³n contorno]
+                        tarjetaDesktop.style.outline = 'none'; 
+                    }, 2000); // [Cierra timer remociÃ³n contorno]
+                } // [Cierra if enfoque suave tarjeta]
+            } // [Cierra if/else renderizado mÃ³vil overlay u scrolling escritorio]
+        }); // [Cierra Callback marker click]
 
-        carruselPopup.addEventListener('pointerdown', (ev) => {
+        carruselPopup.addEventListener('pointerdown', (ev) => { // [Abre Callback carruselPopup pointerdown]
             ev.stopPropagation();
-            if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) return;
-            if (window.map) window.map.closePopup();
+            if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) { // [Abre if escape controles secundarios]
+                return;
+            } // [Cierra if escape controles secundarios]
+            if (window.map) { // [Abre if remociÃ³n de popups]
+                window.map.closePopup();
+            } // [Cierra if remociÃ³n de popups]
             state.propiedadSeleccionadaId = prop.id;
             gestionarCortinaSPA('detalle', prop);
-        });
+        }); // [Cierra Callback carruselPopup pointerdown]
 
         window.capaMarcadores.addLayer(marcador);
-    }); // Fin de Callback forEach filtradas
-} // Fin de Function renderizarMapaZillow
+    }); // [Cierra forEach inyecciÃ³n de marcadores]
+} // [Cierra Function renderizarMapaZillow]
+
+
+// ==========================================================================
+// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÃFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
+// ==========================================================================
+
+function inicializarEventosDeFiltros() { // [Abre Function inicializarEventosDeFiltros]
+    const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
+    wrappers.forEach(wrapper => { // [Abre forEach bindeo paneles dropdown]
+        const boton = wrapper.querySelector('.filter-btn');
+        const panel = wrapper.querySelector('.dropdown-content-panel');
+        if (!boton || !panel) { // [Abre if escape nodos incompletos]
+            return;
+        } // [Cierra if escape nodos incompletos]
+
+        boton.addEventListener('click', (e) => { // [Abre click dropdown filter-btn]
+            e.stopPropagation();
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => { // [Abre forEach colapso otros paneles]
+                if (p !== panel) { // [Abre if aislamiento panel activo]
+                    p.classList.remove('show');
+                } // [Cierra if aislamiento panel activo]
+            }); // [Cierra forEach colapso otros paneles]
+            
+            document.querySelectorAll('.filter-btn').forEach(b => { // [Abre forEach desactivaciÃ³n de focos botones]
+                if (b !== boton) { // [Abre if aislamiento botÃ³n activo]
+                    b.classList.remove('active');
+                } // [Cierra if aislamiento botÃ³n activo]
+            }); // [Cierra forEach desactivaciÃ³n de focos botones]
+            
+            panel.classList.toggle('show'); 
+            boton.classList.toggle('active');
+        }); // [Cierra click dropdown filter-btn]
+    }); // [Cierra forEach bindeo paneles dropdown]
+
+    document.addEventListener('click', () => { // [Abre click global cierre de diÃ¡logos]
+        document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    }); // [Cierra click global cierre de diÃ¡logos]
+
+    const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
+    radiosTransaccion.forEach(radio => { // [Abre forEach listeners radios transacciÃ³n]
+        radio.addEventListener('change', (e) => { // [Abre change radio transaccion]
+            state.filtros.estado = e.target.value;
+            const btnStatus = document.getElementById('btn-filter-status');
+            if (btnStatus) { // [Abre if actualizaciÃ³n etiquetas de control]
+                if (e.target.value === "Venta") { // [Abre if etiqueta venta]
+                    btnStatus.textContent = "En venta";
+                } else if (e.target.value === "Alquiler") { // [Equilibrio else if etiqueta alquiler]
+                    btnStatus.textContent = "Para el alquiler";
+                } else if (e.target.value === "Vendido") { // [Equilibrio else if etiqueta vendido]
+                    btnStatus.textContent = "Vendidas";
+                } // [Cierra Ã¡rbol if/else etiquetas transacciones]
+            } // [Cierra if actualizaciÃ³n etiquetas de control]
+            ejecutarTuberiaSincronizada();
+        }); // [Cierra change radio transaccion]
+    }); // [Cierra forEach listeners radios transacciÃ³n]
+
+    const inputMinPrecio = document.getElementById('price-min');
+    const inputMaxPrecio = document.getElementById('price-max');
+    const inputDireccionGlobal = document.getElementById('search-address');
+    
+    const handlerPrecios = () => { // [Abre Arrow Function handlerPrecios]
+        state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
+        state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
+        ejecutarTuberiaSincronizada();
+    }; // [Cierra Arrow Function handlerPrecios]
+    
+    if (inputMinPrecio) { // [Abre if bindeo inputMinPrecio]
+        inputMinPrecio.addEventListener('input', handlerPrecios);
+    } // [Cierra if bindeo inputMinPrecio]
+    
+    if (inputMaxPrecio) { // [Abre if bindeo inputMaxPrecio]
+        inputMaxPrecio.addEventListener('input', handlerPrecios);
+    } // [Cierra if bindeo inputMaxPrecio]
+    
+    if (inputDireccionGlobal) { // [Abre if bindeo inputDireccionGlobal]
+        inputDireccionGlobal.addEventListener('input', () => { // [Abre input direcciÃ³n global]
+            ejecutarTuberiaSincronizada();
+        }); // [Cierra input direcciÃ³n global]
+    } // [Cierra if bindeo inputDireccionGlobal]
+
+    configurarSegmentado('row-beds', (valor) => { // [Abre callback camas]
+        state.filtros.camas = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    }); // [Cierra callback camas]
+    
+    configurarSegmentado('row-baths', (valor) => { // [Abre callback baÃ±os]
+        state.filtros.banos = parseFloat(valor) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    }); // [Cierra callback baÃ±os]
+
+    const checkboxesTipo = document.querySelectorAll('.type-cb');
+    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
+
+    if (btnAplicarTipo) { // [Abre if bindeo botÃ³n confirmaciÃ³n tipos]
+        btnAplicarTipo.addEventListener('click', () => { // [Abre click aplicar tipo]
+            state.filtros.tiposPropiedad.clear();
+            const cantidadTiposMarcados = Array.from(checkboxesTipo).filter(cb => cb.checked).length;
+            if (cantidadTiposMarcados === 0) { // [Abre if descarte total tipos]
+                state.filtros.tiposPropiedad.add("ninguno");
+            } else { // [Equilibrio else acumulaciÃ³n de tipos marcados]
+                checkboxesTipo.forEach(cb => { // [Abre forEach acumulaciÃ³n tipos]
+                    if (cb.checked) { // [Abre if inserciÃ³n tipo checked]
+                        state.filtros.tiposPropiedad.add(cb.value);
+                    } // [Cierra if inserciÃ³n tipo checked]
+                }); // [Cierra forEach acumulaciÃ³n tipos]
+            } // [Cierra if/else descarte total tipos o acumulaciÃ³n]
+            ejecutarTuberiaSincronizada();
+        }); // [Cierra click aplicar tipo]
+    } // [Cierra if bindeo botÃ³n confirmaciÃ³n tipos]
+
+    const checkboxesListado = document.querySelectorAll('.more-filter-cb');
+    const checkTodos = document.getElementById('check-todos-listados');
+
+    if (checkTodos) { // [Abre if bindeo check todos secundarios]
+        checkTodos.addEventListener('change', (e) => { // [Abre change checkTodos]
+            state.filtros.tiposListado.clear();
+            if (e.target.checked) { // [Abre if checkTodos activado]
+                checkboxesListado.forEach(cb => { // [Abre forEach encendido masivo checkboxes]
+                    cb.checked = true; 
+                    state.filtros.tiposListado.add(cb.value); 
+                }); // [Cierra forEach encendido masivo checkboxes]
+            } else { // [Equilibrio else apagado masivo]
+                checkboxesListado.forEach(cb => cb.checked = false);
+            } // [Cierra if/else checkTodos activado o apagado]
+            ejecutarTuberiaSincronizada();
+        }); // [Cierra change checkTodos]
+    } // [Cierra if bindeo check todos secundarios]
+
+    checkboxesListado.forEach(cb => { // [Abre forEach bindeo checkboxes individuales panel extendido]
+        cb.addEventListener('change', (e) => { // [Abre change checkbox individual]
+            if (checkTodos) { // [Abre if apagado preventivo check todos maestro]
+                checkTodos.checked = false;
+            } // [Cierra if apagado preventivo check todos maestro]
+            
+            if (e.target.checked) { // [Abre if inserciÃ³n acumulativa listado]
+                state.filtros.tiposListado.add(e.target.value);
+            } else { // [Equilibrio else remociÃ³n de listado desmarcado]
+                state.filtros.tiposListado.delete(e.target.value);
+            } // [Cierra if/else inserciÃ³n o remociÃ³n acumulativa]
+            ejecutarTuberiaSincronizada();
+        }); // [Cierra change checkbox individual]
+    }); // [Cierra forEach bindeo checkboxes individuales panel extendido]
+} // [Cierra Function inicializarEventosDeFiltros]
+
+
+// ==========================================================================
+// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÃ“N ÃšNICA
+// ==========================================================================
+
+function configurarSegmentado(idContenedor, callback) { // [Abre Function configurarSegmentado]
+    const contenedor = document.getElementById(idContenedor); 
+    if (!contenedor) { // [Abre if control contenedor nulo]
+        return;
+    } // [Cierra if control contenedor nulo]
+    
+    contenedor.addEventListener('click', (e) => { // [Abre click contenedor segmentado]
+        const botonNode = e.target.closest('.segmented-btn'); 
+        if (!botonNode) { // [Abre if descarte clics fuera de botones]
+            return;
+        } // [Cierra if descarte clics fuera de botones]
+        
+        contenedor.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
+        botonNode.classList.add('active'); 
+        callback(botonNode.getAttribute('data-val'));
+    }); // [Cierra click contenedor segmentado]
+} // [Cierra Function configurarSegmentado]
+
+
+// ==========================================================================
+// PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
+// ==========================================================================
+
+function evaluarCriteriosDeFiltrado(prop) { // [Abre Function evaluarCriteriosDeFiltrado]
+    const filtroTransaccion = state.filtros.estado || "Venta";
+
+    if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) { // [Abre if discriminaciÃ³n venta activa]
+        return false;
+    } // [Cierra if discriminaciÃ³n venta activa]
+
+    if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) { // [Abre if discriminaciÃ³n alquiler activo]
+        return false;
+    } // [Cierra if discriminaciÃ³n alquiler activo]
+
+    if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") { // [Abre if aislamiento registros histÃ³ricos vendidos]
+        return false;
+    } // [Cierra if aislamiento registros histÃ³ricos vendidos]
+    
+    const inputDireccion = document.getElementById('search-address');
+    if (inputDireccion && inputDireccion.value.trim() !== "") { // [Abre if procesamiento buscador de cadenas de texto]
+        const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) { // [Abre if descarte total por texto]
+            return false;
+        } // [Cierra if descarte total por texto]
+    } // [Cierra if procesamiento buscador de cadenas de texto]
+
+    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) { // [Abre if rango precios]
+        return false;
+    } // [Cierra if rango precios]
+    
+    if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) { // [Abre if mÃ­nimo camas]
+        return false;
+    } // [Cierra if mÃ­nimo camas]
+    
+    if (state.filtros.banos && (parseFloat(prop.banos) || 0) < state.filtros.banos) { // [Abre if mÃ­nimo baÃ±os]
+        return false;
+    } // [Cierra if mÃ­nimo baÃ±os]
+
+    if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) { // [Abre if evaluaciÃ³n colecciones tipos]
+        if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) { // [Abre if descalificaciÃ³n tipo]
+            return false;
+        } // [Cierra if descalificaciÃ³n tipo]
+    } // [Cierra if evaluaciÃ³n colecciones tipos]
+
+    const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
+    const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
+    const checkMaestro = document.getElementById('check-todos-listados');
+
+    if (checkMaestro && checkMaestro.checked === true) { // [Abre if aprobaciÃ³n masiva por filtro total]
+        return true;
+    } // [Cierra if aprobaciÃ³n masiva por filtro total]
+
+    if (checkboxesMarcados.length > 0) { // [Abre if validaciÃ³n explÃ­cita de situaciones comerciales]
+        const situacionBD = String(prop.situacion_propiedad || "").trim();
+        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
+        if (!coincideFiltro) { // [Abre if desajuste situaciÃ³n]
+            return false;
+        } // [Cierra if desajuste situaciÃ³n]
+    } else { // [Equilibrio else descalificaciÃ³n preventiva por paneles cerrados]
+        return false;
+    } // [Cierra if/else validaciÃ³n explÃ­cita de situaciones comerciales]
+
+    return true;
+} // [Cierra Function evaluarCriteriosDeFiltrado]
+
+
+function ejecutarTuberiaSincronizada() { // [Abre Function ejecutarTuberiaSincronizada]
+    if (typeof renderizarMapaZillow === "function") { // [Abre if refresh mapa]
+        renderizarMapaZillow(); 
+    } // [Cierra if refresh mapa]
+    if (typeof renderizarCatalogoTarjetas === "function") { // [Abre if refresh grilla]
+        renderizarCatalogoTarjetas(); 
+    } // [Cierra if refresh grilla]
+} // [Cierra Function ejecutarTuberiaSincronizada]
+
+
 
 
 // ==========================================================================
