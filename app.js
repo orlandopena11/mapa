@@ -484,7 +484,7 @@ function renderizarMapaZillow() { // [Abre Function renderizarMapaZillow]
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    console.group("%cðŸ—ºï¸  [SRE ESPÃ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
+        console.group("%cðŸ—ºï¸  [SRE ESPÃ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
     console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
     console.log("IDs de las propiedades que pasaron el filtro y van al mapa:", filtradas.map(p => p.id));
     console.table(filtradas, ["id", "latitud", "longitud", "tipo_anuncio", "estado_publicacion"]);
@@ -538,7 +538,7 @@ function renderizarMapaZillow() { // [Abre Function renderizarMapaZillow]
         } // [Cierra if ejecución fitBounds]
     } // [Cierra if control encuadre geométrico]
 
-    filtradas.forEach(prop => { // [Abre forEach inyección de marcadores]
+        filtradas.forEach(prop => { // [Abre forEach inyección de marcadores]
         if (!prop.latitud || !prop.longitud) { // [Abre if salto coordenadas huérfanas]
             return;
         } // [Cierra if salto coordenadas huérfanas]
@@ -553,22 +553,17 @@ function renderizarMapaZillow() { // [Abre Function renderizarMapaZillow]
             iconAnchor: L.point(40, 15)
         });
 
-                let marcador;
+        let marcador;
         try { // [Abre try instanciación marcador]
-            console.log(`%cðŸ“  [SRE ESPÃ A 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
-            
             if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) { // [Abre if control colapso síncrono]
-                console.error(`%câšA  ALERTA GEOMÃ‰TRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
                 return; 
             } // [Cierra if control colapso síncrono]
-            
             marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
         } catch (errBucle) { // [Abre catch instanciación marcador]
-            console.error(`%câ Œ CRÃ TICO EN INSTANCIACIÃ“N LEAFLET: RompiÃ³ en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
             return;
         } // [Cierra try/catch instanciación marcador]
 
-        const contenedorPopupMaster = document.createElement('div');
+                    const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
         contenedorPopupMaster.style.width = '260px';
         
@@ -583,26 +578,29 @@ function renderizarMapaZillow() { // [Abre Function renderizarMapaZillow]
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
         } // [Cierra if bindeo popup escritorio]
 
-                // ==========================================================================
+                    // ==========================================================================
         // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
         // ==========================================================================
         marcador.on('click', (e) => { // [Abre Callback marker click]
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
-            
-            console.log(`ðŸ“± [SRE ESPÃ A CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
 
             if (window.innerWidth <= 768) { // [Abre if renderizado móvil overlay]
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                 const targetContenido = document.getElementById("target-contenido-movil-sre");
 
                 if (cajaFlotanteMovil && targetContenido) { // [Abre if inyección nodos flotantes]
+                    let urlFotoMóvil = "";
+                    if (prop.fotos && prop.fotos.length > 0) { // [Abre if extracción foto segura]
+                        urlFotoMóvil = prop.fotos[0];
+                    } // [Cierra if extracción foto segura]
+
                     targetContenido.innerHTML = `
                         <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${prop.fotos && prop.fotos.length > 0 ? prop.fotos : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+                            <img src="${urlFotoMóvil}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</span>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</span>
                                 <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                                 <span style="font-size:11px; font-weight:bold; text-transform:uppercase; color:${prop.estado_publicacion === 'vendida' ? '#b58900' : '#006aff'};">${prop.estado_publicacion === 'vendida' ? 'Vendida' : 'Disponible'}</span>
                             </div>
@@ -731,7 +729,7 @@ function inicializarEventosDeFiltros() { // [Abre Function inicializarEventosDeF
         ejecutarTuberiaSincronizada(); 
     }); // [Cierra callback baños]
 
-    const checkboxesTipo = document.querySelectorAll('.type-cb');
+        const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
 
     if (btnAplicarTipo) { // [Abre if bindeo botón confirmación tipos]
@@ -784,11 +782,6 @@ function inicializarEventosDeFiltros() { // [Abre Function inicializarEventosDeF
         }); // [Cierra change checkbox individual]
     }); // [Cierra forEach bindeo checkboxes individuales panel extendido]
 } // [Cierra Function inicializarEventosDeFiltros]
-
-
-// ==========================================================================
-// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
-// ==========================================================================
 
 function configurarSegmentado(idContenedor, callback) { // [Abre Function configurarSegmentado]
     const contenedor = document.getElementById(idContenedor); 
@@ -878,7 +871,6 @@ function evaluarCriteriosDeFiltrado(prop) { // [Abre Function evaluarCriteriosDe
     return true;
 } // [Cierra Function evaluarCriteriosDeFiltrado]
 
-
 function ejecutarTuberiaSincronizada() { // [Abre Function ejecutarTuberiaSincronizada]
     if (typeof renderizarMapaZillow === "function") { // [Abre if refresh mapa]
         renderizarMapaZillow(); 
@@ -889,298 +881,6 @@ function ejecutarTuberiaSincronizada() { // [Abre Function ejecutarTuberiaSincro
 } // [Cierra Function ejecutarTuberiaSincronizada]
 
 
-
-
-// ==========================================================================
-// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÃ“N Y DOM CONTENT LOADED
-// ==========================================================================
-
-function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
-    console.group("ðŸ“¥ [SRE ESPÃA INTERCEPTOR] Paquete crudo recibido desde el Motor");
-    console.log("Estructura completa de la carga Ãºtil:", data);
-    
-    if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("âŒ Formato de datos invÃ¡lido o ausencia de la colecciÃ³n 'propiedades'.");
-        console.groupEnd();
-        return;
-    }
-    
-    state.propiedades = data.propiedades.map(normalizarPropiedad);
-    
-    console.log("ðŸ“¦ Data normalizada en el frontend (state.propiedades):");
-    console.table(state.propiedades.slice(0, 5), ["id", "precio_base", "tipo_propiedad", "tipo_anuncio", "estado_publicacion"]);
-    console.groupEnd();
-
-    renderizarMapaZillow(); 
-    renderizarCatalogoTarjetas();
-    interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-} // Fin de Function procesarDatosDelMotor
-
-document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
-    if (typeof supabase !== "undefined" && supabase !== null) {
-// --- DISPARADOR DE FLUJO PRINCIPAL BASADO EN EL ESTADO DE AUTENTICACIÓN ---
-supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log(`%c🔑 [SRE ESPÍA AUTH] Evento disparado: ${event}`, "color: #e67e22; font-weight: bold;");
-    
-    if (session) {
-        usuarioAutenticado = true;
-        correoUsuarioLogueado = session.user.email;
-        console.log(`👤 Estado Auth: Sesión activa para -> ${correoUsuarioLogueado}`);
-    } else {
-        usuarioAutenticado = false;
-        correoUsuarioLogueado = "";
-        console.log("👤 Estado Auth: Sin sesión de usuario activa.");
-    }
-
-    // Llamada directa al cargador maestro de datos
-    if (typeof cargarDatosDesdeSupabase === 'function') {
-        await cargarDatosDesdeSupabase();
-    }
-});
-
-    
-    }
-
-    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-    }
-
-    setTimeout(() => { // Inicia Timer de inicializaciÃ³n y sincronización limpia SRE
-        inicializarEventosDeFiltros();
-        if (window.map) {
-            window.map.on('moveend', renderizarMapaZillow);
-            window.map.invalidateSize(); 
-        }
-        
-        // --- NUEVO: CONEXIÓN LIMPIA PARA DESPERTAR EL CATÁLOGO DE INMUEBLES SRE ---
-        cargarDatosDesdeSupabase();
-
-        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
-
-        if (btnCerrarTarjetaMovil) {
-            btnCerrarTarjetaMovil.onclick = (e) => {
-                e.stopPropagation();
-                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-                if (cajaFlotanteMovil) {
-                    cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
-                }
-            };
-        }
-    }, 100); // Fin de Timer de inicializaciÃ³n
-}); // Fin de EventListener DOMContentLoaded
-
-
-// ==========================================================================
-// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÃFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
-// ==========================================================================
-
-function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
-    const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
-    wrappers.forEach(wrapper => {
-        const boton = wrapper.querySelector('.filter-btn');
-        const panel = wrapper.querySelector('.dropdown-content-panel');
-        if (!boton || !panel) return;
-
-        boton.addEventListener('click', (e) => {
-            e.stopPropagation();
-            document.querySelectorAll('.dropdown-content-panel').forEach(p => { if (p !== panel) p.classList.remove('show'); });
-            document.querySelectorAll('.filter-btn').forEach(b => { if (b !== boton) b.classList.remove('active'); });
-            panel.classList.toggle('show'); 
-            boton.classList.toggle('active');
-        });
-    });
-
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    });
-
-    const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
-    radiosTransaccion.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            state.filtros.estado = e.target.value;
-            const btnStatus = document.getElementById('btn-filter-status');
-            if (btnStatus) {
-                if (e.target.value === "Venta") btnStatus.textContent = "En venta";
-                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler";
-                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas";
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    });
-
-    const inputMinPrecio = document.getElementById('price-min');
-    const inputMaxPrecio = document.getElementById('price-max');
-    const inputDireccionGlobal = document.getElementById('search-address');
-    
-    const handlerPrecios = () => {
-        state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
-        state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
-        ejecutarTuberiaSincronizada();
-    };
-    if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
-    if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
-    
-    // --- NUEVO: ESCUCHADOR PARA EL BUSCADOR DE DIRECCIÓN ---
-    if (inputDireccionGlobal) {
-        inputDireccionGlobal.addEventListener('input', () => {
-            ejecutarTuberiaSincronizada();
-        });
-    }
-
-    configurarSegmentado('row-beds', (valor) => { 
-        state.filtros.camas = parseInt(valor, 10) || 0; 
-        ejecutarTuberiaSincronizada(); 
-    });
-    configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.banos = parseFloat(valor) || 0; 
-        ejecutarTuberiaSincronizada(); 
-    });
-
-    const checkboxesTipo = document.querySelectorAll('.type-cb');
-    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
-
-    if (btnAplicarTipo) {
-        btnAplicarTipo.addEventListener('click', () => {
-            state.filtros.tiposPropiedad.clear();
-            const cantidadTiposMarcados = Array.from(checkboxesTipo).filter(cb => cb.checked).length;
-            if (cantidadTiposMarcados === 0) {
-                state.filtros.tiposPropiedad.add("ninguno");
-            } else {
-                checkboxesTipo.forEach(cb => { if (cb.checked) state.filtros.tiposPropiedad.add(cb.value); });
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    }
-
-    const checkboxesListado = document.querySelectorAll('.more-filter-cb');
-    const checkTodos = document.getElementById('check-todos-listados');
-
-    if (checkTodos) {
-        checkTodos.addEventListener('change', (e) => {
-            state.filtros.tiposListado.clear();
-            if (e.target.checked) {
-                checkboxesListado.forEach(cb => { cb.checked = true; state.filtros.tiposListado.add(cb.value); });
-            } else {
-                checkboxesListado.forEach(cb => cb.checked = false);
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    }
-
-    checkboxesListado.forEach(cb => {
-        cb.addEventListener('change', (e) => {
-            if (checkTodos) checkTodos.checked = false;
-            
-            if (e.target.checked) {
-                // Añade el nuevo filtro de forma acumulativa sin romper los demás
-                state.filtros.tiposListado.add(e.target.value);
-            } else {
-                // Lo remueve limpiamente si el usuario lo desmarca
-                state.filtros.tiposListado.delete(e.target.value);
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    });
-
-} // Fin de Function inicializarEventosDeFiltros
-
-
-// ==========================================================================
-// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÃ“N ÃšNICA
-// ==========================================================================
-
-function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
-    const contenedor = document.getElementById(idContenedor); 
-    if (!contenedor) return;
-    contenedor.addEventListener('click', (e) => {
-        const botonNode = e.target.closest('.segmented-btn'); 
-        if (!botonNode) return;
-        contenedor.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
-        botonNode.classList.add('active'); 
-        callback(botonNode.getAttribute('data-val'));
-    });
-} // Fin de Function configurarSegmentado
-
-
-// ==========================================================================
-// PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
-// ==========================================================================
-
-function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
-    // ==========================================================================
-    // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
-    // ==========================================================================
-        const filtroTransaccion = state.filtros.estado || "Venta";
-
-    // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
-    if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
-        return false;
-    }
-
-    if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) {
-        return false;
-    }
-
-    if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
-        return false;
-    }
-    
-
-
-    // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
-    const inputDireccion = document.getElementById('search-address');
-    if (inputDireccion && inputDireccion.value.trim() !== "") {
-        const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-        if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
-            return false;
-        }
-    }
-
-    // --- FILTROS DE RANGOS Y DIMENSIONES ---
-    if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
-    if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) return false;
-    if (state.filtros.banos && (parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
-
-    if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
-        if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
-    }
-
-    // --- FILTROS DE COMPLEMENTO EN EL PANEL EXTENDIDO ---
-    const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-    const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
-    const checkMaestro = document.getElementById('check-todos-listados');
-
-    // El checkMaestro gobierna los listados secundarios dentro de la transacción ya aislada arriba
-    if (checkMaestro && checkMaestro.checked === true) {
-        return true;
-    }
-
-    if (checkboxesMarcados.length > 0) {
-        const situacionBD = String(prop.situacion_propiedad || "").trim();
-        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
-        if (!coincideFiltro) return false;
-    } else {
-        return false;
-    }
-
-    return true;
-} // Fin de Function evaluarCriteriosDeFiltrado
-
-
-function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
-    if (typeof renderizarMapaZillow === "function") {
-        renderizarMapaZillow(); 
-    }
-    if (typeof renderizarCatalogoTarjetas === "function") {
-        renderizarCatalogoTarjetas(); 
-    }
-} // Fin de Function ejecutarTuberiaSincronizada
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
