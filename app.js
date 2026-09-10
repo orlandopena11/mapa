@@ -1539,15 +1539,12 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 
     } catch (err) {
         console.error("Error al renderizar selectores:", err.message);
-    } // Cierra bloque try de cargado de datos
+    } // [Cierra bloque try de cargado de datos]
 
-        // Disparadores en cadena del panel secundario
-        inyectarPropiedadesCercanasZillow(prop);
-        inyectarMapaYEscuelasZillow(prop);
-    } catch (err) { // <-- Ahora este catch ya reconoce al try superior
-        console.error("Error en flujo secundario:", err.message);
-    } // Cierra el bloque de seguridad catch
-} // Cierra definitivamente la función principal inyectarCapacidadCompraZillow
+    // Disparadores en cadena del panel secundario
+    inyectarPropiedadesCercanasZillow(prop);
+    inyectarMapaYEscuelasZillow(prop);
+} // [Cierra Function inyectarCapacidadCompraZillow]
         
 // ====================================================================================
 // FIN DE FUNCTION: inyectarCapacidadCompraZillow
@@ -1556,7 +1553,7 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarPropiedadesCercanasZillow (CARRUSEL GEOGRÁFICO POSTGIS)
 // ====================================================================================
-async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función principal de propiedades sugeridas
+async function inyectarPropiedadesCercanasZillow(prop) { // [Abre Function inyectarPropiedadesCercanasZillow]
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
@@ -1570,8 +1567,6 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
         slotBuyability.appendChild(contenedorCercanas);
     }
 
-    // Inyección de la maquetación del contenedor con controles direccionales independientes
-    // Inyección de la maquetación con carrusel horizontal estricto en una sola línea
     contenedorCercanas.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Propiedades Cercanas Sugeridas</h4>
@@ -1580,15 +1575,15 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
                 <button type="button" id="btn-next-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&gt;</button>
             </div>
         </div>
-        <!-- Contenedor forzado a una sola línea con scroll horizontal invisible -->
         <div id="grid-cercanas-items" style="display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px; -ms-overflow-style: none; scrollbar-width: none;">
             <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades en el cuadrante de proximidad de Supabase...</p>
         </div>
     `;
 
-        const gridItems = document.getElementById('grid-cercanas-items');
+    const gridItems = document.getElementById('grid-cercanas-items');
 
-    try { // Abre el bloque de petición de red try y sanitización estricta SRE
+    try { // [Abre try de peticion de red]
+
         const cliente = obtenerClienteSupabase();
         
         // Validación relacional cruzada de coordenadas para evitar argumentos NaN
