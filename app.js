@@ -1583,8 +1583,10 @@ async function inyectarPropiedadesCercanasZillow(prop) { // [Abre Function inyec
     const gridItems = document.getElementById('grid-cercanas-items');
 
     try { // [Abre try de peticion de red]
-
         const cliente = obtenerClienteSupabase();
+        if (!cliente) { // [Abre if validacion cliente]
+            throw new Error("Cliente Supabase no disponible.");
+        } // [Cierra if validacion cliente]
         
         // Validación relacional cruzada de coordenadas para evitar argumentos NaN
         const rpcLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142;
