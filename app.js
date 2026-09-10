@@ -1541,10 +1541,13 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         console.error("Error al renderizar selectores:", err.message);
     } // [Cierra bloque try de cargado de datos]
 
+} // [AQUÍ ESTÁ LA LLAVE QUE FALTA Y QUE CIERRA DEFINITIVAMENTE LA FUNCIÓN PRINCIPAL]
+
+
     // Disparadores en cadena del panel secundario
     inyectarPropiedadesCercanasZillow(prop);
     inyectarMapaYEscuelasZillow(prop);
-} // [Cierra Function inyectarCapacidadCompraZillow]
+}   // [Cierra Function inyectarCapacidadCompraZillow]
         
 // ====================================================================================
 // FIN DE FUNCTION: inyectarCapacidadCompraZillow
