@@ -1062,3 +1062,8 @@ function inyectarMapaYEscuelasZillow(prop) {
         }
     }, 200);
 }
+
+// Disparador automático que inicia la lectura al cargar la página
+document.addEventListener("DOMContentLoaded", () => {
+    cargarDatosDesdeSupabase();
+});
