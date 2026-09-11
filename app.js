@@ -356,7 +356,9 @@ function crearComponenteTarjetaZillow(prop) {
     precioTexto.style.fontSize = '18px'; 
     precioTexto.style.fontWeight = 'bold'; 
     precioTexto.style.color = '#1e293b';
-    precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
+   /* precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'; */
+    precioTexto.textContent = prop.precio_base ? `$/${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
+
     datosCasa.appendChild(precioTexto);
 
     const caracteristicasTexto = document.createElement('div');
@@ -769,10 +771,10 @@ function inyectarSeccionesAdicionalesZillow(prop) {
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
-                    <span>Precio de lista</span><strong>$\${Math.round(precioBase).toLocaleString()}</strong>
+                    <span>Precio de lista</span><strong>$${Math.round(precioBase).toLocaleString()}</strong> 
                 </div>
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
-                    <span>Zestimate® Actual</span><strong>$\${Math.round(zestimateVenta).toLocaleString()}</strong>
+                    <span>Zestimate® Actual</span><strong>$${Math.round(zestimateVenta).toLocaleString()}</strong>
                 </div>
             </div>
         </div>
@@ -866,9 +868,9 @@ async function inyectarCapacidadCompraZillow(prop) {
         const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
         const ratioLtv = precioBase > 0 ? (montoPrestamo / precioBase) : 0;
 
-        const moneda = (v) => `$\${Math.round(v).toLocaleString('en-US')}`;
+        const moneda = (v) => `$${Math.round(v).toLocaleString('en-US')}`;
 
-        document.getElementById('display-pago-total-hipoteca').innerText = `\ doors\${moneda(cuotaTotal)}/mes`;
+        document.getElementById('display-pago-total-hipoteca').innerText = `\ doors ${moneda(cuotaTotal)}/mes`;
         document.getElementById('txt-calc-prestamo').innerText = moneda(montoPrestamo);
         document.getElementById('txt-calc-cuotabase').innerText = moneda(cuotaBase);
         document.getElementById('txt-calc-segdesg').innerText = moneda(costoDesgravamen);
