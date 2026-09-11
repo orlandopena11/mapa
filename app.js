@@ -356,7 +356,6 @@ function crearComponenteTarjetaZillow(prop) {
     precioTexto.style.fontSize = '18px'; 
     precioTexto.style.fontWeight = 'bold'; 
     precioTexto.style.color = '#1e293b';
-   /* precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'; */
     precioTexto.textContent = prop.precio_base ? `$/${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
 
     datosCasa.appendChild(precioTexto);
@@ -731,24 +730,24 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
         const totalMiniaturas = Math.min(listaFotos.length, 5);
         for (let i = 0; i < totalMiniaturas; i++) {
             miniaturasHtml += `
-                <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: \${i === 0 ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'}; cursor: pointer;">
-                    <img src="\${listaFotos[i]}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: ${i === 0 ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'}; cursor: pointer;">
+                    <img src="${listaFotos[i]}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>`;
         }
 
         cortina.innerHTML = `
             <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
                 <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
-                    <img id="foto-zillow-showcase-activa" src="\${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover;">
                     <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10;">‹</button>
-                    <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">\${miniaturasHtml}</div>
+                    <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">${miniaturasHtml}</div>
                 </div>
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box;">
                     <div>
-                        <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$\${Number(prop.precio_base).toLocaleString('en-US')}</h2>
+                        <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
                         <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.direccion}</p>
 
-                        <p style="font-size: 15px; color: #2d3748;">\${prop.direccion} (\${prop.distrito})</p>
+                        <p style="font-size: 15px; color: #2d3748;">${prop.direccion} (${prop.distrito})</p>
                         <div id="zillow-next-sections-slot"></div>
                     </div>
                 </div>
