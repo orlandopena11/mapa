@@ -1547,7 +1547,10 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
     // Disparadores en cadena del panel secundario
     inyectarPropiedadesCercanasZillow(prop);
     inyectarMapaYEscuelasZillow(prop);
+    } // <-- ESTA ES LA LLAVE QUE AGREGAS PARA CERRAR EL TRY/CATCH INTERNO
+
 }   // [Cierra Function inyectarCapacidadCompraZillow]
+
         
 // ====================================================================================
 // FIN DE FUNCTION: inyectarCapacidadCompraZillow
