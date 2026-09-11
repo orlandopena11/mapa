@@ -673,7 +673,8 @@ function evaluarCriteriosDeFiltrado(prop) {
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    const checkboxesFisicos EnPantalla = document.querySelectorAll('.more-filter-cb');
+    const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
+
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
