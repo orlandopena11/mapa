@@ -1063,10 +1063,23 @@ function inyectarMapaYEscuelasZillow(prop) {
     }, 200);
 }
 
-// Disparador automático que inicia la lectura al cargar la página
 document.addEventListener("DOMContentLoaded", () => {
+    // Inicialización única de la instancia global del mapa Leaflet
+    if (document.getElementById('map-instance') && typeof L !== 'undefined') {
+        window.map = L.map('map-instance', {
+            center: [-12.0984, -76.9692], // Centrado nativo en El Polo, Surco
+            zoom: 13,
+            zoomControl: true
+        });
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(window.map);
+    }
+
     cargarDatosDesdeSupabase();
 });
+
 
 // ==========================================================================
 // CONTROL DEL MOTOR CENTRAL: PROCESAMIENTO DE RESPUESTAS SUPABASE
