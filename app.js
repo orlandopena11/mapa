@@ -1538,18 +1538,15 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         ejecutarRecalculoHipoteca();
 
     } catch (err) {
-        console.error("Error al renderizar selectores:", err.message);
-    } // [Cierra bloque try de cargado de datos]
+        console.error("Error al renderizar selectores o guardar en Supabase:", err.message);
+    } // [Cierra de forma correcta el bloque try principal de la función]
 
-} // [AQUÍ ESTÁ LA LLAVE QUE FALTA Y QUE CIERRA DEFINITIVAMENTE LA FUNCIÓN PRINCIPAL]
-
-
-    // Disparadores en cadena del panel secundario
+    // Disparadores en cadena del panel secundario ejecutados limpiamente
     inyectarPropiedadesCercanasZillow(prop);
     inyectarMapaYEscuelasZillow(prop);
-    } // <-- ESTA ES LA LLAVE QUE AGREGAS PARA CERRAR EL TRY/CATCH INTERNO
+} // [Cierre definitivo y real de la función inyectarCapacidadCompraZillow]
 
-}   // [Cierra Function inyectarCapacidadCompraZillow]
+    }   // [Cierra Function inyectarCapacidadCompraZillow]
 
         
 // ====================================================================================
