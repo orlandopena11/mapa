@@ -383,7 +383,8 @@ function crearComponenteTarjetaZillow(prop) {
     ubicacionTexto.style.color = '#1e293b'; 
     ubicacionTexto.style.fontWeight = '600'; 
     ubicacionTexto.style.marginTop = '4px';
-    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "");
+    ubicacionTexto.textContent = prop?.direccion ? `${prop.direccion} (${prop?.distrito || ''})` : (prop?.titulo || "");
+
     datosCasa.appendChild(ubicacionTexto);
 
     tarjeta.appendChild(datosCasa);
@@ -484,7 +485,8 @@ function renderizarMapaZillow() {
         contenedorPopupMaster.appendChild(carruselPopup);
 
         const datosPopup = document.createElement('div');
-        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} Baños</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+
         contenedorPopupMaster.appendChild(datosPopup);
 
         if (window.innerWidth > 768) {
