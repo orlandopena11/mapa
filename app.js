@@ -949,40 +949,40 @@ async function inyectarCapacidadCompraZillow(prop) {
             desgravamenesSet.add(reg.seguro_desgravamen_mensual); inmueblesSet.add(reg.seguro_inmueble_mensual);
         });
 
-            inicialesSet.forEach((comentario, valor) => {
-            const optionElement = document.createElement('option'); 
-            optionElement.value = valor;
-            optionElement.innerText = (valor * 100).toFixed(0) + "%"; 
-            optionElement.dataset.comment = comentario || '';
-            cInicial.appendChild(optionElement);
+        inicialesSet.forEach((comentario, valor) => {
+            const optionInicial = document.createElement('option');
+            optionInicial.value = valor;
+            optionInicial.innerText = (valor * 100).toFixed(0) + "%";
+            optionInicial.setAttribute('data-comment', comentario || '');
+            cInicial.appendChild(optionInicial);
         });
 
         [...plazosSet].sort((a, b) => a - b).forEach(val => {
-            const optionElement = document.createElement('option'); 
-            optionElement.value = val;
-            optionElement.innerText = val + " años"; 
-            cPlazo.appendChild(optionElement);
+            const optionPlazo = document.createElement('option');
+            optionPlazo.value = val;
+            optionPlazo.innerText = val + " años";
+            cPlazo.appendChild(optionPlazo);
         });
 
         [...teasSet].sort((a, b) => a - b).forEach(val => {
-            const optionElement = document.createElement('option'); 
-            optionElement.value = val;
-            optionElement.innerText = (val * 100).toFixed(2) + "% TEA"; 
-            cTea.appendChild(optionElement);
+            const optionTea = document.createElement('option');
+            optionTea.value = val;
+            optionTea.innerText = (val * 100).toFixed(2) + "% TEA";
+            cTea.appendChild(optionTea);
         });
 
         [...desgravamenesSet].sort((a, b) => a - b).forEach(val => {
-            const optionElement = document.createElement('option'); 
-            optionElement.value = val;
-            optionElement.innerText = (val * 100).toFixed(3) + "% mensual"; 
-            cDesg.appendChild(optionElement);
+            const optionDesg = document.createElement('option');
+            optionDesg.value = val;
+            optionDesg.innerText = (val * 100).toFixed(3) + "% mensual";
+            cDesg.appendChild(optionDesg);
         });
 
         [...inmueblesSet].sort((a, b) => a - b).forEach(val => {
-            const optionElement = document.createElement('option'); 
-            optionElement.value = val;
-            optionElement.innerText = (val * 100).toFixed(3) + "% mensual"; 
-            cInm.appendChild(optionElement);
+            const optionInm = document.createElement('option');
+            optionInm.value = val;
+            optionInm.innerText = (val * 100).toFixed(3) + "% mensual";
+            cInm.appendChild(optionInm);
         });
 
         ejecutarRecalculoHipoteca();
@@ -994,6 +994,7 @@ async function inyectarCapacidadCompraZillow(prop) {
     await inyectarPropiedadesCercanasZillow(prop);
     inyectarMapaYEscuelasZillow(prop);
 }
+
 async function inyectarPropiedadesCercanasZillow(prop) {
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
