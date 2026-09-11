@@ -1067,3 +1067,29 @@ function inyectarMapaYEscuelasZillow(prop) {
 document.addEventListener("DOMContentLoaded", () => {
     cargarDatosDesdeSupabase();
 });
+
+// ==========================================================================
+// CONTROL DEL MOTOR CENTRAL: PROCESAMIENTO DE RESPUESTAS SUPABASE
+// ==========================================================================
+function procesarDatosDelMotor(paqueteData) {
+    if (!paqueteData || !paqueteData.propiedades) {
+        console.error("[SRE MOTOR] El paquete de datos recibido está vacío o es inválido.");
+        return;
+    }
+
+    console.log("[SRE MOTOR] Procesando e inyectando datos en el estado...");
+    
+    // Mapea y normaliza cada propiedad recibida de la API de Supabase
+    state.propiedades = paqueteData.propiedades.map(prop => {
+        return typeof normalizarPropiedad === "function" ? normalizarPropiedad(prop) : prop;
+    });
+
+    // Ejecuta la tubería de renderizado para pintar el mapa y las tarjetas
+    if (typeof ejecutarTuberiaSincronizada === "function") {
+        ejecutarTuberiaSincronizada();
+    } else {
+        if (typeof renderizarMapaZillow === "function") renderizarMapaZillow();
+        if (typeof renderizarCatalogoTarjetas === "function") renderizarCatalogoTarjetas();
+    }
+}
+
