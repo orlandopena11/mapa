@@ -949,38 +949,43 @@ async function inyectarCapacidadCompraZillow(prop) {
             desgravamenesSet.add(reg.seguro_desgravamen_mensual); inmueblesSet.add(reg.seguro_inmueble_mensual);
         });
 
-        inicialesSet.forEach((comentario, valor) => {
-            const opt = document.createElement('option'); opt.value = valor;
-            opt.innerText = `\${(valor * 100).toFixed(0)}%`; opt.dataset.comment = comentario || '';
-            cInicial.appendChild(opt);
+            inicialesSet.forEach((comentario, valor) => {
+            const optionElement = document.createElement('option'); 
+            optionElement.value = valor;
+            optionElement.innerText = (valor * 100).toFixed(0) + "%"; 
+            optionElement.dataset.comment = comentario || '';
+            cInicial.appendChild(optionElement);
         });
 
-        [...plazosSet].sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `\${val} años`; cPlazo.appendChild(opt);
+        [...plazosSet].sort((a, b) => a - b).forEach(val => {
+            const optionElement = document.createElement('option'); 
+            optionElement.value = val;
+            optionElement.innerText = val + " años"; 
+            cPlazo.appendChild(optionElement);
         });
 
-        [...teasSet].sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `\${(val * 100).toFixed(2)}% TEA`; cTea.appendChild(opt);
+        [...teasSet].sort((a, b) => a - b).forEach(val => {
+            const optionElement = document.createElement('option'); 
+            optionElement.value = val;
+            optionElement.innerText = (val * 100).toFixed(2) + "% TEA"; 
+            cTea.appendChild(optionElement);
         });
 
-        [...desgravamenesSet].sort((a,b)=>a-b).forEach(val => {
+        [...desgravamenesSet].sort((a, b) => a - b).forEach(val => {
+            const optionElement = document.createElement('option'); 
+            optionElement.value = val;
+            optionElement.innerText = (val * 100).toFixed(3) + "% mensual"; 
+            cDesg.appendChild(optionElement);
+        });
 
-                const opt = document.createElement('option'); 
-        opt.value = val;
-        opt.innerText = `${(val * 100).toFixed(3)}% mensual`; 
-        cDesg.appendChild(opt);
-    });
+        [...inmueblesSet].sort((a, b) => a - b).forEach(val => {
+            const optionElement = document.createElement('option'); 
+            optionElement.value = val;
+            optionElement.innerText = (val * 100).toFixed(3) + "% mensual"; 
+            cInm.appendChild(optionElement);
+        });
 
-    [...inmueblesSet].sort((a, b) => a - b).forEach(val => {
-        const opt = document.createElement('option'); 
-        opt.value = val;
-        opt.innerText = `${(val * 100).toFixed(3)}% mensual`; 
-        cInm.appendChild(opt);
-    });
-
-    ejecutarRecalculoHipoteca();
+        ejecutarRecalculoHipoteca();
 
     } catch (err) {
         console.error("Error cargando selectores hipotecarios:", err.message);
