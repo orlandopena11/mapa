@@ -741,7 +741,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box;">
                     <div>
                         <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$\${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                        <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">\${prop.habitaciones} bd | \${prop.banos} ba | \address</p>
+                        <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.direccion}</p>
+
                         <p style="font-size: 15px; color: #2d3748;">\${prop.direccion} (\${prop.distrito})</p>
                         <div id="zillow-next-sections-slot"></div>
                     </div>
