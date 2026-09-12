@@ -605,7 +605,7 @@ function inicializarEventosDeFiltros() {
             state.filtros.tiposPropiedad.clear();
             const cantidadTiposMarcados = Array.from(checkboxesTipo).filter(cb => cb.checked).length;
             if (cantidadTiposMarcados === 0) {
-                state.filtros.tiposPropiedad.add("ninguno");
+                checkboxesTipo.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
             } else {
                 checkboxesTipo.forEach(cb => { if (cb.checked) state.filtros.tiposPropiedad.add(cb.value); });
             }
@@ -677,7 +677,6 @@ function evaluarCriteriosDeFiltrado(prop) {
     }
 
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
     const checkMaestro = document.getElementById('check-todos-listados');
 
@@ -685,9 +684,8 @@ function evaluarCriteriosDeFiltrado(prop) {
     if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").trim();
         if (!checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD)) return false;
-    } else {
-        return false;
     }
+    
     return true;
 }
 
@@ -696,397 +694,6 @@ function ejecutarTuberiaSincronizada() {
     if (typeof renderizarCatalogoTarjetas === "function") renderizarCatalogoTarjetas(); 
 }
 
-function interceptarFirewallSeguridadUsuario(l, em) {}
-function inicializarEventosPopups() {
-    document.getElementById("btn-solicitar-tour-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-tour-comercial"); 
-        if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas(); 
-        if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
-    });
-    document.getElementById("btn-contactar-agente-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-agent-comercial"); 
-        if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
-    });
-}
-function mostrarPopupAccion(id) { const n = document.getElementById(id); if (n) n.style.display = "flex"; }
-function cerrarPopupAccion(id) { const n = document.getElementById(id); if (n) n.style.display = "none"; }
-function calcularCalendarioTresCajas() {}
-function gestionarPasosModalTour(p) {}
-function inyectarDatosPropiedadAlMensaje() {}
-function ejecutarEnvioAppsScript(p, m, f, mx) {}
-
-function gestionarCortinaSPA(tipoPantalla, prop) {
-    const cortina = document.getElementById('cortina-spa');
-    if (!cortina) return;
-    if (tipoPantalla === 'cerrar') {
-        cortina.classList.remove('cortina-activa');
-        return;
-    }
-
-    if (tipoPantalla === 'detalle') {
-        const listaFotos = prop.fotos || [];
-        const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
-        let miniaturasHtml = '';
-        const totalMiniaturas = Math.min(listaFotos.length, 5);
-        for (let i = 0; i < totalMiniaturas; i++) {
-            miniaturasHtml += `
-                <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: ${i === 0 ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'}; cursor: pointer;">
-                    <img src="${listaFotos[i]}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>`;
-        }
-
-        cortina.innerHTML = `
-            <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
-                <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
-                    <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10;">‹</button>
-                    <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">${miniaturasHtml}</div>
-                </div>
-                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box;">
-                    <div>
-                        <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                        <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.direccion}</p>
-
-                        <p style="font-size: 15px; color: #2d3748;">${prop.direccion} (${prop.distrito})</p>
-                        <div id="zillow-next-sections-slot"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
-        if (prop && prop.propiedad_id) {
-            inyectarSeccionesAdicionalesZillow(prop);
-        }
-    }
-    cortina.classList.add('cortina-activa');
-}
-
-function inyectarSeccionesAdicionalesZillow(prop) {
-    const slotDinamico = document.getElementById('zillow-next-sections-slot');
-    if (!slotDinamico) return;
-    const precioBase = parseFloat(prop.precio_base) || 0;
-    const zestimateVenta = precioBase * 1.021;
-
-    slotDinamico.innerHTML = `
-        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
-                    <span>Precio de lista</span><strong>$${Math.round(precioBase).toLocaleString()}</strong> 
-                </div>
-                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
-                    <span>Zestimate® Actual</span><strong>$${Math.round(zestimateVenta).toLocaleString()}</strong>
-                </div>
-            </div>
-        </div>
-        <div id="zillow-graphs-and-history-slot"></div>
-    `;
-    inyectarHistorialesYImpuestosZillow(prop);
-}
-
-async function inyectarHistorialesYImpuestosZillow(prop) {
-    const slotHistorial = document.getElementById('zillow-graphs-and-history-slot');
-    if (!slotHistorial) return;
-    slotHistorial.innerHTML = `<div id="zillow-buyability-and-neighborhood-slot"></div>`;
-    if (typeof inyectarCapacidadCompraZillow === "function") {
-        await inyectarCapacidadCompraZillow(prop);
-    }
-}
-
-// ====================================================================================
-// CORRECCIÓN RADICAL: ELIMINACIÓN DEL TRY/CATCH EXTERNO INCORRECTO
-// ====================================================================================
-async function inyectarCapacidadCompraZillow(prop) {
-    if (!prop || !prop.propiedad_id || Number.isNaN(parseFloat(prop.precio_base))) {
-        console.log("[SRE] No se ejecuta el simulador hipotecario.");
-        return;
-    }
-
-    const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
-    if (!slotBuyability) return;
-
-    const precioBase = parseFloat(prop.precio_base) || 0;
-    const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
-
-    slotBuyability.innerHTML = `
-        <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #002E50;">Simulador Hipotecario Inteligente</h4>
-            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 20px;">
-                <h3 id="display-pago-total-hipoteca">Selecciona tus datos y simula tu hipoteca</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                    <div><label>Cuota Inicial:</label><select id="combo-lov-inicial" style="width:100%;"></select></div>
-                    <div><label>Plazo:</label><select id="combo-lov-plazo" style="width:100%;"></select></div>
-                    <div><label>Tasa TEA:</label><select id="combo-lov-tea" style="width:100%;"></select></div>
-                    <div><label>Seguro Desgravamen:</label><select id="combo-lov-desgravamen" style="width:100%;"></select></div>
-                    <div><label>Seguro Inmueble:</label><select id="combo-lov-inmueble" style="width:100%;"></select></div>
-                </div>
-                <div style="font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base:</span><strong id="txt-calc-cuotabase">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble:</span><strong id="txt-calc-seginm">-</strong></div>
-                </div>
-                <p id="lov-comentario-dinamico" style="font-size:11px; font-style:italic; color:#475569;"></p>
-                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-weight: 800; border-radius: 6px; cursor: pointer;">Enviar mi cronograma de hipoteca a mi correo</button>
-            </div>
-        </div>
-        <div id="zillow-neighborhood-slot"></div>
-    `;
-
-    const cInicial = document.getElementById('combo-lov-inicial');
-    const cPlazo = document.getElementById('combo-lov-plazo');
-    const cTea = document.getElementById('combo-lov-tea');
-    const cDesg = document.getElementById('combo-lov-desgravamen');
-    const cInm = document.getElementById('combo-lov-inmueble');
-    const btnGuardar = document.getElementById('btn-guardar-simulacion-supabase');
-
-    let calculosGlobales = null;
-
-    function ejecutarRecalculoHipoteca() {
-        const pctInicial = parseFloat(cInicial.value) || 0;
-        const anosPlazo = parseInt(cPlazo.value, 10) || 0;
-        const valorTea = parseFloat(cTea.value) || 0;
-        const pctDesg = parseFloat(cDesg.value) || 0;
-        const pctInm = parseFloat(cInm.value) || 0;
-
-        if (pctInicial <= 0 || pctInicial >= 1 || anosPlazo <= 0) return;
-
-        const montoInicial = precioBase * pctInicial;
-        const montoPrestamo = precioBase - montoInicial;
-        const totalMeses = anosPlazo * 12;
-        const tasaMensualTEM = valorTea > 0 ? Math.pow(1 + valorTea, 1 / 12) - 1 : 0;
-
-        let cuotaBase = 0;
-        if (tasaMensualTEM === 0) {
-            cuotaBase = montoPrestamo / totalMeses;
-        } else {
-            const factor = Math.pow(1 + tasaMensualTEM, totalMeses);
-            cuotaBase = montoPrestamo * (tasaMensualTEM * factor) / (factor - 1);
-        }
-
-        const costoDesgravamen = montoPrestamo * pctDesg;
-        const costoInmueble = precioBase * pctInm;
-        const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
-        const ratioLtv = precioBase > 0 ? (montoPrestamo / precioBase) : 0;
-
-        const moneda = (v) => `$${Math.round(v).toLocaleString('en-US')}`;
-
-        document.getElementById('display-pago-total-hipoteca').innerText = `\ doors ${moneda(cuotaTotal)}/mes`;
-        document.getElementById('txt-calc-prestamo').innerText = moneda(montoPrestamo);
-        document.getElementById('txt-calc-cuotabase').innerText = moneda(cuotaBase);
-        document.getElementById('txt-calc-segdesg').innerText = moneda(costoDesgravamen);
-        document.getElementById('txt-calc-seginm').innerText = moneda(costoInmueble);
-
-        const opcionSeleccionada = cInicial.options[cInicial.selectedIndex];
-        document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada?.dataset.comment || '';
-
-        calculosGlobales = {
-            pctInicial, montoInicial, montoPrestamo, totalMeses, valorTea, 
-            tasaMensualTEM, pctDesg, pctInm, cuotaBase, costoDesgravamen, 
-            costoInmueble, cuotaTotal, ratioLtv
-        };
-    }
-
-    [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
-
-    btnGuardar.addEventListener('click', async () => {
-        if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
-        if (!calculosGlobales) {
-            alert('Selecciona los parámetros de la hipoteca primero.');
-            return;
-        }
-
-        btnGuardar.innerText = "? Generando cronograma...";
-        btnGuardar.disabled = true;
-
-        try {
-            const cliente = obtenerClienteSupabase();
-            if (!cliente) throw new Error("Cliente Supabase no disponible.");
-            const idUsuario = window.usuarioLogueado?.id || 'anonimo_invitado';
-
-            const { error } = await cliente
-                .from('simulacion_hipotecaria')
-                .insert([{
-                    usuario_id_fk: idUsuario,
-                    propiedad_id_fk: String(prop.id),
-                    hipoteca_id_fk: 1,
-                    tipo_propiedad: tipoProp,
-                    precio_propiedad: precioBase,
-                    pago_inicial: calculosGlobales.montoInicial,
-                    porc_cuota_inicial: calculosGlobales.pctInicial,
-                    monto_prestamo: calculosGlobales.montoPrestamo,
-                    plazo_meses: calculosGlobales.totalMeses,
-                    tasa_tea: calculosGlobales.valorTea,
-                    tasa_tem: calculosGlobales.tasaMensualTEM,
-                    porc_seguro_desgravamen: calculosGlobales.pctDesg,
-                    porc_seguro_inmueble: calculosGlobales.pctInm,
-                    cuota_base_mensual: calculosGlobales.cuotaBase,
-                    seguro_desgravamen_mes1: calculosGlobales.costoDesgravamen,
-                    seguro_inmueble_mes1: calculosGlobales.costoInmueble,
-                    pago_mensual_estimated: calculosGlobales.cuotaTotal,
-                    ltv: calculosGlobales.ratioLtv
-                }]);
-
-            if (error) throw error;
-            alert("?? ¡Cronograma generado exitosamente! Documento oficial PDF en camino.");
-            btnGuardar.innerText = "Cronograma enviado exitosamente";
-
-        } catch (err) {
-            console.error("Fallo guardando simulación:", err.message);
-            alert("Error procesando solicitud: " + err.message);
-            btnGuardar.innerText = "Enviar mi cronograma de hipoteca a mi correo";
-            btnGuardar.disabled = false;
-        }
-    });
-
-    try {
-        const cliente = obtenerClienteSupabase();
-        if (!cliente) throw new Error("Cliente Supabase no disponible.");
-        const { data, error } = await cliente.from('vista_lov_hipoteca_consolidada').select('*').eq('tipo_propiedad', tipoProp);
-        if (error) throw error;
-
-        const inicialesSet = new Map(); const plazosSet = new Set(); const teasSet = new Set();
-        const desgravamenesSet = new Set(); const inmueblesSet = new Set();
-
-        (data || []).forEach(reg => {
-            inicialesSet.set(reg.cuota_inicial, reg.comentario_inicial);
-            plazosSet.add(reg.plazo_anos); teasSet.add(reg.tasa_tea);
-            desgravamenesSet.add(reg.seguro_desgravamen_mensual); inmueblesSet.add(reg.seguro_inmueble_mensual);
-        });
-
-        inicialesSet.forEach((comentario, valor) => {
-            const optionInicial = document.createElement('option');
-            optionInicial.value = valor;
-            optionInicial.innerText = (valor * 100).toFixed(0) + "%";
-            optionInicial.setAttribute('data-comment', comentario || '');
-            cInicial.appendChild(optionInicial);
-        });
-
-        [...plazosSet].sort((a, b) => a - b).forEach(val => {
-            const optionPlazo = document.createElement('option');
-            optionPlazo.value = val;
-            optionPlazo.innerText = val + " años";
-            cPlazo.appendChild(optionPlazo);
-        });
-
-        [...teasSet].sort((a, b) => a - b).forEach(val => {
-            const optionTea = document.createElement('option');
-            optionTea.value = val;
-            optionTea.innerText = (val * 100).toFixed(2) + "% TEA";
-            cTea.appendChild(optionTea);
-        });
-
-        [...desgravamenesSet].sort((a, b) => a - b).forEach(val => {
-            const optionDesg = document.createElement('option');
-            optionDesg.value = val;
-            optionDesg.innerText = (val * 100).toFixed(3) + "% mensual";
-            cDesg.appendChild(optionDesg);
-        });
-
-        [...inmueblesSet].sort((a, b) => a - b).forEach(val => {
-            const optionInm = document.createElement('option');
-            optionInm.value = val;
-            optionInm.innerText = (val * 100).toFixed(3) + "% mensual";
-            cInm.appendChild(optionInm);
-        });
-
-        ejecutarRecalculoHipoteca();
-
-    } catch (err) {
-        console.error("Error cargando selectores hipotecarios:", err.message);
-    }
-
-    await inyectarPropiedadesCercanasZillow(prop);
-    inyectarMapaYEscuelasZillow(prop);
-}
-
-async function inyectarPropiedadesCercanasZillow(prop) {
-    const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
-    if (!slotBuyability) return;
-
-    let contenedorCercanas = document.getElementById('zillow-nearby-homes-container');
-    if (!contenedorCercanas) {
-        contenedorCercanas = document.createElement('div');
-        contenedorCercanas.id = 'zillow-nearby-homes-container';
-        contenedorCercanas.style.marginTop = '40px';
-        slotBuyability.appendChild(contenedorCercanas);
-    }
-
-    contenedorCercanas.innerHTML = '<div id="grid-cercanas-items"></div>';
-    await inyectarPropiedadesSimilaresZillow(prop);
-}
-
-async function inyectarPropiedadesSimilaresZillow(prop) {
-    const slotDinamico = document.getElementById('zillow-graphs-and-history-slot');
-    if (!slotDinamico) return;
-
-    let contenedorSimilares = document.getElementById('zillow-similar-properties-carousel-slot');
-    if (!contenedorSimilares) {
-        contenedorSimilares = document.createElement('div');
-        contenedorSimilares.id = 'zillow-similar-properties-carousel-slot';
-        slotDinamico.appendChild(contenedorSimilares);
-    }
-
-    contenedorSimilares.innerHTML = '<div id="grid-similares-items"></div>';
-}
-
-function inyectarMapaYEscuelasZillow(prop) {
-    const slotMapa = document.getElementById('zillow-neighborhood-slot');
-    if (!slotMapa) return;
-
-    const lat = parseFloat(prop.latitud);
-    const lng = parseFloat(prop.longitud);
-    if (isNaN(lat) || isNaN(lng)) return;
-
-    slotMapa.innerHTML = '<div id="mapa-detalle-zillow-container" style="width: 100%; height: 320px;"></div>';
-
-    setTimeout(() => {
-        const mapaDiv = document.getElementById('mapa-detalle-zillow-container');
-        if (!mapaDiv || typeof L === 'undefined') return;
-
-        try {
-            if (window.mapDetalleInstance) {
-                window.mapDetalleInstance.remove();
-            }
-
-            const mapDetalle = L.map(mapaDiv, { 
-                center: [lat, lng], 
-                zoom: 15, 
-                scrollWheelZoom: false 
-            });
-
-            window.mapDetalleInstance = mapDetalle;
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mapDetalle);
-            L.marker([lat, lng]).addTo(mapDetalle);
-
-        } catch (error) {
-            console.error("SRE Error al renderizar mapa Leaflet secundario:", error);
-        }
-    }, 200);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    // Inicialización única de la instancia global del mapa Leaflet
-    if (document.getElementById('map-instance') && typeof L !== 'undefined') {
-        window.map = L.map('map-instance', {
-            center: [-12.0984, -76.9692], // Centrado nativo en El Polo, Surco
-            zoom: 13,
-            zoomControl: true
-        });
-        
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(window.map);
-    }
-
-    cargarDatosDesdeSupabase();
-});
-
-
-// ==========================================================================
-// CONTROL DEL MOTOR CENTRAL: PROCESAMIENTO DE RESPUESTAS SUPABASE
-// ==========================================================================
 function procesarDatosDelMotor(paqueteData) {
     if (!paqueteData || !paqueteData.propiedades) {
         console.error("[SRE MOTOR] El paquete de datos recibido está vacío o es inválido.");
@@ -1095,12 +702,10 @@ function procesarDatosDelMotor(paqueteData) {
 
     console.log("[SRE MOTOR] Procesando e inyectando datos en el estado...");
     
-    // Mapea y normaliza cada propiedad recibida de la API de Supabase
     state.propiedades = paqueteData.propiedades.map(prop => {
         return typeof normalizarPropiedad === "function" ? normalizarPropiedad(prop) : prop;
     });
 
-    // Ejecuta la tubería de renderizado para pintar el mapa y las tarjetas
     if (typeof ejecutarTuberiaSincronizada === "function") {
         ejecutarTuberiaSincronizada();
     } else {
@@ -1108,4 +713,5 @@ function procesarDatosDelMotor(paqueteData) {
         if (typeof renderizarCatalogoTarjetas === "function") renderizarCatalogoTarjetas();
     }
 }
+
 
