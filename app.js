@@ -659,8 +659,8 @@ function configurarSegmentado(idContenedor, callback) {
 // ==========================================================================
 // PARTE 4 DE 22: CREDENCIALES Y CLIENTE CORE SUPABASE
 // ==========================================================================
-const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
-const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
+//const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
+//const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
