@@ -661,7 +661,7 @@ function configurarSegmentado(idContenedor, callback) {
 // ==========================================================================
 let usuarioAutenticado = false;
 let correoUsuarioLogueado = "";
-const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://google.com";
+const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
 
 if (typeof window.usuarioAutenticado === "undefined") { 
     window.usuarioAutenticado = false; 
@@ -1054,7 +1054,7 @@ function renderizarCatalogoTarjetas() {
 }
 
 // ==========================================================================
-// PARTE 14 DE 15: RENDERIZADOR CARTOGRÁFICO DE MARCADORES (MAPA)
+// PARTE 14 DE 22: RENDERIZADOR CARTOGRÁFICO DE MARCADORES (MAPA)
 // ==========================================================================
 function renderizarMapaZillow() {
     if (typeof window.L === 'undefined' || !window.map || !document.getElementById('map-instance')) return;
