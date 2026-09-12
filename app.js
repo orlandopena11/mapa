@@ -682,11 +682,13 @@ function evaluarCriteriosDeFiltrado(prop) {
     const checkMaestro = document.getElementById('check-todos-listados');
 
     if (checkMaestro && checkMaestro.checked === true) return true;
-    if (checkboxesMarcados.length > 0) {
+
+        if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").trim();
         if (!checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD)) return false;
     }
     return true;
+} // Cierre correcto de evaluarCriteriosDeFiltrado
 
 function ejecutarTuberiaSincronizada() {
     if (typeof renderizarMapaZillow === "function") renderizarMapaZillow(); 
@@ -694,6 +696,130 @@ function ejecutarTuberiaSincronizada() {
 }
 
 function procesarDatosDelMotor(paqueteData) {
+    if (!paqueteData || !paqueteData.propiedades) {
+        console.error("[SRE MOTOR] El paquete de datos recibido está vacío o es inválido.");
+        return;
+    }
+
+    console.log("[SRE MOTOR] Procesando e inyectando datos en el estado...");
+    
+    state.propiedades = paqueteData.propiedades.map(prop => {
+        return typeof normalizarPropiedad === "function" ? normalizarPropiedad(prop) : prop;
+    });
+
+    if (typeof ejecutarTuberiaSincronizada === "function") {
+        ejecutarTuberiaSincronizada();
+    } else {
+        if (typeof renderizarMapaZillow === "function") renderizarMapaZillow();
+        if (typeof renderizarCatalogoTarjetas === "function") renderizarCatalogoTarjetas();
+    }
+}
+
+function gestionarCortinaSPA(tipoPantalla, prop) {
+    const cortina = document.getElementById('cortina-spa');
+    if (!cortina) return;
+    if (tipoPantalla === 'cerrar') {
+        cortina.classList.remove('cortina-activa');
+        if (window.intervaloCineZillow) {
+            clearInterval(window.intervaloCineZillow);
+            window.intervaloCineZillow = null;
+        }
+        return;
+    }
+
+    if (tipoPantalla === 'detalle') {
+        const listaFotos = prop.fotos || [];
+        const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
+        let miniaturasHtml = '';
+        const totalMiniaturas = Math.min(listaFotos.length, 5);
+        for (let i = 0; i < totalMiniaturas; i++) {
+            miniaturasHtml += `
+                <div class="miniatura-cine-item" data-idx="${i}" style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; border: ${i === 0 ? '2px solid white' : '1px solid rgba(255,255,255,0.4)'}; cursor: pointer; transition: all 0.2s;">
+                    <img src="${listaFotos[i]}" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>`;
+        }
+
+        cortina.innerHTML = `
+            <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
+                <div style="width: 100%; height: 480px; position: relative; background: #000000; overflow: hidden;">
+                    <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s ease;">
+                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; cursor: pointer; z-index: 10;">‹</button>
+                    <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">${miniaturasHtml}</div>
+                </div>
+                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box;">
+                    <div>
+                        <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
+                        <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.direccion}</p>
+                        <p style="font-size: 15px; color: #2d3748;">${prop.direccion} (${prop.distrito})</p>
+                        <div id="zillow-next-sections-slot"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
+
+        const nodosMiniaturas = cortina.querySelectorAll('.miniatura-cine-item');
+        const imgPrincipal = document.getElementById('foto-zillow-showcase-activa');
+        
+        nodosMiniaturas.forEach(minNode => {
+            minNode.addEventListener('click', () => {
+                const idx = parseInt(minNode.getAttribute('data-idx'), 10);
+                if (imgPrincipal && listaFotos[idx]) {
+                    imgPrincipal.src = listaFotos[idx];
+                    nodosMiniaturas.forEach(m => m.style.border = '1px solid rgba(255,255,255,0.4)');
+                    minNode.style.border = '2px solid white';
+                }
+            });
+        });
+
+        if (window.intervaloCineZillow) clearInterval(window.intervaloCineZillow);
+        let fotoActualCine = 0;
+        if (listaFotos.length > 1) {
+            window.intervaloCineZillow = setInterval(() => {
+                fotoActualCine = (fotoActualCine + 1) % totalMiniaturas;
+                if (imgPrincipal && listaFotos[fotoActualCine]) {
+                    imgPrincipal.style.opacity = '0.7';
+                    setTimeout(() => {
+                        imgPrincipal.src = listaFotos[fotoActualCine];
+                        imgPrincipal.style.opacity = '1';
+                    }, 150);
+                    nodosMiniaturas.forEach((m, idx) => {
+                        m.style.border = idx === fotoActualCine ? '2px solid white' : '1px solid rgba(255,255,255,0.4)';
+                    });
+                }
+            }, 4000);
+        }
+
+        if (prop && prop.propiedad_id) {
+            if (typeof inyectarSeccionesAdicionalesZillow === "function") {
+                inyectarSeccionesAdicionalesZillow(prop);
+            }
+        }
+    }
+    cortina.classList.add('cortina-activa');
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById('map-instance') && typeof L !== 'undefined') {
+        window.map = L.map('map-instance', {
+            center: [-12.0984, -76.9692], 
+            zoom: 13,
+            zoomControl: true
+        });
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(window.map);
+    }
+
+    if (typeof inicializarEventosDeFiltros === "function") {
+        inicializarEventosDeFiltros();
+    }
+    cargarDatosDesdeSupabase();
+});
+
+    function procesarDatosDelMotor(paqueteData) {
     if (!paqueteData || !paqueteData.propiedades) {
         console.error("[SRE MOTOR] El paquete de datos recibido está vacío o es inválido.");
         return;
