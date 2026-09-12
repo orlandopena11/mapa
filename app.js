@@ -306,6 +306,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
         const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
+            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
             dotsArray.forEach((d, idx) => {
                 if (idx === indiceFotoActual) d.classList.add('activo');
                 else d.classList.remove('activo');
@@ -685,9 +686,7 @@ function evaluarCriteriosDeFiltrado(prop) {
         const situacionBD = String(prop.situacion_propiedad || "").trim();
         if (!checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD)) return false;
     }
-    
     return true;
-}
 
 function ejecutarTuberiaSincronizada() {
     if (typeof renderizarMapaZillow === "function") renderizarMapaZillow(); 
