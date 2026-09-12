@@ -654,57 +654,12 @@ function configurarSegmentado(idContenedor, callback) {
     });
 }
 
-/* jshint esversion: 11, esnext: true, devel: true, browser: true */
 
-// ==========================================================================
-// PARTE 1 DE 22: ENCABEZADO Y CONFIGURACIÓN INICIAL
-// ==========================================================================
-let usuarioAutenticado = false;
-let correoUsuarioLogueado = "";
-const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
-
-if (typeof window.usuarioAutenticado === "undefined") { 
-    window.usuarioAutenticado = false; 
-}
-
-if (typeof window.correoUsuarioLogueado === "undefined") { 
-    window.correoUsuarioLogueado = ""; 
-}
-
-// ==========================================================================
-// PARTE 2 DE 22: SIMULACIÓN DE BOTÓN DE CUENTA
-// ==========================================================================
-if (typeof actualizarBotonCuenta !== "function") {
-    var actualizarBotonCuenta = function() {
-        console.log("[SRE] Simulación de actualización de botón de cuenta."); 
-    };
-}
-
-// ==========================================================================
-// PARTE 3 DE 22: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL (STATE)
-// ==========================================================================
-const state = {
-    propiedades: [],
-    favoritos: new Set(),
-    usuarioActual: window.usuarioLogueado || null,
-    propiedadSeleccionadaId: null,
-    filtros: {
-        estado: 'Venta', 
-        precioMin: 0, 
-        precioMax: Infinity, 
-        camas: 0, 
-        camasExactas: false, 
-        baños: 0, 
-        tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
-        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
-    },
-    limpiadoresDOM: new Map()
-};
 
 // ==========================================================================
 // PARTE 4 DE 22: CREDENCIALES Y CLIENTE CORE SUPABASE
 // ==========================================================================
-const supabaseUrl = 'https://supabase.co'; 
+const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
