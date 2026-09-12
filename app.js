@@ -723,7 +723,7 @@ async function cargarDatosDesdeSupabase() {
 // ==========================================================================
 function normalizarPropiedad(prop) {
     const id = prop.propiedad_id || String(Math.random());
-    const urlBaseCloudinary = "https://cloudinary.com";
+    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
     let fotosUnificadas = [];
     const origenFotos = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
 
@@ -1203,7 +1203,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 
     if (tipoPantalla === 'detalle') {
         const listaFotos = prop.fotos || [];
-        const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
+        const fotoPrincipal = listaFotos[0] || "https://res.cloudinary.com/obw6ciov/image/upload/";
         let miniaturasHtml = '';
         const totalMiniaturas = Math.min(listaFotos.length, 5);
         for (let i = 0; i < totalMiniaturas; i++) {
