@@ -657,33 +657,6 @@ function configurarSegmentado(idContenedor, callback) {
 
 
 // ==========================================================================
-// PARTE 4 DE 22: CREDENCIALES Y CLIENTE CORE SUPABASE
-// ==========================================================================
-//const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
-//const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
-
-console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
-
-let supabase = null;
-
-function obtenerClienteSupabase() {
-    if (supabase) return supabase;
-    if (typeof createClient !== "undefined") {
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
-    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    }
-    if (supabase) {
-        console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
-    } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
-    }
-    return supabase;
-}
-
-obtenerClienteSupabase();
-
-// ==========================================================================
 // PARTE 5 DE 22: FIREWALL DE INTERACCIÓN DE SEGURIDAD (ACL)
 // ==========================================================================
 function verificarAutorizacionAcceso() {
