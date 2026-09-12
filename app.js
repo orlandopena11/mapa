@@ -4,8 +4,8 @@
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
 // ==========================================================================
 
-var usuarioAutenticado = false;
-var correoUsuarioLogueado = "";
+usuarioAutenticado = false;
+correoUsuarioLogueado = "";
 const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
 
 if (typeof window.usuarioAutenticado === "undefined") { 
