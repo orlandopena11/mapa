@@ -47,22 +47,40 @@ const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
-let supabase = null;
+// ====================================================================================
+// INICIO DE DEFINICIÓN ÚNICA: clienteSupabaseInstancia y obtenerClienteSupabase
+// ====================================================================================
+let clienteSupabaseInstancia = null;
 
-function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
-    if (supabase) return supabase;
+function obtenerClienteSupabase() {
+    // 1. Si ya se instanció previamente en esta variable local, la retorna de inmediato
+    if (clienteSupabaseInstancia) return clienteSupabaseInstancia;
+
+    // 2. Intento vía createClient global directo de la librería
     if (typeof createClient !== "undefined") {
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
-    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        clienteSupabaseInstancia = createClient(supabaseUrl, supabaseAnonKey);
+    } 
+    // 3. Intento vía namespace window.supabase evitando errores si es null
+    else if (typeof window.supabase !== "undefined" && window.supabase !== null && typeof window.supabase.createClient === "function") {
+        clienteSupabaseInstancia = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } 
+    // 4. Si window.supabase ya era un cliente creado previamente con método .from()
+    else if (window.supabase && typeof window.supabase.from === "function") {
+        clienteSupabaseInstancia = window.supabase;
     }
-    if (supabase) {
+
+    // 5. Diagnóstico en consola
+    if (clienteSupabaseInstancia) {
         console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique los scripts CDN en index.html.");
     }
-    return supabase;
-} // Fin de Function obtenerClienteSupabase
+
+    return clienteSupabaseInstancia;
+}
+// ====================================================================================
+// FIN DE FUNCTION: obtenerClienteSupabase
+// ====================================================================================
 
 obtenerClienteSupabase();
 
@@ -1008,7 +1026,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                // REEMPLAZA EL CONTENEDOR PADRE POR ESTE EN TU APP.JS:
+                
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
                     
                     <div style="width: 100%; overflow: hidden;">
@@ -1228,6 +1246,7 @@ function inyectarSeccionesAdicionalesZillow(prop) {
     inyectarHistorialesYImpuestosZillow(prop);
 }
 
+
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarHistorialesYImpuestosZillow
 // ====================================================================================
@@ -1253,8 +1272,9 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     };
 
     try {
-        if (window.supabase) {
-            const { data, error } = await window.supabase
+        const cliente = obtenerClienteSupabase();
+        if (cliente) {
+            const { data, error } = await cliente
                 .from('tasacion_distrital')
                 .select('trimestre_ano, venta_m2')
                 .eq('codigo_ubigeo', ubigeoPropiedad)
@@ -1268,6 +1288,8 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
                     }
                 });
             }
+        } else {
+            console.warn("SRE Alerta: Supabase no inicializado, operando con fallbacks.");
         }
     } catch (err) {
         console.warn("SRE Alerta: Error consultando tasacion_distrital, operando con fallbacks.", err);
@@ -1304,7 +1326,7 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     const fM = (v) => '$' + Math.round(v).toLocaleString('en-US');
     const impuestoAnual = precioActual * 0.0042;
 
-        slotHistorial.innerHTML = `
+    slotHistorial.innerHTML = `
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate® (Últimos 3 años)</h4>
@@ -1604,9 +1626,9 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarPropiedadesCercanasZillow (CARRUSEL GEOGRÁFICO POSTGIS)
+// INICIO DE FUNCTION: inyectarPropiedadesCercanasZillow
 // ====================================================================================
-async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función principal de propiedades sugeridas
+async function inyectarPropiedadesCercanasZillow(prop) {
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
@@ -1620,8 +1642,6 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
         slotBuyability.appendChild(contenedorCercanas);
     }
 
-    // Inyección de la maquetación del contenedor con controles direccionales independientes
-    // Inyección de la maquetación con carrusel horizontal estricto en una sola línea
     contenedorCercanas.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Propiedades Cercanas Sugeridas</h4>
@@ -1630,45 +1650,45 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
                 <button type="button" id="btn-next-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&gt;</button>
             </div>
         </div>
-        <!-- Contenedor forzado a una sola línea con scroll horizontal invisible -->
         <div id="grid-cercanas-items" style="display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px; -ms-overflow-style: none; scrollbar-width: none;">
             <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades en el cuadrante de proximidad de Supabase...</p>
         </div>
     `;
 
-        const gridItems = document.getElementById('grid-cercanas-items');
+    const gridItems = document.getElementById('grid-cercanas-items');
 
-    try { // Abre el bloque de petición de red try y sanitización estricta SRE
+    try {
         const cliente = obtenerClienteSupabase();
-        
-        // Validación relacional cruzada de coordenadas para evitar argumentos NaN
+        if (!cliente) {
+            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se pudo conectar con Supabase para obtener propiedades cercanas.</p>`;
+            return;
+        }
+
         const rpcLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142;
         const rpcLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
-        
-        // --- SINCRONIZACIÓN SRE: IDENTIFICADOR OFICIAL ALINEADO A SUPABASE ---
+
         const { data, error } = await cliente.rpc('buscar_propiedades_cercanas', {
-            target_id: String(prop.propiedad_id || prop.id),
+            target_id: String(prop.propiedad_id || prop.id || ''),
             target_lat: rpcLat,
             target_lng: rpcLng,
-            target_tipo: String(prop.tipo_propiedad)
+            target_tipo: String(prop.tipo_propiedad || '')
         });
 
         if (error) throw error;
 
         if (!data || data.length === 0) {
-            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se encontraron otras propiedades del tipo ${prop.tipo_propiedad} cercanas en este perímetro.</p>`;
+            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se encontraron otras propiedades cercanas en este perímetro.</p>`;
             return;
         }
 
-        gridItems.innerHTML = ''; // Limpiamos el mensaje guía de carga
+        gridItems.innerHTML = '';
 
-        data.forEach(item => { // Abre el bucle de renderizado de tarjetas de propiedades
+        data.forEach(item => {
             const tarjeta = document.createElement('div');
             tarjeta.style.background = '#ffffff';
             tarjeta.style.border = '1px solid #e2e8f0';
             tarjeta.style.borderRadius = '8px';
-            tarjeta.style.width = '240px'; // Asegura que la tarjeta no se deforme en la fila única
-
+            tarjeta.style.width = '240px';
             tarjeta.style.overflow = 'hidden';
             tarjeta.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
             tarjeta.style.cursor = 'pointer';
@@ -1677,91 +1697,80 @@ async function inyectarPropiedadesCercanasZillow(prop) { // Abre la función pri
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Evento click optimizado: Consulta Supabase, normaliza el modelo de datos y recarga la SPA
             tarjeta.addEventListener('click', async () => {
                 const idBuscado = String(item.id || item.propiedad_id || '').trim();
                 if (!idBuscado) return;
 
                 try {
-                    const cliente = obtenerClienteSupabase();
-                    const { data: rawProp, error } = await cliente
+                    const client = obtenerClienteSupabase();
+                    if (!client) return;
+
+                    const { data: rawProp, error: fetchErr } = await client
                         .from('vista_catalogo_mapa')
                         .select('*')
                         .eq('propiedad_id', idBuscado)
                         .single();
 
-                    if (error) throw error;
+                    if (fetchErr) throw fetchErr;
 
                     if (rawProp && typeof window.gestionarCortinaSPA === 'function') {
-                        // 1. Convertimos el registro crudo de Postgres al formato de UI esperado por tu app.js
-                        const propiedadNormalizada = normalizarPropiedad(rawProp);
-                        
-                        // 2. Cerramos temporalmente el estado visual para forzar una recarga limpia en el DOM
+                        const propiedadNormalizada = typeof normalizarPropiedad === 'function' ? normalizarPropiedad(rawProp) : rawProp;
                         const cortina = document.getElementById('cortina-spa');
                         if (cortina) cortina.innerHTML = '';
                         
-                        // 3. Forzamos el redibujado de la SPA con el nuevo objeto completamente estructurado
                         window.gestionarCortinaSPA('detalle', propiedadNormalizada);
                         
-                        // 4. Reinicio de Scroll al tope de la cortina lateral
                         const panelCortinaReal = document.getElementById('modal-interior') || window;
-                        if (panelCortinaReal) {
-                            panelCortinaReal.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
+                        if (panelCortinaReal) panelCortinaReal.scrollTo({ top: 0, behavior: 'smooth' });
                     }
                 } catch (err) {
                     console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
                 }
             });
 
-            // Pintado estilizado con formato estricto en Dólares ($)
-            // Reconstrucción del enlace de Cloudinary usando el argumento nativo item de tu forEach
             let nombreFoto = String(item.imagen_principal || '').trim();
-                let urlFoto = '';
-                if (nombreFoto.startsWith('http')) {
-                    urlFoto = nombreFoto;
-                } else if (nombreFoto !== '') {
-                    urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
-                } else {
-                    urlFoto = 'https://unsplash.com';
-                }
+            let urlFoto = '';
+            if (nombreFoto.startsWith('http')) {
+                urlFoto = nombreFoto;
+            } else if (nombreFoto !== '') {
+                urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
+            } else {
+                urlFoto = 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=400&q=80';
+            }
 
-
-            // Pintado de la tarjeta inyectando la url de Cloudinary reconstruida de forma segura
             tarjeta.innerHTML = `
                 <div style="position: relative; height: 130px; background: #e2e8f0;">
                     <img src="${urlFoto}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
-
-            <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial).toUpperCase()}</span>
+                    <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial || 'En venta').toUpperCase()}</span>
                 </div>
                 <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base).toLocaleString('en-US')}</h5>
-                    <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones} bd | ${item.banos} ba | ${Math.round(item.area_construida)} sqft</p>
-                    <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion}</p>
-                    <span style="font-size: 10px; color: #10b981; font-weight: bold; margin-top: 4px;">?? A ${(item.distancia_metros / 1000).toFixed(2)} km de distancia</span>
+                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base || 0).toLocaleString('en-US')}</h5>
+                    <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones || 0} bd | ${item.banos || 0} ba | ${Math.round(item.area_construida || 0)} sqft</p>
+                    <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion || ''}</p>
+                    <span style="font-size: 10px; color: #10b981; font-weight: bold; margin-top: 4px;">A ${(parseFloat(item.distancia_metros || 0) / 1000).toFixed(2)} km de distancia</span>
                 </div>
             `;
             gridItems.appendChild(tarjeta);
-        }); // Cierra el bucle de renderizado de tarjetas
+        });
 
-                // Activación de la navegación mediante el scroll lateral por pixeles
         document.getElementById('btn-prev-cercanas').addEventListener('click', () => gridItems.scrollLeft -= 240);
         document.getElementById('btn-next-cercanas').addEventListener('click', () => gridItems.scrollLeft += 240);
 
-    } catch (err) { // Captura de errores de red
+    } catch (err) {
         console.error("Error al cargar propiedades cercanas:", err.message);
         gridItems.innerHTML = `<p style="font-size: 12px; color: #ef4444;">No se pudieron desplegar los inmuebles de proximidad geométrica.</p>`;
-    } // Cierra el bloque de petición de red catch
-        // Disparador automático en cadena para el carrusel de propiedades similares
-        inyectarPropiedadesSimilaresZillow(prop);
+    }
 
+    if (typeof inyectarPropiedadesSimilaresZillow === "function") {
+        inyectarPropiedadesSimilaresZillow(prop);
+    }
 }
 // ====================================================================================
 // FIN DE FUNCTION: inyectarPropiedadesCercanasZillow
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarPropiedadesSimilaresZillow (CARRUSEL POR RANGO DE PRECIO)
+// INICIO DE FUNCTION: inyectarPropiedadesSimilaresZillow
 // ====================================================================================
 async function inyectarPropiedadesSimilaresZillow(prop) {
     const slotDinamico = document.getElementById('zillow-graphs-and-history-slot');
@@ -1777,7 +1786,6 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
         slotDinamico.appendChild(contenedorSimilares);
     }
 
-    // Maquetación del carrusel con tus colores corporativos Azul Acero y Dorado
     contenedorSimilares.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Casas Similares (Mismo rango de precio)</h4>
@@ -1795,10 +1803,13 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
 
     try {
         const cliente = obtenerClienteSupabase();
-        
-        // --- SINCRONIZACIÓN SRE: IDENTIFICADOR OFICIAL ALINEADO A SUPABASE ---
+        if (!cliente) {
+            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se pudo conectar con Supabase para obtener propiedades similares.</p>`;
+            return;
+        }
+
         const { data, error } = await cliente.rpc('buscar_propiedades_similares', {
-            target_id: String(prop.propiedad_id || prop.id),
+            target_id: String(prop.propiedad_id || prop.id || ''),
             target_distrito: String(prop.distrito || ''),
             target_precio: parseFloat(prop.precio_base || 0)
         });
@@ -1810,7 +1821,7 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
             return;
         }
 
-        gridItems.innerHTML = ''; // Limpiamos el texto de carga
+        gridItems.innerHTML = '';
 
         data.forEach(item => {
             const tarjeta = document.createElement('div');
@@ -1826,13 +1837,15 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
             tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
             tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
             
-            // Evento Click con la auditoría de recarga SPA limpia, inyectando el objeto normalizado completo
             tarjeta.addEventListener('click', async () => {
                 const idBuscado = String(item.propiedad_id || item.id || '').trim();
                 if (!idBuscado) return;
 
                 try {
-                    const { data: rawProp, error: errFetch } = await cliente
+                    const client = obtenerClienteSupabase();
+                    if (!client) return;
+
+                    const { data: rawProp, error: errFetch } = await client
                         .from('vista_catalogo_mapa')
                         .select('*')
                         .eq('propiedad_id', idBuscado)
@@ -1841,8 +1854,7 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
                     if (errFetch) throw errFetch;
 
                     if (rawProp && typeof window.gestionarCortinaSPA === 'function') {
-                        const propiedadNormalizada = normalizarPropiedad(rawProp);
-                        
+                        const propiedadNormalizada = typeof normalizarPropiedad === 'function' ? normalizarPropiedad(rawProp) : rawProp;
                         const cortina = document.getElementById('cortina-spa');
                         if (cortina) cortina.innerHTML = '';
                         
@@ -1856,7 +1868,6 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
                 }
             });
 
-            // Reconstrucción de la URL de Cloudinary usando el argumento nativo item de tu forEach
             let nombreFoto = String(item.foto_principal || '').trim();
             let urlFoto = '';
             if (nombreFoto.startsWith('http')) {
@@ -1864,17 +1875,16 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
             } else if (nombreFoto !== '') {
                 urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
             } else {
-                urlFoto = 'https://unsplash.com';
+                urlFoto = 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=400&q=80';
             }
 
-            // Pintado de la tarjeta inyectando las columnas exactas mapeadas de tu base de datos
             tarjeta.innerHTML = `
                 <div style="position: relative; height: 130px; background: #e2e8f0;">
                     <img src="${urlFoto}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
                     <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_propiedad || 'En venta').toUpperCase()}</span>
                 </div>
                 <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base).toLocaleString('en-US')}</h5>
+                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base || 0).toLocaleString('en-US')}</h5>
                     <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones || 0} bd | ${item.banos || 0} ba | ${Math.round(item.area_construida || 0)} sqft</p>
                     <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion || ''}</p>
                 </div>
@@ -1882,7 +1892,6 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
             gridItems.appendChild(tarjeta);
         });
 
-        // Activación de la navegación mediante el scroll lateral por pixeles de las flechas
         document.getElementById('btn-prev-similares').addEventListener('click', () => gridItems.scrollLeft -= 240);
         document.getElementById('btn-next-similares').addEventListener('click', () => gridItems.scrollLeft += 240);
 
@@ -1894,7 +1903,6 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
 // ====================================================================================
 // FIN DE FUNCTION: inyectarPropiedadesSimilaresZillow
 // ====================================================================================
-
 
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
