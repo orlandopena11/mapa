@@ -461,7 +461,7 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // Inicialización y limpieza segura de la capa de marcadores
+    // 1. Limpieza e inicialización segura del grupo de capas
     if (!window.capaMarcadores) {
         window.capaMarcadores = L.layerGroup().addTo(window.map);
     } else {
@@ -469,43 +469,38 @@ function renderizarMapaZillow() {
     }
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-    
-    console.group("%c??? [SRE ESPÍA 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
-    console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
-    console.groupEnd();
 
-    // Auditoría de límites geográficos
-    if (filtradas.length > 0 && window.map) {
-        const coordenadasValidas = [];
-        
-        filtradas.forEach(p => {
-            const parsedLat = parseFloat(p.latitud);
-            const parsedLng = parseFloat(p.longitud);
-            
-            if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
-                coordenadasValidas.push([parsedLat, parsedLng]);
-            }
-        });
+    // 2. Filtrado estricto de coordenadas válidas (evita latitud o longitud NaN/null)
+    const coordenadasValidas = [];
+    filtradas.forEach(p => {
+        const parsedLat = parseFloat(p.latitud);
+        const parsedLng = parseFloat(p.longitud);
 
-        if (coordenadasValidas.length > 0) {
-            try {
-                if (coordenadasValidas.length === 1) {
-                    window.map.setView(coordenadasValidas[0], 15, { animate: true });
-                } else {
-                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
-                }
-            } catch (errGeometrico) {
-                console.error("Error en fitBounds Leaflet:", errGeometrico.message);
+        if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
+            coordenadasValidas.push([parsedLat, parsedLng]);
+        }
+    });
+
+    // 3. Ajuste de vista del mapa sólo con puntos 100% válidos
+    if (coordenadasValidas.length > 0 && window.map) {
+        try {
+            if (coordenadasValidas.length === 1) {
+                window.map.setView(coordenadasValidas[0], 15, { animate: true });
+            } else {
+                window.map.fitBounds(coordenadasValidas, { padding: [30, 30], maxZoom: 15, animate: true });
             }
+        } catch (errGeometrico) {
+            // Silenciamos cualquier excepción menor en encuadre
         }
     }
 
-    // Creación segura de marcadores
+    // 4. Renderizado de marcadores individuales
     filtradas.forEach(prop => {
         const parsedLat = parseFloat(prop.latitud);
         const parsedLng = parseFloat(prop.longitud);
 
-        if (isNaN(parsedLat) || isNaN(parsedLng)) return;
+        // Si alguna coordenada es NaN o inválida, se omite este pin de forma limpia
+        if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
@@ -521,7 +516,6 @@ function renderizarMapaZillow() {
         try {
             marcador = L.marker([parsedLat, parsedLng], { icon: iconoBurbuja });
         } catch (errBucle) {
-            console.error(`Error al instanciar pin ${prop.id}:`, errBucle.message);
             return;
         }
 
