@@ -1,5 +1,4 @@
-/* jshint esversion: 11, esnext: true, devel: true, browser: true */
-
+/* jshint esversion: 11 */
 
 // ==========================================================================
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
@@ -7,9 +6,6 @@
 
 let usuarioAutenticado = false;
 let correoUsuarioLogueado = "";
-// Declaración de respaldo para evitar colapsos por variables huérfanas
-const urlMiScriptGoogle = window.urlMiScriptGoogle || "https://script.google.com/macros/s/AKfycbxCuTcsZYP7ayyvckIJDh7Ute_Epr9gPxGw1AieEmRAtxOaJ6zM6tOvp-TXa_3ormGhrw/exec";
-
 
 if (typeof window.usuarioAutenticado === "undefined") { 
     window.usuarioAutenticado = false; 
@@ -186,7 +182,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
     const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
-    const res = {
+    return {
         id: idVerdadero,
         propiedad_id: idVerdadero,
         usuario_id_fk: prop.usuario_id_fk || "",
@@ -229,11 +225,9 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     };
     
     // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
-    console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    console.log(`%c?? [SRE ESPÃ A 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | TransacciÃ³n: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
     
     return res;
-
-    
 } // Fin de Function normalizarPropiedad
 
 
@@ -492,52 +486,45 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
     // ==========================================================================
     if (filtradas.length > 0 && window.map) {
-        console.group("%c?????? [SRE SÚPER ESPÍA] RASTREO TÉCNICO VARIABLE POR VARIABLE", "background: #002E50; color: #FFB91D; padding: 6px; font-weight: bold;");
+        console.group("%cðŸ”Ž [SRE ESPÃ A MATEMÃ TICO] AUDITORÃ A DE ITERACIÃ“N DE LÃ MITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
         
         const coordenadasValidas = [];
         
-        filtradas.forEach((p, index) => {
-            const idProp = p.id || p.propiedad_id || `Índice-${index}`;
-            const latRaw = p.latitud;
-            const lngRaw = p.longitud;
+        filtradas.forEach(p => {
+            // Evaluamos detalladamente qué propiedades físicas existen en la raíz del objeto
+            console.log(`Propiedad ID: ${p.propiedad_id || p.id} | p.latitud raw: ${p.latitud} (tipo: ${typeof p.latitud}) | p.longitud raw: ${p.longitud} (tipo: ${typeof p.longitud})`);
             
-            const parsedLat = parseFloat(latRaw);
-            const parsedLng = parseFloat(lngRaw);
+            const parsedLat = parseFloat(p.latitud);
+            const parsedLng = parseFloat(p.longitud);
             
-            console.log(
-                `?? Propiedad: %c${idProp}%c\n` +
-                `   -> latitud cruda (raw): ${latRaw} (tipo: ${typeof latRaw})\n` +
-                `   -> longitud cruda (raw): ${lngRaw} (tipo: ${typeof lngRaw})\n` +
-                `   -> latitud procesada: ${parsedLat}\n` +
-                `   -> longitud procesada: ${parsedLng}`,
-                "color: #006aff; font-weight: bold;", "color: inherit;"
-            );
-            
-            if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
-                if (parsedLat !== 0 && parsedLng !== 0) {
-                    coordenadasValidas.push([parsedLat, parsedLng]);
-                }
-            } else {
-                console.error(
-                    `?? %c¡ALERTA ENCONTRADA EN ID ${idProp}!%c Contiene una variable rota.\n` +
-                    `Detalle -> latitud: ${parsedLat} | longitud: ${parsedLng}`,
-                    "background: red; color: white; font-weight: bold;", "color: red;"
-                );
+            if (isNaN(parsedLat) || isNaN(parsedLng) || p.latitud === null || p.longitud === null) {
+                console.error(`%câšA DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
+            } else if (parsedLat !== 0 && parsedLng !== 0) {
+                // Si pasa la validación pura de números reales, se agrega al arreglo geométrico
+                coordenadasValidas.push([parsedLat, parsedLng]);
             }
         });
         
-        console.log("?? Matriz final que se enviará a fitBounds:", coordenadasValidas);
+        console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
         console.groupEnd();
 
+        // Inicialización geométrica directa y nativa oficial de Leaflet SRE
         if (coordenadasValidas.length > 0) {
             try {
-                // Leaflet encuadra automáticamente el mapa, ya sea para 1 o para 100 propiedades
-                window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
-                console.log("? [SRE ESPÍA] Ajuste geométrico de límites del mapa procesado con éxito.");
+                if (coordenadasValidas.length === 1) {
+                    window.map.setView(coordenadasValidas[0], 15, { animate: true });
+                } else {
+                    // Leaflet acepta nativamente el arreglo de arreglos [[lat,lng], [lat,lng]] directo en fitBounds
+                    window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
+                }
+
+        console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
             } catch (errGeometrico) {
-                console.error("? Error interno de Leaflet al procesar límites geométricos:", errGeometrico.message);
+                console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
             }
         }
+
+    }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
     if (!prop.latitud || !prop.longitud) return;
@@ -836,19 +823,17 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     checkboxesListado.forEach(cb => {
         cb.addEventListener('change', (e) => {
-            if (checkTodos) checkTodos.checked = false;
-            
             if (e.target.checked) {
-                // Añade el nuevo filtro de forma acumulativa sin romper los demás
+                if (checkTodos) checkTodos.checked = false;
+                checkboxesListado.forEach(otroCb => { if (otroCb !== e.target) { otroCb.checked = false; state.filtros.tiposListado.delete(otroCb.value); } });
+                state.filtros.tiposListado.clear(); 
                 state.filtros.tiposListado.add(e.target.value);
             } else {
-                // Lo remueve limpiamente si el usuario lo desmarca
                 state.filtros.tiposListado.delete(e.target.value);
             }
             ejecutarTuberiaSincronizada();
         });
     });
-
 } // Fin de Function inicializarEventosDeFiltros
 
 
@@ -1020,10 +1005,10 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                         ${miniaturasHtml}
                     </div>
 
-
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
+                // REEMPLAZA EL CONTENEDOR PADRE POR ESTE EN TU APP.JS:
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
                     
                     <div style="width: 100%; overflow: hidden;">
@@ -1993,7 +1978,7 @@ function inyectarMapaYEscuelasZillow(prop) {
 
             // Añadimos un marcador circular estilizado para representar la propiedad
             L.marker([lat, lng]).addTo(mapDetalle)
-                .bindPopup('<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $' + Number(prop.precio_base).toLocaleString('en-US'))
+                .bindPopup(`<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $${Number(prop.precio_base).toLocaleString('en-US')}`)
                 .openPopup();
 
             // Forzamos el recalibrado de dimensiones para evitar cortes en el layout
