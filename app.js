@@ -457,20 +457,30 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
-
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // 1. Limpieza e inicialización segura del grupo de capas
-    if (!window.capaMarcadores) {
-        window.capaMarcadores = L.layerGroup().addTo(window.map);
-    } else {
+    // 1. LIMPIEZA SEGURA PARA EVITAR EL ERROR _leaflet_events
+    if (window.capaMarcadores) {
+        window.capaMarcadores.eachLayer(layer => {
+            try {
+                // Remueve el popup asignado antes de remover el marcador para limpiar listeners del DOM
+                if (layer.getPopup()) {
+                    layer.unbindPopup();
+                }
+                window.capaMarcadores.removeLayer(layer);
+            } catch (e) {
+                // Silencia referencias del DOM obsoletas
+            }
+        });
         window.capaMarcadores.clearLayers();
+    } else {
+        window.capaMarcadores = L.layerGroup().addTo(window.map);
     }
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    // 2. Filtrado estricto de coordenadas válidas (evita latitud o longitud NaN/null)
+    // 2. FILTRADO ESTRICTO DE COORDENADAS VÁLIDAS
     const coordenadasValidas = [];
     filtradas.forEach(p => {
         const parsedLat = parseFloat(p.latitud);
@@ -481,7 +491,7 @@ function renderizarMapaZillow() {
         }
     });
 
-    // 3. Ajuste de vista del mapa sólo con puntos 100% válidos
+    // 3. ENCUADRE DE MAPA
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
@@ -490,16 +500,15 @@ function renderizarMapaZillow() {
                 window.map.fitBounds(coordenadasValidas, { padding: [30, 30], maxZoom: 15, animate: true });
             }
         } catch (errGeometrico) {
-            // Silenciamos cualquier excepción menor en encuadre
+            // Silenciar posible excepción en encuadre
         }
     }
 
-    // 4. Renderizado de marcadores individuales
+    // 4. CREACIÓN Y AÑADIDO DE MARCADORES
     filtradas.forEach(prop => {
         const parsedLat = parseFloat(prop.latitud);
         const parsedLng = parseFloat(prop.longitud);
 
-        // Si alguna coordenada es NaN o inválida, se omite este pin de forma limpia
         if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
