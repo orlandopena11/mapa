@@ -663,27 +663,47 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
-// --- DISPARADOR DE FLUJO PRINCIPAL BASADO EN EL ESTADO DE AUTENTICACIÓN ---
-supabase.auth.onAuthStateChange(async (event, session) => {
-    console.log(`%c?? [SRE ESPÍA AUTH] Evento disparado: ${event}`, "color: #e67e22; font-weight: bold;");
-    
-    if (session) {
-        usuarioAutenticado = true;
-        correoUsuarioLogueado = session.user.email;
-        console.log(`?? Estado Auth: Sesión activa para -> ${correoUsuarioLogueado}`);
-    } else {
-        usuarioAutenticado = false;
-        correoUsuarioLogueado = "";
-        console.log("?? Estado Auth: Sin sesión de usuario activa.");
-    }
+        supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
+            console.log(`ðŸ” [SRE ESPÃA AUTH] Evento disparado: ${event}`);
+            
+            if (session && session.user) {
+                const correoUsuario = String(session.user.email).trim();
+                window.usuarioLogueado = session.user;
+                console.log(`ðŸ‘¤ Usuario detectado en Supabase Auth: ${correoUsuario}`);
 
-    // Llamada directa al cargador maestro de datos
-    if (typeof cargarDatosDesdeSupabase === 'function') {
-        await cargarDatosDesdeSupabase();
-    }
-});
+                const idScriptSeguridad = "sre-jsonp-firewall-auth";
+                let scriptExistente = document.getElementById(idScriptSeguridad);
+                if (scriptExistente) scriptExistente.remove();
+                
+                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
+                    console.log("ðŸ›¡ï¸ [SRE ESPÃA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
+                    
+                    if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
+                        state.usuarioActual = null; 
+                        window.usuarioLogueado = null;
+                        alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
+                        await supabase.auth.signOut(); 
+                        return;
+                    }
+                    state.usuarioActual = {
+                        id: String(session.user.id).trim(), 
+                        correo: correoUsuario,
+                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
+                    };
+                    if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+                };
 
-    
+                const scriptp = document.createElement('script');
+                scriptp.id = idScriptSeguridad;
+                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
+                document.body.appendChild(scriptp);
+            } else {
+                state.usuarioActual = null; 
+                window.usuarioLogueado = null;
+                console.log("ðŸ‘¤ Estado Auth: Sin sesiÃ³n de usuario activa.");
+            }
+        }); // Fin de Callback onAuthStateChange
     }
 
     if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
@@ -1891,6 +1911,9 @@ async function inyectarPropiedadesSimilaresZillow(prop) {
 // ====================================================================================
 
 
+// ====================================================================================
+// INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
+// ====================================================================================
 function inyectarMapaYEscuelasZillow(prop) {
     const slotMapa = document.getElementById('zillow-neighborhood-slot');
     if (!slotMapa) return;
@@ -1980,7 +2003,6 @@ function inyectarMapaYEscuelasZillow(prop) {
             console.error("SRE Error al renderizar mapa Leaflet secundario:", error);
         }
     }, 200);
-}
 }
 // ====================================================================================
 // FIN DE FUNCTION: inyectarMapaYEscuelasZillow
