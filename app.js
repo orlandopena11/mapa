@@ -682,10 +682,11 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 }); // Fin de EventListener DOMContentLoaded
 
 // ==========================================================================
-// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO Y GEOCODIFICACIÓN AUTOMÁTICA
+// PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
 // ==========================================================================
 
 function inicializarEventosDeFiltros() {
+    // 1. Gestión de desplegables (Dropdowns)
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
     wrappers.forEach(wrapper => {
         const boton = wrapper.querySelector('.filter-btn');
@@ -701,11 +702,18 @@ function inicializarEventosDeFiltros() {
         });
     });
 
+    // Cerrar desplegables al hacer clic fuera
     document.addEventListener('click', () => {
         document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     });
 
+    // Detener la propagación de clics dentro del panel para evitar que se cierre solo
+    document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
+        panel.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    // 2. Filtro de Transacción (En Venta, Alquiler, Vendidas)
     const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
     radiosTransaccion.forEach(radio => {
         radio.addEventListener('change', (e) => {
@@ -720,29 +728,103 @@ function inicializarEventosDeFiltros() {
         });
     });
 
+    // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
+    const btnAplicarPrecio = document.getElementById('btn-aplicar-precio');
+    const btnResetPrecio = document.getElementById('btn-reset-precio');
+
+    if (btnAplicarPrecio) {
+        btnAplicarPrecio.addEventListener('click', () => {
+            state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
+            state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
+            ejecutarTuberiaSincronizada();
+            cerrarTodosLosPaneles();
+        });
+    }
+
+    if (btnResetPrecio) {
+        btnResetPrecio.addEventListener('click', () => {
+            if (inputMinPrecio) inputMinPrecio.value = '';
+            if (inputMaxPrecio) inputMaxPrecio.value = '';
+            state.filtros.precioMin = 0;
+            state.filtros.precioMax = Infinity;
+            ejecutarTuberiaSincronizada();
+            cerrarTodosLosPaneles();
+        });
+    }
+
+    // 4. FILTRO TIPO DE PROPIEDAD (Con "Seleccionar todos" y Aplicar)
+    const checkboxesTipo = document.querySelectorAll('.type-cb');
+    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
+    const checkTodosTipos = document.getElementById('check-todos-tipos');
+
+    if (checkTodosTipos) {
+        checkTodosTipos.addEventListener('change', (e) => {
+            checkboxesTipo.forEach(cb => cb.checked = e.target.checked);
+        });
+    }
+
+    if (btnAplicarTipo) {
+        btnAplicarTipo.addEventListener('click', () => {
+            state.filtros.tiposPropiedad.clear();
+            
+            // Si "Seleccionar todos" está marcado o no hay ningun checkbox activo, traemos todos
+            const marcados = Array.from(checkboxesTipo).filter(cb => cb.checked);
+            
+            if (marcados.length === 0 || (checkTodosTipos && checkTodosTipos.checked)) {
+                // Estado por defecto: no filtra por ningún tipo específico (los muestra todos)
+                checkboxesTipo.forEach(cb => cb.checked = true);
+                if (checkTodosTipos) checkTodosTipos.checked = true;
+            } else {
+                marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
+            }
+            
+            ejecutarTuberiaSincronizada();
+            cerrarTodosLosPaneles();
+        });
+    }
+
+    // 5. FILTRO MAS FILTROS / LISTADOS (Con "Seleccionar todos" y Aplicar)
+    const checkboxesListado = document.querySelectorAll('.more-filter-cb');
+    const checkTodosListados = document.getElementById('check-todos-listados');
+    const btnAplicarMasFiltros = document.getElementById('btn-aplicar-mas-filtros');
+
+    if (checkTodosListados) {
+        checkTodosListados.addEventListener('change', (e) => {
+            checkboxesListado.forEach(cb => cb.checked = e.target.checked);
+        });
+    }
+
+    if (btnAplicarMasFiltros) {
+        btnAplicarMasFiltros.addEventListener('click', () => {
+            state.filtros.tiposListado.clear();
+            
+            const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
+            
+            if (marcados.length === 0 || (checkTodosListados && checkTodosListados.checked)) {
+                checkboxesListado.forEach(cb => cb.checked = true);
+                if (checkTodosListados) checkTodosListados.checked = true;
+            } else {
+                marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
+            }
+
+            ejecutarTuberiaSincronizada();
+            cerrarTodosLosPaneles();
+        });
+    }
+
+    // 6. BUSCADOR DE DIRECCIÓN
     const inputDireccionGlobal = document.getElementById('search-address');
-    
-    const handlerPrecios = () => {
-        state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
-        state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
-        ejecutarTuberiaSincronizada();
-    };
-    if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
-    if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
-    
-    // --- BUSCADOR CON GEOCODIFICACIÓN (NOMINATIM OPENSTREETMAP) ---
     if (inputDireccionGlobal) {
         let timerBusqueda = null;
         inputDireccionGlobal.addEventListener('input', (e) => {
             const consulta = e.target.value.trim();
-            ejecutarTuberiaSincronizada(); // Filtra la lista en paralelo
+            ejecutarTuberiaSincronizada();
 
             clearTimeout(timerBusqueda);
             if (consulta.length < 3) return;
 
-            // Espera 600ms tras presionar teclas para realizar la búsqueda en el mapa
             timerBusqueda = setTimeout(async () => {
                 try {
                     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
@@ -751,8 +833,6 @@ function inicializarEventosDeFiltros() {
                     if (data && data.length > 0 && window.map) {
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
-                        
-                        // Centra el mapa en la dirección encontrada (Av, Jr, Calle, Distrito)
                         window.map.setView([lat, lon], 14, { animate: true });
                     }
                 } catch (errGeo) {
@@ -762,6 +842,7 @@ function inicializarEventosDeFiltros() {
         });
     }
 
+    // Camas y Baños
     configurarSegmentado('row-beds', (valor) => { 
         state.filtros.camas = parseInt(valor, 10) || 0; 
         ejecutarTuberiaSincronizada(); 
@@ -770,53 +851,13 @@ function inicializarEventosDeFiltros() {
         state.filtros.banos = parseFloat(valor) || 0; 
         ejecutarTuberiaSincronizada(); 
     });
-
-    const checkboxesTipo = document.querySelectorAll('.type-cb');
-    const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
-
-    if (btnAplicarTipo) {
-        btnAplicarTipo.addEventListener('click', () => {
-            state.filtros.tiposPropiedad.clear();
-            const cantidadTiposMarcados = Array.from(checkboxesTipo).filter(cb => cb.checked).length;
-            if (cantidadTiposMarcados === 0) {
-                state.filtros.tiposPropiedad.add("ninguno");
-            } else {
-                checkboxesTipo.forEach(cb => { if (cb.checked) state.filtros.tiposPropiedad.add(cb.value); });
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    }
-
-    const checkboxesListado = document.querySelectorAll('.more-filter-cb');
-    const checkTodos = document.getElementById('check-todos-listados');
-
-    if (checkTodos) {
-        checkTodos.addEventListener('change', (e) => {
-            state.filtros.tiposListado.clear();
-            if (e.target.checked) {
-                checkboxesListado.forEach(cb => { cb.checked = true; state.filtros.tiposListado.add(cb.value); });
-            } else {
-                checkboxesListado.forEach(cb => cb.checked = false);
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    }
-
-    checkboxesListado.forEach(cb => {
-        cb.addEventListener('change', (e) => {
-            if (e.target.checked) {
-                if (checkTodos) checkTodos.checked = false;
-                checkboxesListado.forEach(otroCb => { if (otroCb !== e.target) { otroCb.checked = false; state.filtros.tiposListado.delete(otroCb.value); } });
-                state.filtros.tiposListado.clear(); 
-                state.filtros.tiposListado.add(e.target.value);
-            } else {
-                state.filtros.tiposListado.delete(e.target.value);
-            }
-            ejecutarTuberiaSincronizada();
-        });
-    });
 }
 
+// Función auxiliar para cerrar paneles desplegables
+function cerrarTodosLosPaneles() {
+    document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+}
 
 // ==========================================================================
 // PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
