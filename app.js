@@ -455,13 +455,13 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
 
 // ==========================================================================
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO CON DESVÍO DE EVENTO CELULAR OVERLAY
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
 
-function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
-    if (typeof window.capaMarcadores === 'undefined') window.capaMarcadores = null;
+function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
+    // Inicialización y limpieza segura de la capa de marcadores
     if (!window.capaMarcadores) {
         window.capaMarcadores = L.layerGroup().addTo(window.map);
     } else {
@@ -470,36 +470,22 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     
-    // --- ESPÍA DE CONTROL 3: ANÁLISIS DE FILTRADO PARA EL MAPA ---
-    console.group("%c🗺️ [SRE ESPÍA 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
+    console.group("%c??? [SRE ESPÍA 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
     console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
-    console.log("IDs de las propiedades que pasaron el filtro y van al mapa:", filtradas.map(p => p.id));
-    console.table(filtradas, ["id", "latitud", "longitud", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
-    // ==========================================================================
-    // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
-    // ==========================================================================
+    // Auditoría de límites geográficos
     if (filtradas.length > 0 && window.map) {
-        console.group("%c🔍 [SRE ESPÍA MATEMÁTICO] AUDITORÍA DE ITERACIÓN DE LÍMITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
-        
         const coordenadasValidas = [];
         
         filtradas.forEach(p => {
-            console.log(`Propiedad ID: ${p.propiedad_id || p.id} | p.latitud raw: ${p.latitud} (tipo: ${typeof p.latitud}) | p.longitud raw: ${p.longitud} (tipo: ${typeof p.longitud})`);
-            
             const parsedLat = parseFloat(p.latitud);
             const parsedLng = parseFloat(p.longitud);
             
-            if (isNaN(parsedLat) || isNaN(parsedLng) || p.latitud === null || p.longitud === null) {
-                console.error(`%c⚠️ DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
-            } else if (parsedLat !== 0 && parsedLng !== 0) {
+            if (!isNaN(parsedLat) && !isNaN(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
                 coordenadasValidas.push([parsedLat, parsedLng]);
             }
         });
-        
-        console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
-        console.groupEnd();
 
         if (coordenadasValidas.length > 0) {
             try {
@@ -508,15 +494,18 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 } else {
                     window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
                 }
-                console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
             } catch (errGeometrico) {
-                console.error("%c❌ ERROR CRÍTICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
+                console.error("Error en fitBounds Leaflet:", errGeometrico.message);
             }
         }
     }
 
-    filtradas.forEach(prop => { // Inicia Callback forEach filtradas
-        if (!prop.latitud || !prop.longitud) return;
+    // Creación segura de marcadores
+    filtradas.forEach(prop => {
+        const parsedLat = parseFloat(prop.latitud);
+        const parsedLng = parseFloat(prop.longitud);
+
+        if (isNaN(parsedLat) || isNaN(parsedLng)) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
@@ -530,16 +519,9 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 
         let marcador;
         try {
-            console.log(`%c📍 [SRE ESPÍA 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
-            
-            if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) {
-                console.error(`%c⚠️ ALERTA GEOMÉTRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
-                return;
-            }
-            
-            marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
+            marcador = L.marker([parsedLat, parsedLng], { icon: iconoBurbuja });
         } catch (errBucle) {
-            console.error(`%c❌ CRÍTICO EN INSTANCIACIÓN LEAFLET: Rompió en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
+            console.error(`Error al instanciar pin ${prop.id}:`, errBucle.message);
             return;
         }
 
@@ -558,14 +540,9 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
         }
 
-        // ==========================================================================
-        // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
-        // ==========================================================================
-        marcador.on('click', (e) => { // Inicia Callback marker click
+        marcador.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
-            
-            console.log(`📱 [SRE ESPÍA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
 
             if (window.innerWidth <= 768) {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
@@ -595,7 +572,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                     setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
                 }
             }
-        }); // Fin de Callback marker click
+        });
 
         carruselPopup.addEventListener('pointerdown', (ev) => {
             ev.stopPropagation();
@@ -606,9 +583,8 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         });
 
         window.capaMarcadores.addLayer(marcador);
-    }); // Fin de Callback forEach filtradas
-} // Fin de Function renderizarMapaZillow
-
+    });
+}
 
 // ==========================================================================
 // PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
@@ -711,12 +687,11 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     }, 100); // Fin de Timer de inicialización
 }); // Fin de EventListener DOMContentLoaded
 
-
 // ==========================================================================
-// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
+// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO Y GEOCODIFICACIÓN AUTOMÁTICA
 // ==========================================================================
 
-function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
+function inicializarEventosDeFiltros() {
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
     wrappers.forEach(wrapper => {
         const boton = wrapper.querySelector('.filter-btn');
@@ -763,10 +738,33 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
     if (inputMinPrecio) inputMinPrecio.addEventListener('input', handlerPrecios);
     if (inputMaxPrecio) inputMaxPrecio.addEventListener('input', handlerPrecios);
     
-    // --- NUEVO: ESCUCHADOR PARA EL BUSCADOR DE DIRECCIÓN ---
+    // --- BUSCADOR CON GEOCODIFICACIÓN (NOMINATIM OPENSTREETMAP) ---
     if (inputDireccionGlobal) {
-        inputDireccionGlobal.addEventListener('input', () => {
-            ejecutarTuberiaSincronizada();
+        let timerBusqueda = null;
+        inputDireccionGlobal.addEventListener('input', (e) => {
+            const consulta = e.target.value.trim();
+            ejecutarTuberiaSincronizada(); // Filtra la lista en paralelo
+
+            clearTimeout(timerBusqueda);
+            if (consulta.length < 3) return;
+
+            // Espera 600ms tras presionar teclas para realizar la búsqueda en el mapa
+            timerBusqueda = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
+                    const data = await res.json();
+
+                    if (data && data.length > 0 && window.map) {
+                        const lat = parseFloat(data[0].lat);
+                        const lon = parseFloat(data[0].lon);
+                        
+                        // Centra el mapa en la dirección encontrada (Av, Jr, Calle, Distrito)
+                        window.map.setView([lat, lon], 14, { animate: true });
+                    }
+                } catch (errGeo) {
+                    console.error("Error al geocodificar dirección:", errGeo);
+                }
+            }, 600);
         });
     }
 
@@ -823,7 +821,7 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
             ejecutarTuberiaSincronizada();
         });
     });
-} // Fin de Function inicializarEventosDeFiltros
+}
 
 
 // ==========================================================================
