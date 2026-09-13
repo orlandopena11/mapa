@@ -47,22 +47,40 @@ const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
-let supabase = null;
+// ====================================================================================
+// INICIO DE DEFINICIÓN ÚNICA: clienteSupabaseInstancia y obtenerClienteSupabase
+// ====================================================================================
+let clienteSupabaseInstancia = null;
 
-function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
-    if (supabase) return supabase;
+function obtenerClienteSupabase() {
+    // 1. Si ya se instanció previamente en esta variable local, la retorna de inmediato
+    if (clienteSupabaseInstancia) return clienteSupabaseInstancia;
+
+    // 2. Intento vía createClient global directo de la librería
     if (typeof createClient !== "undefined") {
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
-    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+        clienteSupabaseInstancia = createClient(supabaseUrl, supabaseAnonKey);
+    } 
+    // 3. Intento vía namespace window.supabase evitando errores si es null
+    else if (typeof window.supabase !== "undefined" && window.supabase !== null && typeof window.supabase.createClient === "function") {
+        clienteSupabaseInstancia = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+    } 
+    // 4. Si window.supabase ya era un cliente creado previamente con método .from()
+    else if (window.supabase && typeof window.supabase.from === "function") {
+        clienteSupabaseInstancia = window.supabase;
     }
-    if (supabase) {
-        console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
+
+    // 5. Diagnóstico en consola
+    if (clienteSupabaseInstancia) {
+        console.log("✓ [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+        console.error("✗ [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique los scripts CDN en index.html.");
     }
-    return supabase;
-} // Fin de Function obtenerClienteSupabase
+
+    return clienteSupabaseInstancia;
+}
+// ====================================================================================
+// FIN DE FUNCTION: obtenerClienteSupabase
+// ====================================================================================
 
 obtenerClienteSupabase();
 
@@ -1228,22 +1246,6 @@ function inyectarSeccionesAdicionalesZillow(prop) {
     inyectarHistorialesYImpuestosZillow(prop);
 }
 
-// ====================================================================================
-// INICIO DE FUNCTION: obtenerClienteSupabase (AUXILIAR DE SEGURIDAD)
-// ====================================================================================
-function obtenerClienteSupabase() {
-    if (window.supabase && typeof window.supabase.from === 'function') {
-        return window.supabase;
-    }
-    if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function' && window.SUPABASE_URL && window.SUPABASE_KEY) {
-        window.supabase = supabase.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
-        return window.supabase;
-    }
-    return null;
-}
-// ====================================================================================
-// FIN DE FUNCTION: obtenerClienteSupabase
-// ====================================================================================
 
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarHistorialesYImpuestosZillow
