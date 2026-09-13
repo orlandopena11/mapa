@@ -1,4 +1,4 @@
-/* jshint esversion: 11 */
+/* jshint esversion: 11 *//* jshint esversion: 11 */
 
 // ==========================================================================
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
@@ -47,44 +47,24 @@ const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
-// ====================================================================================
-// INICIO DE DEFINICIÓN ÚNICA: clienteSupabaseInstancia y obtenerClienteSupabase
-// ====================================================================================
-let clienteSupabaseInstancia = null;
+let supabase = null;
 
-function obtenerClienteSupabase() {
-    // 1. Si ya se instanció previamente en esta variable local, la retorna de inmediato
-    if (clienteSupabaseInstancia) return clienteSupabaseInstancia;
-
-    // 2. Intento vía createClient global directo de la librería
+function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
+    if (supabase) return supabase;
     if (typeof createClient !== "undefined") {
-        clienteSupabaseInstancia = createClient(supabaseUrl, supabaseAnonKey);
-    } 
-    // 3. Intento vía namespace window.supabase evitando errores si es null
-    else if (typeof window.supabase !== "undefined" && window.supabase !== null && typeof window.supabase.createClient === "function") {
-        clienteSupabaseInstancia = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    } 
-    // 4. Si window.supabase ya era un cliente creado previamente con método .from()
-    else if (window.supabase && typeof window.supabase.from === "function") {
-        clienteSupabaseInstancia = window.supabase;
+        supabase = createClient(supabaseUrl, supabaseAnonKey);
+    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
+        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
-
-    // 5. Diagnóstico en consola
-    if (clienteSupabaseInstancia) {
+    if (supabase) {
         console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique los scripts CDN en index.html.");
+        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
     }
-
-    return clienteSupabaseInstancia;
-}
-// ====================================================================================
-// FIN DE FUNCTION: obtenerClienteSupabase
-// ====================================================================================
+    return supabase;
+} // Fin de Function obtenerClienteSupabase
 
 obtenerClienteSupabase();
-
-
 
 
 // ==========================================================================
@@ -92,13 +72,13 @@ obtenerClienteSupabase();
 // ==========================================================================
 
 function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
-    console.group("ðŸ›¡ï¸ [SRE ESPÃA ACL] Verificando credenciales de interacciÃ³n");
+    console.group("🛡️ [SRE ESPÍA ACL] Verificando credenciales de interacción");
     console.log("Usuario actual en estado:", state.usuarioActual);
     
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("â›” ACL BLOQUEADO: SesiÃ³n inexistente.");
+        console.warn("⛔ ACL BLOQUEADO: Sesión inexistente.");
         console.groupEnd();
-        alert("Acceso Restringido: Debe iniciar sesiÃ³n con su cuenta para realizar esta acciÃ³n.");
+        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
         if (typeof mostrarPopupAccion === "function") {
             mostrarPopupAccion("modal-autenticacion-supabase");
         }
@@ -106,13 +86,13 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     }
     
     if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        console.error("â›” ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
+        console.error("⛔ ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
         console.groupEnd();
-        alert("Cuenta Suspendida: No tiene autorizaciÃ³n para realizar esta acciÃ³n.");
+        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
         return false;
     }
     
-    console.log("ðŸŸ¢ ACL PERMITIDO: Cuenta activa y autorizada.");
+    console.log("🟢 ACL PERMITIDO: Cuenta activa y autorizada.");
     console.groupEnd();
     return true;
 } // Fin de Function verificarAutorizacionAcceso
@@ -131,12 +111,12 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
         if (error) throw error;
 
         // --- ESPÍA DE CONTROL 1: INSPECCIÓN DE RESPUESTA CRUDA SUPABASE ---
-        console.group("%cðŸ”Ž [SRE ESPÃ A 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
+        console.group("%c🔍 [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
         console.log("Cantidad total devuelta por la Vista SQL:", data.length);
         if(data.length > 0) {
             console.log("Estructura del primer registro (PROP-001):", data[0]);
-            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "SÃ" : "NO");
-            console.log("Campos de coordenadas en la raÃz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
+            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "Sí" : "NO");
+            console.log("Campos de coordenadas en la raíz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
         }
         console.groupEnd();
         
@@ -150,10 +130,9 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 
 
 // ==========================================================================
-// PARTE 4 DE 15: MOTOR DE NORMALIZACIÃ“N RELACIONAL Y CONCATENACIÃ“N DE IMÃGENES
+// PARTE 4 DE 15: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
 // ==========================================================================
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
-    const id = prop.propiedad_id || String(Math.random());
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     let fotosUnificadas = [];
@@ -188,7 +167,6 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         });
     }
 
-
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
@@ -200,7 +178,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
     const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
-    return {
+    const res = {
         id: idVerdadero,
         propiedad_id: idVerdadero,
         usuario_id_fk: prop.usuario_id_fk || "",
@@ -243,14 +221,14 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     };
     
     // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
-    console.log(`%c?? [SRE ESPÃ A 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | TransacciÃ³n: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
     
     return res;
 } // Fin de Function normalizarPropiedad
 
 
 // ==========================================================================
-// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÃ“N DE RIEL MULTIMEDIA
+// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÓN DE RIEL MULTIMEDIA
 // ==========================================================================
 
 function formatearPrecioCompleto(precio) { // Inicia Function formatearPrecioCompleto
@@ -267,7 +245,7 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 
 
 // ==========================================================================
-// PARTE 6 DE 15: CONSTRUCTOR DINÃMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÃ“N ACL
+// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
 // ==========================================================================
 
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
@@ -300,12 +278,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
 
     // ==========================================================================
-    // PARTE 7 DE 15: CANDADO DEL BOTÃ“N CORAZÃ“N DE FAVORITOS Y DESPLAZADORES CIRCULARES
+    // PARTE 7 DE 15: CANDADO DEL BOTÓN CORAZÓN DE FAVORITOS Y DESPLAZADORES CIRCULARES
     // ==========================================================================
     
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = 'â™¡'; 
+    botonCorazon.innerHTML = '♡'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
     botonCorazon.style.top = "12px";
@@ -332,12 +310,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        if (botonCorazon.innerHTML === 'â™¡') {
-            botonCorazon.innerHTML = 'â™¥'; 
+        if (botonCorazon.innerHTML === '♡') {
+            botonCorazon.innerHTML = '♥'; 
             botonCorazon.style.color = '#d92323'; 
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         } else {
-            botonCorazon.innerHTML = 'â™¡'; 
+            botonCorazon.innerHTML = '♡'; 
             botonCorazon.style.color = '#ffffff'; 
             botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         }
@@ -379,7 +357,7 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
 
 // ==========================================================================
-// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÃLOGO DE ESCRITORIO
+// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
 
 function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponenteTarjetaZillow
@@ -417,7 +395,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     caracteristicasTexto.style.fontSize = '13px'; 
     caracteristicasTexto.style.color = '#475569'; 
     caracteristicasTexto.style.marginTop = '4px';
-    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} BaÃ±os | AC: ${prop.area_construida || 0} mÂ² | AT: ${prop.area_terreno || 0} mÂ²`;
+    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
     datosCasa.appendChild(caracteristicasTexto);
 
     const adicionalesTexto = document.createElement('div');
@@ -425,7 +403,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     adicionalesTexto.style.fontSize = '12px'; 
     adicionalesTexto.style.color = '#64748b'; 
     adicionalesTexto.style.marginTop = '2px';
-    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | AÃ±o: ${prop.ano_construccion || 0}`;
+    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | Año: ${prop.ano_construccion || 0}`;
     datosCasa.appendChild(adicionalesTexto);
 
     const ubicacionTexto = document.createElement('div');
@@ -443,7 +421,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
 
 
 // ==========================================================================
-// PARTE 9 DE 15: INYECCIÃ“N DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
+// PARTE 9 DE 15: INYECCIÓN DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
 // ==========================================================================
 
 function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTarjetas
@@ -454,13 +432,13 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     const contador = document.getElementById('results-counter');
 
-    console.log(`ðŸ“Š [SRE ESPÃA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`);
+    console.log(`📊 [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`);
 
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
             <div class="mensaje-sin-propiedades" style="padding: 60px 20px; text-align: center; width: 100%; box-sizing: border-box;">
                 <h3 style="font-size: 22px; color: #2d3748; font-weight: 700; font-family: sans-serif;">No existe este tipo de propiedades en este momento</h3>
-                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando mÃ¡s opciones.</p>
+                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando más opciones.</p>
             </div>
         `;
         if (contador) contador.textContent = `0 resultados disponibles`;
@@ -477,7 +455,7 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
 
 // ==========================================================================
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÃFICO CON DESVÃO DE EVENTO CELULAR OVERLAY
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO CON DESVÍO DE EVENTO CELULAR OVERLAY
 // ==========================================================================
 
 function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
@@ -493,32 +471,29 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     
     // --- ESPÍA DE CONTROL 3: ANÁLISIS DE FILTRADO PARA EL MAPA ---
-    console.group("%cðŸ—ºï¸  [SRE ESPÃ A 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
+    console.group("%c🗺️ [SRE ESPÍA 3] ENTRADA A RENDERIZAR MAPA", "background: #FFB91D; color: #002E50; padding: 4px; font-weight: bold;");
     console.log(`Pintando ${filtradas.length} pines compactos en Leaflet.`);
     console.log("IDs de las propiedades que pasaron el filtro y van al mapa:", filtradas.map(p => p.id));
     console.table(filtradas, ["id", "latitud", "longitud", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
-
-      // ==========================================================================
+    // ==========================================================================
     // --- NUEVO: ESPÍA GEOMÉTRICO DE CONTROL CONTRA VALORES INDEFINIDOS SRE ---
     // ==========================================================================
     if (filtradas.length > 0 && window.map) {
-        console.group("%cðŸ”Ž [SRE ESPÃ A MATEMÃ TICO] AUDITORÃ A DE ITERACIÃ“N DE LÃ MITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
+        console.group("%c🔍 [SRE ESPÍA MATEMÁTICO] AUDITORÍA DE ITERACIÓN DE LÍMITES", "background: #742a2a; color: white; padding: 4px; font-weight: bold;");
         
         const coordenadasValidas = [];
         
         filtradas.forEach(p => {
-            // Evaluamos detalladamente qué propiedades físicas existen en la raíz del objeto
             console.log(`Propiedad ID: ${p.propiedad_id || p.id} | p.latitud raw: ${p.latitud} (tipo: ${typeof p.latitud}) | p.longitud raw: ${p.longitud} (tipo: ${typeof p.longitud})`);
             
             const parsedLat = parseFloat(p.latitud);
             const parsedLng = parseFloat(p.longitud);
             
             if (isNaN(parsedLat) || isNaN(parsedLng) || p.latitud === null || p.longitud === null) {
-                console.error(`%câšA DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
+                console.error(`%c⚠️ DETECTADO INDEFINIDO O NAN: La propiedad ${p.propiedad_id || p.id} tiene coordenadas rotas! Lat parsed: ${parsedLat} | Lng parsed: ${parsedLng}`, "background: yellow; color: black; font-weight: bold;");
             } else if (parsedLat !== 0 && parsedLng !== 0) {
-                // Si pasa la validación pura de números reales, se agrega al arreglo geométrico
                 coordenadasValidas.push([parsedLat, parsedLng]);
             }
         });
@@ -526,26 +501,22 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         console.log("Matriz final limpia enviada a L.latLngBounds:", coordenadasValidas);
         console.groupEnd();
 
-        // Inicialización geométrica directa y nativa oficial de Leaflet SRE
         if (coordenadasValidas.length > 0) {
             try {
                 if (coordenadasValidas.length === 1) {
                     window.map.setView(coordenadasValidas[0], 15, { animate: true });
                 } else {
-                    // Leaflet acepta nativamente el arreglo de arreglos [[lat,lng], [lat,lng]] directo en fitBounds
                     window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
                 }
-
-        console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
+                console.log("?? [SRE CONTROL SUCCESS] Auto-ajuste de mapa Leaflet fitBounds ejecutado correctamente.");
             } catch (errGeometrico) {
-                console.error("%câ Œ ERROR CRÃ TICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
+                console.error("%c❌ ERROR CRÍTICO EN LEAFLET FITBOUNDS:", "background: black; color: red; font-weight: bold;", errGeometrico.message);
             }
         }
-
     }
 
     filtradas.forEach(prop => { // Inicia Callback forEach filtradas
-    if (!prop.latitud || !prop.longitud) return;
+        if (!prop.latitud || !prop.longitud) return;
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
@@ -557,22 +528,20 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             iconAnchor: L.point(40, 15)
         });
 
-        // --- NUEVO: ESPÍA DE CONTROL 4 CON CAPTURA DE COLAPSO GEOMÉTRICO SRE ---
         let marcador;
         try {
-            console.log(`%cðŸ“  [SRE ESPÃ A 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
+            console.log(`%c📍 [SRE ESPÍA 4 BUCLE] Evaluando pin ${prop.id}. Datos -> Lat: ${prop.latitud} (tipo: ${typeof prop.latitud}) | Lng: ${prop.longitud} (tipo: ${typeof prop.longitud})`, "color: #475569;");
             
             if (isNaN(prop.latitud) || isNaN(prop.longitud) || prop.latitud === null || prop.longitud === null) {
-                console.error(`%câšA  ALERTA GEOMÃ‰TRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
-                return; // Evita el colapso síncrono saltando el registro corrupto
+                console.error(`%c⚠️ ALERTA GEOMÉTRICA: El inmueble ${prop.id} contiene coordenadas rotas o nulas. Saltando pin para evitar congelar la pantalla.`, "background: #ef4444; color: white; padding: 2px; font-weight: bold;");
+                return;
             }
             
             marcador = L.marker([prop.latitud, prop.longitud], { icon: iconoBurbuja });
         } catch (errBucle) {
-            console.error(`%câ Œ CRÃ TICO EN INSTANCIACIÃ“N LEAFLET: RompiÃ³ en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
+            console.error(`%c❌ CRÍTICO EN INSTANCIACIÓN LEAFLET: Rompió en el pin ${prop.id} por: ${errBucle.message}`, "background: black; color: yellow; padding: 4px; font-weight: bold;");
             return;
         }
-
 
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
@@ -582,10 +551,10 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         contenedorPopupMaster.appendChild(carruselPopup);
 
         const datosPopup = document.createElement('div');
-        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} BaÃ±os</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} Baños</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
         contenedorPopupMaster.appendChild(datosPopup);
 
-          if (window.innerWidth > 768) {
+        if (window.innerWidth > 768) {
             marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
         }
 
@@ -593,10 +562,10 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         // PARTE 11 DE 15: DESLIZAMIENTO DE TARJETA FLOTANTE OVERLAY PARA PANTALLAS CELULARES
         // ==========================================================================
         marcador.on('click', (e) => { // Inicia Callback marker click
-          L.DomEvent.stopPropagation(e);
+            L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
             
-            console.log(`ðŸ“± [SRE ESPÃA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
+            console.log(`📱 [SRE ESPÍA CLICK MARCADOR] ID Seleccionado: ${prop.id}. Ancho Viewport: ${window.innerWidth}px`);
 
             if (window.innerWidth <= 768) {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
@@ -608,7 +577,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                             <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} mÂ²</span>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</span>
                                 <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                                 <span style="font-size:11px; font-weight:bold; text-transform:uppercase; color:${prop.estado_publicacion === 'vendida' ? '#b58900' : '#006aff'};">${prop.estado_publicacion === 'vendida' ? 'Vendida' : 'Disponible'}</span>
                             </div>
@@ -642,22 +611,22 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 
 
 // ==========================================================================
-// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÃ“N Y DOM CONTENT LOADED
+// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
 // ==========================================================================
 
 function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
-    console.group("ðŸ“¥ [SRE ESPÃA INTERCEPTOR] Paquete crudo recibido desde el Motor");
-    console.log("Estructura completa de la carga Ãºtil:", data);
+    console.group("📥 [SRE ESPÍA INTERCEPTOR] Paquete crudo recibido desde el Motor");
+    console.log("Estructura completa de la carga útil:", data);
     
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("âŒ Formato de datos invÃ¡lido o ausencia de la colecciÃ³n 'propiedades'.");
+        console.error("❌ Formato de datos inválido o ausencia de la colección 'propiedades'.");
         console.groupEnd();
         return;
     }
     
     state.propiedades = data.propiedades.map(normalizarPropiedad);
     
-    console.log("ðŸ“¦ Data normalizada en el frontend (state.propiedades):");
+    console.log("📦 Data normalizada en el frontend (state.propiedades):");
     console.table(state.propiedades.slice(0, 5), ["id", "precio_base", "tipo_propiedad", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
@@ -669,19 +638,19 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
     if (typeof supabase !== "undefined" && supabase !== null) {
         supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
-            console.log(`ðŸ” [SRE ESPÃA AUTH] Evento disparado: ${event}`);
+            console.log(`🔑 [SRE ESPÍA AUTH] Evento disparado: ${event}`);
             
             if (session && session.user) {
                 const correoUsuario = String(session.user.email).trim();
                 window.usuarioLogueado = session.user;
-                console.log(`ðŸ‘¤ Usuario detectado en Supabase Auth: ${correoUsuario}`);
+                console.log(`👤 Usuario detectado en Supabase Auth: ${correoUsuario}`);
 
                 const idScriptSeguridad = "sre-jsonp-firewall-auth";
                 let scriptExistente = document.getElementById(idScriptSeguridad);
                 if (scriptExistente) scriptExistente.remove();
                 
                 window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
-                    console.log("ðŸ›¡ï¸ [SRE ESPÃA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
+                    console.log("🛡️ [SRE ESPÍA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
                     
                     if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
                         state.usuarioActual = null; 
@@ -701,12 +670,14 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
                 const scriptp = document.createElement('script');
                 scriptp.id = idScriptSeguridad;
-                scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
-                document.body.appendChild(scriptp);
+                if (typeof urlMiScriptGoogle !== "undefined") {
+                    scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
+                    document.body.appendChild(scriptp);
+                }
             } else {
                 state.usuarioActual = null; 
                 window.usuarioLogueado = null;
-                console.log("ðŸ‘¤ Estado Auth: Sin sesiÃ³n de usuario activa.");
+                console.log("👤 Estado Auth: Sin sesión de usuario activa.");
             }
         }); // Fin de Callback onAuthStateChange
     }
@@ -716,7 +687,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
     }
 
-    setTimeout(() => { // Inicia Timer de inicializaciÃ³n y sincronización limpia SRE
+    setTimeout(() => { // Inicia Timer de inicialización y sincronización limpia SRE
         inicializarEventosDeFiltros();
         if (window.map) {
             window.map.on('moveend', renderizarMapaZillow);
@@ -737,12 +708,12 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 }
             };
         }
-    }, 100); // Fin de Timer de inicializaciÃ³n
+    }, 100); // Fin de Timer de inicialización
 }); // Fin de EventListener DOMContentLoaded
 
 
 // ==========================================================================
-// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÃFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
+// PARTE 13 DE 15: ESTABILIZADOR CARTOGRÁFICO INVALIDATE SIZE Y LISTENERS DROPDOWNS
 // ==========================================================================
 
 function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
@@ -856,7 +827,7 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
 
 // ==========================================================================
-// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÃ“N ÃšNICA
+// PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
 // ==========================================================================
 
 function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
@@ -880,7 +851,7 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     // ==========================================================================
     // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
     // ==========================================================================
-        const filtroTransaccion = state.filtros.estado || "Venta";
+    const filtroTransaccion = state.filtros.estado || "Venta";
 
     // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
     if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
@@ -894,8 +865,6 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
         return false;
     }
-    
-
 
     // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
     const inputDireccion = document.getElementById('search-address');
@@ -1026,7 +995,6 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
                     
                     <div style="width: 100%; overflow: hidden;">
@@ -1094,7 +1062,7 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
             </div>
         `;
 
-            document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
+        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
 
         document.getElementById('btn-solicitar-tour-galeria-spa').onclick = () => {
             mostrarPopupAccion("modal-tour-comercial");
@@ -1142,8 +1110,6 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
         // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
     }
-
-
 
     cortina.classList.add('cortina-activa');
 }
@@ -1246,7 +1212,6 @@ function inyectarSeccionesAdicionalesZillow(prop) {
     inyectarHistorialesYImpuestosZillow(prop);
 }
 
-
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarHistorialesYImpuestosZillow
 // ====================================================================================
@@ -1272,9 +1237,8 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     };
 
     try {
-        const cliente = obtenerClienteSupabase();
-        if (cliente) {
-            const { data, error } = await cliente
+        if (window.supabase) {
+            const { data, error } = await window.supabase
                 .from('tasacion_distrital')
                 .select('trimestre_ano, venta_m2')
                 .eq('codigo_ubigeo', ubigeoPropiedad)
@@ -1288,8 +1252,6 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
                     }
                 });
             }
-        } else {
-            console.warn("SRE Alerta: Supabase no inicializado, operando con fallbacks.");
         }
     } catch (err) {
         console.warn("SRE Alerta: Error consultando tasacion_distrital, operando con fallbacks.", err);
@@ -1404,7 +1366,6 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION DE MARCA COLOR METRICA)
 // ====================================================================================
 async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
-    // --- IF DE SEGURIDAD INTERNA: SI EL OBJETO ESTÁ VACÍO, DETIENE LA FUNCIÓN Y NO HACE NADA ---
     if (!prop || !prop.propiedad_id || isNaN(parseFloat(prop.precio_base))) {
         console.log("?? [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
         return;
@@ -1415,7 +1376,6 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 
     const precioBase = parseFloat(prop.precio_base) || 0;
     const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
-    try {
 
     // Inyección de la interfaz gráfica con tus colores corporativos #FFB91D y #002E50
     slotBuyability.innerHTML = `
@@ -1466,7 +1426,7 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         <div id="zillow-neighborhood-slot"></div>
     `;
 
-        const cInicial = document.getElementById('combo-lov-inicial');
+    const cInicial = document.getElementById('combo-lov-inicial');
     const cPlazo = document.getElementById('combo-lov-plazo');
     const cTea = document.getElementById('combo-lov-tea');
     const cDesg = document.getElementById('combo-lov-desgravamen');
@@ -1498,7 +1458,7 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 
         // Renderizado limpio de salida con formato monetario en Dólares ($)
         document.getElementById('display-pago-total-hipoteca').innerText = `$${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
-        document.getElementById('display-pago-total-hipoteca').style.color = '#002E50'; // Forzar color azul acero al calcular
+        document.getElementById('display-pago-total-hipoteca').style.color = '#002E50';
         document.getElementById('txt-calc-prestamo').innerText = `$${Math.round(montoPrestamo).toLocaleString('en-US')}`;
         document.getElementById('txt-calc-cuotabase').innerText = `$${Math.round(cuotaBase).toLocaleString('en-US')}`;
         document.getElementById('txt-calc-segdesg').innerText = `$${Math.round(costoDesgravamen).toLocaleString('en-US')}`;
@@ -1517,14 +1477,14 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
     [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
     // Evento de disparo comercial y persistencia transaccional
-    btnGuardar.addEventListener('click', async () => { // Abre EventListener de guardado
+    btnGuardar.addEventListener('click', async () => {
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
         if (!calculosGlobales) return;
 
-        btnGuardar.innerText = "? Generando cronograma PDF y enviando correo...";
+        btnGuardar.innerText = "⏳ Generando cronograma PDF y enviando correo...";
         btnGuardar.disabled = true;
 
-        try { // Abre bloque try de Supabase
+        try {
             const cliente = obtenerClienteSupabase();
             const idUsuario = window.usuarioLogueado ? window.usuarioLogueado.id : 'anonimo_invitado';
 
@@ -1553,450 +1513,72 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
 
             if (error) throw error;
 
-            alert("?? ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
-            btnGuardar.innerText = "? Cronograma Enviado Exitosamente";
-            btnGuardar.style.background = "#002E50"; // Cambia al azul oscuro como confirmación
+            alert("✅ ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
+            btnGuardar.innerText = "✓ Cronograma Enviado Exitosamente";
+            btnGuardar.style.background = "#002E50";
             btnGuardar.style.color = "#FFB91D";
 
-        } catch (err) { // Captura de error de red
+        } catch (err) {
             console.error("Fallo guardando simulación:", err.message);
             alert("Error procesando solicitud: " + err.message);
-            btnGuardar.innerText = "?? Enviar mi cronograma de hipoteca a mi correo";
+            btnGuardar.innerText = "📩 Enviar mi cronograma de hipoteca a mi correo";
             btnGuardar.disabled = false;
-        } // Cierra bloque catch de Supabase
-    }); // Cierra EventListener de guardado
+        }
+    });
 
-    // Bloque asíncrono para poblar las opciones ordenadas de la vista SQL
-    try { // Abre bloque try de cargado de datos
+    // Bloque asíncrono para poblar las opciones ordenadas de los combos (LOVs)
+    try {
         const cliente = obtenerClienteSupabase();
-        const { data, error } = await cliente.from('vista_lov_hipoteca_consolidada').select('*').eq('tipo_propiedad', tipoProp);
-        if (error) throw error;
+        if (cliente) {
+            // Cargar listas desplegables base (LOVs)
+            const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
+                cliente.from('lov_cuota_inicial').select('*').order('porcentaje', { ascending: true }),
+                cliente.from('lov_plazo_hipotecario').select('*').order('anos', { ascending: true }),
+                cliente.from('lov_tasa_interes').select('*').order('tasa_tea', { ascending: true }),
+                cliente.from('lov_seguro_desgravamen').select('*').order('tasa_mensual', { ascending: true }),
+                cliente.from('lov_seguro_inmueble').select('*').order('tasa_mensual', { ascending: true })
+            ]);
 
-        const inicialesSet = new Map(); const plazosSet = new Set(); const teasSet = new Set();
-        const desgravamenesSet = new Set(); const inmueblesSet = new Set();
+            if (rInicial.data && rInicial.data.length > 0) {
+                cInicial.innerHTML = rInicial.data.map(opt => `<option value="${opt.porcentaje}" data-comment="${opt.comentario || ''}">${opt.etiqueta || (opt.porcentaje * 100 + '%')}</option>`).join('');
+            } else {
+                cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
+            }
 
-        data?.forEach(reg => {
-            inicialesSet.set(reg.cuota_inicial, reg.comentario_inicial);
-            plazosSet.add(reg.plazo_anos); teasSet.add(reg.tasa_tea);
-            desgravamenesSet.add(reg.seguro_desgravamen_mensual); inmueblesSet.add(reg.seguro_inmueble_mensual);
-        });
+            if (rPlazo.data && rPlazo.data.length > 0) {
+                cPlazo.innerHTML = rPlazo.data.map(opt => `<option value="${opt.anos}">${opt.etiqueta || (opt.anos + ' años')}</option>`).join('');
+            } else {
+                cPlazo.innerHTML = '<option value="20">20 Años</option>';
+            }
 
-        Array.from(inicialesSet.keys()).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(0)}%`; opt.setAttribute('data-comment', inicialesSet.get(val));
-            cInicial.appendChild(opt);
-        });
+            if (rTea.data && rTea.data.length > 0) {
+                cTea.innerHTML = rTea.data.map(opt => `<option value="${opt.tasa_tea}">${opt.etiqueta || ((opt.tasa_tea * 100).toFixed(2) + '% TEA')}</option>`).join('');
+            } else {
+                cTea.innerHTML = '<option value="0.085">8.50% Promedio BCRP</option>';
+            }
 
-        Array.from(plazosSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${val} Años`; cPlazo.appendChild(opt);
-        });
+            if (rDesg.data && rDesg.data.length > 0) {
+                cDesg.innerHTML = rDesg.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
+            } else {
+                cDesg.innerHTML = '<option value="0.0005">0.05% Individual</option>';
+            }
 
-        Array.from(teasSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(2)}% TEA`; cTea.appendChild(opt);
-        });
+            if (rInm.data && rInm.data.length > 0) {
+                cInm.innerHTML = rInm.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
+            } else {
+                cInm.innerHTML = '<option value="0.00025">0.025% Todo Riesgo</option>';
+            }
 
-        Array.from(desgravamenesSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(3)}% mens.`; cDesg.appendChild(opt);
-        });
-
-        Array.from(inmueblesSet).sort((a,b)=>a-b).forEach(val => {
-            const opt = document.createElement('option'); opt.value = val;
-            opt.innerText = `${(val * 100).toFixed(3)}% mens.`; cInm.appendChild(opt);
-        });
-
+            // Realizar primer cálculo automático
+            ejecutarRecalculoHipoteca();
+        }
+    } catch (errLOV) {
+        console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
+        cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
+        cPlazo.innerHTML = '<option value="20">20 Años</option>';
+        cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
+        cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
+        cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
         ejecutarRecalculoHipoteca();
-
-    } catch (err) {
-        console.error("Error al renderizar selectores:", err.message);
-    } // Cierra bloque try de cargado de datos
-
-        // Disparadores en cadena del panel secundario
-        inyectarPropiedadesCercanasZillow(prop);
-        inyectarMapaYEscuelasZillow(prop);
-    } catch (err) { // <-- Ahora este catch ya reconoce al try superior
-        console.error("Error en flujo secundario:", err.message);
-    } // Cierra el bloque de seguridad catch
-} // Cierra definitivamente la función principal inyectarCapacidadCompraZillow
-        
-// ====================================================================================
-// FIN DE FUNCTION: inyectarCapacidadCompraZillow
-// ====================================================================================
-
-// ====================================================================================
-// INICIO DE FUNCTION: inyectarPropiedadesCercanasZillow
-// ====================================================================================
-async function inyectarPropiedadesCercanasZillow(prop) {
-    const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
-    if (!slotBuyability) return;
-
-    let contenedorCercanas = document.getElementById('zillow-nearby-homes-container');
-    if (!contenedorCercanas) {
-        contenedorCercanas = document.createElement('div');
-        contenedorCercanas.id = 'zillow-nearby-homes-container';
-        contenedorCercanas.style.marginTop = '40px';
-        contenedorCercanas.style.borderTop = '1px solid #e2e8f0';
-        contenedorCercanas.style.paddingTop = '24px';
-        slotBuyability.appendChild(contenedorCercanas);
-    }
-
-    contenedorCercanas.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Propiedades Cercanas Sugeridas</h4>
-            <div style="display: flex; gap: 8px;">
-                <button type="button" id="btn-prev-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&lt;</button>
-                <button type="button" id="btn-next-cercanas" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&gt;</button>
-            </div>
-        </div>
-        <div id="grid-cercanas-items" style="display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px; -ms-overflow-style: none; scrollbar-width: none;">
-            <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades en el cuadrante de proximidad de Supabase...</p>
-        </div>
-    `;
-
-    const gridItems = document.getElementById('grid-cercanas-items');
-
-    try {
-        const cliente = obtenerClienteSupabase();
-        if (!cliente) {
-            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se pudo conectar con Supabase para obtener propiedades cercanas.</p>`;
-            return;
-        }
-
-        const rpcLat = parseFloat(prop.ubicacion ? prop.ubicacion.latitud : prop.latitud) || -12.1142;
-        const rpcLng = parseFloat(prop.ubicacion ? prop.ubicacion.longitud : prop.longitud) || -76.9915;
-
-        const { data, error } = await cliente.rpc('buscar_propiedades_cercanas', {
-            target_id: String(prop.propiedad_id || prop.id || ''),
-            target_lat: rpcLat,
-            target_lng: rpcLng,
-            target_tipo: String(prop.tipo_propiedad || '')
-        });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se encontraron otras propiedades cercanas en este perímetro.</p>`;
-            return;
-        }
-
-        gridItems.innerHTML = '';
-
-        data.forEach(item => {
-            const tarjeta = document.createElement('div');
-            tarjeta.style.background = '#ffffff';
-            tarjeta.style.border = '1px solid #e2e8f0';
-            tarjeta.style.borderRadius = '8px';
-            tarjeta.style.width = '240px';
-            tarjeta.style.overflow = 'hidden';
-            tarjeta.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
-            tarjeta.style.cursor = 'pointer';
-            tarjeta.style.transition = 'transform 0.2s';
-            
-            tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
-            tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
-            
-            tarjeta.addEventListener('click', async () => {
-                const idBuscado = String(item.id || item.propiedad_id || '').trim();
-                if (!idBuscado) return;
-
-                try {
-                    const client = obtenerClienteSupabase();
-                    if (!client) return;
-
-                    const { data: rawProp, error: fetchErr } = await client
-                        .from('vista_catalogo_mapa')
-                        .select('*')
-                        .eq('propiedad_id', idBuscado)
-                        .single();
-
-                    if (fetchErr) throw fetchErr;
-
-                    if (rawProp && typeof window.gestionarCortinaSPA === 'function') {
-                        const propiedadNormalizada = typeof normalizarPropiedad === 'function' ? normalizarPropiedad(rawProp) : rawProp;
-                        const cortina = document.getElementById('cortina-spa');
-                        if (cortina) cortina.innerHTML = '';
-                        
-                        window.gestionarCortinaSPA('detalle', propiedadNormalizada);
-                        
-                        const panelCortinaReal = document.getElementById('modal-interior') || window;
-                        if (panelCortinaReal) panelCortinaReal.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                } catch (err) {
-                    console.error("Error al redireccionar propiedad desde el carrusel:", err.message);
-                }
-            });
-
-            let nombreFoto = String(item.imagen_principal || '').trim();
-            let urlFoto = '';
-            if (nombreFoto.startsWith('http')) {
-                urlFoto = nombreFoto;
-            } else if (nombreFoto !== '') {
-                urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
-            } else {
-                urlFoto = 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=400&q=80';
-            }
-
-            tarjeta.innerHTML = `
-                <div style="position: relative; height: 130px; background: #e2e8f0;">
-                    <img src="${urlFoto}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
-                    <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_comercial || 'En venta').toUpperCase()}</span>
-                </div>
-                <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base || 0).toLocaleString('en-US')}</h5>
-                    <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones || 0} bd | ${item.banos || 0} ba | ${Math.round(item.area_construida || 0)} sqft</p>
-                    <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion || ''}</p>
-                    <span style="font-size: 10px; color: #10b981; font-weight: bold; margin-top: 4px;">A ${(parseFloat(item.distancia_metros || 0) / 1000).toFixed(2)} km de distancia</span>
-                </div>
-            `;
-            gridItems.appendChild(tarjeta);
-        });
-
-        document.getElementById('btn-prev-cercanas').addEventListener('click', () => gridItems.scrollLeft -= 240);
-        document.getElementById('btn-next-cercanas').addEventListener('click', () => gridItems.scrollLeft += 240);
-
-    } catch (err) {
-        console.error("Error al cargar propiedades cercanas:", err.message);
-        gridItems.innerHTML = `<p style="font-size: 12px; color: #ef4444;">No se pudieron desplegar los inmuebles de proximidad geométrica.</p>`;
-    }
-
-    if (typeof inyectarPropiedadesSimilaresZillow === "function") {
-        inyectarPropiedadesSimilaresZillow(prop);
     }
 }
-// ====================================================================================
-// FIN DE FUNCTION: inyectarPropiedadesCercanasZillow
-// ====================================================================================
-
-// ====================================================================================
-// INICIO DE FUNCTION: inyectarPropiedadesSimilaresZillow
-// ====================================================================================
-async function inyectarPropiedadesSimilaresZillow(prop) {
-    const slotDinamico = document.getElementById('zillow-graphs-and-history-slot');
-    if (!slotDinamico) return;
-
-    let contenedorSimilares = document.getElementById('zillow-similar-properties-carousel-slot');
-    if (!contenedorSimilares) {
-        contenedorSimilares = document.createElement('div');
-        contenedorSimilares.id = 'zillow-similar-properties-carousel-slot';
-        contenedorSimilares.style.marginTop = '40px';
-        contenedorSimilares.style.borderTop = '1px solid #e2e8f0';
-        contenedorSimilares.style.paddingTop = '24px';
-        slotDinamico.appendChild(contenedorSimilares);
-    }
-
-    contenedorSimilares.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #002E50; margin: 0;">Casas Similares (Mismo rango de precio)</h4>
-            <div style="display: flex; gap: 8px;">
-                <button type="button" id="btn-prev-similares" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&lt;</button>
-                <button type="button" id="btn-next-similares" style="border: 2px solid #002E50; background: #fff; border-radius: 50%; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #002E50; font-size: 16px; transition: background 0.2s;">&gt;</button>
-            </div>
-        </div>
-        <div id="grid-similares-items" style="display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 8px; -ms-overflow-style: none; scrollbar-width: none;">
-            <p style="font-size: 13px; color: #64748b; font-style: italic;">Buscando propiedades similares en el distrito...</p>
-        </div>
-    `;
-
-    const gridItems = document.getElementById('grid-similares-items');
-
-    try {
-        const cliente = obtenerClienteSupabase();
-        if (!cliente) {
-            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se pudo conectar con Supabase para obtener propiedades similares.</p>`;
-            return;
-        }
-
-        const { data, error } = await cliente.rpc('buscar_propiedades_similares', {
-            target_id: String(prop.propiedad_id || prop.id || ''),
-            target_distrito: String(prop.distrito || ''),
-            target_precio: parseFloat(prop.precio_base || 0)
-        });
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            gridItems.innerHTML = `<p style="font-size: 13px; color: #64748b;">No se encontraron otras propiedades similares en el mismo rango de precio en ${prop.distrito || 'la zona'}.</p>`;
-            return;
-        }
-
-        gridItems.innerHTML = '';
-
-        data.forEach(item => {
-            const tarjeta = document.createElement('div');
-            tarjeta.style.background = '#ffffff';
-            tarjeta.style.border = '1px solid #e2e8f0';
-            tarjeta.style.borderRadius = '8px';
-            tarjeta.style.width = '240px';
-            tarjeta.style.overflow = 'hidden';
-            tarjeta.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
-            tarjeta.style.cursor = 'pointer';
-            tarjeta.style.transition = 'transform 0.2s';
-            
-            tarjeta.addEventListener('mouseenter', () => tarjeta.style.transform = 'scale(1.02)');
-            tarjeta.addEventListener('mouseleave', () => tarjeta.style.transform = 'scale(1)');
-            
-            tarjeta.addEventListener('click', async () => {
-                const idBuscado = String(item.propiedad_id || item.id || '').trim();
-                if (!idBuscado) return;
-
-                try {
-                    const client = obtenerClienteSupabase();
-                    if (!client) return;
-
-                    const { data: rawProp, error: errFetch } = await client
-                        .from('vista_catalogo_mapa')
-                        .select('*')
-                        .eq('propiedad_id', idBuscado)
-                        .single();
-
-                    if (errFetch) throw errFetch;
-
-                    if (rawProp && typeof window.gestionarCortinaSPA === 'function') {
-                        const propiedadNormalizada = typeof normalizarPropiedad === 'function' ? normalizarPropiedad(rawProp) : rawProp;
-                        const cortina = document.getElementById('cortina-spa');
-                        if (cortina) cortina.innerHTML = '';
-                        
-                        window.gestionarCortinaSPA('detalle', propiedadNormalizada);
-                        
-                        const panelCortinaReal = document.getElementById('modal-interior') || window;
-                        if (panelCortinaReal) panelCortinaReal.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
-                } catch (ex) {
-                    console.error("Error al redireccionar propiedad similar:", ex.message);
-                }
-            });
-
-            let nombreFoto = String(item.foto_principal || '').trim();
-            let urlFoto = '';
-            if (nombreFoto.startsWith('http')) {
-                urlFoto = nombreFoto;
-            } else if (nombreFoto !== '') {
-                urlFoto = 'https://res.cloudinary.com/obw6ciov/image/upload/' + nombreFoto;
-            } else {
-                urlFoto = 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=400&q=80';
-            }
-
-            tarjeta.innerHTML = `
-                <div style="position: relative; height: 130px; background: #e2e8f0;">
-                    <img src="${urlFoto}" alt="Propiedad" style="width: 100%; height: 100%; object-fit: cover;">
-                    <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,46,80,0.85); color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">${String(item.estado_propiedad || 'En venta').toUpperCase()}</span>
-                </div>
-                <div style="padding: 12px; display: flex; flex-direction: column; gap: 4px;">
-                    <h5 style="font-size: 16px; font-weight: 800; color: #002E50; margin: 0;">$${Math.round(item.precio_base || 0).toLocaleString('en-US')}</h5>
-                    <p style="font-size: 12px; font-weight: 700; color: #475569; margin: 0;">${item.habitaciones || 0} bd | ${item.banos || 0} ba | ${Math.round(item.area_construida || 0)} sqft</p>
-                    <p style="font-size: 11px; color: #64748b; margin: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${item.direccion || ''}</p>
-                </div>
-            `;
-            gridItems.appendChild(tarjeta);
-        });
-
-        document.getElementById('btn-prev-similares').addEventListener('click', () => gridItems.scrollLeft -= 240);
-        document.getElementById('btn-next-similares').addEventListener('click', () => gridItems.scrollLeft += 240);
-
-    } catch (err) {
-        console.error("Error al cargar propiedades similares:", err.message);
-        gridItems.innerHTML = `<p style="font-size: 12px; color: #ef4444;">No se pudieron desplegar las propiedades sugeridas en este momento.</p>`;
-    }
-}
-// ====================================================================================
-// FIN DE FUNCTION: inyectarPropiedadesSimilaresZillow
-// ====================================================================================
-
-// ====================================================================================
-// INICIO DE FUNCTION: inyectarMapaYEscuelasZillow
-// ====================================================================================
-function inyectarMapaYEscuelasZillow(prop) {
-    const slotMapa = document.getElementById('zillow-neighborhood-slot');
-    if (!slotMapa) return;
-
-    // Lectura directa desde los atributos planos normalizados del objeto
-    const lat = parseFloat(prop.latitud);
-    const lng = parseFloat(prop.longitud);
-
-    if (isNaN(lat) || isNaN(lng) || lat === null || lng === null) return;
-
-    const distrito = prop.distrito || 'Lima';
-
-    slotMapa.innerHTML = `
-        <!-- SECCIÓN: MAPA DEL BARRIO INTERACTIVO -->
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">Barrio y ubicación</h4>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Explora los alrededores y la conectividad urbana en el distrito de ${distrito}.</p>
-            
-            <!-- Contenedor Físico del Mapa Leaflet -->
-            <div id="mapa-detalle-zillow-container" style="width: 100%; height: 320px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; z-index: 1; position: relative;"></div>
-        </div>
-
-        <!-- SECCIÓN: ESCUELAS CERCANAS -->
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 20px;">
-            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">Escuelas cercanas</h4>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Calificaciones e instituciones educativas asignadas a esta zona residencial.</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <!-- Escuela 1 -->
-                <div style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px; background: #ffffff;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <span style="background: #10b981; color: white; font-weight: bold; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">8</span>
-                        <div>
-                            <strong style="font-size: 14px; color: #1e293b; display: block;">Colegio Saco Oliveros</strong>
-                            <span style="font-size: 12px; color: #64748b;">Primaria & Secundaria | A 0.4 km</span>
-                        </div>
-                    </div>
-                    <span style="font-size: 12px; color: #475569; font-weight: 600; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">Público calificado</span>
-                </div>
-
-                <!-- Escuela 2 -->
-                <div style="display: flex; align-items: center; justify-content: space-between; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px; background: #ffffff;">
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <span style="background: #10b981; color: white; font-weight: bold; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">7</span>
-                        <div>
-                            <strong style="font-size: 14px; color: #1e293b; display: block;">I.E. Juana Alarco de Dammert</strong>
-                            <span style="font-size: 12px; color: #64748b;">Solo Mujeres | A 0.9 km</span>
-                        </div>
-                    </div>
-                    <span style="font-size: 12px; color: #475569; font-weight: 600; background: #f1f5f9; padding: 4px 8px; border-radius: 4px;">Estatal</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- RECEPTOR FINAL DE CARRUSELES DE PROPIEDADES CERCANAS/SIMILARES -->
-        <div id="zillow-similar-properties-carousel-slot"></div>
-    `;
-
-    // --- PROCESAMIENTO SRE: ASIGNACIÓN ASÍNCRONA DE MAPA EN EL DOM ---
-    setTimeout(() => {
-        const mapaDiv = document.getElementById('mapa-detalle-zillow-container');
-        if (!mapaDiv || typeof L === 'undefined') return;
-
-        try {
-            // Inicializamos el mapa Leaflet centrado en las coordenadas reales de Supabase
-            const mapDetalle = L.map('mapa-detalle-zillow-container', {
-                center: [lat, lng],
-                zoom: 15,
-                zoomControl: true,
-                scrollWheelZoom: false
-            });
-
-            // Cargamos la capa de diseño base gratuita de OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap'
-            }).addTo(mapDetalle);
-
-            // Añadimos un marcador circular estilizado para representar la propiedad
-            L.marker([lat, lng]).addTo(mapDetalle)
-                .bindPopup(`<strong style="font-family:sans-serif;">Inmueble en detalle</strong><br/>Precio base: $${Number(prop.precio_base).toLocaleString('en-US')}`)
-                .openPopup();
-
-            // Forzamos el recalibrado de dimensiones para evitar cortes en el layout
-            setTimeout(() => { mapDetalle.invalidateSize(); }, 300);
-
-        } catch (error) {
-            console.error("SRE Error al renderizar mapa Leaflet secundario:", error);
-        }
-    }, 200);
-}
-// ====================================================================================
-// FIN DE FUNCTION: inyectarMapaYEscuelasZillow
-// ====================================================================================
