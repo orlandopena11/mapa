@@ -1,231 +1,188 @@
 /* jshint esversion: 11 *//* jshint esversion: 11 */
 
 // ==========================================================================
-// PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
+// INICIO: PARTE 1 - ESTADO GLOBAL Y VARIABLES DE LA APLICACIÓN
 // ==========================================================================
-
-let usuarioAutenticado = false;
-let correoUsuarioLogueado = "";
-
-if (typeof window.usuarioAutenticado === "undefined") { 
-    window.usuarioAutenticado = false; 
-}
-
-if (typeof window.correoUsuarioLogueado === "undefined") { 
-    window.correoUsuarioLogueado = ""; 
-}
-
-if (typeof actualizarBotonCuenta !== "function") {
-    var actualizarBotonCuenta = function() { // Inicia Function actualizarBotonCuenta
-        console.log("[SRE] Simulación de actualización de botón de cuenta."); 
-    }; // Fin de Function actualizarBotonCuenta
-}
-
-const state = {
+const state = { // Inicia Objeto state global
     propiedades: [],
-    favoritos: new Set(),
+    propiedadesFiltradas: [],
+    propiedadSeleccionadaId: null,
+    vistaActual: 'catalogo', // 'catalogo' o 'detalle'
     filtros: {
-        estado: 'Venta', 
-        precioMin: 0, 
-        precioMax: Infinity, 
-        camas: 0, 
-        camasExactas: false, 
-        baños: 0, 
-        tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
-        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
+        estado: 'Venta',
+        precioMin: 0,
+        precioMax: Infinity,
+        camas: 0,
+        banos: 0,
+        tiposPropiedad: new Set(),
+        tiposListado: new Set()
     },
-    limpiadoresDOM: new Map()
-}; // Fin de asignación del objeto global state
+    mapa: null,
+    marcadoresMapa: []
+}; // Fin de Objeto state global
+// ==========================================================================
+// FIN: PARTE 1 - ESTADO GLOBAL Y VARIABLES DE LA APLICACIÓN
+// ==========================================================================
 
 
 // ==========================================================================
-// PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
+// INICIO: PARTE 2 - TUBERÍA SINCRONIZADA DE FILTRADO Y RENDERIZADO
 // ==========================================================================
+function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
+    state.propiedadesFiltradas = state.propiedades.filter(prop => { // Inicia Método filter de propiedades
+        return evaluarCriteriosDeFiltrado(prop);
+    }); // Fin de Método filter de propiedades
 
-const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
-const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
-
-console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
-
-let supabase = null;
-
-function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
-    if (supabase) return supabase;
-    if (typeof createClient !== "undefined") {
-        supabase = createClient(supabaseUrl, supabaseAnonKey);
-    } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
-        supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
-    }
-    if (supabase) {
-        console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
-    } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
-    }
-    return supabase;
-} // Fin de Function obtenerClienteSupabase
-
-obtenerClienteSupabase();
+    renderizarTarjetasCatalogo(state.propiedadesFiltradas);
+    actualizarMarcadoresEnMapa(state.propiedadesFiltradas);
+} // Fin de Function ejecutarTuberiaSincronizada
+// ==========================================================================
+// FIN: PARTE 2 - TUBERÍA SINCRONIZADA DE FILTRADO Y RENDERIZADO
+// ==========================================================================
 
 
 // ==========================================================================
-// PARTE 3 DE 15: FIREWALLS DE ACCESO ACL Y TRANSPORTE JSONP APPS SCRIPT
+// INICIO: PARTE 3 - RENDERIZADO DE TARJETAS EN EL CATÁLOGO IZQUIERDO
 // ==========================================================================
+function renderizarTarjetasCatalogo(listaPropiedades) { // Inicia Function renderizarTarjetasCatalogo
+    const contenedorListado = document.getElementById('lista-propiedades-container');
+    if (!contenedorListado) return;
 
-function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
-    console.group("??? [SRE ESPÍA ACL] Verificando credenciales de interacción");
-    console.log("Usuario actual en estado:", state.usuarioActual);
-    
-    if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("? ACL BLOQUEADO: Sesión inexistente.");
-        console.groupEnd();
-        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
-        if (typeof mostrarPopupAccion === "function") {
-            mostrarPopupAccion("modal-autenticacion-supabase");
-        }
-        return false;
-    }
-    
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        console.error("? ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
-        console.groupEnd();
-        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
-        return false;
-    }
-    
-    console.log("?? ACL PERMITIDO: Cuenta activa y autorizada.");
-    console.groupEnd();
-    return true;
-} // Fin de Function verificarAutorizacionAcceso
+    contenedorListado.innerHTML = '';
 
-async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
-    console.log("?? [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
-    try {
-        const cliente = obtenerClienteSupabase();
-        if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
+    if (listaPropiedades.length === 0) { // Inicia Condicional lista vacía
+        contenedorListado.innerHTML = '<div class="sin-resultados">No se encontraron propiedades con los filtros seleccionados.</div>';
+        return;
+    } // Fin de Condicional lista vacía
 
-        // Consultamos directamente la vista unificada del catálogo mapeado
-        const { data, error } = await cliente
-            .from('vista_catalogo_mapa')
-            .select('*');
+    listaPropiedades.forEach(prop => { // Inicia forEach listaPropiedades
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'tarjeta-propiedad-zillow';
+        tarjeta.setAttribute('data-id', prop.id);
 
-        if (error) throw error;
+        const contenedorMultimedia = construirRielCarruselComponente(prop, false);
+        tarjeta.appendChild(contenedorMultimedia);
 
-        // --- ESPÍA DE CONTROL 1: INSPECCIÓN DE RESPUESTA CRUDA SUPABASE ---
-        console.group("%c?? [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
-        console.log("Cantidad total devuelta por la Vista SQL:", data.length);
-        if(data.length > 0) {
-            console.log("Estructura del primer registro (PROP-001):", data[0]);
-            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "Sí" : "NO");
-            console.log("Campos de coordenadas en la raíz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
-        }
-        console.groupEnd();
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'tarjeta-info-zillow';
+
+        const precioFmt = new Intl.NumberFormat('es-PE', { style: 'currency', currency: prop.moneda || 'USD', maximumFractionDigits: 0 }).format(prop.precio_base);
         
-        const paqueteData = { propiedades: data || [], usuarios: [] };
-        procesarDatosDelMotor(paqueteData);
+        const h3Precio = document.createElement('h3');
+        h3Precio.className = 'precio-inmueble';
+        h3Precio.textContent = precioFmt;
+        infoDiv.appendChild(h3Precio);
 
-    } catch (err) {
-        console.error("? [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
-    }
-} // Fin de Function cargarDatosDesdeSupabase
+        const pDetalles = document.createElement('p');
+        pDetalles.className = 'detalles-inmueble';
+        pDetalles.innerHTML = `<strong>${prop.habitaciones || 0}</strong> habs | <strong>${prop.banos || 0}</strong> baños | <strong>${prop.area_total || 0}</strong> m²`;
+        infoDiv.appendChild(pDetalles);
+
+        const pDireccion = document.createElement('p');
+        pDireccion.className = 'direccion-inmueble';
+        pDireccion.textContent = prop.direccion || prop.titulo || '';
+        infoDiv.appendChild(pDireccion);
+
+        tarjeta.appendChild(infoDiv);
+
+        // Evento para abrir la vista de detalle (Pantalla 2) al hacer clic en la tarjeta
+        tarjeta.addEventListener('click', () => { // Inicia Listener click tarjeta catalogo
+            abrirVistaDetalleShowcase(prop.id);
+        }); // Fin de Listener click tarjeta catalogo
+
+        contenedorListado.appendChild(tarjeta);
+    }); // Fin de forEach listaPropiedades
+} // Fin de Function renderizarTarjetasCatalogo
+// ==========================================================================
+// FIN: PARTE 3 - RENDERIZADO DE TARJETAS EN EL CATÁLOGO IZQUIERDO
+// ==========================================================================
 
 
 // ==========================================================================
-// PARTE 4 DE 15: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
+// INICIO: PARTE 4 - PANTALLA 2: VISTA DETALLE / SHOWCASE DE PROPIEDAD
 // ==========================================================================
-function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
-    const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
+function abrirVistaDetalleShowcase(propId) { // Inicia Function abrirVistaDetalleShowcase
+    const prop = state.propiedades.find(p => p.id === propId);
+    if (!prop) return;
 
-    let fotosUnificadas = [];
-    
-    // Captura el riel unificado procesado por codigo.gs o las columnas nativas de Postgres
-    const origenFotos = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
+    state.propiedadSeleccionadaId = propId;
+    state.vistaActual = 'detalle';
 
-    if (origenFotos) {
-        let coleccionCruda = [];
-        
-        // Si viene como Array nativo de Postgres (La Vista SQL agrupada)
-        if (Array.isArray(origenFotos)) {
-            coleccionCruda = origenFotos;
-        } else if (typeof origenFotos === 'string') {
-            // Si la celda de texto de la tabla arrastra comas internas, las pica en elementos individuales
-            coleccionCruda = origenFotos.includes(',') ? origenFotos.split(',') : [origenFotos];
-        }
+    const contenedorPrincipal = document.getElementById('app-main-layout');
+    if (!contenedorPrincipal) return;
 
-        // Procesamos y limpiamos cada fragmento de imagen obtenido de forma individual
-        coleccionCruda.forEach(nombreFoto => {
-            if (!nombreFoto) return;
-            let texto = String(nombreFoto).trim();
-            if (!texto) return;
+    contenedorPrincipal.innerHTML = '';
 
-            if (texto.startsWith('http://') || texto.startsWith('https://')) {
-                fotosUnificadas.push(texto);
-            } else {
-                // Reemplaza los espacios en blanco accidentales por guiones bajos
-                texto = texto.replace(/\s+/g, '_');
-                fotosUnificadas.push(urlBaseCloudinary + texto);
-            }
-        });
-    }
+    const contenedorShowcase = document.createElement('div');
+    contenedorShowcase.className = 'vista-detalle-showcase';
 
-    if (fotosUnificadas.length === 0) {
-        fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
-    }
+    // Cabecera con botón de retorno '‹'
+    const cabeceraDetalle = document.createElement('div');
+    cabeceraDetalle.className = 'cabecera-detalle-navegacion';
 
-    // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
-    const latNum = parseFloat(prop.latitud);
-    const lngNum = parseFloat(prop.longitud);
-    
-    // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
-    const idVerdadero = String(prop.propiedad_id || prop.id || "");
+    const botonRetorno = document.createElement('button');
+    botonRetorno.className = 'btn-retorno-catalogo';
+    botonRetorno.innerHTML = '‹ Volver al mapa y resultados';
+    botonRetorno.addEventListener('click', () => { // Inicia Listener click retorno
+        state.vistaActual = 'catalogo';
+        state.propiedadSeleccionadaId = null;
+        restaurarVistaCatalogoPrincipal();
+    }); // Fin de Listener click retorno
+    cabeceraDetalle.appendChild(botonRetorno);
+    contenedorShowcase.appendChild(cabeceraDetalle);
 
-    const res = {
-        id: idVerdadero,
-        propiedad_id: idVerdadero,
-        usuario_id_fk: prop.usuario_id_fk || "",
+    // Grid de fotos superior (Sección multimedia completa)
+    const galeriaDetalle = document.createElement('div');
+    galeriaDetalle.className = 'galeria-detalle-grid';
 
-        titulo: String(prop.titulo || '').trim(),
-        precio_base: parseFloat(prop.precio_base || 0),
-        estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
-        tipo_anuncio: String(prop.tipo_anuncio || "Venta").trim(),
-        tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
-        subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
-        direccion: String(prop.direccion || "").trim(),
-        descripcion: String(prop.descripcion || "").trim(),
-        
-        // Características Físicas Sincronizadas
-        area_terreno: parseFloat(prop.area_terreno || 0),
-        area_construida: parseFloat(prop.area_construida || 0),
-        habitaciones: parseInt(prop.habitaciones || 0, 10),
-        banos: parseInt(prop.banos || 0, 10),
-        estacionamientos: parseInt(prop.estacionamientos || 0, 10),
-        ano_construccion: parseInt(prop.ano_construccion || 0, 10),
-        estado_propiedad: String(prop.estado_propiedad || "").trim(),
-        moneda: String(prop.moneda || "USD").trim(),
-        
-        // Bloque de Control e Inventario Técnico
-        cuota_mantenimiento: parseFloat(prop.cuota_mantenimiento || 0),
-        situacion_propiedad: String(prop.situacion_propiedad || "").trim(),
-        sotano: String(prop.sotano || "no").trim(),
-        almacen: String(prop.almacen || "no").trim(),
-        vista: String(prop.vista || "Ninguna").trim(),
-        creado_por: String(prop.creado_por || "").trim(),
-        
-        // Georreferenciación Plana Directa desde Supabase NUMERIC
-        distrito: String(prop.distrito || "").trim(),
-        latitud: !isNaN(latNum) ? latNum : null,
-        longitud: !isNaN(lngNum) ? lngNum : null,
-        codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || "").trim(),
-        foto_principal: String(prop.foto_principal || ""),
-        fotos: fotosUnificadas,
-        amenidades: prop.amenidades || []
-    };
-    
-    // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
-    console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
-    
-    return res;
-} // Fin de Function normalizarPropiedad
+    if (prop.fotos && prop.fotos.length > 0) { // Inicia Condicional fotos detalle
+        prop.fotos.forEach((fotoUrl, idx) => { // Inicia forEach fotos detalle
+            const imgDetalle = document.createElement('img');
+            imgDetalle.src = fotoUrl;
+            imgDetalle.alt = `${prop.titulo} - Foto ${idx + 1}`;
+            if (idx === 0) imgDetalle.className = 'foto-principal-destacada';
+            galeriaDetalle.appendChild(imgDetalle);
+        }); // Fin de forEach fotos detalle
+    } // Fin de Condicional fotos detalle
+    contenedorShowcase.appendChild(galeriaDetalle);
 
+    // Contenido informativo y formularios de contacto en la vista de detalle
+    const cuerpoDetalle = document.createElement('div');
+    cuerpoDetalle.className = 'cuerpo-info-showcase';
+
+    const tituloDetalle = document.createElement('h1');
+    tituloDetalle.textContent = prop.titulo;
+    cuerpoDetalle.appendChild(tituloDetalle);
+
+    const precioDetalle = document.createElement('h2');
+    precioDetalle.textContent = new Intl.NumberFormat('es-PE', { style: 'currency', currency: prop.moneda || 'USD', maximumFractionDigits: 0 }).format(prop.precio_base);
+    cuerpoDetalle.appendChild(precioDetalle);
+
+    const descripcionDetalle = document.createElement('p');
+    descripcionDetalle.className = 'descripcion-larga-inmueble';
+    descripcionDetalle.textContent = prop.descripcion || 'Sin descripción detallada disponible para este inmueble.';
+    cuerpoDetalle.appendChild(descripcionDetalle);
+
+    contenedorShowcase.appendChild(cuerpoDetalle);
+    contenedorPrincipal.appendChild(contenedorShowcase);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+} // Fin de Function abrirVistaDetalleShowcase
+
+function restaurarVistaCatalogoPrincipal() { // Inicia Function restaurarVistaCatalogoPrincipal
+    const contenedorPrincipal = document.getElementById('app-main-layout');
+    if (!contenedorPrincipal) return;
+
+    // Restaura la estructura base de dos columnas (Catálogo izquierdo y Mapa derecho)
+    contenedorPrincipal.innerHTML = `
+        <div id="panel-lateral-catalogo" class="panel-catalogo"></div>
+        <div id="contenedor-mapa-principal" class="panel-mapa"></div>
+    `;
+    ejecutarTuberiaSincronizada();
+    if (typeof inicializarMapaPrincipal === 'function') inicializarMapaPrincipal();
+} // Fin de Function restaurarVistaCatalogoPrincipal
+// ==========================================================================
+// FIN: PARTE 4 - PANTALLA 2: VISTA DETALLE / SHOWCASE DE PROPIEDAD
+// ==========================================================================
 
 // ==========================================================================
 // PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÓN DE RIEL MULTIMEDIA
@@ -245,9 +202,8 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 
 
 // ==========================================================================
-// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
+// INICIO: PARTE 6 Y 7 - CONSTRUCTOR DE RIEL MULTIMEDIA (5 FOTOS MÁXIMO)
 // ==========================================================================
-
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
     const propiedad = prop;
     const contenedorFoto = document.createElement('div');
@@ -258,12 +214,13 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     rielCarrusel.setAttribute('data-foto-activa', '0');
     contenedorFoto.appendChild(rielCarrusel);
 
+    // Limitado estrictamente a las primeras 5 fotos para mostrar en el carrusel
     const totalFotos = Math.min(propiedad.fotos.length, 5);
     const dotsArray = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
 
-    for (let i = 0; i < totalFotos; i++) {
+    for (let i = 0; i < totalFotos; i++) { // Inicia Bucle for de fotos carrusel
         const img = document.createElement('img');
         img.src = prop.fotos[i];
         img.alt = `${prop.titulo} - Vista ${i + 1}`;
@@ -273,17 +230,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
         contenedorDots.appendChild(dot);
         dotsArray.push(dot);
-    }
+    } // Fin de Bucle for de fotos carrusel
     contenedorFoto.appendChild(contenedorDots);
 
-
-    // ==========================================================================
-    // PARTE 7 DE 15: CANDADO DEL BOTÓN CORAZÓN DE FAVORITOS Y DESPLAZADORES CIRCULARES
-    // ==========================================================================
-    
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '?'; 
+    botonCorazon.innerHTML = '❤️'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
     botonCorazon.style.top = "12px";
@@ -307,22 +259,21 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
             e.stopPropagation();
             if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
         }
-        
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        if (botonCorazon.innerHTML === '?') {
-            botonCorazon.innerHTML = '?'; 
+        if (botonCorazon.innerHTML === '❤️') {
+            botonCorazon.innerHTML = '💖'; 
             botonCorazon.style.color = '#d92323'; 
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         } else {
-            botonCorazon.innerHTML = '?'; 
+            botonCorazon.innerHTML = '❤️'; 
             botonCorazon.style.color = '#ffffff'; 
             botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         }
     }); // Fin de Callback heart pointerdown
     contenedorFoto.appendChild(botonCorazon);
 
-    if (totalFotos > 1) {
+    if (totalFotos > 1) { // Inicia Condicional totalFotos > 1
         let indiceFotoActual = 0;
         const btnlzq = document.createElement('button');
         btnlzq.className = 'flecha-carrusel flecha-izq'; 
@@ -335,17 +286,17 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         const desplazarRiel = (direction) => { // Inicia Arrow Function desplazarRiel
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
-            dotsArray.forEach((d, idx) => {
+            dotsArray.forEach((d, idx) => { // Inicia Método forEach para dots
                 if (idx === indiceFotoActual) d.classList.add('activo');
                 else d.classList.remove('activo');
-            });
+            }); // Fin de Método forEach para dots
         }; // Fin de Arrow Function desplazarRiel
         
         btnlzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
         btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(1); });
         contenedorFoto.appendChild(btnlzq); 
         contenedorFoto.appendChild(btnDer);
-    }
+    } // Fin de Condicional totalFotos > 1
 
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
@@ -354,6 +305,9 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     
     return contenedorFoto;
 } // Fin de Function construirRielCarruselComponente
+// ==========================================================================
+// FIN: PARTE 6 Y 7 - CONSTRUCTOR DE RIEL MULTIMEDIA
+// ==========================================================================
 
 
 // ==========================================================================
@@ -690,168 +644,127 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     }, 100); // Fin de Timer de inicialización
 }); // Fin de EventListener DOMContentLoaded
 
-// ==========================================================================
-// PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
-// ==========================================================================
 
-function inicializarEventosDeFiltros() {
-    // 1. Gestión de desplegables (Dropdowns)
+
+// ==========================================================================
+// INICIO: PARTE 13 - GESTIÓN CORREGIDA DE FILTROS Y BOTONES "APLICAR" / "SELECCIONAR TODOS"
+// ==========================================================================
+function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
-    wrappers.forEach(wrapper => {
+    wrappers.forEach(wrapper => { // Inicia forEach wrappers de filtros
         const boton = wrapper.querySelector('.filter-btn');
         const panel = wrapper.querySelector('.dropdown-content-panel');
         if (!boton || !panel) return;
 
-        boton.addEventListener('click', (e) => {
+        boton.addEventListener('click', (e) => { // Inicia Listener click botón dropdown
             e.stopPropagation();
             document.querySelectorAll('.dropdown-content-panel').forEach(p => { if (p !== panel) p.classList.remove('show'); });
             document.querySelectorAll('.filter-btn').forEach(b => { if (b !== boton) b.classList.remove('active'); });
             panel.classList.toggle('show'); 
             boton.classList.toggle('active');
-        });
-    });
+        }); // Fin de Listener click botón dropdown
+    }); // Fin de forEach wrappers de filtros
 
-    // Cerrar desplegables al hacer clic fuera
-    document.addEventListener('click', () => {
+    document.addEventListener('click', () => { // Inicia Listener click global cierre de paneles
         document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    });
+    }); // Fin de Listener click global cierre de paneles
 
-    // Detener la propagación de clics dentro del panel para evitar que se cierre solo
-    document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
+    document.querySelectorAll('.dropdown-content-panel').forEach(panel => { // Inicia forEach paneles internos
         panel.addEventListener('click', (e) => e.stopPropagation());
-    });
+    }); // Fin de forEach paneles internos
 
-    // 2. Filtro de Transacción (En Venta, Alquiler, Vendidas)
+    // 1. Filtro Estado de Transacción ("Venta", "Para el alquiler", "Vendidas")
     const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
-    radiosTransaccion.forEach(radio => {
-        radio.addEventListener('change', (e) => {
+    radiosTransaccion.forEach(radio => { // Inicia forEach radios de transacción
+        radio.addEventListener('change', (e) => { // Inicia Listener change de transacción
             state.filtros.estado = e.target.value;
             const btnStatus = document.getElementById('btn-filter-status');
-            if (btnStatus) {
-                if (e.target.value === "Venta") btnStatus.textContent = "En venta";
+            if (btnStatus) { // Inicia Condicional btnStatus existente
+                if (e.target.value === "Venta") btnStatus.textContent = "Venta";
                 else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler";
-                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas";
-            }
+                else if (e.target.value === "Vendida") btnStatus.textContent = "Vendidas";
+            } // Fin de Condicional btnStatus existente
             ejecutarTuberiaSincronizada();
-        });
-    });
+        }); // Fin de Listener change de transacción
+    }); // Fin de forEach radios de transacción
 
-    // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
+    // 2. Filtro Precio (Solución para que no desaparezca y mantenga estabilidad)
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
     const btnAplicarPrecio = document.getElementById('btn-aplicar-precio');
     const btnResetPrecio = document.getElementById('btn-reset-precio');
 
-    if (btnAplicarPrecio) {
-        btnAplicarPrecio.addEventListener('click', () => {
+    if (btnAplicarPrecio) { // Inicia Condicional btnAplicarPrecio
+        btnAplicarPrecio.addEventListener('click', () => { // Inicia Listener click aplicar precio
             state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
             state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        });
-    }
+        }); // Fin de Listener click aplicar precio
+    } // Fin de Condicional btnAplicarPrecio
 
-    if (btnResetPrecio) {
-        btnResetPrecio.addEventListener('click', () => {
+    if (btnResetPrecio) { // Inicia Condicional btnResetPrecio
+        btnResetPrecio.addEventListener('click', () => { // Inicia Listener click reset precio
             if (inputMinPrecio) inputMinPrecio.value = '';
             if (inputMaxPrecio) inputMaxPrecio.value = '';
             state.filtros.precioMin = 0;
             state.filtros.precioMax = Infinity;
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        });
-    }
+        }); // Fin de Listener click reset precio
+    } // Fin de Condicional btnResetPrecio
 
-    // 4. FILTRO TIPO DE PROPIEDAD (Con "Seleccionar todos" y Aplicar)
+    // 3. Tipo de Propiedad ("Seleccionar todos" con alternancia de estado y Botón Aplicar)
     const checkboxesTipo = document.querySelectorAll('.type-cb');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
     const checkTodosTipos = document.getElementById('check-todos-tipos');
 
-    if (checkTodosTipos) {
-        checkTodosTipos.addEventListener('change', (e) => {
-            checkboxesTipo.forEach(cb => cb.checked = e.target.checked);
-        });
-    }
+    if (checkTodosTipos) { // Inicia Condicional checkTodosTipos
+        checkTodosTipos.addEventListener('change', (e) => { // Inicia Listener change seleccionar todos propiedades
+            const estadoDeseado = e.target.checked;
+            checkboxesTipo.forEach(cb => cb.checked = estadoDeseado);
+        }); // Fin de Listener change seleccionar todos propiedades
+    } // Fin de Condicional checkTodosTipos
 
-    if (btnAplicarTipo) {
-        btnAplicarTipo.addEventListener('click', () => {
+    if (btnAplicarTipo) { // Inicia Condicional btnAplicarTipo
+        btnAplicarTipo.addEventListener('click', () => { // Inicia Listener click aplicar tipo
             state.filtros.tiposPropiedad.clear();
-            
-            // Si "Seleccionar todos" está marcado o no hay ningun checkbox activo, traemos todos
             const marcados = Array.from(checkboxesTipo).filter(cb => cb.checked);
             
-            if (marcados.length === 0 || (checkTodosTipos && checkTodosTipos.checked)) {
-                // Estado por defecto: no filtra por ningún tipo específico (los muestra todos)
-                checkboxesTipo.forEach(cb => cb.checked = true);
-                if (checkTodosTipos) checkTodosTipos.checked = true;
+            if (marcados.length === 0) {
+                state.filtros.tiposPropiedad.add('__NINGUNO__'); // Evita errores si no selecciona nada
             } else {
                 marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
             }
-            
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        });
-    }
+        }); // Fin de Listener click aplicar tipo
+    } // Fin de Condicional btnAplicarTipo
 
-    // 5. FILTRO MAS FILTROS / LISTADOS (Con "Seleccionar todos" y Aplicar)
+    // 4. "Otros Filtros" / "Más Filtros" (Con botón Aplicar y "Seleccionar todos" funcional)
     const checkboxesListado = document.querySelectorAll('.more-filter-cb');
     const checkTodosListados = document.getElementById('check-todos-listados');
     const btnAplicarMasFiltros = document.getElementById('btn-aplicar-mas-filtros');
 
-    if (checkTodosListados) {
-        checkTodosListados.addEventListener('change', (e) => {
-            checkboxesListado.forEach(cb => cb.checked = e.target.checked);
-        });
-    }
+    if (checkTodosListados) { // Inicia Condicional checkTodosListados
+        checkTodosListados.addEventListener('change', (e) => { // Inicia Listener change seleccionar todos otros filtros
+            const estadoDeseado = e.target.checked;
+            checkboxesListado.forEach(cb => cb.checked = estadoDeseado);
+        }); // Fin de Listener change seleccionar todos otros filtros
+    } // Fin de Condicional checkTodosListados
 
-    if (btnAplicarMasFiltros) {
-        btnAplicarMasFiltros.addEventListener('click', () => {
+    if (btnAplicarMasFiltros) { // Inicia Condicional btnAplicarMasFiltros
+        btnAplicarMasFiltros.addEventListener('click', () => { // Inicia Listener click aplicar más filtros
             state.filtros.tiposListado.clear();
-            
             const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
             
-            if (marcados.length === 0 || (checkTodosListados && checkTodosListados.checked)) {
-                checkboxesListado.forEach(cb => cb.checked = true);
-                if (checkTodosListados) checkTodosListados.checked = true;
-            } else {
-                marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
-            }
-
+            marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        });
-    }
+        }); // Fin de Listener click aplicar más filtros
+    } // Fin de Condicional btnAplicarMasFiltros
 
-    // 6. BUSCADOR DE DIRECCIÓN
-    const inputDireccionGlobal = document.getElementById('search-address');
-    if (inputDireccionGlobal) {
-        let timerBusqueda = null;
-        inputDireccionGlobal.addEventListener('input', (e) => {
-            const consulta = e.target.value.trim();
-            ejecutarTuberiaSincronizada();
-
-            clearTimeout(timerBusqueda);
-            if (consulta.length < 3) return;
-
-            timerBusqueda = setTimeout(async () => {
-                try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
-                    const data = await res.json();
-
-                    if (data && data.length > 0 && window.map) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        window.map.setView([lat, lon], 14, { animate: true });
-                    }
-                } catch (errGeo) {
-                    console.error("Error al geocodificar dirección:", errGeo);
-                }
-            }, 600);
-        });
-    }
-
-    // Camas y Baños
     configurarSegmentado('row-beds', (valor) => { 
         state.filtros.camas = parseInt(valor, 10) || 0; 
         ejecutarTuberiaSincronizada(); 
@@ -860,13 +773,15 @@ function inicializarEventosDeFiltros() {
         state.filtros.banos = parseFloat(valor) || 0; 
         ejecutarTuberiaSincronizada(); 
     });
-}
+} // Fin de Function inicializarEventosDeFiltros
 
-// Función auxiliar para cerrar paneles desplegables
-function cerrarTodosLosPaneles() {
+function cerrarTodosLosPaneles() { // Inicia Function cerrarTodosLosPaneles
     document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-}
+} // Fin de Function cerrarTodosLosPaneles
+// ==========================================================================
+// FIN: PARTE 13 - GESTIÓN CORREGIDA DE FILTROS
+// ==========================================================================
 
 // ==========================================================================
 // PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
@@ -886,71 +801,49 @@ function configurarSegmentado(idContenedor, callback) { // Inicia Function confi
 
 
 // ==========================================================================
-// PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
+// INICIO: PARTE 15 - EVALUACIÓN DE CRITERIOS ESTRICTOS DE FILTRADO SRE
 // ==========================================================================
-
 function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
-    // ==========================================================================
-    // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
-    // ==========================================================================
-    const filtroTransaccion = state.filtros.estado || "Venta";
+    const filtroTransaccion = state.filtros.estado || 'Venta';
 
-    // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
-    if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
-        return false;
-    }
-
-    if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) {
-        return false;
-    }
-
-    if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
-        return false;
-    }
-
-    // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
-    const inputDireccion = document.getElementById('search-address');
-    if (inputDireccion && inputDireccion.value.trim() !== "") {
-        const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-        if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
+    // 1. REGLA PARA VENTA: estado_publicacion == "disponible" Y tipo_anuncio == "Venta"
+    if (filtroTransaccion === "Venta") {
+        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta") {
             return false;
         }
     }
 
-    // --- FILTROS DE RANGOS Y DIMENSIONES ---
+    // 2. REGLA PARA ALQUILER: estado_publicacion == "disponible" Y tipo_anuncio == "Alquiler"
+    if (filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") {
+        if (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler") {
+            return false;
+        }
+    }
+
+    // 3. REGLA PARA VENDIDA: estado_publicacion == "Vendida" (o vendida) Y tipo_anuncio == "Venta"
+    if (filtroTransaccion === "Vendida" || filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") {
+        const estadoPubLower = String(prop.estado_publicacion || "").toLowerCase();
+        if (estadoPubLower !== "vendida" || prop.tipo_anuncio !== "Venta") {
+            return false;
+        }
+    }
+
+    // --- FILTROS DE PRECIO Y CARACTERÍSTICAS FÍSICAS ---
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
     if (state.filtros.camas && (parseInt(prop.habitaciones) || 0) < state.filtros.camas) return false;
     if (state.filtros.banos && (parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
 
+    // --- FILTROS TIPO DE PROPIEDAD ---
     if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
-        if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
-    }
-
-    // --- FILTROS DE COMPLEMENTO EN EL PANEL EXTENDIDO ---
-    const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-    const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
-    const checkMaestro = document.getElementById('check-todos-listados');
-
-    // El checkMaestro gobierna los listados secundarios dentro de la transacción ya aislada arriba
-    if (checkMaestro && checkMaestro.checked === true) {
-        return true;
-    }
-
-    if (checkboxesMarcados.length > 0) {
-        const situacionBD = String(prop.situacion_propiedad || "").trim();
-        const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
-        if (!coincideFiltro) return false;
-    } else {
-        return false;
+        if (state.filtros.tiposPropiedad.has('__NINGUNO__')) return false;
+        if (!state.filtros.tiposPropiedad.has(String(prop.tipo_propiedad || ''))) return false;
     }
 
     return true;
 } // Fin de Function evaluarCriteriosDeFiltrado
-
+// ==========================================================================
+// FIN: PARTE 15 - EVALUACIÓN DE CRITERIOS ESTRICTOS DE FILTRADO SRE
+// ==========================================================================
 
 function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
     if (typeof renderizarMapaZillow === "function") {
