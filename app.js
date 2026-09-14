@@ -1,7 +1,7 @@
-/* jshint esversion: 11 */
+/* jshint esversion: 11 *//* jshint esversion: 11 */
 
 // ==========================================================================
-// PARTE 1 DE 10: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
+// PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
 // ==========================================================================
 
 let usuarioAutenticado = false;
@@ -15,10 +15,6 @@ if (typeof window.correoUsuarioLogueado === "undefined") {
     window.correoUsuarioLogueado = ""; 
 }
 
-/**
- * Descripción: Función auxiliar para actualizar visualmente el botón de cuenta de usuario.
- * @returns {void}
- */
 if (typeof actualizarBotonCuenta !== "function") {
     var actualizarBotonCuenta = function() { // Inicia Function actualizarBotonCuenta
         console.log("[SRE] Simulación de actualización de botón de cuenta."); 
@@ -43,7 +39,7 @@ const state = {
 
 
 // ==========================================================================
-// PARTE 2 DE 10: INICIALIZACIÓN CORE DEL CLIENTE SUPABASE
+// PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
 // ==========================================================================
 
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co'; 
@@ -53,40 +49,28 @@ console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo princ
 
 let supabase = null;
 
-/**
- * Descripción: Obtiene o instancia de forma Singleton el cliente de Supabase usando la CDN disponible.
- * @returns {Object|null} Instancia activa de Supabase o null en caso de error.
- */
 function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
     if (supabase) return supabase;
-    
     if (typeof createClient !== "undefined") {
         supabase = createClient(supabaseUrl, supabaseAnonKey);
     } else if (typeof window.supabase !== "undefined" && typeof window.supabase.createClient === "function") {
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
-
     if (supabase) {
         console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
         console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
     }
-    
     return supabase;
 } // Fin de Function obtenerClienteSupabase
 
-// Inicialización inmediata del cliente
 obtenerClienteSupabase();
 
 
 // ==========================================================================
-// PARTE 3 DE 10: FIREWALLS DE ACCESO ACL Y TRANSPORTE DE DATOS
+// PARTE 3 DE 15: FIREWALLS DE ACCESO ACL Y TRANSPORTE JSONP APPS SCRIPT
 // ==========================================================================
 
-/**
- * Descripción: Verifica si el usuario actual tiene permisos activos y una sesión no suspendida.
- * @returns {boolean} True si el acceso es concedido, False si es bloqueado.
- */
 function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
     console.group("??? [SRE ESPÍA ACL] Verificando credenciales de interacción");
     console.log("Usuario actual en estado:", state.usuarioActual);
@@ -113,10 +97,6 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     return true;
 } // Fin de Function verificarAutorizacionAcceso
 
-/**
- * Descripción: Consulta asíncrona para traer el catálogo completo de propiedades desde Supabase REST API.
- * @returns {Promise<void>}
- */
 async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
     console.log("?? [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
     try {
@@ -130,41 +110,31 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 
         if (error) throw error;
 
-        // Inspección de respuesta para depuración de estructura
+        // --- ESPÍA DE CONTROL 1: INSPECCIÓN DE RESPUESTA CRUDA SUPABASE ---
         console.group("%c?? [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
-        console.log("Cantidad total devuelta por la Vista SQL:", data ? data.length : 0);
-        
-        if (data && data.length > 0) {
+        console.log("Cantidad total devuelta por la Vista SQL:", data.length);
+        if(data.length > 0) {
             console.log("Estructura del primer registro (PROP-001):", data[0]);
-            console.log("¿Tiene objeto .ubicacion?:", Object.prototype.hasOwnProperty.call(data[0], 'ubicacion') ? "Sí" : "NO");
+            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "Sí" : "NO");
             console.log("Campos de coordenadas en la raíz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
         }
         console.groupEnd();
         
         const paqueteData = { propiedades: data || [], usuarios: [] };
-        
-        if (typeof procesarDatosDelMotor === "function") {
-            procesarDatosDelMotor(paqueteData);
-        }
+        procesarDatosDelMotor(paqueteData);
 
     } catch (err) {
         console.error("? [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
     }
 } // Fin de Function cargarDatosDesdeSupabase
-// ==========================================================================
-// PARTE 4 DE 10: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
-// ==========================================================================
 
-/**
- * Descripción: Recibe un objeto de propiedad crudo devuelto por la base de datos de Supabase, 
- * normaliza sus tipos de datos, construye las URLs de la galería de Cloudinary y asigna valores por defecto.
- * @param {Object} prop - Objeto de propiedad en estado crudo.
- * @returns {Object} Objeto de propiedad estandarizado y seguro para el frontend.
- */
+
+// ==========================================================================
+// PARTE 4 DE 15: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
+// ==========================================================================
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
-    if (!prop) return null;
-
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
+
     let fotosUnificadas = [];
     
     // Captura el riel unificado procesado por codigo.gs o las columnas nativas de Postgres
@@ -197,16 +167,15 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         });
     }
 
-    // Imagen base de respaldo si la propiedad no cuenta con fotografías cargadas
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
 
-    // Conversión segura de coordenadas numéricas
+    // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
     const latNum = parseFloat(prop.latitud);
     const lngNum = parseFloat(prop.longitud);
     
-    // Retorno de atributos con el nombre de columna real y verdadero SRE
+    // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
     const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
     const res = {
@@ -248,10 +217,10 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         codigo_ubigeo_id_fk: String(prop.codigo_ubigeo_id_fk || "").trim(),
         foto_principal: String(prop.foto_principal || ""),
         fotos: fotosUnificadas,
-        amenidades: Array.isArray(prop.amenidades) ? prop.amenidades : []
+        amenidades: prop.amenidades || []
     };
     
-    // Depuración de tránsito
+    // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
     console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
     
     return res;
@@ -259,47 +228,28 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
 
 
 // ==========================================================================
-// PARTE 5 DE 10: FORMATEADORES MONETARIOS COMPACTOS
+// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÓN DE RIEL MULTIMEDIA
 // ==========================================================================
 
-/**
- * Descripción: Convierte un número en una cadena monetaria formateada con el símbolo de moneda USD y comas.
- * @param {number|string} precio - Monto a formatear.
- * @returns {string} Cadena de precio formateado (ej. "$150,000") o "Consultar".
- */
 function formatearPrecioCompleto(precio) { // Inicia Function formatearPrecioCompleto
     const num = parseFloat(precio);
     if (isNaN(num) || num === 0) return 'Consultar';
     return num.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 } // Fin de Function formatearPrecioCompleto
 
-/**
- * Descripción: Convierte un monto en una notación abreviada compacta (K para miles, M para millones).
- * @param {number} precio - Monto en número flotante o entero.
- * @returns {string} Precio abreviado (ej. "$. 150K", "$. 1.25M").
- */
 function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCompacto
-    const num = parseFloat(precio);
-    if (isNaN(num) || num === 0) return '$. 0';
-    if (num >= 1000000) return `$. ${(num / 1000000).toFixed(2)}M`;
-    if (num >= 1000) return `$. ${(num / 1000).toFixed(0)}K`;
-    return `$. ${num}`;
+    if (precio >= 1000000) return `$. ${(precio / 1000000).toFixed(2)}M`;
+    if (precio >= 1000) return `$. ${(precio / 1000).toFixed(0)}K`;
+    return `$. ${precio}`;
 } // Fin de Function formatearPrecioCompacto
+
+
 // ==========================================================================
-// PARTE 6 DE 10: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA Y ACL
+// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
 // ==========================================================================
 
-/**
- * Descripción: Crea dinámicamente el contenedor del carrusel de imágenes para una propiedad, 
- * incluyendo controles de navegación, indicadores por punto, etiqueta contextual y botón de favoritos con ACL.
- * @param {Object} prop - Objeto de propiedad normalizado.
- * @param {boolean} [esPopup=false] - Indica si el componente se renderizará dentro de un popup contextual.
- * @returns {HTMLElement} Elemento DOM con la estructura completa del carrusel.
- */
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
-    const propiedad = prop || {};
-    const fotos = Array.isArray(propiedad.fotos) ? propiedad.fotos : [];
-    
+    const propiedad = prop;
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
 
@@ -308,15 +258,15 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     rielCarrusel.setAttribute('data-foto-activa', '0');
     contenedorFoto.appendChild(rielCarrusel);
 
-    const totalFotos = Math.min(fotos.length, 5);
+    const totalFotos = Math.min(propiedad.fotos.length, 5);
     const dotsArray = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
 
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        img.src = fotos[i];
-        img.alt = `${propiedad.titulo || 'Propiedad'} - Vista ${i + 1}`;
+        img.src = prop.fotos[i];
+        img.alt = `${prop.titulo} - Vista ${i + 1}`;
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
@@ -328,12 +278,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
 
     // ==========================================================================
-    // CONTROLES INTERACTIVOS Y BOTÓN DE FAVORITOS (CORAZÓN ACL)
+    // PARTE 7 DE 15: CANDADO DEL BOTÓN CORAZÓN DE FAVORITOS Y DESPLAZADORES CIRCULARES
     // ==========================================================================
     
     contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '♥'; 
+    botonCorazon.innerHTML = '?'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
     botonCorazon.style.top = "12px";
@@ -351,7 +301,6 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     botonCorazon.style.zIndex = "10";
     botonCorazon.style.color = "#fff";
 
-    // Evento interactivo para validar sesión mediante verificarAutorizacionAcceso
     botonCorazon.addEventListener('pointerdown', (e) => { // Inicia Callback heart pointerdown
         if (e) {
             e.preventDefault(); 
@@ -361,23 +310,23 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        if (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') {
-            botonCorazon.style.color = '#ffffff'; 
-            botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
-        } else {
+        if (botonCorazon.innerHTML === '?') {
+            botonCorazon.innerHTML = '?'; 
             botonCorazon.style.color = '#d92323'; 
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
+        } else {
+            botonCorazon.innerHTML = '?'; 
+            botonCorazon.style.color = '#ffffff'; 
+            botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         }
     }); // Fin de Callback heart pointerdown
-    
     contenedorFoto.appendChild(botonCorazon);
 
-    // Controles de desplazamiento del carrusel
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
-        const btnIzqt = document.createElement('button');
-        btnIzqt.className = 'flecha-carrusel flecha-izq'; 
-        btnIzqt.textContent = '<';
+        const btnlzq = document.createElement('button');
+        btnlzq.className = 'flecha-carrusel flecha-izq'; 
+        btnlzq.textContent = '<';
         
         const btnDer = document.createElement('button');
         btnDer.className = 'flecha-carrusel flecha-der'; 
@@ -392,29 +341,25 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
             });
         }; // Fin de Arrow Function desplazarRiel
         
-        btnIzqt.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
+        btnlzq.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(-1); });
         btnDer.addEventListener('click', (e) => { e.stopPropagation(); desplazarRiel(1); });
-        
-        contenedorFoto.appendChild(btnIzqt); 
+        contenedorFoto.appendChild(btnlzq); 
         contenedorFoto.appendChild(btnDer);
     }
 
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = propiedad.titulo || '';
+    etiquetaFlotante.textContent = prop.titulo || '';
     contenedorFoto.appendChild(etiquetaFlotante);
     
     return contenedorFoto;
 } // Fin de Function construirRielCarruselComponente
+
+
 // ==========================================================================
-// PARTE 7 DE 10: CONSTRUCTOR DEL NODO DE TARJETA Y RENDERIZADO DE CATÁLOGO
+// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
 
-/**
- * Descripción: Fabricante del nodo HTML de la tarjeta de catálogo para escritorio.
- * @param {Object} prop - Objeto de propiedad normalizado.
- * @returns {HTMLElement} Elemento HTML con la tarjeta estructurada.
- */
 function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponenteTarjetaZillow
     const tarjeta = document.createElement('div');
     tarjeta.className = 'tarjeta-casa'; 
@@ -426,8 +371,8 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     const clickSPAHandler = (e) => { // Inicia Arrow Function clickSPAHandler
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
         if (window.map) window.map.closePopup();
-        if (typeof state !== 'undefined') state.propiedadSeleccionadaId = prop.id;
-        if (typeof gestionarCortinaSPA === 'function') gestionarCortinaSPA('detalle', prop);
+        state.propiedadSeleccionadaId = prop.id;
+        gestionarCortinaSPA('detalle', prop);
     }; // Fin de Arrow Function clickSPAHandler
     
     contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
@@ -474,20 +419,20 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     return tarjeta;
 } // Fin de Function crearComponenteTarjetaZillow
 
-/**
- * Descripción: Inyecta el catálogo de tarjetas en el contenedor DOM principal utilizando DocumentFragment.
- */
+
+// ==========================================================================
+// PARTE 9 DE 15: INYECCIÓN DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
+// ==========================================================================
+
 function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTarjetas
     const contenedorRejilla = document.getElementById('properties-grid-target');
     if (!contenedorRejilla) return;
     contenedorRejilla.innerHTML = '';
 
-    const coleccionProps = (typeof state !== 'undefined' && Array.isArray(state.propiedades)) ? state.propiedades : [];
-    const fnEvaluar = typeof evaluarCriteriosDeFiltrado === 'function' ? evaluarCriteriosDeFiltrado : () => true;
-    const filtradas = coleccionProps.filter(fnEvaluar);
+    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     const contador = document.getElementById('results-counter');
 
-    console.log(`%c?? [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`, "color: #008000; font-size: 11px;");
+    console.log(`?? [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`);
 
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
@@ -510,25 +455,22 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
 
 // ==========================================================================
-// PARTE 8 DE 10: CONTROLADOR CARTOGRÁFICO LEAFLET Y BÚSQUEDA
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
-
-/**
- * Descripción: Dibuja y actualiza los marcadores interactivos en el mapa Leaflet ajustando límites y ventanas contextuales.
- */
-function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
+function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // 1. Limpieza segura de capas para prevenir fugas de memoria y errores de _leaflet_events
+    // 1. LIMPIEZA SEGURA PARA EVITAR EL ERROR _leaflet_events
     if (window.capaMarcadores) {
         window.capaMarcadores.eachLayer(layer => {
             try {
+                // Remueve el popup asignado antes de remover el marcador para limpiar listeners del DOM
                 if (layer.getPopup()) {
                     layer.unbindPopup();
                 }
                 window.capaMarcadores.removeLayer(layer);
             } catch (e) {
-                // Silencia referencias obsoletas
+                // Silencia referencias del DOM obsoletas
             }
         });
         window.capaMarcadores.clearLayers();
@@ -536,11 +478,9 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         window.capaMarcadores = L.layerGroup().addTo(window.map);
     }
 
-    const coleccionProps = (typeof state !== 'undefined' && Array.isArray(state.propiedades)) ? state.propiedades : [];
-    const fnEvaluar = typeof evaluarCriteriosDeFiltrado === 'function' ? evaluarCriteriosDeFiltrado : () => true;
-    const filtradas = coleccionProps.filter(fnEvaluar);
+    const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    // 2. Filtrado de coordenadas numéricas válidas
+    // 2. FILTRADO ESTRICTO DE COORDENADAS VÁLIDAS
     const coordenadasValidas = [];
     filtradas.forEach(p => {
         const parsedLat = parseFloat(p.latitud);
@@ -551,7 +491,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         }
     });
 
-    // 3. Encuadre dinámico de la cámara del mapa
+    // 3. ENCUADRE DE MAPA
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
@@ -564,14 +504,14 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
         }
     }
 
-    // 4. Generación e inyección de marcadores con burbujas de precio
+    // 4. CREACIÓN Y AÑADIDO DE MARCADORES
     filtradas.forEach(prop => {
         const parsedLat = parseFloat(prop.latitud);
         const parsedLng = parseFloat(prop.longitud);
 
         if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) return;
 
-        const precioCompacto = typeof formatearPrecioCompacto === 'function' ? formatearPrecioCompacto(prop.precio_base) : prop.precio_base;
+        const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
 
         const iconoBurbuja = L.divIcon({
@@ -605,7 +545,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
 
         marcador.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
-            if (typeof state !== 'undefined') state.propiedadSeleccionadaId = prop.id;
+            state.propiedadSeleccionadaId = prop.id;
 
             if (window.innerWidth <= 768) {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
@@ -614,7 +554,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                 if (cajaFlotanteMovil && targetContenido) {
                     targetContenido.innerHTML = `
                         <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${(prop.fotos && prop.fotos[0]) ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+                            <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
                                 <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</span>
@@ -623,9 +563,7 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
                             </div>
                         </div>
                     `;
-                    targetContenido.onclick = () => { 
-                        if (typeof gestionarCortinaSPA === 'function') gestionarCortinaSPA('detalle', prop); 
-                    };
+                    targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
                 }
             } else {
@@ -643,22 +581,18 @@ function renderizarMapaZillow() { // Inicia Function renderizarMapaZillow
             ev.stopPropagation();
             if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) return;
             if (window.map) window.map.closePopup();
-            if (typeof state !== 'undefined') state.propiedadSeleccionadaId = prop.id;
-            if (typeof gestionarCortinaSPA === 'function') gestionarCortinaSPA('detalle', prop);
+            state.propiedadSeleccionadaId = prop.id;
+            gestionarCortinaSPA('detalle', prop);
         });
 
         window.capaMarcadores.addLayer(marcador);
     });
-} // Fin de Function renderizarMapaZillow
+}
+
 // ==========================================================================
-// PARTE 9 DE 10: PROCESADOR DE PAQUETES CRUDOS Y PIPELINE DE DATOS
+// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
 // ==========================================================================
 
-/**
- * Descripción: Recibe los datos crudos del motor de búsqueda o base de datos, 
- * los normaliza en el estado global y desencadena la actualización visual.
- * @param {Object} data - Objeto con las colecciones de propiedades y usuarios.
- */
 function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
     console.group("?? [SRE ESPÍA INTERCEPTOR] Paquete crudo recibido desde el Motor");
     console.log("Estructura completa de la carga útil:", data);
@@ -669,28 +603,18 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
         return;
     }
     
-    // Normaliza la colección de propiedades entrante
     state.propiedades = data.propiedades.map(normalizarPropiedad);
     
     console.log("?? Data normalizada en el frontend (state.propiedades):");
     console.table(state.propiedades.slice(0, 5), ["id", "precio_base", "tipo_propiedad", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
-    // Actualización de interfaces
-    if (typeof renderizarMapaZillow === 'function') renderizarMapaZillow(); 
-    if (typeof renderizarCatalogoTarjetas === 'function') renderizarCatalogoTarjetas();
-    if (typeof interceptarFirewallSeguridadUsuario === 'function') {
-        interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-    }
+    renderizarMapaZillow(); 
+    renderizarCatalogoTarjetas();
+    interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
 } // Fin de Function procesarDatosDelMotor
 
-
-// ==========================================================================
-// PARTE 10 DE 10: INICIALIZADOR PRINCIPAL Y LISTENER DE AUTENTICACIÓN (ACL)
-// ==========================================================================
-
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
-    // 1. Detección y manejo del estado de sesión con Supabase Auth
     if (typeof supabase !== "undefined" && supabase !== null) {
         supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
             console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
@@ -704,27 +628,22 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 let scriptExistente = document.getElementById(idScriptSeguridad);
                 if (scriptExistente) scriptExistente.remove();
                 
-                // Callback global para la verificación del firewall ACL mediante JSONP
                 window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
                     console.log("??? [SRE ESPÍA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
                     
                     if (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta === "suspendido") {
-                        if (typeof state !== 'undefined') state.usuarioActual = null; 
+                        state.usuarioActual = null; 
                         window.usuarioLogueado = null;
                         alert("Acceso Denegado: Su cuenta se encuentra SUSPENDIDA por el administrador.");
                         await supabase.auth.signOut(); 
                         return;
                     }
-
-                    if (typeof state !== 'undefined') {
-                        state.usuarioActual = {
-                            id: String(session.user.id).trim(), 
-                            correo: correoUsuario,
-                            nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                            estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
-                        };
-                    }
-
+                    state.usuarioActual = {
+                        id: String(session.user.id).trim(), 
+                        correo: correoUsuario,
+                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
+                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
+                    };
                     if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
                 };
 
@@ -735,37 +654,30 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                     document.body.appendChild(scriptp);
                 }
             } else {
-                if (typeof state !== 'undefined') state.usuarioActual = null; 
+                state.usuarioActual = null; 
                 window.usuarioLogueado = null;
                 console.log("?? Estado Auth: Sin sesión de usuario activa.");
             }
         }); // Fin de Callback onAuthStateChange
     }
 
-    // 2. Inicialización de la instancia cartográfica Leaflet
     if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
         window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
     }
 
-    // 3. Temporizador de inicialización para la carga y binding de filtros
-    setTimeout(() => { // Inicia Timer de inicialización
-        if (typeof inicializarEventosDeFiltros === 'function') {
-            inicializarEventosDeFiltros();
-        }
-
+    setTimeout(() => { // Inicia Timer de inicialización y sincronización limpia SRE
+        inicializarEventosDeFiltros();
         if (window.map) {
             window.map.on('moveend', renderizarMapaZillow);
             window.map.invalidateSize(); 
         }
         
-        // Carga inicial de propiedades desde la base de datos de Supabase
-        if (typeof cargarDatosDesdeSupabase === 'function') {
-            cargarDatosDesdeSupabase();
-        }
+        // --- NUEVO: CONEXIÓN LIMPIA PARA DESPERTAR EL CATÁLOGO DE INMUEBLES SRE ---
+        cargarDatosDesdeSupabase();
 
-        // Manejador para ocultar la tarjeta flotante en dispositivos móviles
         const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
+
         if (btnCerrarTarjetaMovil) {
             btnCerrarTarjetaMovil.onclick = (e) => {
                 e.stopPropagation();
@@ -777,15 +689,12 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
         }
     }, 100); // Fin de Timer de inicialización
 }); // Fin de EventListener DOMContentLoaded
+
 // ==========================================================================
-// PARTE 11 DE 10: ADMINISTRADOR DE EVENTOS DE FILTRADO Y BÚSQUEDA
+// PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
 // ==========================================================================
 
-/**
- * Descripción: Inicializa y vincula los eventos de la interfaz de usuario para la interacción 
- * con los paneles de filtros (Dropdowns, Switches, Rangos, Geocodificador Nominatim).
- */
-function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDeFiltros
+function inicializarEventosDeFiltros() {
     // 1. Gestión de desplegables (Dropdowns)
     const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
     wrappers.forEach(wrapper => {
@@ -808,7 +717,7 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     });
 
-    // Detener la propagación de clics dentro del panel para evitar cierres involuntarios
+    // Detener la propagación de clics dentro del panel para evitar que se cierre solo
     document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
         panel.addEventListener('click', (e) => e.stopPropagation());
     });
@@ -817,16 +726,14 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
     const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
     radiosTransaccion.forEach(radio => {
         radio.addEventListener('change', (e) => {
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.estado = e.target.value;
-            }
+            state.filtros.estado = e.target.value;
             const btnStatus = document.getElementById('btn-filter-status');
             if (btnStatus) {
                 if (e.target.value === "Venta") btnStatus.textContent = "En venta";
                 else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler";
                 else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas";
             }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            ejecutarTuberiaSincronizada();
         });
     });
 
@@ -838,11 +745,9 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     if (btnAplicarPrecio) {
         btnAplicarPrecio.addEventListener('click', () => {
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
-                state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
-            }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
+            state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
+            ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
         });
     }
@@ -851,11 +756,9 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
         btnResetPrecio.addEventListener('click', () => {
             if (inputMinPrecio) inputMinPrecio.value = '';
             if (inputMaxPrecio) inputMaxPrecio.value = '';
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.precioMin = 0;
-                state.filtros.precioMax = Infinity;
-            }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            state.filtros.precioMin = 0;
+            state.filtros.precioMax = Infinity;
+            ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
         });
     }
@@ -873,25 +776,25 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     if (btnAplicarTipo) {
         btnAplicarTipo.addEventListener('click', () => {
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.tiposPropiedad.clear();
-                
-                const marcados = Array.from(checkboxesTipo).filter(cb => cb.checked);
-                
-                if (marcados.length === 0 || (checkTodosTipos && checkTodosTipos.checked)) {
-                    checkboxesTipo.forEach(cb => cb.checked = true);
-                    if (checkTodosTipos) checkTodosTipos.checked = true;
-                } else {
-                    marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
-                }
+            state.filtros.tiposPropiedad.clear();
+            
+            // Si "Seleccionar todos" está marcado o no hay ningun checkbox activo, traemos todos
+            const marcados = Array.from(checkboxesTipo).filter(cb => cb.checked);
+            
+            if (marcados.length === 0 || (checkTodosTipos && checkTodosTipos.checked)) {
+                // Estado por defecto: no filtra por ningún tipo específico (los muestra todos)
+                checkboxesTipo.forEach(cb => cb.checked = true);
+                if (checkTodosTipos) checkTodosTipos.checked = true;
+            } else {
+                marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
             }
             
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
         });
     }
 
-    // 5. FILTRO MÁS FILTROS / LISTADOS (Con "Seleccionar todos" y Aplicar)
+    // 5. FILTRO MAS FILTROS / LISTADOS (Con "Seleccionar todos" y Aplicar)
     const checkboxesListado = document.querySelectorAll('.more-filter-cb');
     const checkTodosListados = document.getElementById('check-todos-listados');
     const btnAplicarMasFiltros = document.getElementById('btn-aplicar-mas-filtros');
@@ -904,31 +807,29 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
 
     if (btnAplicarMasFiltros) {
         btnAplicarMasFiltros.addEventListener('click', () => {
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.tiposListado.clear();
-                
-                const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
-                
-                if (marcados.length === 0 || (checkTodosListados && checkTodosListados.checked)) {
-                    checkboxesListado.forEach(cb => cb.checked = true);
-                    if (checkTodosListados) checkTodosListados.checked = true;
-                } else {
-                    marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
-                }
+            state.filtros.tiposListado.clear();
+            
+            const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
+            
+            if (marcados.length === 0 || (checkTodosListados && checkTodosListados.checked)) {
+                checkboxesListado.forEach(cb => cb.checked = true);
+                if (checkTodosListados) checkTodosListados.checked = true;
+            } else {
+                marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
             }
 
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
         });
     }
 
-    // 6. BUSCADOR DE DIRECCIÓN Y GEOCODIFICACIÓN DIRECTA
+    // 6. BUSCADOR DE DIRECCIÓN
     const inputDireccionGlobal = document.getElementById('search-address');
     if (inputDireccionGlobal) {
         let timerBusqueda = null;
         inputDireccionGlobal.addEventListener('input', (e) => {
             const consulta = e.target.value.trim();
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
+            ejecutarTuberiaSincronizada();
 
             clearTimeout(timerBusqueda);
             if (consulta.length < 3) return;
@@ -950,39 +851,27 @@ function inicializarEventosDeFiltros() { // Inicia Function inicializarEventosDe
         });
     }
 
-    // Configuración de botones segmentados para Camas y Baños
-    if (typeof configurarSegmentado === 'function') {
-        configurarSegmentado('row-beds', (valor) => { 
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.camas = parseInt(valor, 10) || 0; 
-            }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada(); 
-        });
-        configurarSegmentado('row-baths', (valor) => { 
-            if (typeof state !== 'undefined' && state.filtros) {
-                state.filtros.banos = parseFloat(valor) || 0; 
-            }
-            if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada(); 
-        });
-    }
-} // Fin de Function inicializarEventosDeFiltros
+    // Camas y Baños
+    configurarSegmentado('row-beds', (valor) => { 
+        state.filtros.camas = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    });
+    configurarSegmentado('row-baths', (valor) => { 
+        state.filtros.banos = parseFloat(valor) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    });
+}
 
-/**
- * Descripción: Cierra todos los paneles flotantes desplegables y restablece el foco de los botones.
- */
-function cerrarTodosLosPaneles() { // Inicia Function cerrarTodosLosPaneles
+// Función auxiliar para cerrar paneles desplegables
+function cerrarTodosLosPaneles() {
     document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-} // Fin de Function cerrarTodosLosPaneles
+}
+
 // ==========================================================================
 // PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
 // ==========================================================================
 
-/**
- * Configura eventos para grupos de botones de selección única segmentados.
- * @param {string} idContenedor - ID del contenedor HTML de los botones segmentados.
- * @param {Function} callback - Función a ejecutar pasando el valor ('data-val') del botón activo.
- */
 function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
     const contenedor = document.getElementById(idContenedor); 
     if (!contenedor) return;
@@ -1000,11 +889,6 @@ function configurarSegmentado(idContenedor, callback) { // Inicia Function confi
 // PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
 // ==========================================================================
 
-/**
- * Evalúa si una propiedad cumple con todos los filtros activos configurados en el objeto global de estado.
- * @param {Object} prop - Objeto que representa los datos de la propiedad.
- * @returns {boolean} Retorna true si cumple con los parámetros, de lo contrario false.
- */
 function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
     // ==========================================================================
     // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
@@ -1067,9 +951,7 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     return true;
 } // Fin de Function evaluarCriteriosDeFiltrado
 
-/**
- * Ejecuta la actualización sincronizada de los componentes visuales (mapa y listado).
- */
+
 function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincronizada
     if (typeof renderizarMapaZillow === "function") {
         renderizarMapaZillow(); 
@@ -1081,9 +963,6 @@ function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincr
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
-/**
- * Asigna los eventos necesarios a los botones principales de las ventanas emergentes (modales).
- */
 function inicializarEventosPopups() { // Inicia Function inicializarEventosPopups
     document.getElementById("btn-solicitar-tour-galeria")?.addEventListener("click", () => {
         mostrarPopupAccion("modal-tour-comercial"); 
@@ -1111,11 +990,6 @@ function gestionarPasosModalTour(p) {}
 function inyectarDatosPropiedadAlMensaje() {}
 function ejecutarEnvioAppsScript(p, m, f, mx) {}
 
-/**
- * Administra el despliegue y contenido de la vista de detalle completo (Pantalla Unificada SPA).
- * @param {string} tipoPantalla - 'detalle' para mostrar u 'cerrar' para ocultar.
- * @param {Object} [prop] - Objeto de datos de la propiedad a detallar.
- */
 function gestionarCortinaSPA(tipoPantalla, prop) {
     const cortina = document.getElementById('cortina-spa');
     if (!cortina) return;
@@ -1148,8 +1022,8 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 18px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">‹</button>
 
                     <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 10;">
-                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Guardado</button>
-                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">?? Guardado</button>
+                        <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">?? Compartir</button>
                         <button style="background: #ffffff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">••• Más</button>
                     </div>
 
@@ -1270,11 +1144,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
         // --- ESCUDO CONDICIONAL SRE: SI NO HAY SELECCIÓN REAL, NO HACE NADA ---
         if (prop && prop.propiedad_id) {
             // Inyección automática y cálculo de las sub-fichas técnicas e interiores solo si se seleccionó una propiedad
-            if (typeof inyectarSeccionesAdicionalesZillow === "function") {
-                inyectarSeccionesAdicionalesZillow(prop);
-            }
+            inyectarSeccionesAdicionalesZillow(prop);
         } else {
-            console.log(" [SRE CONTROL] Inicialización pasiva de cortina. Esperando selección del interesado.");
+            console.log("?? [SRE CONTROL] Inicialización pasiva de cortina. Esperando selección del interesado.");
         }
 
         // Ejecutar el carrusel cinematográfico infinito
@@ -1288,10 +1160,6 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 // COMPONENTE MODULAR INTERIOR: CÁLCULOS FINANCIEROS Y CARACTERÍSTICAS
 // ==========================================================================
 
-/**
- * Inyecta componentes extendidos de la vista detalle (interiores, estimación de mercado Zestimate y métricas).
- * @param {Object} prop - Objeto de la propiedad visualizada.
- */
 function inyectarSeccionesAdicionalesZillow(prop) {
     const slotDinamico = document.getElementById('zillow-next-sections-slot');
     if (!slotDinamico) return;
@@ -1383,10 +1251,9 @@ function inyectarSeccionesAdicionalesZillow(prop) {
     `;
 
     // Inyección automática en cadena del historial con Supabase y la calculadora hipotecaria
-    if (typeof inyectarHistorialesYImpuestosZillow === "function") {
-        inyectarHistorialesYImpuestosZillow(prop);
-    }
+    inyectarHistorialesYImpuestosZillow(prop);
 }
+
 // ====================================================================================
 // INICIO DE FUNCTION: inyectarHistorialesYImpuestosZillow
 // ====================================================================================
@@ -1435,7 +1302,7 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     const valoresInmueble = periodosRequeridos.map(p => historialM2[p] * areaConstruida);
     const maxValor = Math.max(...valoresInmueble, precioActual) * 1.05; 
     const minValor = Math.min(...valoresInmueble, precioActual) * 0.95; 
-    const rangoValores = maxValor - minValor || 1;
+    const rangoValores = maxValor - minValor;
 
     const altoGrafico = 180;
     const anchoGrafico = 600;
@@ -1538,22 +1405,21 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
 // ====================================================================================
 
 // ====================================================================================
-// INICIO DE FUNCTION: inyectarCapacidadCompraZillow
+// INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION DE MARCA COLOR METRICA)
 // ====================================================================================
-async function inyectarCapacidadCompraZillow(prop) {
-    const idPropiedad = prop ? (prop.propiedad_id || prop.id) : null;
-    const precioBase = parseFloat(prop?.precio_base) || 0;
-
-    if (!prop || !idPropiedad || isNaN(precioBase) || precioBase <= 0) {
-        console.log("⚠️ [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria por datos insuficientes.");
+async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
+    if (!prop || !prop.propiedad_id || isNaN(parseFloat(prop.precio_base))) {
+        console.log("?? [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
         return;
     }
 
     const slotBuyability = document.getElementById('zillow-buyability-and-neighborhood-slot');
     if (!slotBuyability) return;
 
+    const precioBase = parseFloat(prop.precio_base) || 0;
     const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
 
+    // Inyección de la interfaz gráfica con tus colores corporativos #FFB91D y #002E50
     slotBuyability.innerHTML = `
         <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -1595,7 +1461,8 @@ async function inyectarCapacidadCompraZillow(prop) {
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #002E50;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #002E50;">-</strong></div>
                 </div>
-                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">✉️ Enviar mi cronograma de hipoteca a mi correo</button>
+                <!-- Botón con color Dorado #FFB91D y letras en Azul Acero #002E50 -->
+                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">?? Enviar mi cronograma de hipoteca a mi correo</button>
             </div>
         </div>
         <div id="zillow-neighborhood-slot"></div>
@@ -1610,7 +1477,7 @@ async function inyectarCapacidadCompraZillow(prop) {
 
     let calculosGlobales = null;
 
-    function ejecutarRecalculoHipoteca() {
+    function ejecutarRecalculoHipoteca() { // Abre sub-función matemática ejecutarRecalculoHipoteca
         const pctInicial = parseFloat(cInicial.value) || 0;
         const anosPlazo = parseInt(cPlazo.value) || 0;
         const valorTea = parseFloat(cTea.value) || 0;
@@ -1624,12 +1491,14 @@ async function inyectarCapacidadCompraZillow(prop) {
         const totalMeses = anosPlazo * 12;
         const tasaMensualTEM = Math.pow(1 + valorTea, 1 / 12) - 1;
 
+        // Amortización con Sistema Francés SBS
         const cuotaBase = montoPrestamo * (tasaMensualTEM * Math.pow(1 + tasaMensualTEM, totalMeses)) / (Math.pow(1 + tasaMensualTEM, totalMeses) - 1);
         const costoDesgravamen = montoPrestamo * pctDesg;
         const costoInmueble = precioBase * pctInm;
         const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
         const ratioLtv = montoPrestamo / precioBase;
 
+        // Renderizado limpio de salida con formato monetario en Dólares ($)
         document.getElementById('display-pago-total-hipoteca').innerText = `$${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
         document.getElementById('display-pago-total-hipoteca').style.color = '#002E50';
         document.getElementById('txt-calc-prestamo').innerText = `$${Math.round(montoPrestamo).toLocaleString('en-US')}`;
@@ -1638,35 +1507,34 @@ async function inyectarCapacidadCompraZillow(prop) {
         document.getElementById('txt-calc-seginm').innerText = `$${Math.round(costoInmueble).toLocaleString('en-US')}`;
 
         const opcionSeleccionada = cInicial.options[cInicial.selectedIndex];
-        document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada ? (opcionSeleccionada.getAttribute('data-comment') || '') : '';
+        document.getElementById('lov-comentario-dinamico').innerText = opcionSeleccionada ? opcionSeleccionada.getAttribute('data-comment') : '';
 
         calculosGlobales = {
             pctInicial, montoInicial, montoPrestamo, totalMeses, valorTea, 
             tasaMensualTEM, pctDesg, pctInm, cuotaBase, costoDesgravamen, 
             costoInmueble, cuotaTotal, ratioLtv
         };
-    }
+    } // Cierra sub-función matemática ejecutarRecalculoHipoteca
 
     [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
+    // Evento de disparo comercial y persistencia transaccional
     btnGuardar.addEventListener('click', async () => {
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
         if (!calculosGlobales) return;
 
-        btnGuardar.innerText = "⏳ Generando cronograma PDF y enviando correo...";
+        btnGuardar.innerText = "? Generando cronograma PDF y enviando correo...";
         btnGuardar.disabled = true;
 
         try {
-            const cliente = typeof obtenerClienteSupabase === "function" ? obtenerClienteSupabase() : window.supabase;
-            if (!cliente) throw new Error("Cliente de Supabase no disponible.");
-
+            const cliente = obtenerClienteSupabase();
             const idUsuario = window.usuarioLogueado ? window.usuarioLogueado.id : 'anonimo_invitado';
 
             const { error } = await cliente
                 .from('simulacion_hipotecaria')
                 .insert([{
                     usuario_id_fk: idUsuario,
-                    propiedad_id_fk: String(idPropiedad),
+                    propiedad_id_fk: String(prop.id),
                     hipoteca_id_fk: 1,
                     tipo_propiedad: tipoProp,
                     precio_propiedad: precioBase,
@@ -1687,22 +1555,24 @@ async function inyectarCapacidadCompraZillow(prop) {
 
             if (error) throw error;
 
-            alert("✅ ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
-            btnGuardar.innerText = "✓ Cronograma Enviado Exitosamente";
+            alert("? ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
+            btnGuardar.innerText = "? Cronograma Enviado Exitosamente";
             btnGuardar.style.background = "#002E50";
             btnGuardar.style.color = "#FFB91D";
 
         } catch (err) {
             console.error("Fallo guardando simulación:", err.message);
             alert("Error procesando solicitud: " + err.message);
-            btnGuardar.innerText = "✉️ Enviar mi cronograma de hipoteca a mi correo";
+            btnGuardar.innerText = "?? Enviar mi cronograma de hipoteca a mi correo";
             btnGuardar.disabled = false;
         }
     });
 
+    // Bloque asíncrono para poblar las opciones ordenadas de los combos (LOVs)
     try {
-        const cliente = typeof obtenerClienteSupabase === "function" ? obtenerClienteSupabase() : window.supabase;
+        const cliente = obtenerClienteSupabase();
         if (cliente) {
+            // Cargar listas desplegables base (LOVs)
             const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
                 cliente.from('lov_cuota_inicial').select('*').order('porcentaje', { ascending: true }),
                 cliente.from('lov_plazo_hipotecario').select('*').order('anos', { ascending: true }),
@@ -1711,36 +1581,37 @@ async function inyectarCapacidadCompraZillow(prop) {
                 cliente.from('lov_seguro_inmueble').select('*').order('tasa_mensual', { ascending: true })
             ]);
 
-            if (rInicial.data?.length) {
+            if (rInicial.data && rInicial.data.length > 0) {
                 cInicial.innerHTML = rInicial.data.map(opt => `<option value="${opt.porcentaje}" data-comment="${opt.comentario || ''}">${opt.etiqueta || (opt.porcentaje * 100 + '%')}</option>`).join('');
             } else {
                 cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
             }
 
-            if (rPlazo.data?.length) {
+            if (rPlazo.data && rPlazo.data.length > 0) {
                 cPlazo.innerHTML = rPlazo.data.map(opt => `<option value="${opt.anos}">${opt.etiqueta || (opt.anos + ' años')}</option>`).join('');
             } else {
                 cPlazo.innerHTML = '<option value="20">20 Años</option>';
             }
 
-            if (rTea.data?.length) {
+            if (rTea.data && rTea.data.length > 0) {
                 cTea.innerHTML = rTea.data.map(opt => `<option value="${opt.tasa_tea}">${opt.etiqueta || ((opt.tasa_tea * 100).toFixed(2) + '% TEA')}</option>`).join('');
             } else {
                 cTea.innerHTML = '<option value="0.085">8.50% Promedio BCRP</option>';
             }
 
-            if (rDesg.data?.length) {
+            if (rDesg.data && rDesg.data.length > 0) {
                 cDesg.innerHTML = rDesg.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
             } else {
                 cDesg.innerHTML = '<option value="0.0005">0.05% Individual</option>';
             }
 
-            if (rInm.data?.length) {
+            if (rInm.data && rInm.data.length > 0) {
                 cInm.innerHTML = rInm.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
             } else {
                 cInm.innerHTML = '<option value="0.00025">0.025% Todo Riesgo</option>';
             }
 
+            // Realizar primer cálculo automático
             ejecutarRecalculoHipoteca();
         }
     } catch (errLOV) {
