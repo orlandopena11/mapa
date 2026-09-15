@@ -569,8 +569,9 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 } // Fin de Function procesarDatosDelMotor
 
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
-    if (typeof supabase !== "undefined" && supabase !== null) {
+    if (typeof supabase !== "undefined" && supabase !== null && supabase.auth) {
         supabase.auth.onAuthStateChange((event, session) => { // Inicia Callback onAuthStateChange
+
             console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
             
             if (session && session.user) {
