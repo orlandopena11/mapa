@@ -561,22 +561,47 @@ function renderizarMapaZillow() {
         } catch (errBucle) {
             return;
         }
-
+        // ==========================================================================
+        // CONSTRUCCIÓN DEL CONTENEDOR POPUP MASTER REPARADO PARA LEAFLET
+        // ==========================================================================
         const contenedorPopupMaster = document.createElement('div');
         contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
         contenedorPopupMaster.style.width = '260px';
         
+        // Creamos el carrusel pasando el flag 'true' para indicar que es contexto Popup
         const carruselPopup = construirRielCarruselComponente(prop, true);
         contenedorPopupMaster.appendChild(carruselPopup);
 
         const datosPopup = document.createElement('div');
-        datosPopup.innerHTML = `<div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">$${Number(prop.precio_base).toLocaleString('en-US')}</div><div style="font-size:12px; color:#475569; margin-top:4px;">${prop.habitaciones} Dorm | ${prop.banos} Baños</div><div style="font-size:12px; color:#1e293b; font-weight:500;">${prop.direccion || prop.titulo}</div>`;
+        datosPopup.className = 'datos-popup-info';
+        datosPopup.innerHTML = `
+            <div class="precio" style="font-size:16px; font-weight:bold; color:#002E50;">
+                $${Number(prop.precio_base).toLocaleString('en-US')}
+            </div>
+            <div style="font-size:12px; color:#475569; margin-top:4px;">
+                ${prop.habitaciones || 0} bd | ${prop.banos || 0} ba
+            </div>
+            <div style="font-size:12px; color:#1e293b; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                ${prop.direccion || prop.titulo || ""}
+            </div>
+        `;
         contenedorPopupMaster.appendChild(datosPopup);
 
+        // ESCUDO DE SEGURIDAD LEAFLET: Evita que el evento 'click' y 'pointerdown' se propague al mapa base
+        L.DomEvent.disableClickPropagation(contenedorPopupMaster);
+        L.DomEvent.disableScrollPropagation(contenedorPopupMaster);
+
         if (window.innerWidth > 768) {
-            marcador.bindPopup(contenedorPopupMaster, { maxWidth: 300, minWidth: 260, className: 'zillow-custom-popup-wrapper', autoPan: true, closeOnClick: false });
+            marcador.bindPopup(contenedorPopupMaster, { 
+                maxWidth: 300, 
+                minWidth: 260, 
+                className: 'zillow-custom-popup-wrapper', 
+                autoPan: true, 
+                closeOnClick: false 
+            });
         }
 
+        // Evento nativo del Marcador en el Mapa
         marcador.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
@@ -591,9 +616,8 @@ function renderizarMapaZillow() {
                             <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
                             <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
                                 <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida} m²</span>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba</span>
                                 <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
-                                <span style="font-size:11px; font-weight:bold; text-transform:uppercase; color:${prop.estado_publicacion === 'vendida' ? '#b58900' : '#006aff'};">${prop.estado_publicacion === 'vendida' ? 'Vendida' : 'Disponible'}</span>
                             </div>
                         </div>
                     `;
@@ -601,6 +625,7 @@ function renderizarMapaZillow() {
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
                 }
             } else {
+                // Sincronización del scroll automático hacia el catálogo derecho al hacer clic en un punto del mapa
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
                 if (tarjetaDesktop) { 
                     tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -611,15 +636,19 @@ function renderizarMapaZillow() {
             }
         });
 
-        carruselPopup.addEventListener('pointerdown', (ev) => {
-            ev.stopPropagation();
-            if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) return;
+        // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
+        carruselPopup.addEventListener('click', (ev) => {
+            if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
+                ev.stopPropagation();
+                return; // Deja operar las flechas sin abrir el detalle de la casa
+            }
             if (window.map) window.map.closePopup();
             state.propiedadSeleccionadaId = prop.id;
             gestionarCortinaSPA('detalle', prop);
         });
 
         window.capaMarcadores.addLayer(marcador);
+
     });
 }
 
