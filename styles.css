@@ -594,3 +594,50 @@ div.leaflet-marker-icon.map-price-pill {
     0% { transform: scale(1.16) translate(-1%, 1%); }
     100% { transform: scale(1.0); }
 }
+
+/* ==========================================================================
+   SOPORTE DE CARRUSELES UNIFICADOS PARA POPUPS DE MAPA (ESTILO ZILLOW)
+   ========================================================================== */
+
+/* Forzar que el contenedor popup de Leaflet no rompa las esquinas redondeadas */
+.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 12px !important;
+}
+
+.zillow-custom-popup-wrapper .leaflet-popup-content {
+    margin: 0 !important;
+    width: 260px !important;
+}
+
+/* Forzar dimensiones del carrusel dentro de los contextos de burbuja flotante */
+.popup-card .contenedor-foto.popup-carrusel-context {
+    width: 100% !important;
+    height: 140px !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.popup-card .carrusel-imagenes {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.popup-card .carrusel-imagenes img {
+    width: 260px !important;
+    height: 140px !important;
+    object-fit: cover;
+}
+
+/* Hacer visibles las flechas de navegación dentro de los popups del mapa */
+.popup-carrusel-context:hover .flecha-carrusel {
+    opacity: 1 !important;
+}
+
+.popup-card .datos-popup-info {
+    padding: 10px 12px;
+    font-family: sans-serif;
+    background-color: #ffffff;
+}
