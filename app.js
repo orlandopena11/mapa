@@ -476,7 +476,8 @@ function renderizarMapaZillow() {
             if (coordenadasValidas.length === 1) {
                 window.map.setView(coordenadasValidas[0], 15, { animate: true });
             } else {
-                window.map.fitBounds(coordenadasValidas, { padding:, maxZoom: 15, animate: true });
+              window.map.fitBounds(coordenadasValidas, { paddingTopLeft:, maxZoom: 15, animate: true });
+
             }
         } catch (errGeometrico) {
             // Silenciar posible excepción en encuadre
