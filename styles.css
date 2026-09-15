@@ -247,7 +247,9 @@ header.navbar-global, .navbar-global {
     color: #334155;
 }
 
-/* PARTE 3 DE 5: CONSTRUCTOR DE RIEL MULTIMEDIA TRANSICIÓN TRIDIMENSIONAL INFALIBLE */
+/* ==========================================================================
+   PARTE 3 DE 5: CONSTRUCTOR DE RIEL MULTIMEDIA Y CARRUSEL (CORREGIDO Y ESTABLE)
+   ========================================================================== */
 .tarjeta-casa {
     background-color: var(--blanco);
     border: 1px solid var(--gris-borde);
@@ -268,86 +270,98 @@ header.navbar-global, .navbar-global {
 .contenedor-foto {
     width: 100%;
     height: 180px;
-    background-color: var(--gris-fondo);
+    background-color: #1e293b;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
 }
 
+/* Riel flex que contiene hasta 5 fotos en fila horizontal */
 .carrusel-imagenes {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     height: 100%;
     width: 100%;
-    transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Reglas estrictas para evitar que Leaflet rompa el tamaño de la foto */
 .carrusel-imagenes img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    flex-shrink: 0;
+    min-width: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    display: block !important;
 }
 
+/* Flechas permanentes y visibles */
 .flecha-carrusel {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: rgba(255, 255, 255, 0.9);
-    color: #1e293b;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    width: 26px;
-    height: 26px;
+    background-color: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+    border: none;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 800;
-    font-size: 11px;
-    z-index: 10;
-    opacity: 0;
-    transition: opacity 0.2s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    font-size: 16px;
+    z-index: 15;
+    opacity: 0.85;
+    transition: opacity 0.2s, background-color 0.2s;
+    user-select: none;
 }
 
-.contenedor-foto:hover .flecha-carrusel {
+.flecha-carrusel:hover {
     opacity: 1;
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .flecha-izq { left: 8px; }
 .flecha-der { right: 8px; }
 
+/* Indicadores / Puntos inferiores */
 .indicadores-carrusel {
     position: absolute;
-    bottom: 10px;
+    bottom: 8px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 5px;
-    z-index: 10;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 3px 6px;
-    border-radius: 8px;
+    gap: 6px;
+    z-index: 15;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 4px 8px;
+    border-radius: 10px;
+    pointer-events: none;
 }
 
 .punto-indicator {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 50%;
+    transition: background-color 0.2s, transform 0.2s;
 }
 
 .punto-indicator.activo {
-    background-color: var(--blanco);
+    background-color: #ffffff;
+    transform: scale(1.25);
 }
 
 .etiqueta-foto-zillow {
     position: absolute;
     top: 10px;
     left: 10px;
-    z-index: 10;
+    z-index: 15;
     background-color: rgba(255, 255, 255, 0.95);
     color: #1e293b;
     padding: 4px 8px;
@@ -355,15 +369,15 @@ header.navbar-global, .navbar-global {
     font-weight: 700;
     text-transform: uppercase;
     border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-/* TRANSFORMACIONES MODULARES POR ATRIBUTO DE DATO */
+/* TRANSFORMACIONES MODULARES POR ATRIBUTO */
 .carrusel-imagenes[data-foto-activa="0"] { transform: translateX(0%); }
 .carrusel-imagenes[data-foto-activa="1"] { transform: translateX(-100%); }
 .carrusel-imagenes[data-foto-activa="2"] { transform: translateX(-200%); }
 .carrusel-imagenes[data-foto-activa="3"] { transform: translateX(-300%); }
 .carrusel-imagenes[data-foto-activa="4"] { transform: translateX(-400%); }
-
 /* PARTE 4 DE 5: COLORES HEXADECIMALES DE BURBUJAS LEAFLET Y CAPAS MODALES */
 .leaflet-marker-icon.map-price-pill.venta-azul {
     background-color: #062E48;
