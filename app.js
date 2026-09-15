@@ -272,6 +272,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         const img = document.createElement('img');
         img.src = prop.fotos[i];
         img.alt = `${prop.titulo} - Vista ${i + 1}`;
+        
+        // NUEVAS LÍNEAS: Estilos obligatorios para que cada imagen ocupe todo el marco sin aplastarse con las demás
+        img.style.width = '100%';
+        img.style.flexShrink = '0'; // Evita que Flexbox achique la foto
+        img.style.objectFit = 'cover'; // Mantiene la proporción de la imagen estilo Zillow
+        
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
@@ -279,6 +285,7 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         contenedorDots.appendChild(dot);
         dotsArray.push(dot);
     }
+
     contenedorFoto.appendChild(contenedorDots);
 
     contenedorFoto.style.position = 'relative';
