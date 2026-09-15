@@ -256,13 +256,11 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     rielCarrusel.className = 'carrusel-imagenes';
     rielCarrusel.setAttribute('data-foto-activa', '0');
     
-    // NUEVAS LÍNEAS: Configuración de estilos en línea obligatorios para el comportamiento del carrusel horizontal
-    contenedorFoto.style.overflow = 'hidden'; // Oculta las fotos que no están activas fuera del marco
-    rielCarrusel.style.display = 'flex'; // Alinea todas las fotos una al lado de la otra de forma horizontal
-    rielCarrusel.style.transition = 'transform 0.3s ease-in-out'; // Añade una transición fluida al deslizar
-    rielCarrusel.style.width = '100%'; // Define un ancho estándar coincidente con el contenedor
+    // NUEVA LÍNEA: Asegura el ancho total del riel interno para que el Flexbox nativo de tu styles.css alinee horizontalmente las 5 fotos al 100% de la tarjeta
+    rielCarrusel.style.width = '100%';
     
     contenedorFoto.appendChild(rielCarrusel);
+
 
 
     const totalFotos = Math.min(propiedad.fotos.length, 5);
