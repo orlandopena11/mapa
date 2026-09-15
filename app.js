@@ -251,17 +251,19 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     const propiedad = prop;
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
+    contenedorFoto.style.position = 'relative';
+    contenedorFoto.style.overflow = 'hidden';
+    contenedorFoto.style.width = '100%';
+    contenedorFoto.style.height = esPopup ? '140px' : '180px';
 
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     rielCarrusel.setAttribute('data-foto-activa', '0');
-    
-    // NUEVA LÍNEA: Asegura el ancho total del riel interno para que el Flexbox nativo de tu styles.css alinee horizontalmente las 5 fotos al 100% de la tarjeta
+    rielCarrusel.style.display = 'flex';
     rielCarrusel.style.width = '100%';
-    
+    rielCarrusel.style.height = '100%';
+    rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
     contenedorFoto.appendChild(rielCarrusel);
-
-
 
     const totalFotos = Math.min(propiedad.fotos.length, 5);
     const dotsArray = [];
@@ -272,12 +274,11 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         const img = document.createElement('img');
         img.src = prop.fotos[i];
         img.alt = `${prop.titulo} - Vista ${i + 1}`;
-        
-        // NUEVAS LÍNEAS: Estilos obligatorios para que cada imagen ocupe todo el marco sin aplastarse con las demás
         img.style.width = '100%';
-        img.style.flexShrink = '0'; // Evita que Flexbox achique la foto
-        img.style.objectFit = 'cover'; // Mantiene la proporción de la imagen estilo Zillow
-        
+        img.style.minWidth = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.flexShrink = '0';
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
@@ -285,12 +286,11 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         contenedorDots.appendChild(dot);
         dotsArray.push(dot);
     }
-
     contenedorFoto.appendChild(contenedorDots);
 
-    contenedorFoto.style.position = 'relative';
+    // Botón Corazón Favorito
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '❤'; 
+    botonCorazon.innerHTML = '♥'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
     botonCorazon.style.top = "12px";
@@ -305,24 +305,13 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     botonCorazon.style.display = "flex";
     botonCorazon.style.alignItems = "center";
     botonCorazon.style.justifyContent = "center";
-    botonCorazon.style.zIndex = "10";
+    botonCorazon.style.zIndex = "20";
     botonCorazon.style.color = "#fff";
 
-    // Usamos onclick directo para evitar conflictos con el árbol de LeafletEvents
     botonCorazon.onclick = (e) => {
-        if (e) {
-            e.preventDefault(); 
-            e.stopPropagation();
-        }
+        if (e) { e.preventDefault(); e.stopPropagation(); }
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
-
-        if (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') {
-            botonCorazon.style.color = '#ffffff'; 
-            botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
-        } else {
-            botonCorazon.style.color = '#d92323'; 
-            botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
-        }
+        botonCorazon.style.color = (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') ? '#ffffff' : '#d92323';
     };
     contenedorFoto.appendChild(botonCorazon);
 
@@ -330,26 +319,30 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         let indiceFotoActual = 0;
         const btnlzq = document.createElement('button');
         btnlzq.className = 'flecha-carrusel flecha-izq'; 
-        btnlzq.textContent = '<';
+        btnlzq.textContent = '‹';
+        btnlzq.style.zIndex = "20";
         
         const btnDer = document.createElement('button');
         btnDer.className = 'flecha-carrusel flecha-der'; 
-        btnDer.textContent = '>';
+        btnDer.textContent = '›';
+        btnDer.style.zIndex = "20";
 
         const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
-            
-            // NUEVA LÍNEA: Desplaza físicamente las imágenes de forma horizontal multiplicando el ancho del contenedor por el índice activo
             rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
-            
             dotsArray.forEach((d, idx) => {
                 if (idx === indiceFotoActual) d.classList.add('activo');
                 else d.classList.remove('activo');
             });
         };
         
-        // Asignación limpia sin addEventListener para blindar el ciclo de vida del DOM
+        // ESCUDOS DE SEGURIDAD PARA LEAFLET Y DESKTOP
+        if (typeof L !== 'undefined' && L.DomEvent) {
+            L.DomEvent.disableClickPropagation(btnlzq);
+            L.DomEvent.disableClickPropagation(btnDer);
+        }
+
         btnlzq.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(-1); };
         btnDer.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(1); };
         
@@ -365,6 +358,7 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     return contenedorFoto;
 } // Fin de Function construirRielCarruselComponente
 
+
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
@@ -374,23 +368,29 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     tarjeta.className = 'tarjeta-casa'; 
     tarjeta.setAttribute('data-id', prop.id);
 
-    // INYECCIÓN DEL RANGUITO DE CARRUSEL DE FOTOS COMO EN ZILLOW
+    // INYECCIÓN DEL CARRUSEL DE FOTOS CORREGIDO
     const contenedorVisualFoto = construirRielCarruselComponente(prop, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    const clickSPAHandler = (e) => { // Inicia Arrow Function clickSPAHandler
-        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) return;
+    // MANEJADOR SPA CORREGIDO: Bloquea la redirección si tocas las flechas o el corazón
+    const clickSPAHandler = (e) => { 
+        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+            e.stopPropagation();
+            return;
+        }
         if (window.map) window.map.closePopup();
         state.propiedadSeleccionadaId = prop.id;
         gestionarCortinaSPA('detalle', prop);
-    }; // Fin de Arrow Function clickSPAHandler
+    }; 
     
-    contenedorVisualFoto.addEventListener('pointerdown', clickSPAHandler);
+    // Cambiado de 'pointerdown' a 'click' controlado para evitar conflictos de arrastre en el mapa
+    contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa'; 
     datosCasa.style.padding = '12px';
-    datosCasa.addEventListener('pointerdown', clickSPAHandler);
+    datosCasa.style.cursor = 'pointer';
+    datosCasa.addEventListener('click', clickSPAHandler);
 
     const precioTexto = document.createElement('div');
     precioTexto.className = 'precio';
@@ -422,6 +422,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     tarjeta.appendChild(datosCasa);
     return tarjeta;
 } // Fin de Function crearComponenteTarjetaZillow
+
 
 
 // ==========================================================================
