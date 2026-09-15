@@ -248,93 +248,98 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 // PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
 // ==========================================================================
 
+// ==========================================================================
+// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA
+// ==========================================================================
+
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
-    const propiedad = prop;
+    // 1. OBTENCIÓN Y LIMPIEZA GARANTIZADA DE HASTA 5 FOTOS
+    let fotosArray = [];
+    if (Array.isArray(prop.fotos) && prop.fotos.length > 0) {
+        fotosArray = prop.fotos;
+    } else {
+        const origen = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
+        if (typeof origen === 'string' && origen.trim() !== '') {
+            fotosArray = origen.includes(',') ? origen.split(',').map(s => s.trim()) : [origen.trim()];
+        } else if (Array.isArray(origen)) {
+            fotosArray = origen;
+        }
+    }
+
+    // Foto por defecto si la propiedad no tiene imágenes
+    if (fotosArray.length === 0) {
+        fotosArray = ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"];
+    }
+
+    // Limitamos exactamente a las 5 primeras fotos
+    const totalFotos = Math.min(fotosArray.length, 5);
+
+    // 2. CONTENEDOR PRINCIPAL DE LA FOTO
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
-    contenedorFoto.style.position = 'relative';
-    contenedorFoto.style.overflow = 'hidden';
-    contenedorFoto.style.width = '100%';
-    contenedorFoto.style.height = esPopup ? '160px' : '200px';
-    contenedorFoto.style.borderRadius = '8px 8px 0 0';
+    if (esPopup) {
+        contenedorFoto.style.height = '140px';
+    }
 
+    // 3. RIEL DESLIZANTE
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     rielCarrusel.setAttribute('data-foto-activa', '0');
-    rielCarrusel.style.display = 'flex';
-    rielCarrusel.style.width = '100%';
-    rielCarrusel.style.height = '100%';
-    rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
     contenedorFoto.appendChild(rielCarrusel);
 
-    const totalFotos = Math.min(propiedad.fotos ? propiedad.fotos.length : 0, 5);
+    // 4. INDICADORES (DOTS)
     const dotsArray = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
-    contenedorDots.style.position = 'absolute';
-    contenedorDots.style.bottom = '8px';
-    contenedorDots.style.left = '50%';
-    contenedorDots.style.transform = 'translateX(-50%)';
-    contenedorDots.style.display = 'flex';
-    contenedorDots.style.gap = '4px';
-    contenedorDots.style.zIndex = '5';
 
+    // 5. INYECCIÓN DE LAS HASTA 5 IMÁGENES AL RIEL
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        img.src = prop.fotos[i];
-        img.alt = `${prop.titulo || 'Propiedad'} - Vista ${i + 1}`;
-        img.style.minWidth = '100%';
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.flexShrink = '0';
+        img.src = fotosArray[i];
+        img.alt = `${prop.titulo || 'Propiedad'} - Foto ${i + 1}`;
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
         dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
-        dot.style.width = '6px';
-        dot.style.height = '6px';
-        dot.style.borderRadius = '50%';
-        dot.style.background = i === 0 ? '#ffffff' : 'rgba(255, 255, 255, 0.5)';
-        dot.style.transition = 'background 0.2s';
         contenedorDots.appendChild(dot);
         dotsArray.push(dot);
     }
     contenedorFoto.appendChild(contenedorDots);
 
-    // ==========================================================================
-    // PARTE 7 DE 15: CANDADO DEL BOTÓN CORAZÓN DE FAVORITOS Y DESPLAZADORES CIRCULARES
-    // ==========================================================================
-    
+    // 6. BOTÓN CORAZÓN (FAVORITOS)
     const botonCorazon = document.createElement('button');
     botonCorazon.innerHTML = '♥'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
-    botonCorazon.style.top = "12px";
-    botonCorazon.style.right = "12px";
-    botonCorazon.style.background = "rgba(0,0,0,0.45)";
+    botonCorazon.style.top = "10px";
+    botonCorazon.style.right = "10px";
+    botonCorazon.style.background = "rgba(0, 0, 0, 0.45)";
     botonCorazon.style.border = "none";
     botonCorazon.style.borderRadius = "50%";
-    botonCorazon.style.width = "32px";
-    botonCorazon.style.height = "32px";
+    botonCorazon.style.width = "30px";
+    botonCorazon.style.height = "30px";
     botonCorazon.style.cursor = "pointer";
     botonCorazon.style.fontSize = "16px";
     botonCorazon.style.display = "flex";
     botonCorazon.style.alignItems = "center";
     botonCorazon.style.justifyContent = "center";
-    botonCorazon.style.zIndex = "10";
-    botonCorazon.style.color = "#fff";
+    botonCorazon.style.zIndex = "20";
+    botonCorazon.style.color = "#ffffff";
+
+    const frenaEventos = (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+        }
+    };
 
     botonCorazon.addEventListener('pointerdown', (e) => {
-        if (e) {
-            e.preventDefault(); 
-            e.stopPropagation();
-            if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
-        }
-        
+        frenaEventos(e);
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        if (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') {
+        const activo = botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323';
+        if (activo) {
             botonCorazon.style.color = '#ffffff'; 
             botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         } else {
@@ -342,82 +347,54 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         }
     });
+    botonCorazon.addEventListener('click', frenaEventos);
     contenedorFoto.appendChild(botonCorazon);
 
+    // 7. LÓGICA Y FLECHAS DE NAVEGACIÓN
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
-        const btnIzq = document.createElement('button');
-        btnIzq.className = 'flecha-carrusel flecha-izq'; 
-        btnIzq.textContent = '‹';
-        btnIzq.style.position = 'absolute';
-        btnIzq.style.top = '50%';
-        btnIzq.style.left = '8px';
-        btnIzq.style.transform = 'translateY(-50%)';
-        btnIzq.style.background = 'rgba(0, 0, 0, 0.5)';
-        btnIzq.style.color = '#ffffff';
-        btnIzq.style.border = 'none';
-        btnIzq.style.borderRadius = '50%';
-        btnIzq.style.width = '28px';
-        btnIzq.style.height = '28px';
-        btnIzq.style.cursor = 'pointer';
-        btnIzq.style.fontSize = '18px';
-        btnIzq.style.display = 'flex';
-        btnIzq.style.alignItems = 'center';
-        btnIzq.style.justifyContent = 'center';
-        btnIzq.style.zIndex = '6';
 
-        const btnDer = document.createElement('button');
-        btnDer.className = 'flecha-carrusel flecha-der'; 
-        btnDer.textContent = '›';
-        btnDer.style.position = 'absolute';
-        btnDer.style.top = '50%';
-        btnDer.style.right = '8px';
-        btnDer.style.transform = 'translateY(-50%)';
-        btnDer.style.background = 'rgba(0, 0, 0, 0.5)';
-        btnDer.style.color = '#ffffff';
-        btnDer.style.border = 'none';
-        btnDer.style.borderRadius = '50%';
-        btnDer.style.width = '28px';
-        btnDer.style.height = '28px';
-        btnDer.style.cursor = 'pointer';
-        btnDer.style.fontSize = '18px';
-        btnDer.style.display = 'flex';
-        btnDer.style.alignItems = 'center';
-        btnDer.style.justifyContent = 'center';
-        btnDer.style.zIndex = '6';
-
-        const desplazarRiel = (direction) => {
-            indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
+        const desplazarRiel = (direccion) => {
+            indiceFotoActual = (indiceFotoActual + direccion + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
-            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
+            
             dotsArray.forEach((d, idx) => {
                 if (idx === indiceFotoActual) {
                     d.classList.add('activo');
-                    d.style.background = '#ffffff';
                 } else {
                     d.classList.remove('activo');
-                    d.style.background = 'rgba(255, 255, 255, 0.5)';
                 }
             });
         };
-        
-        btnIzq.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); desplazarRiel(-1); });
-        btnIzq.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); });
-        btnDer.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); desplazarRiel(1); });
-        btnDer.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); });
-        
-        contenedorFoto.appendChild(btnIzq); 
-        contenedorFoto.appendChild(btnDer);
+
+        const crearFlecha = (esIzquierda) => {
+            const btn = document.createElement('button');
+            btn.className = `flecha-carrusel ${esIzquierda ? 'flecha-izq' : 'flecha-der'}`;
+            btn.textContent = esIzquierda ? '‹' : '›';
+
+            const manejarClic = (e) => {
+                frenaEventos(e);
+                desplazarRiel(esIzquierda ? -1 : 1);
+            };
+
+            btn.addEventListener('pointerdown', frenaEventos);
+            btn.addEventListener('mousedown', frenaEventos);
+            btn.addEventListener('click', manejarClic);
+            return btn;
+        };
+
+        contenedorFoto.appendChild(crearFlecha(true));
+        contenedorFoto.appendChild(crearFlecha(false));
     }
 
+    // 8. ETIQUETA FLOTANTE DE TÍTULO O TIPO
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = prop.titulo || '';
+    etiquetaFlotante.textContent = prop.tipo_propiedad || prop.titulo || 'DESTACADO';
     contenedorFoto.appendChild(etiquetaFlotante);
-    
+
     return contenedorFoto;
 } // Fin de Function construirRielCarruselComponente
-
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
