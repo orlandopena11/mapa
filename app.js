@@ -251,52 +251,25 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 // ==========================================================================
 // PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA
 // ==========================================================================
-
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
-    // 1. OBTENCIÓN Y LIMPIEZA GARANTIZADA DE HASTA 5 FOTOS
-    let fotosArray = [];
-    if (Array.isArray(prop.fotos) && prop.fotos.length > 0) {
-        fotosArray = prop.fotos;
-    } else {
-        const origen = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
-        if (typeof origen === 'string' && origen.trim() !== '') {
-            fotosArray = origen.includes(',') ? origen.split(',').map(s => s.trim()) : [origen.trim()];
-        } else if (Array.isArray(origen)) {
-            fotosArray = origen;
-        }
-    }
-
-    // Foto por defecto si la propiedad no tiene imágenes
-    if (fotosArray.length === 0) {
-        fotosArray = ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=800&q=80"];
-    }
-
-    // Limitamos exactamente a las 5 primeras fotos
-    const totalFotos = Math.min(fotosArray.length, 5);
-
-    // 2. CONTENEDOR PRINCIPAL DE LA FOTO
+    const propiedad = prop;
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
-    if (esPopup) {
-        contenedorFoto.style.height = '140px';
-    }
 
-    // 3. RIEL DESLIZANTE
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     rielCarrusel.setAttribute('data-foto-activa', '0');
     contenedorFoto.appendChild(rielCarrusel);
 
-    // 4. INDICADORES (DOTS)
+    const totalFotos = Math.min(propiedad.fotos.length, 5);
     const dotsArray = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
 
-    // 5. INYECCIÓN DE LAS HASTA 5 IMÁGENES AL RIEL
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        img.src = fotosArray[i];
-        img.alt = `${prop.titulo || 'Propiedad'} - Foto ${i + 1}`;
+        img.src = prop.fotos[i];
+        img.alt = `${prop.titulo} - Vista ${i + 1}`;
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
@@ -306,95 +279,79 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     }
     contenedorFoto.appendChild(contenedorDots);
 
-    // 6. BOTÓN CORAZÓN (FAVORITOS)
+    contenedorFoto.style.position = 'relative';
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '♥'; 
+    botonCorazon.innerHTML = '❤'; 
     botonCorazon.className = 'corazon-favorito';
     botonCorazon.style.position = "absolute";
-    botonCorazon.style.top = "10px";
-    botonCorazon.style.right = "10px";
-    botonCorazon.style.background = "rgba(0, 0, 0, 0.45)";
+    botonCorazon.style.top = "12px";
+    botonCorazon.style.right = "12px";
+    botonCorazon.style.background = "rgba(0,0,0,0.45)";
     botonCorazon.style.border = "none";
     botonCorazon.style.borderRadius = "50%";
-    botonCorazon.style.width = "30px";
-    botonCorazon.style.height = "30px";
+    botonCorazon.style.width = "32px";
+    botonCorazon.style.height = "32px";
     botonCorazon.style.cursor = "pointer";
     botonCorazon.style.fontSize = "16px";
     botonCorazon.style.display = "flex";
     botonCorazon.style.alignItems = "center";
     botonCorazon.style.justifyContent = "center";
-    botonCorazon.style.zIndex = "20";
-    botonCorazon.style.color = "#ffffff";
+    botonCorazon.style.zIndex = "10";
+    botonCorazon.style.color = "#fff";
 
-    const frenaEventos = (e) => {
+    // Usamos onclick directo para evitar conflictos con el árbol de LeafletEvents
+    botonCorazon.onclick = (e) => {
         if (e) {
-            e.preventDefault();
+            e.preventDefault(); 
             e.stopPropagation();
-            if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
         }
-    };
-
-    botonCorazon.addEventListener('pointerdown', (e) => {
-        frenaEventos(e);
         if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
 
-        const activo = botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323';
-        if (activo) {
+        if (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') {
             botonCorazon.style.color = '#ffffff'; 
             botonCorazon.style.background = 'rgba(0, 0, 0, 0.45)';
         } else {
             botonCorazon.style.color = '#d92323'; 
             botonCorazon.style.background = 'rgba(255, 255, 255, 0.95)';
         }
-    });
-    botonCorazon.addEventListener('click', frenaEventos);
+    };
     contenedorFoto.appendChild(botonCorazon);
 
-    // 7. LÓGICA Y FLECHAS DE NAVEGACIÓN
     if (totalFotos > 1) {
         let indiceFotoActual = 0;
+        const btnlzq = document.createElement('button');
+        btnlzq.className = 'flecha-carrusel flecha-izq'; 
+        btnlzq.textContent = '<';
+        
+        const btnDer = document.createElement('button');
+        btnDer.className = 'flecha-carrusel flecha-der'; 
+        btnDer.textContent = '>';
 
-        const desplazarRiel = (direccion) => {
-            indiceFotoActual = (indiceFotoActual + direccion + totalFotos) % totalFotos;
+        const desplazarRiel = (direction) => {
+            indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
-            
             dotsArray.forEach((d, idx) => {
-                if (idx === indiceFotoActual) {
-                    d.classList.add('activo');
-                } else {
-                    d.classList.remove('activo');
-                }
+                if (idx === indiceFotoActual) d.classList.add('activo');
+                else d.classList.remove('activo');
             });
         };
-
-        const crearFlecha = (esIzquierda) => {
-            const btn = document.createElement('button');
-            btn.className = `flecha-carrusel ${esIzquierda ? 'flecha-izq' : 'flecha-der'}`;
-            btn.textContent = esIzquierda ? '‹' : '›';
-
-            const manejarClic = (e) => {
-                frenaEventos(e);
-                desplazarRiel(esIzquierda ? -1 : 1);
-            };
-
-            btn.addEventListener('pointerdown', frenaEventos);
-            btn.addEventListener('mousedown', frenaEventos);
-            btn.addEventListener('click', manejarClic);
-            return btn;
-        };
-
-        contenedorFoto.appendChild(crearFlecha(true));
-        contenedorFoto.appendChild(crearFlecha(false));
+        
+        // Asignación limpia sin addEventListener para blindar el ciclo de vida del DOM
+        btnlzq.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(-1); };
+        btnDer.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(1); };
+        
+        contenedorFoto.appendChild(btnlzq); 
+        contenedorFoto.appendChild(btnDer);
     }
 
-    // 8. ETIQUETA FLOTANTE DE TÍTULO O TIPO
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = prop.tipo_propiedad || prop.titulo || 'DESTACADO';
+    etiquetaFlotante.textContent = prop.tipo_propiedad || prop.titulo || '';
     contenedorFoto.appendChild(etiquetaFlotante);
-
+    
     return contenedorFoto;
 } // Fin de Function construirRielCarruselComponente
+
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
