@@ -245,10 +245,6 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 
 
 // ==========================================================================
-// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA CON CORAZÓN ACL
-// ==========================================================================
-
-// ==========================================================================
 // PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA
 // ==========================================================================
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
@@ -259,7 +255,15 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
     rielCarrusel.setAttribute('data-foto-activa', '0');
+    
+    // NUEVAS LÍNEAS: Configuración de estilos en línea obligatorios para el comportamiento del carrusel horizontal
+    contenedorFoto.style.overflow = 'hidden'; // Oculta las fotos que no están activas fuera del marco
+    rielCarrusel.style.display = 'flex'; // Alinea todas las fotos una al lado de la otra de forma horizontal
+    rielCarrusel.style.transition = 'transform 0.3s ease-in-out'; // Añade una transición fluida al deslizar
+    rielCarrusel.style.width = '100%'; // Define un ancho estándar coincidente con el contenedor
+    
     contenedorFoto.appendChild(rielCarrusel);
+
 
     const totalFotos = Math.min(propiedad.fotos.length, 5);
     const dotsArray = [];
@@ -330,6 +334,10 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
+            
+            // NUEVA LÍNEA: Desplaza físicamente las imágenes de forma horizontal multiplicando el ancho del contenedor por el índice activo
+            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
+            
             dotsArray.forEach((d, idx) => {
                 if (idx === indiceFotoActual) d.classList.add('activo');
                 else d.classList.remove('activo');
