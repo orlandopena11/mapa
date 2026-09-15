@@ -448,9 +448,6 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
-// ==========================================================================
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
-// ==========================================================================
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
