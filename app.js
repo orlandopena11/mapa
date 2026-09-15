@@ -448,26 +448,17 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
+// ==========================================================================
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
+// ==========================================================================
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // 1. LIMPIEZA SEGURA PARA EVITAR EL ERROR _leaflet_events
+    // 1. LIMPIEZA ATÓMICA DE CAPAS (CORRECCIÓN ABSOLUTA PARA EVITAR EL ERROR _leaflet_events)
     if (window.capaMarcadores) {
-        window.capaMarcadores.eachLayer(layer => {
-            try {
-                // Remueve el popup asignado antes de remover el marcador para limpiar listeners del DOM
-                if (layer.getPopup()) {
-                    layer.unbindPopup();
-                }
-                window.capaMarcadores.removeLayer(layer);
-            } catch (e) {
-                // Silencia referencias del DOM obsoletas
-            }
-        });
-        window.capaMarcadores.clearLayers();
-    } else {
-        window.capaMarcadores = L.layerGroup().addTo(window.map);
+        window.map.removeLayer(window.capaMarcadores);
     }
+    window.capaMarcadores = L.layerGroup().addTo(window.map);
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
@@ -488,7 +479,7 @@ function renderizarMapaZillow() {
             if (coordenadasValidas.length === 1) {
                 window.map.setView(coordenadasValidas[0], 15, { animate: true });
             } else {
-                window.map.fitBounds(coordenadasValidas, { padding: [30, 30], maxZoom: 15, animate: true });
+                window.map.fitBounds(coordenadasValidas, { padding:, maxZoom: 15, animate: true });
             }
         } catch (errGeometrico) {
             // Silenciar posible excepción en encuadre
@@ -518,6 +509,7 @@ function renderizarMapaZillow() {
         } catch (errBucle) {
             return;
         }
+
         // ==========================================================================
         // CONSTRUCCIÓN DEL CONTENEDOR POPUP MASTER REPARADO PARA LEAFLET
         // ==========================================================================
@@ -605,9 +597,9 @@ function renderizarMapaZillow() {
         });
 
         window.capaMarcadores.addLayer(marcador);
-
     });
 }
+
 
 // ==========================================================================
 // PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
