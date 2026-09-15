@@ -404,6 +404,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     tarjeta.className = 'tarjeta-casa'; 
     tarjeta.setAttribute('data-id', prop.id);
 
+    // INYECCIÓN DEL RANGUITO DE CARRUSEL DE FOTOS COMO EN ZILLOW
     const contenedorVisualFoto = construirRielCarruselComponente(prop, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
@@ -426,7 +427,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     precioTexto.style.fontSize = '18px'; 
     precioTexto.style.fontWeight = 'bold'; 
     precioTexto.style.color = '#1e293b';
-    precioTexto.textContent = prop.precio_base ? `$/., ${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
+    precioTexto.textContent = prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
     datosCasa.appendChild(precioTexto);
 
     const caracteristicasTexto = document.createElement('div');
@@ -434,24 +435,18 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     caracteristicasTexto.style.fontSize = '13px'; 
     caracteristicasTexto.style.color = '#475569'; 
     caracteristicasTexto.style.marginTop = '4px';
-    caracteristicasTexto.textContent = `${prop.habitaciones || 0} Dorm | ${prop.banos || 0} Baños | AC: ${prop.area_construida || 0} m² | AT: ${prop.area_terreno || 0} m²`;
+    caracteristicasTexto.textContent = `${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} sqft`;
     datosCasa.appendChild(caracteristicasTexto);
-
-    const adicionalesTexto = document.createElement('div');
-    adicionalesTexto.className = 'adicionales-inmueble';
-    adicionalesTexto.style.fontSize = '12px'; 
-    adicionalesTexto.style.color = '#64748b'; 
-    adicionalesTexto.style.marginTop = '2px';
-    adicionalesTexto.textContent = `${prop.tipo_propiedad || 'Inmueble'} | Estacionamientos: ${prop.estacionamientos || 0} | Año: ${prop.ano_construccion || 0}`;
-    datosCasa.appendChild(adicionalesTexto);
 
     const ubicacionTexto = document.createElement('div');
     ubicacionTexto.className = 'ubicacion-direccion-directa';
-    ubicacionTexto.style.fontSize = '14px'; 
-    ubicacionTexto.style.color = '#1e293b'; 
-    ubicacionTexto.style.fontWeight = '600'; 
+    ubicacionTexto.style.fontSize = '13px'; 
+    ubicacionTexto.style.color = '#64748b'; 
     ubicacionTexto.style.marginTop = '4px';
-    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion} (${prop.distrito || ''})` : (prop.titulo || "");
+    ubicacionTexto.style.whiteSpace = 'nowrap';
+    ubicacionTexto.style.overflow = 'hidden';
+    ubicacionTexto.style.textOverflow = 'ellipsis';
+    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion}, ${prop.distrito || ''}` : (prop.titulo || "");
     datosCasa.appendChild(ubicacionTexto);
 
     tarjeta.appendChild(datosCasa);
