@@ -145,8 +145,9 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     console.groupEnd();
 
     
-    // Captura el riel unificado procesado por codigo.gs o las columnas nativas de Postgres
-    const origenFotos = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
+    // MODIFICACIÓN ÚNICA: Lee directamente el nuevo arreglo unificado 'galeria_fotos' generado por la vista de Supabase
+    const origenFotos = prop.galeria_fotos;
+
 
     if (origenFotos) {
         let coleccionCruda = [];
