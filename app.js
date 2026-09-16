@@ -1606,18 +1606,25 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         const cliente = obtenerClienteSupabase();
         if (cliente) {
             // Cargar listas desplegables base (LOVs)
+            // CORRECCIÓN DE ORDENAMIENTO: Ordena por la columna real 'cuota_inicial' tal como se ve en tu captura
             const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
-                cliente.from('lov_cuota_inicial').select('*').order('porcentaje', { ascending: true }),
-                cliente.from('lov_plazo_hipotecario').select('*').order('anos', { ascending: true }),
-                cliente.from('lov_tasa_interes').select('*').order('tasa_tea', { ascending: true }),
-                cliente.from('lov_seguro_desgravamen').select('*').order('tasa_mensual', { ascending: true }),
-                cliente.from('lov_seguro_inmueble').select('*').order('tasa_mensual', { ascending: true })
+                cliente.from('LOV_hipoteca_cuota_inicial').select('*').order('cuota_inicial', { ascending: true }),
+                cliente.from('LOV_hipoteca_plazo').select('*').order('anos', { ascending: true }),
+                cliente.from('LOV_hipoteca_TEA').select('*').order('tasa_tea', { ascending: true }),
+                cliente.from('LOV_hipoteca_desgravamen').select('*').order('tasa_mensual', { ascending: true }),
+                cliente.from('LOV_hipoteca_seguro_inmueble').select('*').order('tasa_mensual', { ascending: true })
             ]);
 
+            // CORRECCIÓN DE COLUMNAS: Mapea directamente 'cuota_inicial' y 'comentarios_sbs_mercado' de tu Supabase
             if (rInicial.data && rInicial.data.length > 0) {
-                cInicial.innerHTML = rInicial.data.map(opt => `<option value="${opt.porcentaje}" data-comment="${opt.comentario || ''}">${opt.etiqueta || (opt.porcentaje * 100 + '%')}</option>`).join('');
+                cInicial.innerHTML = rInicial.data.map(opt => {
+                    const pctValor = parseFloat(opt.cuota_inicial) || 0;
+                    const textoPorcentaje = (pctValor * 100).toFixed(0) + '% Inicial';
+                    return `<option value="${pctValor}" data-comment="${opt.comentarios_sbs_mercado || ''}">${textoPorcentaje}</option>`;
+                }).join('');
             } else {
-                cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
+
+            cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
             }
 
             if (rPlazo.data && rPlazo.data.length > 0) {
