@@ -1310,9 +1310,11 @@ async function inyectarHistorialesYImpuestosZillow(prop) {
     };
 
     try {
-        if (window.supabase) {
-            const { data, error } = await window.supabase
+        // CORRECCIÓN DIRECTA: Usa la instancia correcta y activa 'supabase' definida en tu Parte 2
+        if (supabase) {
+            const { data, error } = await supabase
                 .from('tasacion_distrital')
+
                 .select('trimestre_ano, venta_m2')
                 .eq('codigo_ubigeo', ubigeoPropiedad)
                 .in('trimestre_ano', periodosRequeridos)
