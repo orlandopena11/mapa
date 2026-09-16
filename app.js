@@ -415,7 +415,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
             ${prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
         </div>
         <div class="caracteristicas-inmueble">
-            ${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} sqft
+            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
         </div>
         <div class="detalles-adicionales">
             <div style="font-weight: bold;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
