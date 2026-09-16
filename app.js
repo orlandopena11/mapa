@@ -753,19 +753,30 @@ function inicializarEventosDeFiltros() {
         panel.addEventListener('click', (e) => e.stopPropagation());
     });
 
-    // 2. Filtro de Transacción (En Venta, Alquiler, Vendidas)
+    // ==========================================================================
+    // INICIO DE MANEJADOR DE CAMBIOS FILTRO MAESTRO DE TRANSACCIÓN
+    // ==========================================================================
     const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
     radiosTransaccion.forEach(radio => {
         radio.addEventListener('change', (e) => {
             state.filtros.estado = e.target.value;
             const btnStatus = document.getElementById('btn-filter-status');
             if (btnStatus) {
-                if (e.target.value === "Venta") btnStatus.textContent = "En venta";
-                else if (e.target.value === "Alquiler") btnStatus.textContent = "Para el alquiler";
-                else if (e.target.value === "Vendido") btnStatus.textContent = "Vendidas";
-            }
+                if (e.target.value === "Venta") {
+                    btnStatus.textContent = "En venta";
+                } else if (e.target.value === "Alquiler") {
+                    btnStatus.textContent = "Para el alquiler";
+                } else if (e.target.value === "vendida") {
+                    btnStatus.textContent = "Vendidas";
+                } // Fin de if de actualización de texto en botón
+            } // Fin de if btnStatus
             ejecutarTuberiaSincronizada();
-        });
+        }); // Fin de Callback change
+    }); // Fin de forEach radiosTransaccion
+    // ==========================================================================
+    // FIN DE MANEJADOR DE CAMBIOS FILTRO MAESTRO DE TRANSACCIÓN
+    // ==========================================================================
+
     });
 
     // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
@@ -836,23 +847,26 @@ function inicializarEventosDeFiltros() {
         });
     }
 
+    // ==========================================================================
+    // INICIO DE OMITIR AUTO-MARCADO DE CHECKBOXES EXTENDIDOS
+    // ==========================================================================
     if (btnAplicarMasFiltros) {
         btnAplicarMasFiltros.addEventListener('click', () => {
             state.filtros.tiposListado.clear();
-            
             const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
             
-            if (marcados.length === 0 || (checkTodosListados && checkTodosListados.checked)) {
-                checkboxesListado.forEach(cb => cb.checked = true);
-                if (checkTodosListados) checkTodosListados.checked = true;
-            } else {
-                marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
-            }
+            marcados.forEach(cb => {
+                state.filtros.tiposListado.add(cb.value);
+            }); // Fin de forEach de elementos marcados
 
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        });
-    }
+        }); // Fin de Callback click
+    } // Fin de if btnAplicarMasFiltros
+    // ==========================================================================
+    // FIN DE OMITIR AUTO-MARCADO DE CHECKBOXES EXTENDIDOS
+    // ==========================================================================
+
 
     // 6. BUSCADOR DE DIRECCIÓN
     const inputDireccionGlobal = document.getElementById('search-address');
@@ -961,23 +975,28 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
     }
 
-    // --- FILTROS DE COMPLEMENTO EN EL PANEL EXTENDIDO ---
+    // ==========================================================================
+    // INICIO DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
+    // ==========================================================================
     const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
     const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
-    const checkMaestro = document.getElementById('check-todos-listados');
 
-    // El checkMaestro gobierna los listados secundarios dentro de la transacción ya aislada arriba
-    if (checkMaestro && checkMaestro.checked === true) {
-        return true;
-    }
-
+    // Si el usuario no tiene ningún checkbox avanzado seleccionado, se muestra la configuración por defecto
     if (checkboxesMarcados.length > 0) {
         const situacionBD = String(prop.situacion_propiedad || "").trim();
         const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
-        if (!coincideFiltro) return false;
-    } else {
-        return false;
-    }
+
+        if (!coincideFiltro) {
+            return false;
+        } // Fin de if coincideFiltro
+    } // Fin de if checkboxesMarcados
+
+    return true;
+} // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuración por defecto SRE
+// ==========================================================================
+// FIN DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
+// ==========================================================================
+
 
     return true;
 } // Fin de Function evaluarCriteriosDeFiltrado
