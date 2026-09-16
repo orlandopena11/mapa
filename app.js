@@ -136,6 +136,14 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     let fotosUnificadas = [];
+
+    // --- ESPÍA 1: VALOR CRUDO DE LA BASE DE DATOS ---
+    console.group(`[ESPÍA FOTOS] Evaluando propiedad ID: ${prop.propiedad_id || prop.id}`);
+    console.log("Origen galeria_fotos:", prop.galeria_fotos);
+    console.log("Origen foto_despliegue:", prop.foto_despliegue);
+    console.log("Origen foto_principal:", prop.foto_principal);
+    console.groupEnd();
+
     
     // Captura el riel unificado procesado por codigo.gs o las columnas nativas de Postgres
     const origenFotos = prop.galeria_fotos || prop.foto_despliegue || prop.foto_principal;
@@ -170,6 +178,9 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     if (fotosUnificadas.length === 0) {
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
+
+    // --- ESPÍA 2: RESULTADO DE LA NORMALIZACIÓN ---
+    console.log(`[ESPÍA RESULTADO] Propiedad: ${prop.propiedad_id || prop.id} -> Total fotos detectadas final: ${fotosUnificadas.length}`, fotosUnificadas);
 
     // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
     const latNum = parseFloat(prop.latitud);
@@ -249,6 +260,11 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 // ==========================================================================
 function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
     const propiedad = prop;
+
+    // --- ESPÍA 3: INYECCIÓN EN EL CARRUSEL ---
+    console.warn(`[ESPÍA DOM] Construyendo carrusel para: ${propiedad.id}. ¿Viene como popup?: ${esPopup}. Fotos disponibles en este nodo: ${propiedad.fotos ? propiedad.fotos.length : 0}`);
+
+    
     const contenedorFoto = document.createElement('div');
     contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
     contenedorFoto.style.position = 'relative';
