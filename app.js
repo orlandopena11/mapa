@@ -411,7 +411,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     datosCasa.addEventListener('click', clickSPAHandler);
 
     datosCasa.innerHTML = `
-        <div class="precio">
+        <div class="precio" style="color: #000000; font-size: 28px; font-weight: 800; margin-bottom: 4px;">
             ${prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
         </div>
         <div class="caracteristicas-inmueble">
