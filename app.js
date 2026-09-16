@@ -410,32 +410,22 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     datosCasa.style.cursor = 'pointer';
     datosCasa.addEventListener('click', clickSPAHandler);
 
-    const precioTexto = document.createElement('div');
-    precioTexto.className = 'precio';
-    precioTexto.style.fontSize = '18px'; 
-    precioTexto.style.fontWeight = 'bold'; 
-    precioTexto.style.color = '#1e293b';
-    precioTexto.textContent = prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible';
-    datosCasa.appendChild(precioTexto);
-
-    const caracteristicasTexto = document.createElement('div');
-    caracteristicasTexto.className = 'caracteristicas-inmueble';
-    caracteristicasTexto.style.fontSize = '13px'; 
-    caracteristicasTexto.style.color = '#475569'; 
-    caracteristicasTexto.style.marginTop = '4px';
-    caracteristicasTexto.textContent = `${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} sqft`;
-    datosCasa.appendChild(caracteristicasTexto);
-
-    const ubicacionTexto = document.createElement('div');
-    ubicacionTexto.className = 'ubicacion-direccion-directa';
-    ubicacionTexto.style.fontSize = '13px'; 
-    ubicacionTexto.style.color = '#64748b'; 
-    ubicacionTexto.style.marginTop = '4px';
-    ubicacionTexto.style.whiteSpace = 'nowrap';
-    ubicacionTexto.style.overflow = 'hidden';
-    ubicacionTexto.style.textOverflow = 'ellipsis';
-    ubicacionTexto.textContent = prop.direccion ? `${prop.direccion}, ${prop.distrito || ''}` : (prop.titulo || "");
-    datosCasa.appendChild(ubicacionTexto);
+    datosCasa.innerHTML = `
+        <div class="precio">
+            ${prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
+        </div>
+        <div class="caracteristicas-inmueble">
+            ${prop.habitaciones || 0} bd | ${prop.banos || 0} ba | ${prop.area_construida || 0} sqft
+        </div>
+        <div class="detalles-adicionales">
+            <div style="font-weight: bold;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
+            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
+            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+        </div>
+        <div class="ubicacion-direccion-directa">
+            ${prop.direccion ? `${prop.direccion}, ${prop.distrito || ''}` : (prop.titulo || "")}
+        </div>
+    `;
 
     tarjeta.appendChild(datosCasa);
     return tarjeta;
