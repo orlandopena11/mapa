@@ -641,3 +641,39 @@ div.leaflet-marker-icon.map-price-pill {
     font-family: sans-serif;
     background-color: #ffffff;
 }
+
+/* Contenedor general de textos de la tarjeta */
+.datos-casa {
+    padding: 12px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* El precio domina en negro puro */
+.datos-casa .precio {
+    color: #000000;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 2px;
+}
+
+/* Todas las características y textos secundarios en el tono exacto requerido */
+.datos-casa .caracteristicas-inmueble {
+    color: #252525;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.datos-casa .detalles-adicionales {
+    color: #252525;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.datos-casa .ubicacion-direccion-directa {
+    color: #252525;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
