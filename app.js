@@ -1606,13 +1606,13 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         const cliente = obtenerClienteSupabase();
         if (cliente) {
             // Cargar listas desplegables base (LOVs)
-            // CORRECCIÓN DE ORDENAMIENTO: Ordena por la columna real 'cuota_inicial' tal como se ve en tu captura
+            // CORRECCIÓN ATÓMICA: Eliminamos los ordenamientos fijos que causan el error 400 (Bad Request)
             const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
                 cliente.from('LOV_hipoteca_cuota_inicial').select('*').order('cuota_inicial', { ascending: true }),
-                cliente.from('LOV_hipoteca_plazo').select('*').order('anos', { ascending: true }),
-                cliente.from('LOV_hipoteca_TEA').select('*').order('tasa_tea', { ascending: true }),
-                cliente.from('LOV_hipoteca_desgravamen').select('*').order('tasa_mensual', { ascending: true }),
-                cliente.from('LOV_hipoteca_seguro_inmueble').select('*').order('tasa_mensual', { ascending: true })
+                cliente.from('LOV_hipoteca_plazo').select('*'),
+                cliente.from('LOV_hipoteca_TEA').select('*'),
+                cliente.from('LOV_hipoteca_desgravamen').select('*'),
+                cliente.from('LOV_hipoteca_seguro_inmueble').select('*')
             ]);
 
             // CORRECCIÓN DE COLUMNAS: Mapea directamente 'cuota_inicial' y 'comentarios_sbs_mercado' de tu Supabase
@@ -1627,29 +1627,34 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
             cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
             }
 
+            // REEMPLAZO TOLERANTE NATIVO: Lee las propiedades de forma dinámica basándose en la estructura real de tus registros
             if (rPlazo.data && rPlazo.data.length > 0) {
-                cPlazo.innerHTML = rPlazo.data.map(opt => `<option value="${opt.anos}">${opt.etiqueta || (opt.anos + ' años')}</option>`).join('');
-            } else {
-                cPlazo.innerHTML = '<option value="20">20 Años</option>';
-            }
+                cPlazo.innerHTML = rPlazo.data.map(opt => {
+                    const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
+                    return `<option value="${valorAnos}">${valorAnos} Años</option>`;
+                }).join('');
+            } else { cPlazo.innerHTML = '<option value="20">20 Años</option>'; }
 
             if (rTea.data && rTea.data.length > 0) {
-                cTea.innerHTML = rTea.data.map(opt => `<option value="${opt.tasa_tea}">${opt.etiqueta || ((opt.tasa_tea * 100).toFixed(2) + '% TEA')}</option>`).join('');
-            } else {
-                cTea.innerHTML = '<option value="0.085">8.50% Promedio BCRP</option>';
-            }
+                cTea.innerHTML = rTea.data.map(opt => {
+                    const valorTea = parseFloat(opt.tasa_tea || opt.tea || Object.values(opt)[1] || 0.085);
+                    return `<option value="${valorTea}">${(valorTea * 100).toFixed(2)}% TEA</option>`;
+                }).join('');
+            } else { cTea.innerHTML = '<option value="0.085">8.50% TEA</option>'; }
 
             if (rDesg.data && rDesg.data.length > 0) {
-                cDesg.innerHTML = rDesg.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
-            } else {
-                cDesg.innerHTML = '<option value="0.0005">0.05% Individual</option>';
-            }
+                cDesg.innerHTML = rDesg.data.map(opt => {
+                    const valorDesg = parseFloat(opt.tasa_mensual || opt.desgravamen || Object.values(opt)[1] || 0.0005);
+                    return `<option value="${valorDesg}">${(valorDesg * 100).toFixed(3)}% Mensual</option>`;
+                }).join('');
+            } else { cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>'; }
 
             if (rInm.data && rInm.data.length > 0) {
-                cInm.innerHTML = rInm.data.map(opt => `<option value="${opt.tasa_mensual}">${opt.etiqueta || ((opt.tasa_mensual * 100).toFixed(3) + '% mensual')}</option>`).join('');
-            } else {
-                cInm.innerHTML = '<option value="0.00025">0.025% Todo Riesgo</option>';
-            }
+                cInm.innerHTML = rInm.data.map(opt => {
+                    const valorInm = parseFloat(opt.tasa_mensual || opt.seguro_inmueble || Object.values(opt)[1] || 0.00025);
+                    return `<option value="${valorInm}">${(valorInm * 100).toFixed(3)}% Mensual</option>`;
+                }).join('');
+            } else { cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>'; }
 
             // Realizar primer cálculo automático
             ejecutarRecalculoHipoteca();
