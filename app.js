@@ -777,7 +777,7 @@ function inicializarEventosDeFiltros() {
     // FIN DE MANEJADOR DE CAMBIOS FILTRO MAESTRO DE TRANSACCIÓN
     // ==========================================================================
 
-    });
+   // });
 
     // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
     const inputMinPrecio = document.getElementById('price-min');
