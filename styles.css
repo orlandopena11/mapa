@@ -650,13 +650,14 @@ div.leaflet-marker-icon.map-price-pill {
     line-height: 1.4;
 }
 
-/* El precio domina en negro puro */
+/* El precio domina en negro puro y con mayor tamaño estilo Zillow */
 .datos-casa .precio {
     color: #000000;
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 2px;
+    font-size: 28px;     /* Aumentado a 28px para que se vea imponente */
+    font-weight: 800;     /* Ultra negrita */
+    margin-bottom: 4px;   /* Un poco más de espacio hacia abajo */
 }
+
 
 /* Todas las características y textos secundarios en el tono exacto requerido */
 .datos-casa .caracteristicas-inmueble {
