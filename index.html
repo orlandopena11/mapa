@@ -42,12 +42,12 @@
                 </div>
             </div>
 
-                        <!-- PARTE 3 DE 10: NAVBAR - FILTRO DE RANGO DE PRECIOS -->
-            <!-- 3. FILTRO DE RANGO DE PRECIOS -->
+            <!-- PARTE 3 DE 10: NAVBAR - FILTRO DE RANGO DE PRECIOS -->
+            <!-- 3. FILTRO DE RANGO DE PRECIOS PREMIUM -->
             <div class="filter-dropdown-wrapper">
-                  <button class="filter-btn" id="btn-filter-price">Precio ?</button>
+                <button class="filter-btn" id="btn-filter-price">Precio ?</button>
                 <div class="dropdown-content-panel price-dropdown-content" id="dropdown-price">
-                    <div class="filter-section-title">Rango de precios</div>
+                    <div class="filter-section-title" style="text-align: left; margin-bottom: 12px;">Rango de precios</div>
                     <div class="histogram-visual-container" id="price-histogram-box"></div>
                     <div class="price-inputs-row">
                         <div class="price-input-group">
@@ -62,43 +62,37 @@
                     </div>
                     <button id="btn-apply-price" class="btn-apply-price-sre">Aplicar</button>
                 </div>
-
             </div>
 
                         <!-- PARTE 4 DE 10: NAVBAR - CONTROL DE CAMAS Y BAÑOS -->
-            <!-- 4. FILTRO DE CAMAS Y BAÑOS -->
+            <!-- 4. FILTRO DE CAMAS Y BAÑOS PREMIUM -->
             <div class="filter-dropdown-wrapper">
                 <button class="filter-btn" id="btn-filter-specs">Camas y baños ?</button>
                 <div class="dropdown-content-panel beds-baths-dropdown-content" id="dropdown-specs">
                     <h4>Dormitorios</h4>
                     <div class="segmented-control-sre">
-                        <label><input type="radio" name="beds" value="0" checked><span>Cualquiera</span></label>
-                        <label><input type="radio" name="beds" value="1"><span>1+</span></label>
-                        <label><input type="radio" name="beds" value="2"><span>2+</span></label>
-                        <label><input type="radio" name="beds" value="3"><span>3+</span></label>
-                        <label><input type="radio" name="beds" value="4"><span>4+</span></label>
-                        <label><input type="radio" name="beds" value="5"><span>5+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="0" checked><span>Cualquiera</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="1"><span>1+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="2"><span>2+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="3"><span>3+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="4"><span>4+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="beds" value="5"><span>5+</span></label>
                     </div>
-
-                    <label class="filter-checkbox-label" style="margin-bottom: 12px; display: none;">
-                        <input type="checkbox" id="beds-exact"> Coincidencia exacta
-                    </label>
 
                     <h4>Baños</h4>
                     <div class="segmented-control-sre">
-                        <label><input type="radio" name="baths" value="0" checked><span>Cualquiera</span></label>
-                        <label><input type="radio" name="baths" value="1"><span>1+</span></label>
-                        <label><input type="radio" name="baths" value="2"><span>2+</span></label>
-                        <label><input type="radio" name="baths" value="3"><span>3+</span></label>
-                        <label><input type="radio" name="baths" value="4"><span>4+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="0" checked><span>Cualquiera</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="1"><span>1+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="2"><span>2+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="3"><span>3+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="4"><span>4+</span></label>
                     </div>
 
                     <button id="btn-apply-beds-baths" class="btn-apply-beds-baths-sre">Aplicar</button>
                 </div>
-
             </div>
 
-                        <!-- PARTE 5 DE 10: NAVBAR - SELECCIÓN DE TIPOS DE INMUEBLE -->
+            <!-- PARTE 5 DE 10: NAVBAR - SELECCIÓN DE TIPOS DE INMUEBLE -->
             <!-- 5. FILTRO DE TIPO DE PROPIEDAD CORREGIDO -->
             <div class="filter-dropdown-wrapper">
                 <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
