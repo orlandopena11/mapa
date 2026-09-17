@@ -118,27 +118,7 @@ main.split-view .properties-panel {
     gap: 20px;
 }
 
-/* PARTE 2 DE 5: DISEÑO DE PÍLDORAS DE FILTRADO Y ALINEACIÓN DE DROPDOWNS */
-/*.navbar-global {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 60px;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    padding: 10px 24px;
-    background-color: var(--blanco);
-    border-bottom: 1px solid var(--gris-borde);
-    box-shadow: var(--shadow-soft);
-    z-index: 2000;
-    white-space: nowrap;
-    box-sizing: border-box;
-} */
-
-/* ACTUALIZACIÓN COMPLETA PARA FIJAR LA BARRA DE FILTROS SUPERIOR */
+/* 1. Barra de Filtros Superior Fija Corregida SRE */
 header.navbar-global, .navbar-global {
     position: fixed;
     top: 0;
@@ -153,7 +133,7 @@ header.navbar-global, .navbar-global {
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
-    z-index: 9999; /* Elevamos el z-index para asegurar que las tarjetas de Leaflet pasen por debajo */
+    z-index: 9999; /* Elevado para que los mapas de Leaflet pasen por debajo de forma nativa */
     box-sizing: border-box;
     white-space: nowrap;
 }
@@ -679,3 +659,102 @@ div.leaflet-marker-icon.map-price-pill {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* ==========================================================================
+   INICIO DE DISEÑO PREMIUM ESTILO ZILLOW: PANEL DE PRECIOS SRE
+   ========================================================================== */
+
+/* Contenedor principal del desplegable de precios */
+.dropdown-content-panel.price-dropdown-content {
+    min-width: 300px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--gris-borde);
+}
+
+/* Fila contenedora de los bloques Min y Max */
+.price-inputs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+/* Bloque individual (Label + Input) */
+.price-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Etiquetas sutiles "Min" y "Max" arriba de las cajas */
+.price-input-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--texto-secundario);
+    margin-bottom: 6px;
+}
+
+/* Cajas de texto (Inputs) estilizadas estilo Zillow */
+.price-field-sre {
+    width: 100%;
+    height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--texto-principal);
+    background-color: #ffffff;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto Focus al escribir */
+.price-field-sre:focus {
+    outline: none;
+    border-color: var(--azul-zillow);
+    box-shadow: inset 0 0 0 1px var(--azul-zillow);
+}
+
+/* Guion separador central ( - ) */
+.price-separator-dash {
+    align-self: flex-end;
+    margin-bottom: 14px;
+    color: #a6a6a6;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Botón APLICAR de ancho completo y bordes en píldora estilo Zillow */
+.btn-apply-price-sre {
+    width: 100%;
+    height: 40px;
+    background-color: var(--azul-zillow);
+    color: var(--blanco);
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 20px; /* Esquinas en píldora redondeada */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* Efectos de interacción para el botón */
+.btn-apply-price-sre:hover {
+    background-color: #0052c4;
+}
+
+.btn-apply-price-sre:active {
+    transform: scale(0.98);
+}
+/* ==========================================================================
+   FIN DE DISEÑO PREMIUM ESTILO ZILLOW: PANEL DE PRECIOS SRE
+   ========================================================================== */
