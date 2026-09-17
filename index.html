@@ -45,16 +45,24 @@
                         <!-- PARTE 3 DE 10: NAVBAR - FILTRO DE RANGO DE PRECIOS -->
             <!-- 3. FILTRO DE RANGO DE PRECIOS -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-price">Precio ▾</button>
-                <div class="dropdown-content-panel" id="dropdown-price">
+                  <button class="filter-btn" id="btn-filter-price">Precio ?</button>
+                <div class="dropdown-content-panel price-dropdown-content" id="dropdown-price">
                     <div class="filter-section-title">Rango de precios</div>
                     <div class="histogram-visual-container" id="price-histogram-box"></div>
-                    <div class="range-inputs-inputs-row">
-                        <input type="number" class="range-box-input" id="price-min" placeholder="No Min">
-                        <span>-</span>
-                        <input type="number" class="range-box-input" id="price-max" placeholder="No Max">
+                    <div class="price-inputs-row">
+                        <div class="price-input-group">
+                            <label>Min</label>
+                            <input type="number" id="price-min" class="price-field-sre" placeholder="No min">
+                        </div>
+                        <div class="price-separator-dash">-</div>
+                        <div class="price-input-group">
+                            <label>Max</label>
+                            <input type="number" id="price-max" class="price-field-sre" placeholder="No max">
+                        </div>
                     </div>
+                    <button id="btn-apply-price" class="btn-apply-price-sre">Aplicar</button>
                 </div>
+
             </div>
 
                         <!-- PARTE 4 DE 10: NAVBAR - CONTROL DE CAMAS Y BAÑOS -->
