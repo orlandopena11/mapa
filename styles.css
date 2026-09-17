@@ -758,3 +758,130 @@ div.leaflet-marker-icon.map-price-pill {
 /* ==========================================================================
    FIN DE DISEÑO PREMIUM ESTILO ZILLOW: PANEL DE PRECIOS SRE
    ========================================================================== */
+
+/* ==========================================================================
+   INICIO DE COMPLEMENTO PREMIUM: CAMAS, BAÑOS Y CORRECCIÓN DE CAJAS SRE
+   ========================================================================== */
+
+/* Elevamos la especificidad encadenando el contenedor maestro y la etiqueta */
+.dropdown-content-panel.price-dropdown-content input.price-field-sre {
+    width: 100%;
+    height: 44px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Efecto Focus limpio al escribir en los montos */
+.dropdown-content-panel.price-dropdown-content input.price-field-sre:focus {
+    outline: none;
+    border-color: var(--azul-zillow);
+    box-shadow: inset 0 0 0 1px var(--azul-zillow);
+}
+
+/* Contenedor extendido para el panel de Camas y Baños */
+.dropdown-content-panel.beds-baths-dropdown-content {
+    min-width: 340px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--gris-borde);
+}
+
+/* Títulos de sección internos */
+.beds-baths-dropdown-content h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--texto-principal);
+    margin-bottom: 10px;
+}
+
+/* Grupo segmentado de botones (Fila unificada) */
+.segmented-control-sre {
+    display: flex;
+    width: 100%;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+/* Cada opción individual dentro de la fila */
+.segmented-control-sre label {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 0;
+    background-color: #ffffff;
+    color: #2a2a2a;
+    cursor: pointer;
+    border-right: 1px solid #b8b8b8;
+    transition: background-color 0.2s, color 0.2s;
+    user-select: none;
+}
+
+/* Ocultar los inputs radio reales de la vista */
+.segmented-control-sre input[type="radio"] {
+    display: none;
+}
+
+/* Quitar el borde derecho al último botón de la fila */
+.segmented-control-sre label:last-child {
+    border-right: none;
+}
+
+/* Estilo activo cuando el botón está seleccionado */
+.segmented-control-sre input[type="radio"]:checked + span {
+    background-color: var(--azul-zillow);
+    color: #ffffff;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 4px 0;
+}
+
+/* Forzar relleno correcto del texto activo */
+.segmented-control-sre label span {
+    display: block;
+    width: 100%;
+    padding: 4px 0;
+}
+
+/* Botón maestro Aplicar para el panel de habitaciones y baños */
+.btn-apply-beds-baths-sre {
+    width: 100%;
+    height: 42px;
+    background-color: var(--azul-zillow);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 21px; /* Forma de píldora idéntica a Zillow */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    margin-top: 10px;
+}
+
+.btn-apply-beds-baths-sre:hover {
+    background-color: #0052c4;
+}
+
+.btn-apply-beds-baths-sre:active {
+    transform: scale(0.98);
+}
+/* ==========================================================================
+   FIN DE COMPLEMENTO PREMIUM: CAMAS, BAÑOS Y CORRECCIÓN DE CAJAS SRE
+   ========================================================================== */
+
