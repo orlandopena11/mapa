@@ -14,8 +14,7 @@
 </head>
 <body>
     <div class="app-container">
-
-                <!-- PARTE 2 DE 10: NAVBAR - BUSCADOR Y ESTADO DE TRANSACCIÓN -->
+        <!-- PARTE 2 DE 10: NAVBAR - BUSCADOR Y ESTADO DE TRANSACCIÓN REESTRUCTURADO SRE -->
         <header class="navbar-global">
             <img src="logo.jpg" alt="Logo Zillow" class="navbar-brand-logo" id="app-main-logo">
             
@@ -26,7 +25,7 @@
 
             <!-- 2. FILTRO DE TRANSACCIÓN (ESTADO) -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-status">En venta ▾</button>
+                <button class="filter-btn" id="btn-filter-status">En venta</button>
                 <div class="dropdown-content-panel" id="dropdown-status">
                     <div class="filter-group-options">
                         <label class="filter-checkbox-label">
@@ -42,13 +41,26 @@
                 </div>
             </div>
 
-            <!-- PARTE 3 DE 10: NAVBAR - FILTRO DE RANGO DE PRECIOS -->
-            <!-- 3. FILTRO DE RANGO DE PRECIOS PREMIUM -->
+                        <!-- 3. FILTRO DE RANGO DE PRECIOS PREMIUM CON HISTOGRAMA -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-price">Precio ?</button>
+                <button class="filter-btn" id="btn-filter-price">Precio</button>
                 <div class="dropdown-content-panel price-dropdown-content" id="dropdown-price">
-                    <div class="filter-section-title" style="text-align: left; margin-bottom: 12px;">Rango de precios</div>
-                    <div class="histogram-visual-container" id="price-histogram-box"></div>
+                    <div class="filter-section-title">Rango de precios</div>
+                    
+                    <!-- HISTOGRAMA CON DISTRIBUCIÓN SOLICITADA -->
+                    <div class="histogram-visual-container" id="price-histogram-box">
+                        <div class="histo-bar" style="height: 15%;"></div>
+                        <div class="histo-bar" style="height: 30%;"></div>
+                        <div class="histo-bar pico-solicitado" style="height: 95%;"></div> <!-- Pico 70k a 80k -->
+                        <div class="histo-bar" style="height: 45%;"></div>
+                        <div class="histo-bar grupo-mayor" style="height: 80%;"></div> <!-- Grupo mayor 100k a 500k -->
+                        <div class="histo-bar grupo-mayor" style="height: 85%;"></div>
+                        <div class="histo-bar grupo-mayor" style="height: 75%;"></div>
+                        <div class="histo-bar grupo-mayor" style="height: 70%;"></div>
+                        <div class="histo-bar" style="height: 25%;"></div>
+                        <div class="histo-bar" style="height: 10%;"></div>
+                    </div>
+
                     <div class="price-inputs-row">
                         <div class="price-input-group">
                             <label>Min</label>
@@ -60,17 +72,16 @@
                             <input type="number" id="price-max" class="price-field-sre" placeholder="No max">
                         </div>
                     </div>
-                    <button id="btn-apply-price" class="btn-apply-price-sre">Aplicar</button>
+                    <button type="button" id="btn-apply-price" class="btn-apply-price-sre">Aplicar</button>
                 </div>
             </div>
 
-                        <!-- PARTE 4 DE 10: NAVBAR - CONTROL DE CAMAS Y BAÑOS -->
-            <!-- 4. FILTRO DE CAMAS Y BAÑOS PREMIUM -->
+                        <!-- 4. FILTRO DE CAMAS Y BAÑOS PREMIUM SEGMENTADO HORIZONTAL -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-specs">Camas y baños ?</button>
+                <button class="filter-btn" id="btn-filter-specs">Camas y baños</button>
                 <div class="dropdown-content-panel beds-baths-dropdown-content" id="dropdown-specs">
                     <h4>Dormitorios</h4>
-                    <div class="segmented-control-sre">
+                    <div class="segmented-control-sre" id="row-beds">
                         <label class="segment-item-sre"><input type="radio" name="beds" value="0" checked><span>Cualquiera</span></label>
                         <label class="segment-item-sre"><input type="radio" name="beds" value="1"><span>1+</span></label>
                         <label class="segment-item-sre"><input type="radio" name="beds" value="2"><span>2+</span></label>
@@ -80,81 +91,66 @@
                     </div>
 
                     <h4>Baños</h4>
-                    <div class="segmented-control-sre">
+                    <div class="segmented-control-sre" id="row-baths">
                         <label class="segment-item-sre"><input type="radio" name="baths" value="0" checked><span>Cualquiera</span></label>
                         <label class="segment-item-sre"><input type="radio" name="baths" value="1"><span>1+</span></label>
+                        <label class="segment-item-sre"><input type="radio" name="baths" value="1.5"><span>1.5+</span></label>
                         <label class="segment-item-sre"><input type="radio" name="baths" value="2"><span>2+</span></label>
                         <label class="segment-item-sre"><input type="radio" name="baths" value="3"><span>3+</span></label>
                         <label class="segment-item-sre"><input type="radio" name="baths" value="4"><span>4+</span></label>
                     </div>
 
-                    <button id="btn-apply-beds-baths" class="btn-apply-beds-baths-sre">Aplicar</button>
+                    <button type="button" id="btn-apply-beds-baths" class="btn-apply-beds-baths-sre">Aplicar</button>
                 </div>
             </div>
 
-            <!-- PARTE 5 DE 10: NAVBAR - SELECCIÓN DE TIPOS DE INMUEBLE -->
-            <!-- 5. FILTRO DE TIPO DE PROPIEDAD CORREGIDO -->
+            <!-- 5. FILTRO DE TIPO DE PROPIEDAD CON INTERRUPTOR MAESTRO -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-type">Tipo de propiedad ▾</button>
+                <button class="filter-btn" id="btn-filter-type">Tipo de propiedad</button>
                 <div class="dropdown-content-panel" id="dropdown-type">
-                    <div class="filter-group-options">
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" id="type-select-all" checked> Seleccione Todos
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Casa" checked> Casas
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Departamento" checked> Departamentos
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Terreno" checked> Terrenos
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Local" checked> Locales
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Oficina" checked> Oficinas
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Edificio" checked> Edificios
-                        </label>
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" class="type-cb" value="Lote" checked> Lotes
-                        </label>
+                    <div class="master-toggle-container">
+                        <button type="button" id="btn-type-master-toggle" class="master-action-link">Deseleccionar todo</button>
                     </div>
-                    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid #e2e8f0; text-align: right; width: 100%;">
-                        <button id="btn-aplicar-tipo-propiedad" style="background-color: #006aff; color: #ffffff; border: none; padding: 6px 14px; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; font-family: sans-serif; width: 100%;">
-                            Aplicar Filtro
-                        </button>
+                    <div class="filter-group-options scrollable-options">
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Casa" checked> Casas</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Departamento" checked> Departamentos</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Terreno" checked> Terrenos</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Local" checked> Locales</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Oficina" checked> Oficinas</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Edificio" checked> Edificios</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="type-cb" value="Lote" checked> Lotes</label>
+                    </div>
+                    <div class="dropdown-footer-apply">
+                        <button type="button" id="btn-aplicar-tipo-propiedad" class="btn-primary-zillow">Aplicar</button>
                     </div>
                 </div>
             </div>
 
-                        <!-- PARTE 6 DE 10: NAVBAR FILTROS AVANZADOS Y CONTROL DE FICHA DE DETALLES -->
-            <!-- 6. FILTRO MAESTRO DE FILTROS AVANZADOS -->
+                        <!-- 6. FILTRO MAESTRO DE FILTROS AVANZADOS (RENOMBRADO A MAS FILTROS) -->
             <div class="filter-dropdown-wrapper">
-                <button class="filter-btn" id="btn-filter-more">Filtros ▾</button>
+                <button class="filter-btn" id="btn-filter-more">Mas Filtros</button>
                 <div class="dropdown-content-panel" id="dropdown-more-filters">
+                    <div class="master-toggle-container">
+                        <button type="button" id="btn-more-master-toggle" class="master-action-link">Deseleccionar todo</button>
+                    </div>
                     <div class="filter-section-title">Tipo de listado</div>
-                    <div class="filter-group-options">
-                        <label class="filter-checkbox-label">
-                            <input type="checkbox" id="check-todos-listados" checked> <strong>Seleccione todos</strong>
-                        </label>
-                        <hr style="margin: 5px 0; opacity: 0.1; width: 100%;">
-                        <label><input type="checkbox" class="more-filter-cb" value="propietario" checked> Propietario publicado</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="agente" checked> Agente listado</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="nueva construccion" checked> Nueva construcción</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="pre ejecucion hipoteca" checked> Pre-ejecución Hipotecaria</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="ejecucion hipoteca" checked> Ejecución hipoteca</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="subasta" checked> Subastas</label>
-                        <label><input type="checkbox" class="more-filter-cb" value="embargo" checked> Embargos</label>
+                    <div class="filter-group-options scrollable-options">
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="propietario" checked> Propietario publicado</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="agente" checked> Agente listado</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="nueva construccion" checked> Nueva construcción</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="pre ejecucion hipoteca" checked> Pre-ejecución Hipotecaria</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="ejecucion hipoteca" checked> Ejecución hipoteca</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="subasta" checked> Subastas</label>
+                        <label class="filter-checkbox-label"><input type="checkbox" class="more-filter-cb" value="embargo" checked> Embargos</label>
+                    </div>
+                    <div class="dropdown-footer-apply">
+                        <button type="button" id="btn-aplicar-mas-filtros" class="btn-primary-zillow">Aplicar</button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- ENCABEZADO GLOBAL COMPARTIDO (PANTALLAS 2 Y 3) -->
+        
         <header id="header-ficha-global" class="nav-ficha-zillow oculta-global">
             <button type="button" class="btn-volver-zillow" id="btn-volver-global-atras">← Volver a la lista</button>
             <img src="logo.jpg" alt="Logo Principal" class="logo-centro-ficha">
