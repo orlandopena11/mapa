@@ -199,7 +199,9 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         precio_base: parseFloat(prop.precio_base || 0),
         estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
         tipo_anuncio: String(prop.tipo_anuncio || "Venta").trim(),
+        destacado: String(prop.destacado || "no").trim(), // Inyección limpia de la columna nativa de la vista
         tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
+
         subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
         direccion: String(prop.direccion || "").trim(),
         descripcion: String(prop.descripcion || "").trim(),
@@ -443,9 +445,27 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
     contenedorRejilla.innerHTML = '';
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
+
+    // ==========================================================================
+    // INICIO DE ORDENAMIENTO POR COLUMNA NATIVA DESTACADO DE LA VISTA SRE
+    // ==========================================================================
+    filtradas.sort((a, b) => {
+        const destA = String(a.destacado || "no").toLowerCase().trim();
+        const destB = String(b.destacado || "no").toLowerCase().trim();
+        if (destA === "si" && destB !== "si") {
+            return -1;
+        } // Fin de if destA
+        if (destA !== "si" && destB === "si") {
+            return 1;
+        } // Fin de if destB
+        return 0;
+    }); // Fin de sort utilizando la columna nativa destacado
+    // ==========================================================================
+    // FIN DE ORDENAMIENTO POR COLUMNA NATIVA DESTACADO DE LA VISTA SRE
+
     const contador = document.getElementById('results-counter');
 
-    console.log(`?? [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas a pintar: ${filtradas.length}`);
+    console.log(`?? [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas y ordenadas por destacado a pintar: ${filtradas.length}`);
 
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
