@@ -661,340 +661,174 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 /* ==========================================================================
-   INICIO DE COMPLEMENTO PREMIUM: CORRECCIÓN DE PRECIOS, CAMAS Y BAÑOS SRE
+   INICIO DE DISEÑO PREMIUM DEFINITIVO ESTILO ZILLOW SRE (ALTA ESPECIFICIDAD)
    ========================================================================== */
 
-/* 1. Rediseño del Panel de Rango de Precios estilo Zillow */
-.dropdown-content-panel.price-dropdown-content {
-    min-width: 320px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--gris-borde);
-    display: none;
-    flex-direction: column;
-}
-
-.dropdown-content-panel.price-dropdown-content.show {
-    display: flex;
-}
-
-/* Fila contenedora de los bloques Min y Max */
-.price-inputs-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-.price-input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
-
-/* Etiquetas Min y Max arriba de las cajas */
-.price-input-group label {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--texto-secundario);
-    margin-bottom: 6px;
-}
-
-/* Cajas de texto (Inputs) grandes y limpias */
-.dropdown-content-panel.price-dropdown-content input.price-field-sre {
-    width: 100%;
-    height: 44px;
-    padding: 10px 14px;
-    font-size: 15px;
-    color: var(--texto-principal);
-    background-color: #ffffff;
-    border: 1px solid #ccd0d5;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-family: inherit;
-    text-align: left;
-}
-
-.dropdown-content-panel.price-dropdown-content input.price-field-sre:focus {
-    outline: none;
-    border-color: var(--azul-zillow);
-    box-shadow: inset 0 0 0 1px var(--azul-zillow);
-}
-
-.price-separator-dash {
-    align-self: flex-end;
-    margin-bottom: 14px;
-    color: #a6a6a6;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-/* 2. Rediseño del Panel de Camas y Baños estilo Zillow */
-.dropdown-content-panel.beds-baths-dropdown-content {
-    min-width: 360px;
-    padding: 24px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    border: 1px solid var(--gris-borde);
-    display: none;
-    flex-direction: column;
-}
-
-.dropdown-content-panel.beds-baths-dropdown-content.show {
-    display: flex;
-}
-
-/* Títulos de sección Dormitorios y Baños */
-.beds-baths-dropdown-content h4 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--texto-principal);
-    margin-bottom: 12px;
-    text-align: left;
-}
-
-/* Fila horizontal contenedora de los botones segmentados */
-.segmented-control-sre {
-    display: flex;
-    width: 100%;
-    border: 1px solid #ccd0d5;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 24px;
-}
-
-/* Estilizado de cada botón individual dentro de la fila */
-.segmented-control-sre label.segment-item-sre {
-    flex: 1;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px 0;
-    background-color: #ffffff;
-    color: #2a2a2a;
-    cursor: pointer;
-    border-right: 1px solid #ccd0d5;
-    margin: 0 !important;
-    display: block !important;
-}
-
-.segmented-control-sre label.segment-item-sre:last-child {
-    border-right: none;
-}
-
-/* Ocultar los botones de radio nativos circulares */
-.segmented-control-sre label.segment-item-sre input[type="radio"] {
-    display: none !important;
-}
-
-/* Contenedor del texto que cambia a azul sólido al seleccionarse */
-.segmented-control-sre label.segment-item-sre span {
-    display: block;
-    width: 100%;
-    height: 100%;
-}
-
-.segmented-control-sre label.segment-item-sre input[type="radio"]:checked + span {
-    background-color: var(--azul-zillow);
-    color: #ffffff;
-    font-weight: 700;
-    margin: -12px 0;
-    padding: 12px 0;
-}
-
-/* 3. Botones maestros "Aplicar" estilo Píldora Azul Zillow */
-.btn-apply-price-sre, .btn-apply-beds-baths-sre {
-    width: 100%;
-    height: 44px;
-    background-color: var(--azul-zillow);
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    border-radius: 22px; /* Redondeado perfecto en píldora */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    margin-top: 4px;
-}
-
-.btn-apply-price-sre:hover, .btn-apply-beds-baths-sre:hover {
-    background-color: #0052c4;
-}
-
-.btn-apply-price-sre:active, .btn-apply-beds-baths-sre:active {
-    transform: scale(0.98);
-}
-
-/* ==========================================================================
-   FIN DE COMPLEMENTO PREMIUM: CORRECCIÓN DE PRECIOS, CAMAS Y BAÑOS SRE
-   ========================================================================== */
-
-/* ==========================================================================
-   INICIO DE DISEÑO INTEGRAL ULTRA PREMIUM ESTILO ZILLOW SRE
-   ========================================================================== */
-
-/* --- 1. REPARACIÓN PROFESIONAL DEL PANEL DE PRECIO --- */
+/* --- 1. CONFIGURACIÓN DEL PANEL DE PRECIO --- */
 div#dropdown-price {
-    min-width: 320px;
-    padding: 24px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box;
+    min-width: 340px !important;
+    padding: 24px !important;
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    box-sizing: border-box !important;
 }
 
-/* Forzar que la fila contenga los inputs alineados horizontalmente */
+/* Forzar la alineación horizontal de las cajas de montos */
 div#dropdown-price .price-inputs-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 16px;
-    margin-bottom: 20px;
-    width: 100%;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    margin-top: 16px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
 }
 
 div#dropdown-price .price-input-group {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
 }
 
 div#dropdown-price .price-input-group label {
-    font-size: 12px;
-    font-weight: 700;
-    color: #2a2a2a;
-    margin-bottom: 6px;
-    text-align: left;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #2a2a2a !important;
+    margin-bottom: 6px !important;
+    text-align: left !important;
+    display: block !important;
 }
 
 /* Cajas Gigantes de Monto con bordes limpios estilo Zillow */
-div#dropdown-price input.price-field-sre {
-    width: 100%;
-    height: 46px;
-    padding: 10px 14px;
-    font-size: 15px;
-    color: #1a202c;
-    background-color: #ffffff;
-    border: 1px solid #b8b8b8;
-    border-radius: 4px;
-    box-sizing: border-box;
+div#dropdown-price input.price-field-sre, 
+div#dropdown-price #price-min, 
+div#dropdown-price #price-max {
+    width: 100% !important;
+    height: 46px !important;
+    padding: 10px 14px !important;
+    font-size: 15px !important;
+    color: #1a202c !important;
+    background-color: #ffffff !important;
+    border: 1px solid #ccd0d5 !important;
+    border-radius: 4px !important;
+    box-sizing: border-box !important;
+    text-align: left !important;
 }
 
 div#dropdown-price input.price-field-sre:focus {
-    outline: none;
-    border-color: #006aff;
-    box-shadow: inset 0 0 0 1px #006aff;
+    outline: none !important;
+    border-color: #006aff !important;
+    box-shadow: inset 0 0 0 1px #006aff !important;
 }
 
 div#dropdown-price .price-separator-dash {
-    align-self: flex-end;
-    margin-bottom: 14px;
-    color: #a6a6a6;
-    font-size: 16px;
-    font-weight: bold;
+    align-self: flex-end !important;
+    margin-bottom: 14px !important;
+    color: #a6a6a6 !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
 }
 
-/* --- 2. REPARACIÓN PROFESIONAL DE CAMAS Y BAÑOS (GRID HORIZONTAL) --- */
+/* --- 2. CONFIGURACIÓN DE CAMAS Y BAÑOS (GRID HORIZONTAL) --- */
 div#dropdown-specs {
-    min-width: 360px;
-    padding: 24px;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    box-sizing: border-box;
+    min-width: 380px !important;
+    padding: 24px !important;
+    background-color: #ffffff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+    box-sizing: border-box !important;
 }
 
 div#dropdown-specs h4 {
-    font-size: 14px;
-    font-weight: 700;
-    color: #2a2a2a;
-    margin-top: 0;
-    margin-bottom: 12px;
-    text-align: left;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #2a2a2a !important;
+    margin-top: 14px !important;
+    margin-bottom: 12px !important;
+    text-align: left !important;
+}
+
+div#dropdown-specs h4:first-child {
+    margin-top: 0 !important;
 }
 
 /* Control segmentado en fila horizontal limpia */
 div#dropdown-specs .segmented-control-sre {
-    display: flex;
-    width: 100%;
-    border: 1px solid #ccd0d5;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 24px;
+    display: flex !important;
+    width: 100% !important;
+    border: 1px solid #ccd0d5 !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    margin-bottom: 20px !important;
 }
 
 /* Cada ítem de la grilla horizontal */
 div#dropdown-specs .segmented-control-sre label.segment-item-sre {
-    flex: 1;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px 0;
-    background-color: #ffffff;
-    color: #2a2a2a;
-    cursor: pointer;
-    border-right: 1px solid #ccd0d5;
-    margin: 0;
-    display: block;
+    flex: 1 !important;
+    text-align: center !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    padding: 12px 0 !important;
+    background-color: #ffffff !important;
+    color: #2a2a2a !important;
+    cursor: pointer !important;
+    border-right: 1px solid #ccd0d5 !important;
+    margin: 0 !important;
+    display: block !important;
 }
 
 div#dropdown-specs .segmented-control-sre label.segment-item-sre:last-child {
-    border-right: none;
+    border-right: none !important;
 }
 
 /* Ocultar círculos de radio nativos del navegador */
 div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"] {
-    display: none;
+    display: none !important;
 }
 
-/* Caja de texto interna que cambia a azul sólido */
+/* Texto interno que cambia a azul sólido al seleccionarse */
 div#dropdown-specs .segmented-control-sre label.segment-item-sre span {
-    display: block;
-    width: 100%;
-    height: 100%;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
 }
 
 div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"]:checked + span {
-    background-color: #006aff; /* Azul Zillow */
-    color: #ffffff;
-    font-weight: 700;
+    background-color: #006aff !important; /* Azul Zillow corporativo */
+    color: #ffffff !important;
+    font-weight: 700 !important;
 }
 
 /* --- 3. BOTONES MAESTROS APLICAR ESTILO PÍLDORA AZUL --- */
-button#btn-apply-price, button#btn-apply-beds-baths {
-    width: 100%;
-    height: 44px;
-    background-color: #006aff;
-    color: #ffffff;
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    border-radius: 22px; /* Píldora redondeada de Zillow */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s ease, transform 0.1s ease;
+#btn-apply-price, 
+#btn-apply-beds-baths,
+.btn-apply-price-sre,
+.btn-apply-beds-baths-sre {
+    width: 100% !important;
+    height: 44px !important;
+    background-color: #006aff !important;
+    color: #ffffff !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-radius: 22px !important; /* Píldora redondeada de Zillow */
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background-color 0.2s ease, transform 0.1s ease !important;
+    margin-top: 10px !important;
 }
 
-button#btn-apply-price:hover, button#btn-apply-beds-baths:hover {
-    background-color: #0052c4;
+#btn-apply-price:hover, #btn-apply-beds-baths:hover {
+    background-color: #0052c4 !important;
 }
 
-button#btn-apply-price:active, button#btn-apply-beds-baths:active {
-    transform: scale(0.98);
+#btn-apply-price:active, #btn-apply-beds-baths:active {
+    transform: scale(0.98) !important;
 }
 
 /* ==========================================================================
-   FIN DE DISEÑO INTEGRAL ULTRA PREMIUM ESTILO ZILLOW SRE
+   FIN DE DISEÑO PREMIUM DEFINITIVO ESTILO ZILLOW SRE (ALTA ESPECIFICIDAD)
    ========================================================================== */
