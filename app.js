@@ -575,7 +575,7 @@ function renderizarMapaZillow() {
                 <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
             </div>
             <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${prop.direccion ? `prop.direccion, {prop.distrito || ''}` : (prop.titulo || "")}
+                \${prop.direccion ? `${prop.direccion}${prop.distrito ? ', ' + prop.distrito : ''}` : (prop.titulo || "")}
             </div>
         `;
 
