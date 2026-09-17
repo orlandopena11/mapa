@@ -837,3 +837,164 @@ div.leaflet-marker-icon.map-price-pill {
 /* ==========================================================================
    FIN DE COMPLEMENTO PREMIUM: CORRECCIÓN DE PRECIOS, CAMAS Y BAÑOS SRE
    ========================================================================== */
+
+/* ==========================================================================
+   INICIO DE DISEÑO INTEGRAL ULTRA PREMIUM ESTILO ZILLOW SRE
+   ========================================================================== */
+
+/* --- 1. REPARACIÓN PROFESIONAL DEL PANEL DE PRECIO --- */
+div#dropdown-price {
+    min-width: 320px;
+    padding: 24px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+/* Forzar que la fila contenga los inputs alineados horizontalmente */
+div#dropdown-price .price-inputs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+div#dropdown-price .price-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+div#dropdown-price .price-input-group label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #2a2a2a;
+    margin-bottom: 6px;
+    text-align: left;
+}
+
+/* Cajas Gigantes de Monto con bordes limpios estilo Zillow */
+div#dropdown-price input.price-field-sre {
+    width: 100%;
+    height: 46px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #1a202c;
+    background-color: #ffffff;
+    border: 1px solid #b8b8b8;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+div#dropdown-price input.price-field-sre:focus {
+    outline: none;
+    border-color: #006aff;
+    box-shadow: inset 0 0 0 1px #006aff;
+}
+
+div#dropdown-price .price-separator-dash {
+    align-self: flex-end;
+    margin-bottom: 14px;
+    color: #a6a6a6;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* --- 2. REPARACIÓN PROFESIONAL DE CAMAS Y BAÑOS (GRID HORIZONTAL) --- */
+div#dropdown-specs {
+    min-width: 360px;
+    padding: 24px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    box-sizing: border-box;
+}
+
+div#dropdown-specs h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #2a2a2a;
+    margin-top: 0;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+/* Control segmentado en fila horizontal limpia */
+div#dropdown-specs .segmented-control-sre {
+    display: flex;
+    width: 100%;
+    border: 1px solid #ccd0d5;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* Cada ítem de la grilla horizontal */
+div#dropdown-specs .segmented-control-sre label.segment-item-sre {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 0;
+    background-color: #ffffff;
+    color: #2a2a2a;
+    cursor: pointer;
+    border-right: 1px solid #ccd0d5;
+    margin: 0;
+    display: block;
+}
+
+div#dropdown-specs .segmented-control-sre label.segment-item-sre:last-child {
+    border-right: none;
+}
+
+/* Ocultar círculos de radio nativos del navegador */
+div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"] {
+    display: none;
+}
+
+/* Caja de texto interna que cambia a azul sólido */
+div#dropdown-specs .segmented-control-sre label.segment-item-sre span {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"]:checked + span {
+    background-color: #006aff; /* Azul Zillow */
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* --- 3. BOTONES MAESTROS APLICAR ESTILO PÍLDORA AZUL --- */
+button#btn-apply-price, button#btn-apply-beds-baths {
+    width: 100%;
+    height: 44px;
+    background-color: #006aff;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 22px; /* Píldora redondeada de Zillow */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button#btn-apply-price:hover, button#btn-apply-beds-baths:hover {
+    background-color: #0052c4;
+}
+
+button#btn-apply-price:active, button#btn-apply-beds-baths:active {
+    transform: scale(0.98);
+}
+
+/* ==========================================================================
+   FIN DE DISEÑO INTEGRAL ULTRA PREMIUM ESTILO ZILLOW SRE
+   ========================================================================== */
