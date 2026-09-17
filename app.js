@@ -564,7 +564,7 @@ function renderizarMapaZillow() {
         datosPopup.className = 'datos-popup-info';
         datosPopup.innerHTML = `
             <div class="precio" style="color: #000000; font-size: 18px; font-weight: 800; margin-bottom: 2px;">
-                ${prop.precio_base ? `\$\${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
+                $${prop.precio_base ? Number(prop.precio_base).toLocaleString('en-US') : 'Precio no disponible'}
             </div>
             <div class="caracteristicas-inmueble" style="font-size: 11px; color: #4a5568; margin-bottom: 2px;">
                 ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
@@ -575,7 +575,7 @@ function renderizarMapaZillow() {
                 <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
             </div>
             <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${prop.direccion ? `\({prop.direccion},\){prop.distrito || ''}` : (prop.titulo || "")}
+                ${prop.direccion ? `prop.direccion, {prop.distrito || ''}` : (prop.titulo || "")}
             </div>
         `;
 
