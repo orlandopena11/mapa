@@ -118,26 +118,6 @@ main.split-view .properties-panel {
     gap: 20px;
 }
 
-/* 1. Barra de Filtros Superior Fija Corregida SRE */
-header.navbar-global, .navbar-global {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 60px;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 16px;
-    padding: 10px 24px;
-    background-color: var(--blanco);
-    border-bottom: 1px solid var(--gris-borde);
-    box-shadow: var(--shadow-soft);
-    z-index: 9999; /* Elevado para que los mapas de Leaflet pasen por debajo de forma nativa */
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-
 
 .navbar-brand-logo {
     height: 32px;
@@ -841,70 +821,7 @@ div.leaflet-marker-icon.map-price-pill {
 
 
 
-
-
-
-div#dropdown-price input:focus {
-    outline: none !important;
-    border-color: #006aff !important;
-    box-shadow: inset 0 0 0 1px #006aff !important;
-}
-
-
-
-div#dropdown-specs h4 {
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    color: #2a2a2a !important;
-    margin-top: 14px !important;
-    margin-bottom: 12px !important;
-    text-align: left !important;
-}
-
-div#dropdown-specs h4:first-child {
-    margin-top: 0 !important;
-}
-
-/* Forzar las filas amontonadas a convertirse en una línea horizontal limpia */
-div#dropdown-specs .segmented-control-sre {
-    display: flex !important;
-    flex-direction: row !important;
-    width: 100% !important;
-    border: 1px solid #ccd0d5 !important;
-    border-radius: 6px !important;
-    overflow: hidden !important;
-    margin-bottom: 20px !important;
-    padding: 0 !important;
-}
-
-
-/* Estado activo: cuando el radio está checkeado, pintamos el span de azul sólido */
-div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"]:checked + span {
-    background-color: #006aff !important; /* Azul Zillow corporativo */
-    color: #ffffff !important;
-    font-weight: 700 !important;
-}
-
-/* --- 3. RESTRICCIÓN DE BOTONES APLICAR ESTILO PÍLDORA AZUL --- */
-#btn-apply-price,
-#btn-apply-beds-baths,
-div#dropdown-price button,
-div#dropdown-specs button {
-    width: 100% !important;
-    height: 44px !important;
-    background-color: #006aff !important;
-    color: #ffffff !important;
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    border: none !important;
-    border-radius: 22px !important; /* Píldora redondeada */
-    cursor: pointer !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-top: 12px !important;
-    font-family: inherit !important;
-}
+   
 
 #btn-apply-price:hover, #btn-apply-beds-baths:hover {
     background-color: #0052c4 !important;
