@@ -807,11 +807,10 @@ function inicializarEventosDeFiltros() {
     // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
     const inputMinPrecio = document.getElementById('price-min');
     const inputMaxPrecio = document.getElementById('price-max');
-    const btnAplicarPrecio = document.getElementById('btn-aplicar-precio');
-    const btnResetPrecio = document.getElementById('btn-reset-precio');
+    const btnApplyPrice = document.getElementById('btn-apply-price');
 
-    if (btnAplicarPrecio) {
-        btnAplicarPrecio.addEventListener('click', () => {
+    if (btnApplyPrice) {
+        btnApplyPrice.addEventListener('click', () => {
             state.filtros.precioMin = parseFloat(inputMinPrecio.value) || 0;
             state.filtros.precioMax = parseFloat(inputMaxPrecio.value) || Infinity;
             ejecutarTuberiaSincronizada();
@@ -819,80 +818,77 @@ function inicializarEventosDeFiltros() {
         });
     }
 
-    if (btnResetPrecio) {
-        btnResetPrecio.addEventListener('click', () => {
-            if (inputMinPrecio) inputMinPrecio.value = '';
-            if (inputMaxPrecio) inputMaxPrecio.value = '';
-            state.filtros.precioMin = 0;
-            state.filtros.precioMax = Infinity;
+   // 4. Filtro de Camas y Baños Segmentado Horizontal
+    configurarSegmentado('row-beds', (valor) => { 
+        state.filtros.camas = parseInt(valor, 10) || 0; 
+    });
+    configurarSegmentado('row-baths', (valor) => { 
+        state.filtros.banos = parseFloat(valor) || 0; 
+    });
+
+    const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
+    if (btnApplySpecs) {
+        btnApplySpecs.addEventListener('click', () => {
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
         });
     }
 
-    // 4. FILTRO TIPO DE PROPIEDAD (Con "Seleccionar todos" y Aplicar)
+    // 5. Tipo de Propiedad (Control Maestro Seleccionar / Deseleccionar Todo)
     const checkboxesTipo = document.querySelectorAll('.type-cb');
+    const btnMasterType = document.getElementById('btn-type-master-toggle');
     const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
-    const checkTodosTipos = document.getElementById('check-todos-tipos');
 
-    if (checkTodosTipos) {
-        checkTodosTipos.addEventListener('change', (e) => {
-            checkboxesTipo.forEach(cb => cb.checked = e.target.checked);
+    if (btnMasterType) {
+        btnMasterType.addEventListener('click', () => {
+            const esLimpieza = btnMasterType.textContent === "Deseleccionar todo";
+            checkboxesTipo.forEach(cb => cb.checked = !esLimpieza);
+            btnMasterType.textContent = esLimpieza ? "Seleccionar todos" : "Deseleccionar todo";
         });
     }
 
     if (btnAplicarTipo) {
         btnAplicarTipo.addEventListener('click', () => {
             state.filtros.tiposPropiedad.clear();
-            
-            // Si "Seleccionar todos" está marcado o no hay ningun checkbox activo, traemos todos
             const marcados = Array.from(checkboxesTipo).filter(cb => cb.checked);
             
-            if (marcados.length === 0 || (checkTodosTipos && checkTodosTipos.checked)) {
-                // Estado por defecto: no filtra por ningún tipo específico (los muestra todos)
-                checkboxesTipo.forEach(cb => cb.checked = true);
-                if (checkTodosTipos) checkTodosTipos.checked = true;
-            } else {
-                marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
-            }
+            marcados.forEach(cb => state.filtros.tiposPropiedad.add(cb.value));
             
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
+            
+            if (btnMasterType) btnMasterType.textContent = marcados.length === 0 ? "Seleccionar todos" : "Deseleccionar todo";
         });
     }
 
-    // 5. FILTRO MAS FILTROS / LISTADOS (Con "Seleccionar todos" y Aplicar)
+    // 6. Mas Filtros Avanzados (Control Maestro Seleccionar / Deseleccionar Todo)
     const checkboxesListado = document.querySelectorAll('.more-filter-cb');
-    const checkTodosListados = document.getElementById('check-todos-listados');
+    const btnMasterMore = document.getElementById('btn-more-master-toggle');
     const btnAplicarMasFiltros = document.getElementById('btn-aplicar-mas-filtros');
 
-    if (checkTodosListados) {
-        checkTodosListados.addEventListener('change', (e) => {
-            checkboxesListado.forEach(cb => cb.checked = e.target.checked);
+    if (btnMasterMore) {
+        btnMasterMore.addEventListener('click', () => {
+            const esLimpieza = btnMasterMore.textContent === "Deseleccionar todo";
+            checkboxesListado.forEach(cb => cb.checked = !esLimpieza);
+            btnMasterMore.textContent = esLimpieza ? "Seleccionar todos" : "Deseleccionar todo";
         });
     }
 
-    // ==========================================================================
-    // INICIO DE OMITIR AUTO-MARCADO DE CHECKBOXES EXTENDIDOS
-    // ==========================================================================
     if (btnAplicarMasFiltros) {
         btnAplicarMasFiltros.addEventListener('click', () => {
             state.filtros.tiposListado.clear();
             const marcados = Array.from(checkboxesListado).filter(cb => cb.checked);
             
-            marcados.forEach(cb => {
-                state.filtros.tiposListado.add(cb.value);
-            }); // Fin de forEach de elementos marcados
-
+            marcados.forEach(cb => state.filtros.tiposListado.add(cb.value));
+            
             ejecutarTuberiaSincronizada();
             cerrarTodosLosPaneles();
-        }); // Fin de Callback click
-    } // Fin de if btnAplicarMasFiltros
-    // ==========================================================================
-    // FIN DE OMITIR AUTO-MARCADO DE CHECKBOXES EXTENDIDOS
-    // ==========================================================================
+            
+            if (btnMasterMore) btnMasterMore.textContent = marcados.length === 0 ? "Seleccionar todos" : "Deseleccionar todo";
+        });
+    }
 
-
+    
     // 6. BUSCADOR DE DIRECCIÓN
     const inputDireccionGlobal = document.getElementById('search-address');
     if (inputDireccionGlobal) {
