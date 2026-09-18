@@ -926,14 +926,15 @@ configurarSegmentado('row-beds', (valor) => {
     ejecutarTuberiaSincronizada();
 });
 
-configurarSegmentado('row-baths', (valor) => { 
-    state.filtros.banos = parseFloat(valor) || 0; 
-    ejecutarTuberiaSincronizada();
-});
-
+    configurarSegmentado('row-baths', (valor) => { 
+        state.filtros.banos = parseFloat(valor) || 0; 
+        ejecutarTuberiaSincronizada(); 
+    });
+}
 
 // Función auxiliar para cerrar paneles desplegables
 function cerrarTodosLosPaneles() {
+
     document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
 }
