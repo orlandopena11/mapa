@@ -996,12 +996,12 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     // --- FILTROS DE RANGOS Y DIMENSIONES ---
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
     // Evaluación corregida SRE: procesa el filtro de forma reactiva si el valor es mayor a 0
-    if (state.filtros.camas !== undefined && state.filtros.camas > 0) {
-        if (!prop.habitaciones || parseInt(prop.habitaciones, 10) < state.filtros.camas) return false;
-    }
-    if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
-        if (!prop.banos || parseFloat(prop.banos) < state.filtros.banos) return false;
-    }
+if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
+    if ((parseInt(prop.habitaciones) || 0) < state.filtros.habitaciones) return false;
+}
+if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
+    if ((parseInt(prop.banos) || 0) < state.filtros.banos) return false;
+}
 
     if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
         if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
