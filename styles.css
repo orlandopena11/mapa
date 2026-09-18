@@ -1,4 +1,4 @@
-/* PARTE 1 DE 5: ARQUITECTURA DE DISEÑO FLUIDO Y RESETS MAESTROS */
+/* ARQUITECTURA DE DISEÑO FLUIDO Y RESETS MAESTROS */
 :root {
     --azul-zillow: #006aff;
     --azul-oscuro: #002e50;
@@ -34,11 +34,7 @@ body, html {
     width: 100vw;
 }
 
-/* ==========================================================================
-   ARQUITECTURA DE CONTENEDORES UNIFICADA (LÓGICA NATURAL CASCADA)
-   ========================================================================== */
-
-/* 1. Barra de Filtros Superior Fija */
+/* ARQUITECTURA DE CONTENEDORES UNIFICADA */
 header.navbar-global {
     position: fixed;
     top: 0;
@@ -53,73 +49,12 @@ header.navbar-global {
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
-    z-index: 2000;
+    z-index: 9999;
     box-sizing: border-box;
     white-space: nowrap;
 }
 
-/* 2. Dimensionamiento del Logo Comercial mediante Especificidad de ID */
-header.navbar-global #app-main-logo,
 header.navbar-global .navbar-brand-logo {
-    height: 32px;
-    width: auto;
-    max-height: 32px;
-    object-fit: contain;
-    flex-shrink: 0;
-    display: inline-block;
-}
-
-/* 3. Contenedor Maestro de Panel Dividido (Split-View Desktop) */
-main.split-view {
-    display: flex;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    height: calc(100vh - 60px);
-    width: 100vw;
-    min-height: calc(100vh - 60px);
-    z-index: 1000;
-    box-sizing: border-box;
-}
-
-/* 4. Distribución Proporcional e Inyección Cartográfica */
-main.split-view .map-wrapper {
-    width: 45%;
-    height: 100%;
-    position: relative;
-    border-right: 1px solid var(--gris-borde);
-    box-sizing: border-box;
-}
-
-main.split-view #map-instance {
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
-    display: block;
-    z-index: 1;
-}
-
-main.split-view .properties-panel {
-    width: 55%;
-    height: 100%;
-    overflow-y: auto;
-    background-color: var(--blanco);
-    padding: 24px;
-    box-sizing: border-box;
-}
-
-
-
-
-
-.properties-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-
-.navbar-brand-logo {
     height: 32px;
     width: 120px;
     max-height: 32px;
@@ -128,7 +63,6 @@ main.split-view .properties-panel {
     flex-shrink: 0;
     display: inline-block;
 }
-
 
 .search-controls {
     display: flex;
@@ -145,6 +79,48 @@ main.split-view .properties-panel {
     width: 220px;
 }
 
+main.split-view {
+    display: flex;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    width: 100vw;
+    box-sizing: border-box;
+    z-index: 1000;
+}
+
+main.split-view .map-wrapper {
+    width: 45%;
+    height: 100%;
+    position: relative;
+    border-right: 1px solid var(--gris-borde);
+    box-sizing: border-box;
+}
+
+main.split-view #map-instance {
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+}
+
+main.split-view .properties-panel {
+    width: 55%;
+    height: 100%;
+    overflow-y: auto;
+    background-color: var(--blanco);
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* COMPONENTES DE FILTRADO */
 .filter-dropdown-wrapper {
     position: relative;
     display: inline-block;
@@ -169,9 +145,6 @@ main.split-view .properties-panel {
     background-color: rgba(0, 106, 255, 0.04);
 }
 
-/* ==========================================================================
-   ARQUITECTURA DE PANEL DESPLEGABLE CORREGIDO - SRE PREMIUM PREVENT BLURRY
-   ========================================================================== */
 .dropdown-content-panel {
     display: none;
     position: absolute;
@@ -188,8 +161,8 @@ main.split-view .properties-panel {
     border: 1px solid #cbd5e1;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
     box-sizing: border-box;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
 }
+
 .dropdown-content-panel.show {
     display: flex;
     flex-direction: column;
@@ -197,10 +170,10 @@ main.split-view .properties-panel {
 }
 
 .filter-section-title, .dropdown-content-panel h4 {
-    font-size: 15px !important;
-    font-weight: 700 !important;
-    color: #1e293b !important;
-    margin: 0 0 4px 0 !important;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
     text-align: left;
 }
 
@@ -237,7 +210,7 @@ main.split-view .properties-panel {
     background: none;
     border: none;
     color: #006aff;
-    font-size: 13px !important;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     padding: 0;
@@ -247,6 +220,7 @@ main.split-view .properties-panel {
     text-decoration: underline;
 }
 
+/* RANGOS DE PRECIO, HISTOGRAMA Y TARJETAS */
 .histogram-visual-container {
     display: flex;
     align-items: flex-end;
@@ -293,15 +267,20 @@ main.split-view .properties-panel {
     text-align: left;
 }
 
-
 .price-field-sre {
     width: 100%;
     height: 40px;
     padding: 0 12px;
-    font-size: 14px !important;
+    font-size: 14px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     box-sizing: border-box;
+}
+
+.price-field-sre:focus {
+    outline: none;
+    border-color: #006aff;
+    box-shadow: inset 0 0 0 1px #006aff;
 }
 
 .price-separator-dash {
@@ -309,7 +288,6 @@ main.split-view .properties-panel {
     font-weight: bold;
     margin-top: 16px;
 }
-
 
 .btn-primary-zillow, .btn-apply-price-sre, .btn-apply-beds-baths-sre {
     width: 100%;
@@ -382,9 +360,6 @@ main.split-view .properties-panel {
     font-weight: 700;
 }
 
-/* ==========================================================================
-   PARTE 3 DE 5: CONSTRUCTOR DE RIEL MULTIMEDIA Y CARRUSEL (CORREGIDO Y ESTABLE)
-   ========================================================================== */
 .tarjeta-casa {
     background-color: var(--blanco);
     border: 1px solid var(--gris-borde);
@@ -402,382 +377,6 @@ main.split-view .properties-panel {
     box-shadow: var(--shadow-card);
 }
 
-.contenedor-foto {
-    width: 100%;
-    height: 180px;
-    background-color: #1e293b;
-    position: relative;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-/* Riel flex que contiene hasta 5 fotos en fila horizontal */
-.carrusel-imagenes {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    height: 100%;
-    width: 100%;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Reglas estrictas para evitar que Leaflet rompa el tamaño de la foto */
-.carrusel-imagenes img {
-    min-width: 100% !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    object-fit: cover !important;
-    flex-shrink: 0 !important;
-    display: block !important;
-}
-
-/* Flechas permanentes y visibles */
-.flecha-carrusel {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.55);
-    color: #ffffff;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-    z-index: 15;
-    opacity: 0.85;
-    transition: opacity 0.2s, background-color 0.2s;
-    user-select: none;
-}
-
-.flecha-carrusel:hover {
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.flecha-izq { left: 8px; }
-.flecha-der { right: 8px; }
-
-/* Indicadores / Puntos inferiores */
-.indicadores-carrusel {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 15;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 4px 8px;
-    border-radius: 10px;
-    pointer-events: none;
-}
-
-.punto-indicator {
-    width: 6px;
-    height: 6px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    transition: background-color 0.2s, transform 0.2s;
-}
-
-.punto-indicator.activo {
-    background-color: #ffffff;
-    transform: scale(1.25);
-}
-
-.etiqueta-foto-zillow {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 15;
-    background-color: rgba(255, 255, 255, 0.95);
-    color: #1e293b;
-    padding: 4px 8px;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    border-radius: 3px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-/* TRANSFORMACIONES MODULARES POR ATRIBUTO */
-.carrusel-imagenes[data-foto-activa="0"] { transform: translateX(0%); }
-.carrusel-imagenes[data-foto-activa="1"] { transform: translateX(-100%); }
-.carrusel-imagenes[data-foto-activa="2"] { transform: translateX(-200%); }
-.carrusel-imagenes[data-foto-activa="3"] { transform: translateX(-300%); }
-.carrusel-imagenes[data-foto-activa="4"] { transform: translateX(-400%); }
-/* PARTE 4 DE 5: COLORES HEXADECIMALES DE BURBUJAS LEAFLET Y CAPAS MODALES */
-.leaflet-marker-icon.map-price-pill.venta-azul {
-    background-color: #062E48;
-    color: #ffffff;
-    border: 1.5px solid #ffffff;
-}
-
-.leaflet-marker-icon.map-price-pill.alquiler-naranja {
-    background-color: #FC6318;
-    color: #ffffff;
-    border: 1.5px solid #ffffff;
-}
-
-.leaflet-marker-icon.map-price-pill.vendido-dorado {
-    background-color: #ECA816;
-    color: #111827;
-    border: 1.5px solid #ffffff;
-}
-
-div.leaflet-marker-icon.map-price-pill {
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* ESTRUCTURA DE PANELES CORTINA SPA (PANTALLAS 2 Y 3) */
-.cortina-escondida {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #ffffff;
-    z-index: 5000;
-    transform: translateX(100vw);
-    transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-    overflow-y: auto;
-}
-
-.cortina-escondida.cortina-activa {
-    transform: translateX(0);
-}
-
-/* ESTRUCTURAS POPUP MODALES COMERCIALES */
-.modal-accion-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 7000;
-}
-
-/* PARTE 5 DE 5: MEDIA QUERIES - OPTIMIZACIÓN ABSOLUTA PARA CELULARES ESTILO ZILLOW */
-@media (max-width: 768px) {
-    /* 1. Barra superior en modo móvil: Scroll horizontal limpio */
-    .navbar-global {
-        padding: 6px 12px;
-        gap: 8px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    .navbar-brand-logo {
-        height: 24px;
-    }
-
-    .search-input {
-        width: 150px;
-        font-size: 12px;
-    }
-
-    .filter-btn {
-        padding: 6px 12px;
-        font-size: 11px;
-    }
-
-    /* 2. RESOLUCIÓN DEL COLAPSO: Oculta el catálogo de laptop y expande el mapa al 100% */
-    .split-view {
-        height: calc(100vh - 60px);
-        width: 100vw;
-        display: block; /* Rompe la grilla flexbox */
-    }
-
-    .map-wrapper {
-        width: 100% !important;
-        height: 100% !important;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    .properties-panel {
-        display: none !important; /* Apaga el panel rígido derecho en el celular */
-    }
-
-        /* 3. ARQUITECTURA DE LA TARJETA FLOTANTE OVERLAY (ESTILO ZILLOW MÓVIL) */
-    #tarjeta-flotante-movil-sre {
-        position: absolute;
-        bottom: 20px;
-        left: 5%;
-        width: 90%;
-        background-color: var(--blanco);
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        z-index: 4000;
-        padding: 14px;
-        box-sizing: border-box;
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
-        cursor: pointer;
-    }
-
-    /* Control de visibilidad mediante herencia de clase dinámicamente inyectada */
-    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-oculta {
-        transform: translateY(150%);
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-visible {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
-    }
-
-
-    /* Botón X de Cierre en la Esquina Superior Derecha de la Tarjeta Flotante */
-    .btn-cerrar-sre-flotante {
-        position: absolute;
-        top: 8px;
-        right: 12px;
-        background: none;
-        border: none;
-        font-size: 22px;
-        color: #718096;
-        cursor: pointer;
-        line-height: 1;
-        z-index: 10;
-    }
-    
-    /* Reposicionamiento del control Zoom de Leaflet para no obstruir los filtros móviles */
-    .leaflet-top.leaflet-left {
-        top: 75px !important;
-        left: 10px !important;
-    }
-
-/* ==========================================================================
-   PARTE 6 DE 6: EFECTOS DE MOVIMIENTO CINEMATOGRÁFICO (ZILLOW SHOWCASE)
-   ========================================================================== */
-
-/* Contenedor que recorta los bordes usando especificidad compuesta */
-.mosaico-zillow-galeria .contenedor-foto-animada,
-.foto-secundarias-grid .contenedor-foto-animada {
-    overflow: hidden;
-    position: relative;
-    border-radius: 6px;
-    background-color: var(--gris-borde);
-}
-
-/* Efecto 1: Zoom lento continuo hacia adelante */
-.contenedor-foto-animada .animacion-zoom-lento {
-    animation: kenBurnsZoom 24s ease-in-out infinite alternate;
-    transform-origin: center center;
-    will-change: transform;
-}
-
-/* Efecto 2: Paneo horizontal lento hacia la izquierda */
-.contenedor-foto-animada .animacion-paneo-lento {
-    animation: kenBurnsPaneo 28s ease-in-out infinite alternate;
-    transform-origin: left center;
-    will-change: transform;
-}
-
-/* Efecto 3: Paneo horizontal lento hacia la derecha */
-.contenedor-foto-animada .animacion-paneo-reverso {
-    animation: kenBurnsPaneoReverso 30s ease-in-out infinite alternate;
-    transform-origin: right center;
-    will-change: transform;
-}
-
-/* Efecto 4: Zoom lento continuo de salida hacia atrás */
-.contenedor-foto-animada .animacion-zoom-atras {
-    animation: kenBurnsZoomAtras 26s ease-in-out infinite alternate;
-    transform-origin: center center;
-    will-change: transform;
-}
-
-/* --- LÓGICA DIGITAL DE TRASLACIÓN DE PERSPECTIVA POR HARDWARE (GPU) --- */
-@keyframes kenBurnsZoom {
-    0% { transform: scale(1.0); }
-    100% { transform: scale(1.14) translate(1%, -1%); }
-}
-
-@keyframes kenBurnsPaneo {
-    0% { transform: scale(1.1) translateX(0%); }
-    100% { transform: scale(1.1) translateX(-6%); }
-}
-
-@keyframes kenBurnsPaneoReverso {
-    0% { transform: scale(1.1) translateX(-6%); }
-    100% { transform: scale(1.1) translateX(0%); }
-}
-
-@keyframes kenBurnsZoomAtras {
-    0% { transform: scale(1.16) translate(-1%, 1%); }
-    100% { transform: scale(1.0); }
-}
-
-/* ==========================================================================
-   SOPORTE DE CARRUSELES UNIFICADOS PARA POPUPS DE MAPA (ESTILO ZILLOW)
-   ========================================================================== */
-
-/* Forzar que el contenedor popup de Leaflet no rompa las esquinas redondeadas */
-.zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
-    padding: 0 !important;
-    overflow: hidden;
-    border-radius: 12px !important;
-}
-
-.zillow-custom-popup-wrapper .leaflet-popup-content {
-    margin: 0 !important;
-    width: 260px !important;
-}
-
-/* Forzar dimensiones del carrusel dentro de los contextos de burbuja flotante */
-.popup-card .contenedor-foto.popup-carrusel-context {
-    width: 100% !important;
-    height: 140px !important;
-    position: relative;
-    overflow: hidden;
-}
-
-.popup-card .carrusel-imagenes {
-    display: flex;
-    height: 100%;
-    width: 100%;
-}
-
-.popup-card .carrusel-imagenes img {
-    width: 260px !important;
-    height: 140px !important;
-    object-fit: cover;
-}
-
-/* Hacer visibles las flechas de navegación dentro de los popups del mapa */
-.popup-carrusel-context:hover .flecha-carrusel {
-    opacity: 1 !important;
-}
-
-.popup-card .datos-popup-info {
-    padding: 10px 12px;
-    font-family: sans-serif;
-    background-color: #ffffff;
-}
-
-/* Contenedor general de textos de la tarjeta */
 .datos-casa {
     padding: 12px;
     cursor: pointer;
@@ -785,7 +384,6 @@ div.leaflet-marker-icon.map-price-pill {
     line-height: 1.4;
 }
 
-/* Ruta CSS de alta prioridad para forzar el tamaño de 28px y el negro puro de forma nativa */
 .tarjeta-casa .datos-casa .precio {
     color: #000000;
     font-size: 28px;
@@ -793,9 +391,6 @@ div.leaflet-marker-icon.map-price-pill {
     margin-bottom: 4px;
 }
 
-
-
-/* Todas las características y textos secundarios en el tono exacto requerido */
 .datos-casa .caracteristicas-inmueble {
     color: #252525;
     font-weight: 600;
@@ -814,19 +409,3 @@ div.leaflet-marker-icon.map-price-pill {
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-/* ==========================================================================
-   INICIO DE INYECCIÓN INTEGRAL PRECISIÓN ZILLOW: COMPATIBLE + SPAN SRE
-   ========================================================================== */
-
-
-
-   
-
-#btn-apply-price:hover, #btn-apply-beds-baths:hover {
-    background-color: #0052c4 !important;
-}
-
-/* ==========================================================================
-   FIN DE INYECCIÓN INTEGRAL PRECISIÓN ZILLOW: COMPATIBLE + SPAN SRE
-   ========================================================================== */
