@@ -493,8 +493,9 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // 1. LIMPIEZA ATÓMICA DE CAPAS (CORRECCIÓN ABSOLUTA PARA EVITAR EL ERROR _leaflet_events)
+    // 1. LIMPIEZA ATÓMICA Y VACIADO DE MARCADORES PREVIOS EN MEMORIA DE LEAFLET
     if (window.capaMarcadores) {
+        window.capaMarcadores.clearLayers(); // <--- Esto borra los marcadores viejos de la memoria
         window.map.removeLayer(window.capaMarcadores);
     }
     window.capaMarcadores = L.layerGroup().addTo(window.map);
