@@ -917,16 +917,26 @@ function inicializarEventosDeFiltros() {
         });
     }
 
-    // Camas y Baños
-    configurarSegmentado('row-beds', (valor) => { 
-        state.filtros.camas = parseInt(valor, 10) || 0; 
-        ejecutarTuberiaSincronizada(); 
-    });
-    configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.banos = parseFloat(valor) || 0; 
-        ejecutarTuberiaSincronizada(); 
+// Camas y Baños Corregidos SRE con Tubería Reactiva Sincronizada
+configurarSegmentado('row-beds', (valor) => { 
+    state.filtros.camas = parseInt(valor, 10) || 0; 
+    ejecutarTuberiaSincronizada();
+});
+
+configurarSegmentado('row-baths', (valor) => { 
+    state.filtros.banos = parseFloat(valor) || 0; 
+    ejecutarTuberiaSincronizada();
+});
+
+const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
+if (btnApplySpecs) {
+    btnApplySpecs.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
+        ejecutarTuberiaSincronizada();
+        cerrarTodosLosPaneles();
     });
 }
+
 
 // Función auxiliar para cerrar paneles desplegables
 function cerrarTodosLosPaneles() {
