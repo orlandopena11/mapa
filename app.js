@@ -821,10 +821,12 @@ function inicializarEventosDeFiltros() {
 
    // 4. Filtro de Camas y Baños Segmentado Horizontal
     configurarSegmentado('row-beds', (valor) => { 
-        state.filtros.camas = parseInt(valor, 10) || 0; 
+        state.filtros.habitaciones = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada();
     });
     configurarSegmentado('row-baths', (valor) => { 
         state.filtros.banos = parseFloat(valor) || 0; 
+        ejecutarTuberiaSincronizada();
     });
 
 // Asegúrate de que el bloque de la línea 829 quede estructurado así de forma única:
@@ -948,14 +950,16 @@ function cerrarTodosLosPaneles() {
 function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
     const contenedor = document.getElementById(idContenedor); 
     if (!contenedor) return;
-    contenedor.addEventListener('click', (e) => {
-        const botonNode = e.target.closest('.segmented-btn'); 
-        if (!botonNode) return;
-        contenedor.querySelectorAll('.segmented-btn').forEach(btn => btn.classList.remove('active'));
-        botonNode.classList.add('active'); 
-        callback(botonNode.getAttribute('data-val'));
+    
+    // Escucha de forma nativa el cambio sobre los inputs radiales de la estructura Zillow
+    contenedor.addEventListener('change', (e) => {
+        const inputRadio = e.target.closest('input[type="radio"]');
+        if (inputRadio) {
+            callback(inputRadio.value);
+        }
     });
 } // Fin de Function configurarSegmentado
+
 
 
 // ==========================================================================
