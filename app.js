@@ -826,13 +826,16 @@ function inicializarEventosDeFiltros() {
         state.filtros.banos = parseFloat(valor) || 0; 
     });
 
-    const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
-    if (btnApplySpecs) {
-        btnApplySpecs.addEventListener('click', () => {
-            ejecutarTuberiaSincronizada();
-            cerrarTodosLosPaneles();
-        });
-    }
+// Asegúrate de que el bloque de la línea 829 quede estructurado así de forma única:
+const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
+if (btnApplySpecs) {
+    btnApplySpecs.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
+        ejecutarTuberiaSincronizada();
+        cerrarTodosLosPaneles();
+    });
+}
+
 
     // 5. Tipo de Propiedad (Control Maestro Seleccionar / Deseleccionar Todo)
     const checkboxesTipo = document.querySelectorAll('.type-cb');
@@ -927,15 +930,6 @@ configurarSegmentado('row-baths', (valor) => {
     state.filtros.banos = parseFloat(valor) || 0; 
     ejecutarTuberiaSincronizada();
 });
-
-const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
-if (btnApplySpecs) {
-    btnApplySpecs.addEventListener('click', (e) => {
-        if (e) e.preventDefault();
-        ejecutarTuberiaSincronizada();
-        cerrarTodosLosPaneles();
-    });
-}
 
 
 // Función auxiliar para cerrar paneles desplegables
