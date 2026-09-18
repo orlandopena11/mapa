@@ -660,7 +660,7 @@ div.leaflet-marker-icon.map-price-pill {
         width: 90%;
         background-color: var(--blanco);
         border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
         z-index: 4000;
         padding: 14px;
         box-sizing: border-box;
