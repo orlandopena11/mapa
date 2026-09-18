@@ -923,17 +923,6 @@ if (btnApplySpecs) {
         });
     }
 
-    // 4. Filtro de Dormitorios y Baños Sincronizado con la Vista de Supabase
-    configurarSegmentado('row-beds', (valor) => { 
-        state.filtros.habitaciones = parseInt(valor, 10) || 0; 
-        ejecutarTuberiaSincronizada();
-    });
-
-    configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.banos = parseInt(valor, 10) || 0; 
-        ejecutarTuberiaSincronizada();
-    });
-
 }
 
 // Función auxiliar para cerrar paneles desplegables
@@ -1001,16 +990,31 @@ function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosD
     // --- FILTROS DE RANGOS Y DIMENSIONES ---
     if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
     // Evaluación corregida SRE: procesa el filtro de forma reactiva si el valor es mayor a 0
-if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
-    if ((parseInt(prop.habitaciones) || 0) < state.filtros.habitaciones) return false;
-}
-if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
-    if ((parseInt(prop.banos) || 0) < state.filtros.banos) return false;
-}
-
-    if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
-        if (!Array.from(state.filtros.tiposPropiedad).some(f => f === String(prop.tipo_propiedad || ''))) return false;
+    // --- INICIO DE REEMPLAZO PUNTUAL: CARACTERÍSTICAS FÍSICAS, TIPOS Y LISTADOS SRE ---
+    
+    // Evaluación de habitaciones (Enteros) y baños (Flotantes para admitir 1.5 o medios baños de forma exacta)
+    if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
+        if ((parseInt(prop.habitaciones, 10) || 0) < state.filtros.habitaciones) return false;
     }
+    if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
+        if ((parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
+    }
+
+    // Filtrado multi-selección de tipos de propiedad (Casas, Departamentos, Terrenos, etc.)
+    if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
+        if (!state.filtros.tiposPropiedad.has(String(prop.tipo_propiedad || '').trim())) return false;
+    }
+
+    // Implementación de regla de negocio omitida: Filtrado por Origen o Tipo de Listado
+    if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
+        const origenPublicacion = String(prop.situacion_propiedad || prop.creado_por || "").toLowerCase().trim();
+        if (origenPublicacion !== "" && !state.filtros.tiposListado.has(origenPublicacion)) {
+            return false;
+        } // Fin de validación inside Set tiposListado
+    }
+
+    // --- FIN DE REEMPLAZO PUNTUAL SRE ---
+
 
     // ==========================================================================
     // INICIO DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
