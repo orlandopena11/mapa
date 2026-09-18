@@ -189,42 +189,217 @@ header.navbar-global, .navbar-global {
     background-color: rgba(0, 106, 255, 0.04);
 }
 
+/* ==========================================================================
+   ARQUITECTURA DE PANEL DESPLEGABLE CORREGIDO - SRE PREMIUM PREVENT BLURRY
+   ========================================================================== */
 .dropdown-content-panel {
-    display: none; 
+    display: none;
     position: absolute;
-    top: 100%; 
+    top: 100%;
     left: 0;
-    z-index: 9999;
+    z-index: 99999;
     background-color: #ffffff;
-    min-width: 240px;
-    border-radius: 8px;
-    padding: 16px;
-    margin-top: 4px;
-    border: 1px solid #e2e8f0;
+    min-width: 290px;
+    width: max-content;
+    max-width: 420px;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 8px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    box-sizing: border-box;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
 }
-
 .dropdown-content-panel.show {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    gap: 14px;
+}
+
+.filter-section-title, .dropdown-content-panel h4 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #1e293b !important;
+    margin: 0 0 4px 0 !important;
+    text-align: left;
 }
 
 .filter-group-options {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+.scrollable-options {
+    max-height: 240px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.filter-checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #006aff;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+}
+
+.master-toggle-container {
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.master-action-link {
+    background: none;
+    border: none;
+    color: #006aff;
+    font-size: 13px !important;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0;
+}
+
+.master-action-link:hover {
+    text-decoration: underline;
+}
+
+.histogram-visual-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 65px;
+    width: 100%;
+    gap: 4px;
+    margin: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 2px;
+}
+
+.histo-bar {
+    flex: 1;
+    background-color: #e2e8f0;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+}
+
+.histo-bar.pico-solicitado, .histo-bar.grupo-mayor {
+    background-color: #006aff;
+    opacity: 0.9;
+}
+
+.price-inputs-row {
+    display: flex;
+    align-items: center;
     gap: 10px;
     width: 100%;
 }
 
-.filter-checkbox-label {
+.price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.price-input-group label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    text-align: left;
+}
+
+
+.price-field-sre {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.price-separator-dash {
+    color: #94a3b8;
+    font-weight: bold;
+    margin-top: 16px;
+}
+
+
+.btn-primary-zillow, .btn-apply-price-sre, .btn-apply-beds-baths-sre {
+    width: 100%;
+    height: 40px;
+    background-color: #006aff;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
+    transition: background-color 0.15s ease;
+    margin-top: 6px;
+}
+
+.btn-primary-zillow:hover, .btn-apply-price-sre:hover, .btn-apply-beds-baths-sre:hover {
+    background-color: #0052c4;
+}
+
+.dropdown-footer-apply {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 10px;
+    margin-top: 4px;
+    width: 100%;
+}
+
+.segmented-control-sre {
+    display: flex;
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    padding: 0;
+}
+
+.segment-item-sre {
+    flex: 1;
+    margin: 0;
     cursor: pointer;
+}
+
+.segment-item-sre input[type="radio"] {
+    display: none;
+}
+
+.segment-item-sre span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 38px;
     font-size: 13px;
+    font-weight: 600;
     color: #334155;
+    background-color: #ffffff;
+    border-right: 1px solid #cbd5e1;
+    transition: all 0.15s ease;
+}
+
+.segment-item-sre:last-child span {
+    border-right: none;
+}
+
+.segment-item-sre input[type="radio"]:checked + span {
+    background-color: #006aff;
+    color: #ffffff;
+    font-weight: 700;
 }
 
 /* ==========================================================================
@@ -664,53 +839,10 @@ div.leaflet-marker-icon.map-price-pill {
    INICIO DE INYECCIÓN INTEGRAL PRECISIÓN ZILLOW: COMPATIBLE + SPAN SRE
    ========================================================================== */
 
-/* --- 1. APARIENCIA PREMIUM PARA EL DESPLEGABLE DE PRECIOS MASTER --- */
-div#dropdown-price {
-    min-width: 340px !important;
-    padding: 24px !important;
-    background-color: #ffffff !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-    box-sizing: border-box !important;
-}
 
-/* Forzar que el contenedor interno alinee las cajas en horizontal */
-div#dropdown-price > div {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 12px !important;
-    margin-top: 14px !important;
-    margin-bottom: 20px !important;
-    width: 100% !important;
-}
 
-/* Forzar que cada bloque (Min y Max) se comporte como columna */
-div#dropdown-price div label {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 !important;
-    font-size: 12px !important;
-    font-weight: 700 !important;
-    color: #2a2a2a !important;
-    text-align: left !important;
-    gap: 6px !important;
-}
 
-/* CAJAS GIGANTES DE MONTO DE ANCHO COMPLETO */
-div#dropdown-price input,
-div#dropdown-price #price-min,
-div#dropdown-price #price-max {
-    width: 100% !important;
-    height: 46px !important;
-    padding: 10px 14px !important;
-    font-size: 15px !important;
-    color: #1a202c !important;
-    background-color: #ffffff !important;
-    border: 1px solid #ccd0d5 !important;
-    border-radius: 4px !important;
-    box-sizing: border-box !important;
-}
+
 
 div#dropdown-price input:focus {
     outline: none !important;
@@ -718,15 +850,7 @@ div#dropdown-price input:focus {
     box-shadow: inset 0 0 0 1px #006aff !important;
 }
 
-/* --- 2. APARIENCIA PREMIUM PARA EL DESPLEGABLE DE CAMAS Y BAÑOS --- */
-div#dropdown-specs {
-    min-width: 380px !important;
-    padding: 24px !important;
-    background-color: #ffffff !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
-    box-sizing: border-box !important;
-}
+
 
 div#dropdown-specs h4 {
     font-size: 14px !important;
@@ -753,37 +877,6 @@ div#dropdown-specs .segmented-control-sre {
     padding: 0 !important;
 }
 
-/* Transformar las opciones y textos en botones planos continuos */
-div#dropdown-specs .segmented-control-sre label.segment-item-sre {
-    flex: 1 !important;
-    text-align: center !important;
-    cursor: pointer !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: block !important;
-    border-right: 1px solid #ccd0d5 !important;
-}
-
-div#dropdown-specs .segmented-control-sre label.segment-item-sre:last-child {
-    border-right: none !important;
-}
-
-/* Ocultar por completo los círculos de opción feos y nativos del navegador */
-div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"] {
-    display: none !important;
-}
-
-/* Estilo para simular el botón seleccionado azul de Zillow usando el span contiguo */
-div#dropdown-specs .segmented-control-sre label.segment-item-sre span {
-    display: block !important;
-    width: 100% !important;
-    padding: 12px 0 !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: #2a2a2a !important;
-    background-color: #ffffff !important;
-    transition: background-color 0.15s ease, color 0.15s ease !important;
-}
 
 /* Estado activo: cuando el radio está checkeado, pintamos el span de azul sólido */
 div#dropdown-specs .segmented-control-sre label.segment-item-sre input[type="radio"]:checked + span {
