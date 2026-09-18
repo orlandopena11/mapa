@@ -921,16 +921,17 @@ if (btnApplySpecs) {
         });
     }
 
-// Camas y Baños Corregidos SRE con Tubería Reactiva Sincronizada
-configurarSegmentado('row-beds', (valor) => { 
-    state.filtros.camas = parseInt(valor, 10) || 0; 
-    ejecutarTuberiaSincronizada();
-});
+    // 4. Filtro de Dormitorios y Baños Sincronizado con la Vista de Supabase
+    configurarSegmentado('row-beds', (valor) => { 
+        state.filtros.habitaciones = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada();
+    });
 
     configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.banos = parseFloat(valor) || 0; 
-        ejecutarTuberiaSincronizada(); 
+        state.filtros.banos = parseInt(valor, 10) || 0; 
+        ejecutarTuberiaSincronizada();
     });
+
 }
 
 // Función auxiliar para cerrar paneles desplegables
