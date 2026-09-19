@@ -1287,10 +1287,13 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 
         // Ejecutar el carrusel cinematográfico infinito
         reproducirSecuenciaCinematografica();
+
+        // Resetea el scroll de la cortina al tope superior para visualización móvil
+        cortina.scrollTop = 0; 
     }
 
     cortina.classList.add('cortina-activa');
-}
+} // Fin definitivo de gestionarCortinaSPA    
 
 // ==========================================================================
 // COMPONENTE MODULAR INTERIOR: CÁLCULOS FINANCIEROS Y CARACTERÍSTICAS
