@@ -819,25 +819,41 @@ function inicializarEventosDeFiltros() {
         });
     }
 
-   // 4. Filtro de Camas y Baños Segmentado Horizontal
+    // --- INICIO DE REEMPLAZO PUNTUAL: CAPTURA PASIVA DE CAMAS Y BAÑOS SRE ---
+
+    // Variables locales para retener temporalmente los clics del usuario sin mover la interfaz
+    let temporalHabitaciones = state.filtros.habitaciones || 0;
+    let temporalBanos = state.filtros.banos || 0;
+
+    // Al cambiar de dormitorio, solo almacenamos el valor numérico en la variable local
     configurarSegmentado('row-beds', (valor) => { 
-        state.filtros.habitaciones = parseInt(valor, 10) || 0; 
-        ejecutarTuberiaSincronizada();
-    });
-    configurarSegmentado('row-baths', (valor) => { 
-        state.filtros.banos = parseFloat(valor) || 0; 
-        ejecutarTuberiaSincronizada();
+        temporalHabitaciones = parseInt(valor, 10) || 0; 
     });
 
-// Asegúrate de que el bloque de la línea 829 quede estructurado así de forma única:
-const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
-if (btnApplySpecs) {
-    btnApplySpecs.addEventListener('click', (e) => {
-        if (e) e.preventDefault();
-        ejecutarTuberiaSincronizada();
-        cerrarTodosLosPaneles();
+    // Al cambiar de baño, almacenamos el valor numérico decimal en la variable local
+    configurarSegmentado('row-baths', (valor) => { 
+        temporalBanos = parseFloat(valor) || 0; 
     });
-}
+
+    // El botón Aplicar es el único punto de control que escribe el estado global y refresca el mapa y rejilla
+    const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
+    if (btnApplySpecs) {
+        btnApplySpecs.addEventListener('click', (e) => {
+            if (e) e.preventDefault();
+            
+            // Traspasamos los valores almacenados temporalmente hacia el objeto global real
+            state.filtros.habitaciones = temporalHabitaciones;
+            state.filtros.banos = temporalBanos;
+            
+            // Invocamos la actualización síncrona visual del catálogo y marcadores del mapa
+            ejecutarTuberiaSincronizada();
+            
+            // Ocultamos los paneles desplegables abiertos
+            cerrarTodosLosPaneles();
+        }); // Fin de EventListener click para btnApplySpecs
+    }
+
+    // --- FIN DE REEMPLAZO PUNTUAL SRE ---
 
 
     // 5. Tipo de Propiedad (Control Maestro Seleccionar / Deseleccionar Todo)
