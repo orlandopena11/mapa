@@ -739,8 +739,10 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     setTimeout(() => { // Inicia Timer de inicialización y sincronización limpia SRE
         inicializarEventosDeFiltros();
         if (window.map) {
-            window.map.on('moveend', renderizarMapaZillow);
-            window.map.invalidateSize(); 
+       //     window.map.on('moveend', renderizarMapaZillow);
+       //     window.map.invalidateSize(); 
+       // Quitamos el escuchador 'moveend' para evitar que el mapa se autosabotee en bucle
+            window.map.invalidateSize({ animate: false });
         }
         
         // --- NUEVO: CONEXIÓN LIMPIA PARA DESPERTAR EL CATÁLOGO DE INMUEBLES SRE ---
