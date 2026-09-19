@@ -522,20 +522,24 @@ function renderizarMapaZillow() {
         }
     });
 
-    // 3. ENCUADRE DE MAPA (Manteniendo tus valores de Padding 30 y Zoom 15)
+    // 3. ENCUADRE DINÁMICO GEOMÉTRICO PANORÁMICO SRE
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
-                // Si hay un solo inmueble, abrimos el zoom a 14 para ver avenidas principales de referencia
+                // Si hay un solo inmueble, centramos la cámara con un zoom referencial de 14
                 window.map.setView(coordenadasValidas[0], 14, { animate: true });
             } else {
-                // Si hay varios distritos, bajamos maxZoom a 13 y el padding a 15 para alejar la cámara lo necesario
-                window.map.fitBounds(coordenadasValidas, { padding: 15, maxZoom: 13, animate: true });
+                // Creamos los límites matemáticos unificando los distritos (Surco + Lima Centro)
+                const limitesMapa = L.latLngBounds(coordenadasValidas);
+                
+                // Aplicamos un padding numérico de 40 píxeles para dejar un margen de seguridad en los bordes
+                window.map.fitBounds(limitesMapa, { padding:, maxZoom: 13, animate: true });
             }
         } catch (errGeometrico) {
-            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el encuadre dinámico de Leaflet:", errGeometrico.message);
+            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
         }
     }
+
 
 
     // 4. CREACIÓN Y AÑADIDO DE MARCADORES
