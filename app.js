@@ -526,13 +526,13 @@ function renderizarMapaZillow() {
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
-                // Si hay un solo inmueble, centramos la cámara con un zoom referencial de 14
+                // Centrado exacto si solo hay un elemento
                 window.map.setView(coordenadasValidas[0], 14, { animate: true });
             } else {
-                // Creamos los límites matemáticos unificando los distritos (Surco + Lima Centro)
+                // Creamos los límites de Leaflet unificando Surco y Lima Centro de forma nativa
                 const limitesMapa = L.latLngBounds(coordenadasValidas);
                 
-                // Aplicamos un padding numérico de 40 píxeles para dejar un margen de seguridad en los bordes
+                // Sintaxis exacta y cerrada: dejamos 40 píxeles de margen en los bordes para encuadrar todo
                 window.map.fitBounds(limitesMapa, { padding:, maxZoom: 13, animate: true });
             }
         } catch (errGeometrico) {
