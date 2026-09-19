@@ -938,24 +938,36 @@ function inicializarEventosDeFiltros() {
             ejecutarTuberiaSincronizada();
 
             clearTimeout(timerBusqueda);
+            
+            // Si el interesado limpia el buscador por completo, forzamos al mapa a encuadrar todo de inmediato
+            if (consulta === "") {
+                ejecutarTuberiaSincronizada();
+                return;
+            }
+            
+            // Si está escribiendo pero aún no llega a 3 caracteres, congelamos la geocodificación externa
             if (consulta.length < 3) return;
 
+            // Transcurridos los 600ms de espera activa, consulta la georreferenciación en OpenStreetMap
             timerBusqueda = setTimeout(async () => {
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
+                    const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
                     const data = await res.json();
 
                     if (data && data.length > 0 && window.map) {
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
+                        
+                        // Centramos el mapa en la nueva localidad encontrada por texto
                         window.map.setView([lat, lon], 14, { animate: true });
                     }
                 } catch (errGeo) {
-                    console.error("Error al geocodificar dirección:", errGeo);
+                    console.warn("⚠️ [SRE ESPÍA GEO] Error al geocodificar dirección externa:", errGeo);
                 }
             }, 600);
-        });
+        }); // Fin del EventListener input
     }
+
 
 }
 
