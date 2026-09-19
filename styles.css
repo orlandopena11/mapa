@@ -619,9 +619,11 @@ div.leaflet-marker-icon.map-price-pill {
     transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    display: none;
 }
 
 .cortina-escondida.cortina-activa {
+    display: block;
     transform: translateX(0);
 }
 
