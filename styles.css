@@ -607,29 +607,25 @@ div.leaflet-marker-icon.map-price-pill {
     background-color: #ffffff;
 }
 
-/* --- INICIO DE REEMPLAZO PUNTUAL: CORTINA DETALLES MÓVIL SIN IMPORTANT SRE --- */
 .cortina-escondida {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #ffffff;
-    /* Supera el z-index de las capas y controles nativos de Leaflet (1000) */
-    z-index: 999999; 
-    transform: translateX(100vw);
+    width: 100%;
+    height: 100%;
+    background-color: var(--blanco);
+    z-index: 100000;
+    transform: translateX(100%);
     transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     overflow-y: auto;
-    /* Desplazamiento táctil fluido para sistemas iOS y Android */
-    -webkit-overflow-scrolling: touch; 
+    -webkit-overflow-scrolling: touch;
 }
 
-/* La unión de dos clases adyacentes duplica la especificidad nativa en el navegador */
-.app-container + #vista-galeria-expandida + #modal-tour-comercial + #modal-agent-comercial + .cortina-escondida.cortina-activa,
 .cortina-escondida.cortina-activa {
     transform: translateX(0);
 }
-/* --- FIN DE REEMPLAZO PUNTUAL SRE --- */
+
+
 
 .modal-accion-overlay {
     position: fixed;
