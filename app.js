@@ -490,12 +490,20 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
+// ==========================================================================
+// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
+// ==========================================================================
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
+    // --- REPARACIÓN DE REDISEÑO ASÍNCRONO SRE ---
+    // Fuerza a Leaflet a recalcular el ancho y alto del contenedor en el DOM antes de pintar.
+    // Esto evita que la propiedad de Lima Centro u otras queden invisibles por falta de actualización del lienzo.
+    window.map.invalidateSize({ animate: false });
+
     // 1. LIMPIEZA ATÓMICA Y VACIADO DE MARCADORES PREVIOS EN MEMORIA DE LEAFLET
     if (window.capaMarcadores) {
-        window.capaMarcadores.clearLayers(); // <--- Esto borra los marcadores viejos de la memoria
+        window.capaMarcadores.clearLayers(); 
         window.map.removeLayer(window.capaMarcadores);
     }
     window.capaMarcadores = L.layerGroup().addTo(window.map);
@@ -508,23 +516,25 @@ function renderizarMapaZillow() {
         const parsedLat = parseFloat(p.latitud);
         const parsedLng = parseFloat(p.longitud);
 
-        if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng) && parsedLat !== 0 && parsedLng !== 0) {
+        // Corrección: Validamos que sean números reales finitos sin importar el distrito
+        if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
             coordenadasValidas.push([parsedLat, parsedLng]);
         }
     });
 
-    // 3. ENCUADRE DE MAPA
+    // 3. ENCUADRE DE MAPA (Manteniendo tus valores de Padding 30 y Zoom 15)
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
                 window.map.setView(coordenadasValidas[0], 15, { animate: true });
             } else {
-            window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
+                window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
             }
         } catch (errGeometrico) {
-            // Silenciar posible excepción en encuadre
+            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el encuadre dinámico de Leaflet:", errGeometrico.message);
         }
     }
+
 
     // 4. CREACIÓN Y AÑADIDO DE MARCADORES
     filtradas.forEach(prop => {
