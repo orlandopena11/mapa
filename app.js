@@ -929,7 +929,7 @@ function inicializarEventosDeFiltros() {
     }
 
     
-    // 6. BUSCADOR DE DIRECCIÓN
+    // 7. BUSCADOR DE DIRECCIÓN (Con Debounce de 600ms y Escape de Limpieza)
     const inputDireccionGlobal = document.getElementById('search-address');
     if (inputDireccionGlobal) {
         let timerBusqueda = null;
@@ -951,15 +951,17 @@ function inicializarEventosDeFiltros() {
             // Espera activa de 600ms para evitar saturar la API mientras el usuario escribe
             timerBusqueda = setTimeout(async () => {
                 try {
-                    const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
+                    // Consulta al servidor oficial de Nominatim con la sintaxis de interpolación correcta
+               //     const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
                     const data = await res.json();
 
-                    // Corrección estricta: leemos el índice [0] del arreglo devuelto por Nominatim
+                    // Leemos de forma estricta el índice cero del arreglo devuelto
                     if (data && data.length > 0 && window.map) {
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
                         
-                        // Movemos la cámara del mapa de forma fluida hacia el distrito escrito (ej. Ventanilla o Lima)
+                        // Movemos la cámara del mapa hacia las coordenadas del distrito escrito
                         window.map.setView([lat, lon], 14, { animate: true });
                     }
                 } catch (errGeo) {
@@ -968,8 +970,8 @@ function inicializarEventosDeFiltros() {
             }, 600);
         }); // Fin del EventListener input controlado SRE
     }
+} // Fin definitivo de la función inicializarEventosDeFiltros
 
-}
 
 // Función auxiliar para cerrar paneles desplegables
 function cerrarTodosLosPaneles() {
