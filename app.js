@@ -1230,10 +1230,9 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
                     </div>
 
                     <div style="width: 100%; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: sticky; top: 80px; z-index: 100; box-sizing: border-box;">
-
                         <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; text-align: center;">Contactar con la inmobiliaria</h4>
-                        <button type="button" id="btn-solicitar-tour-galeria-spa" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
-                        <button type="button" id="btn-contactar-agente-galeria-spa" style="width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Contactar Agente</button>
+                        <button type="button" id="btn-solicitar-tour-galeria" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
+                        <button type="button" id="btn-contactar-agente-galeria" style="width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Contactar Agente</button>
                     </div>
 
                 </div>
@@ -1242,15 +1241,15 @@ function gestionarCortinaSPA(tipoPantalla, prop) {
 
         document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
 
-        document.getElementById('btn-solicitar-tour-galeria-spa').onclick = () => {
+        document.getElementById('btn-solicitar-tour-galeria').onclick = () => {
             mostrarPopupAccion("modal-tour-comercial");
-            if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas();
-            if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
+            calcularCalendarioTresCajas();
+            gestionarPasosModalTour(1);
         };
 
-        document.getElementById('btn-contactar-agente-galeria-spa').onclick = () => {
+        document.getElementById('btn-contactar-agente-galeria').onclick = () => {
             mostrarPopupAccion("modal-agent-comercial");
-            if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
+            inyectarDatosPropiedadAlMensaje();
         };
 
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
