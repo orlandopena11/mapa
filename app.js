@@ -526,9 +526,11 @@ function renderizarMapaZillow() {
     if (coordenadasValidas.length > 0 && window.map) {
         try {
             if (coordenadasValidas.length === 1) {
-                window.map.setView(coordenadasValidas[0], 15, { animate: true });
+                // Si hay un solo inmueble, abrimos el zoom a 14 para ver avenidas principales de referencia
+                window.map.setView(coordenadasValidas[0], 14, { animate: true });
             } else {
-                window.map.fitBounds(coordenadasValidas, { padding: 30, maxZoom: 15, animate: true });
+                // Si hay varios distritos, bajamos maxZoom a 13 y el padding a 15 para alejar la cámara lo necesario
+                window.map.fitBounds(coordenadasValidas, { padding: 15, maxZoom: 13, animate: true });
             }
         } catch (errGeometrico) {
             console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el encuadre dinámico de Leaflet:", errGeometrico.message);
