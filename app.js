@@ -533,7 +533,7 @@ function renderizarMapaZillow() {
                 const limitesMapa = L.latLngBounds(coordenadasValidas);
                 
                 // Sintaxis fija: dejamos 30 píxeles exactos de margen en los bordes para encuadrar todo
-                window.map.fitBounds(limitesMapa, { padding:, maxZoom: 13, animate: true });
+                window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 13, animate: true });
             }
         } catch (errGeometrico) {
             console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
