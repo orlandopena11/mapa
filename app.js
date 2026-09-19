@@ -939,35 +939,35 @@ function inicializarEventosDeFiltros() {
 
             clearTimeout(timerBusqueda);
             
-            // Si el interesado limpia el buscador por completo, forzamos al mapa a encuadrar todo de inmediato
+            // Si el usuario borra todo el texto, la tubería limpia la pantalla y el mapa regresa a la vista general
             if (consulta === "") {
                 ejecutarTuberiaSincronizada();
                 return;
             }
             
-            // Si está escribiendo pero aún no llega a 3 caracteres, congelamos la geocodificación externa
+            // Si tiene texto pero es menor a 3 letras, no hacemos la consulta externa a Nominatim
             if (consulta.length < 3) return;
 
-            // Transcurridos los 600ms de espera activa, consulta la georreferenciación en OpenStreetMap
+            // Espera activa de 600ms para evitar saturar la API mientras el usuario escribe
             timerBusqueda = setTimeout(async () => {
                 try {
                     const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
                     const data = await res.json();
 
+                    // Corrección estricta: leemos el índice [0] del arreglo devuelto por Nominatim
                     if (data && data.length > 0 && window.map) {
                         const lat = parseFloat(data[0].lat);
                         const lon = parseFloat(data[0].lon);
                         
-                        // Centramos el mapa en la nueva localidad encontrada por texto
+                        // Movemos la cámara del mapa de forma fluida hacia el distrito escrito (ej. Ventanilla o Lima)
                         window.map.setView([lat, lon], 14, { animate: true });
                     }
                 } catch (errGeo) {
-                    console.warn("⚠️ [SRE ESPÍA GEO] Error al geocodificar dirección externa:", errGeo);
+                    console.error("❌ [SRE ERROR GEO] Fallo al geocodificar con OpenStreetMap:", errGeo);
                 }
             }, 600);
-        }); // Fin del EventListener input
+        }); // Fin del EventListener input controlado SRE
     }
-
 
 }
 
