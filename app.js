@@ -1126,15 +1126,18 @@ function gestionarPasosModalTour(p) {}
 function inyectarDatosPropiedadAlMensaje() {}
 function ejecutarEnvioAppsScript(p, m, f, mx) {}
 
-function gestionarCortinaSPA(tipoPantalla, prop) {
+  function gestionarCortinaSPA(tipoPantalla, prop) {
     const cortina = document.getElementById('cortina-spa');
     if (!cortina) return;
     if (tipoPantalla === 'cerrar') {
         cortina.classList.remove('cortina-activa');
+        cortina.style.display = 'none';
         return;
     }
 
     if (tipoPantalla === 'detalle') {
+        cortina.style.display = 'block';
+
         const listaFotos = prop.fotos || [];
         const fotoPrincipal = listaFotos[0] || "https://cloudinary.com";
 
