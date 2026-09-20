@@ -1339,10 +1339,11 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
         }
 
         cortina.innerHTML = `
-            <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative;">
+            <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative; z-index: 150000;">
                 
                  <div style="width: 100%; height: 620px; position: relative; background: #000000; overflow: hidden;">
-                    <div style="width: 100%; height: 100%; border-radius: 0; overflow: hidden; position: relative;">
+
+        <div style="width: 100%; height: 100%; border-radius: 0; overflow: hidden; position: relative;">
 
                         <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
                     </div>
