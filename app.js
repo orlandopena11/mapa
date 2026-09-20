@@ -1099,17 +1099,12 @@ function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincr
 
 function interceptarFirewallSeguridadUsuario(l, em) {}
 
-function inicializarEventosPopups() { // Inicia Function inicializarEventosPopups
-    document.getElementById("btn-solicitar-tour-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-tour-comercial"); 
-        if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas(); 
-        if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
-    });
-    document.getElementById("btn-contactar-agente-galeria")?.addEventListener("click", () => {
-        mostrarPopupAccion("modal-agent-comercial"); 
-        if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
-    });
-} // Fin de Function inicializarEventosPopups
+// Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas
+function inicializarEventosPopups() { // Inicia inicializarEventosPopups
+    document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', () => cerrarPopupAccion('modal-tour-comercial'));
+    document.getElementById('btn-navegacion-siguiente-tour')?.addEventListener('click', () => gestionarPasosModalTour(2));
+} // Fin inicializarEventosPopups
+
 
 function mostrarPopupAccion(id) { 
     const n = document.getElementById(id); 
@@ -1121,10 +1116,126 @@ function cerrarPopupAccion(id) {
     if (n) n.style.display = "none"; 
 }
 
-function calcularCalendarioTresCajas() {}
-function gestionarPasosModalTour(p) {}
-function inyectarDatosPropiedadAlMensaje() {}
-function ejecutarEnvioAppsScript(p, m, f, mx) {}
+// Variable global para almacenar hasta 3 fechas seleccionadas por el usuario
+let fechasSeleccionadasTour = new Set();
+
+// Calcula y renderiza las 3 cajas de fechas hábiles y las opciones de horas en el modal
+function calcularCalendarioTresCajas() { // Inicia calcularCalendarioTresCajas
+    const contenedorFechas = document.querySelector('.cajas-fechas-row');
+    const selectHora = document.getElementById('hora-principal');
+    if (!contenedorFechas) return;
+
+    contenedorFechas.innerHTML = '';
+    fechasSeleccionadasTour.clear();
+
+    let fechaBase = new Date();
+    fechaBase.setDate(fechaBase.getDate() + 1);
+
+    // Salta el fin de semana: si el día siguiente es domingo (0) o sábado (6), avanza al lunes
+    if (fechaBase.getDay() === 0) { // Inicia if domingo
+        fechaBase.setDate(fechaBase.getDate() + 1);
+    } // Fin if domingo
+    else if (fechaBase.getDay() === 6) { // Inicia else if sábado
+        fechaBase.setDate(fechaBase.getDate() + 2);
+    } // Fin else if sábado
+
+    const diasSemana = ['DOM', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
+    // Bucle para construir las 3 cajas de fechas consecutivas
+    for (let i = 0; i < 3; i++) { // Inicia for de cajas
+        let fechaCaja = new Date(fechaBase);
+        fechaCaja.setDate(fechaBase.getDate() + i);
+        
+        // Evita que las cajas secundarias apunten a un día domingo
+        if (fechaCaja.getDay() === 0) { // Inicia if control domingo
+            fechaCaja.setDate(fechaCaja.getDate() + 1);
+        } // Fin if control domingo
+
+        const diaTexto = diasSemana[fechaCaja.getDay()];
+        const fechaFormateada = `${fechaCaja.getDate()} de ${meses[fechaCaja.getMonth()]}`;
+        const valorDataIso = fechaCaja.toISOString().split('T')[0];
+
+        const cajaNode = document.createElement('div');
+        cajaNode.className = 'caja-fecha-item';
+        cajaNode.style.cssText = 'flex: 1; text-align: center; border: 1px solid #ccd0d5; border-radius: 4px; padding: 10px 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: #2a2a2a;';
+        cajaNode.innerHTML = `<div>${diaTexto}</div><div>${fechaFormateada}</div>`;
+
+        // Control de selección múltiple interactiva (máximo 3 opciones)
+        cajaNode.addEventListener('click', () => { // Inicia click cajaNode
+            if (fechasSeleccionadasTour.has(valorDataIso)) { // Inicia if deseleccionar
+                fechasSeleccionadasTour.delete(valorDataIso);
+                cajaNode.style.borderColor = '#ccd0d5';
+                cajaNode.style.color = '#2a2a2a';
+                cajaNode.style.backgroundColor = '#ffffff';
+            } // Fin if deseleccionar
+            else { // Inicia else seleccionar
+                if (fechasSeleccionadasTour.size >= 3) { // Inicia if validación máximo
+                    alert("Seleccione hasta 3 veces únicamente.");
+                    return;
+                } // Fin if validación máximo
+                fechasSeleccionadasTour.add(valorDataIso);
+                cajaNode.style.borderColor = '#006aff';
+                cajaNode.style.color = '#006aff';
+                cajaNode.style.backgroundColor = 'rgba(0, 106, 255, 0.05)';
+            } // Fin else seleccionar
+        }); // Fin click cajaNode
+
+        contenedorFechas.appendChild(cajaNode);
+    } // Fin for de cajas
+
+    // Inyecta las opciones de tiempo en formato de 12 horas tal como pide Zillow
+    if (selectHora) { // Inicia if selectHora
+        selectHora.innerHTML = `
+            <option value="09:00">9:00 am</option>
+            <option value="09:30">9:30 am</option>
+            <option value="10:00">10:00 am</option>
+            <option value="10:30">10:30 am</option>
+            <option value="11:00">11:00 am</option>
+            <option value="11:30">11:30 am</option>
+            <option value="12:00">12:00 pm</option>
+            <option value="12:30">12:30 pm</option>
+            <option value="13:00">1:00 pm</option>
+            <option value="13:30">1:30 pm</option>
+            <option value="14:00">2:00 pm</option>
+        `;
+    } // Fin if selectHora
+} // Fin calcularCalendarioTresCajas
+
+// Alterna la visibilidad de los paneles internos del modal (Paso 1: Agenda, Paso 2: Formulario)
+function gestionarPasosModalTour(paso) { // Inicia gestionarPasosModalTour
+    const paso1 = document.getElementById('tour-paso-horarios');
+    const paso2 = document.getElementById('tour-paso-confirmacion');
+    const btnSiguiente = document.getElementById('btn-navegacion-siguiente-tour');
+    const btnEnviar = document.getElementById('btn-enviar-solicitud-tour');
+
+    if (paso === 1) { // Inicia if paso 1
+        if (paso1) paso1.style.display = 'block';
+        if (paso2) paso2.style.display = 'none';
+        if (btnSiguiente) btnSiguiente.style.display = 'block';
+        if (btnEnviar) btnEnviar.style.display = 'none';
+    } // Fin if paso 1
+    else if (paso === 2) { // Inicia else if paso 2
+        if (fechasSeleccionadasTour.size === 0) { // Inicia if validación fechas vacías
+            alert("Por favor, seleccione al menos una fecha para su recorrido.");
+            return;
+        } // Fin if validación fechas vacías
+        if (paso1) paso1.style.display = 'none';
+        if (paso2) paso2.style.display = 'block';
+        if (btnSiguiente) btnSiguiente.style.display = 'none';
+        if (btnEnviar) btnEnviar.style.display = 'block';
+    } // Fin else if paso 2
+} // Fin gestionarPasosModalTour
+
+// Inyecta dinámicamente el texto de interés comercial con la dirección exacta en el formulario del agente
+function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlMensaje
+    const campoMensaje = document.getElementById('agente-mensaje');
+    const propActual = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
+    if (campoMensaje && propActual) { // Inicia if inyección mensaje
+        campoMensaje.value = `I am interested in ${propActual.direccion || propActual.titulo}.`;
+    } // Fin if inyección mensaje
+} // Fin inyectarDatosPropiedadAlMensaje
+
 
   function gestionarCortinaSPA(tipoPantalla, prop) {
     const cortina = document.getElementById('cortina-spa');
@@ -1294,10 +1405,84 @@ function ejecutarEnvioAppsScript(p, m, f, mx) {}
 
         // Resetea el scroll de la cortina al tope superior para visualización móvil
         cortina.scrollTop = 0; 
-    }
+    } // Fin if tipoPantalla === 'detalle'
 
     cortina.classList.add('cortina-activa');
-} // Fin definitivo de gestionarCortinaSPA    
+
+    // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase
+    const formTour = document.getElementById('form-solicitar-tour-completo');
+    if (formTour) { // Inicia if validación formTour
+        formTour.onsubmit = async (e) => { // Inicia submit asíncrono
+            e.preventDefault();
+            
+            const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
+            // Validación estricta de expresión regular para números de teléfono
+            if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
+                alert("Ingrese un número de teléfono válido.");
+                return;
+            } // Fin if validación RegExp
+
+            const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
+            const emailInput = document.getElementById('tour-contacto-email').value.trim();
+            const horaSeleccionada = document.getElementById('hora-principal').value;
+            const fechasArreglo = Array.from(fechasSeleccionadasTour);
+
+            try { // Inicia bloque try transaccional
+                const cliente = obtenerClienteSupabase();
+                if (!cliente) throw new Error("Cliente Supabase inaccesible.");
+
+                // Evento 1: Registro inicial de la cita de visita en la base de datos
+                const { data: nuevaVisita, error: errorVisita } = await cliente
+                    .from('visita')
+                    .insert([{
+                        propiedad_id_fk: state.propiedadSeleccionadaId,
+                        nombre_interesado: nombreInput,
+                        email_interesado: emailInput,
+                        telefono_interesado: telefonoInput,
+                        hora_visita: horaSeleccionada,
+                        fechas_propuestas: fechasArreglo,
+                        estado_visita: 'pendiente'
+                    }])
+                    .select()
+                    .single();
+
+                if (errorVisita) throw errorVisita;
+
+                // Evento 2: Consulta relacional para verificar el agente publicador del inmueble
+                const { data: propiedadFiltro, error: errorProp } = await cliente
+                    .from('propiedad')
+                    .select('usuario_id_fk, creado_by_agente_id')
+                    .eq('id', state.propiedadSeleccionadaId)
+                    .single();
+
+                if (!errorProp && propiedadFiltro) { // Inicia if validación agente
+                    const idAgenteAsignado = propiedadFiltro.creado_by_agente_id || null;
+                    
+                    // Si la propiedad pertenece a un agente, actualiza la fila vinculándolo
+                    if (idAgenteAsignado) { // Inicia if asignación relacional
+                        await cliente
+                            .from('visita')
+                            .update({ 
+                                agente_id_fk: idAgenteAsignado,
+                                estado_visita: 'pendiente'
+                            })
+                            .eq('id', nuevaVisita.id);
+                    } // Fin if asignación relacional
+                } // Fin if validación agente
+
+                alert("¡Tour agendado exitosamente! La solicitud se encuentra en estado pendiente.");
+                cerrarPopupAccion('modal-tour-comercial');
+                formTour.reset();
+
+            } // Fin bloque try transaccional
+            catch (errTransaccion) { // Inicia catch error
+                console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
+                alert("Error al procesar la agenda: " + errTransaccion.message);
+            } // Fin catch error
+        }; // Fin submit asíncrono
+    } // Fin if validación formTour
+} // Fin definitivo de la función gestionarCortinaSPA
+
 
 // ==========================================================================
 // COMPONENTE MODULAR INTERIOR: CÁLCULOS FINANCIEROS Y CARACTERÍSTICAS
