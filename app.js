@@ -1432,19 +1432,30 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             </div>
         `;
 
-        document.getElementById('btn-cerrar-cortina').onclick = () => gestionarCortinaSPA('cerrar');
+        // Registra los eventos de control nativos sobre los elementos recién inyectados en el DOM de la cortina
+        document.getElementById('btn-cerrar-cortina').onclick = () => { // Inicia click cerrar cortina
+            gestionarCortinaSPA('cerrar');
+        }; // Fin click cerrar cortina
 
-        document.getElementById('btn-solicitar-tour-galeria').onclick = () => {
+        document.getElementById('btn-solicitar-tour-galeria').onclick = () => { // Inicia click solicitar tour
+            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+            // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
-        };
+        }; // Fin click solicitar tour
 
-        document.getElementById('btn-contactar-agente-galeria').onclick = () => {
+        document.getElementById('btn-contactar-agente-galeria').onclick = () => { // Inicia click contactar agente
+            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
             mostrarPopupAccion("modal-agent-comercial");
             inyectarDatosPropiedadAlMensaje();
-        };
+        }; // Fin click contactar agente
 
+        
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
         const fotosArregloSeguro = prop.fotos || [];
         let indiceFotoSecuencia = 0;
