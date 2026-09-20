@@ -1097,13 +1097,84 @@ function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincr
     }
 } // Fin de Function ejecutarTuberiaSincronizada
 
-function interceptarFirewallSeguridadUsuario(l, em) {}
+// Activa las tres pasarelas de autenticación nativas de Supabase para cumplir las reglas de negocio de la plataforma
+function inicializarAutenticacionTresCanalesSupabase() { // Inicia inicializarAutenticacionTresCanalesSupabase
+    const btnAutenticarEmail = document.getElementById('btn-autenticar');
+    if (btnAutenticarEmail) { // Inicia if btnAutenticarEmail
+        btnAutenticarEmail.addEventListener('click', async () => { // Inicia click login email
+            const emailValor = document.getElementById('login-email-input').value.trim();
+            if (!emailValor) {
+                alert("Por favor ingrese su correo electrónico.");
+                return;
+            }
 
-// Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas
+            try { // Inicia try login email
+                const cliente = obtenerClienteSupabase();
+                // Canal 1: Autenticación por enlace mágico al correo (Magic Link OTP)
+                const { error } = await cliente.auth.signInWithOtp({
+                    email: emailValor,
+                    options: {
+                        emailRedirectTo: window.location.origin // Redirecciona de vuelta de forma dinámica a la app
+                    }
+                });
+
+                if (error) throw error;
+                alert("¡Enlace enviado! Revise su correo electrónico para confirmar su cuenta y activar su acceso.");
+                cerrarPopupAccion('modal-autenticacion-supabase');
+
+            } // Fin try login email
+            catch (errAuth) { // Inicia catch email
+                alert("Error en autenticación: " + errAuth.message);
+            } // Fin catch email
+        }); // Fin click login email
+    } // Fin if btnAutenticarEmail
+} // Fin inicializarAutenticacionTresCanalesSupabase
+
+// Funciones nativas complementarias para los botones de redes sociales (OAuth)
+async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
+    try {
+        const cliente = obtenerClienteSupabase();
+        // Canal 2: Proveedor oficial OAuth Google
+        await cliente.auth.signInWithOAuth({ provider: 'google' });
+    } catch (e) { console.error("Fallo OAuth Google", e); }
+} // Fin autenticarConGoogleSupabase
+
+async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebookSupabase
+    try {
+        const cliente = obtenerClienteSupabase();
+        // Canal 3: Proveedor oficial OAuth Facebook
+        await cliente.auth.signInWithOAuth({ provider: 'facebook' });
+    } catch (e) { console.error("Fallo OAuth Facebook", e); }
+} // Fin autenticarConFacebookSupabase
+
+// Ejecución pasiva e inmediata del inicializador en el hilo principal
+setTimeout(() => { inicialisadorEjecucion = inicializarAutenticacionTresCanalesSupabase(); }, 150);
+
+
+// Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas con firewall ACL
 function inicializarEventosPopups() { // Inicia inicializarEventosPopups
     document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', () => cerrarPopupAccion('modal-tour-comercial'));
     document.getElementById('btn-navegacion-siguiente-tour')?.addEventListener('click', () => gestionarPasosModalTour(2));
+
+    // Intercepta el botón de la cortina detallada para obligar la verificación de identidad antes de abrir la agenda
+    const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
+    if (btnSolicitarTourSelector) { // Inicia if btnSolicitarTourSelector
+        // Clonamos el nodo para limpiar de forma limpia y natural cualquier escuchador basura previo de IAs anteriores
+        const nuevoBtnSolicitar = btnSolicitarTourSelector.cloneNode(true);
+        btnSolicitarTourSelector.parentNode.replaceChild(nuevoBtnSolicitar, btnSolicitarTourSelector);
+
+        nuevoBtnSolicitar.addEventListener('click', () => { // Inicia click nuevoBtnSolicitar
+            // Regla de negocio: Si no pasa el firewall ACL (no logueado o suspendido), detiene el flujo por completo
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+            // Si la cuenta está limpia y activa, procede con la carga secuencial normal del tour
+            mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
+            gestionarPasosModalTour(1);
+        }); // Fin click nuevoBtnSolicitar
+    } // Fin if btnSolicitarTourSelector
 } // Fin inicializarEventosPopups
+
 
 
 function mostrarPopupAccion(id) { 
