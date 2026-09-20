@@ -1499,25 +1499,54 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
     // Activa la clase visual en el contenedor nativo
     cortina.classList.add('cortina-activa');
 
-    // REASIGNACIÓN SECUENCIAL DEFINITIVA DE TU BLOQUE DE EVENTOS POST-RENDERIZADO (PROTECCIÓN ANTI-DESTRUCCIÓN DEL DOM)
+    // REASIGNACIÓN SECUENCIAL DEFINITIVA CON ESPÍAS DE DIAGNÓSTICO EN CONSOLA
     if (tipoPantalla === 'detalle') { // Inicia if asignación post-render
-        document.getElementById('btn-solicitar-tour-galeria').onclick = () => { // Inicia click solicitar tour
-            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+        const btnTourFisico = document.getElementById('btn-solicitar-tour-galeria');
+        const btnAgenteFisico = document.getElementById('btn-contactar-agente-galeria');
 
-            // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
-            mostrarPopupAccion("modal-tour-comercial");
-            calcularCalendarioTresCajas();
-            gestionarPasosModalTour(1);
-        }; // Fin click solicitar tour
+        // ESPÍA 1: Verificación de existencia de nodos en el DOM actual
+        console.group("%c?? [ESPÍA DE MONITOREO DE NODOS]", "background: #002E50; color: #FFB91D; padding: 3px; font-weight: bold;");
+        console.log("¿Existe btn-solicitar-tour-galeria en el DOM?:", btnTourFisico ? "SÍ ✅" : "NO ❌");
+        console.log("¿Existe btn-contactar-agente-galeria en el DOM?:", btnAgenteFisico ? "SÍ ✅" : "NO ❌");
+        console.groupEnd();
 
-        document.getElementById('btn-contactar-agente-galeria').onclick = () => { // Inicia click contactar agente
-            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+        if (btnTourFisico) { // Inicia if btnTourFisico
+            btnTourFisico.onclick = () => { // Inicia click solicitar tour
+                // ESPÍA 2: Intercepción del clic físico del usuario
+                console.log("%c?? [ESPÍA CLICK] Se detectó pulsación real en el botón 'Solicitar un Tour'.", "color: #006aff; font-weight: bold;");
 
-            mostrarPopupAccion("modal-agent-comercial");
-            inyectarDatosPropiedadAlMensaje();
-        }; // Fin click contactar agente
+                // ESPÍA 3: Evaluación perimetral de seguridad
+                console.log("[ESPÍA SEGURIDAD] Invocando verificarAutorizacionAcceso()...");
+                if (typeof verificarAutorizacionAcceso === "function") { // Inicia if check f_seguridad
+                    const pasoFirewall = verificarAutorizacionAcceso();
+                    console.log("Resultado del firewall ACL:", pasoFirewall ? "PERMITIDO ??" : "REBOTADO/BLOQUEADO ❌");
+                    if (!pasoFirewall) return;
+                } // Fin if check f_seguridad
+
+                // ESPÍA 4: Seguimiento del despliegue visual del modal
+                console.group("%c?? [ESPÍA DISPARO] Pasó seguridad. Abriendo interfaces...", "color: #10b981; font-weight: bold;");
+                console.log("Ejecutando mostrarPopupAccion('modal-tour-comercial')...");
+                mostrarPopupAccion("modal-tour-comercial");
+                
+                console.log("Ejecutando calcularCalendarioTresCajas()...");
+                calcularCalendarioTresCajas();
+                
+                console.log("Ejecutando gestionarPasosModalTour(1)...");
+                gestionarPasosModalTour(1);
+                console.groupEnd();
+            }; // Fin click solicitar tour
+        } // Fin if btnTourFisico
+
+        if (btnAgenteFisico) { // Inicia if btnAgenteFisico
+            btnAgenteFisico.onclick = () => { // Inicia click contactar agente
+                console.log("%c?? [ESPÍA CLICK] Se detectó pulsación real en el botón 'Contactar Agente'.", "color: #006aff; font-weight: bold;");
+                
+                if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+                mostrarPopupAccion("modal-agent-comercial");
+                inyectarDatosPropiedadAlMensaje();
+            }; // Fin click contactar agente
+        } // Fin if btnAgenteFisico
     } // Fin if asignación post-render
 
     // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase y disparar la notificación por correo
