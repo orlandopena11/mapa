@@ -1527,8 +1527,8 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             e.preventDefault();
             
             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
-            // Validación estricta de expresión regular para números de teléfono (mínimo 9 dígitos)
-            if (!/^\d{9,}\$/.test(telefonoInput)) { // Inicia if validación RegExp
+            // Validación estricta de expresión regular nativa para números de teléfono puros de mínimo 9 dígitos
+            if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
                 alert("Ingrese un número de teléfono válido.");
                 return;
             } // Fin if validación RegExp
