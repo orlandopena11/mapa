@@ -1496,7 +1496,29 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
         cortina.scrollTop = 0; 
     } // Fin if tipoPantalla === 'detalle'
 
+    // Activa la clase visual en el contenedor nativo
     cortina.classList.add('cortina-activa');
+
+    // REASIGNACIÓN SECUENCIAL DEFINITIVA DE TU BLOQUE DE EVENTOS POST-RENDERIZADO (PROTECCIÓN ANTI-DESTRUCCIÓN DEL DOM)
+    if (tipoPantalla === 'detalle') { // Inicia if asignación post-render
+        document.getElementById('btn-solicitar-tour-galeria').onclick = () => { // Inicia click solicitar tour
+            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+            // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
+            mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
+            gestionarPasosModalTour(1);
+        }; // Fin click solicitar tour
+
+        document.getElementById('btn-contactar-agente-galeria').onclick = () => { // Inicia click contactar agente
+            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
+            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+            mostrarPopupAccion("modal-agent-comercial");
+            inyectarDatosPropiedadAlMensaje();
+        }; // Fin click contactar agente
+    } // Fin if asignación post-render
 
     // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase y disparar la notificación por correo
     const formTour = document.getElementById('form-solicitar-tour-completo');
