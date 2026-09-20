@@ -1130,8 +1130,14 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia inicializarAu
     } // Fin if btnAutenticarEmail
 } // Fin inicializarAutenticacionTresCanalesSupabase
 
+// Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
+function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
+    // Actúa como un escudo de paso vacío exigido por el motor de renderizado de la Parte 12
+} // Fin interceptarFirewallSeguridadUsuario
+
 // Funciones nativas complementarias para los botones de redes sociales (OAuth)
 async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
+
     try {
         const cliente = obtenerClienteSupabase();
         // Canal 2: Proveedor oficial OAuth Google
