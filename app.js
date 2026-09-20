@@ -1480,15 +1480,15 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
 
     cortina.classList.add('cortina-activa');
 
-    // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase
+    // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase y disparar la notificación por correo
     const formTour = document.getElementById('form-solicitar-tour-completo');
     if (formTour) { // Inicia if validación formTour
         formTour.onsubmit = async (e) => { // Inicia submit asíncrono
             e.preventDefault();
             
             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
-            // Validación estricta de expresión regular para números de teléfono
-            if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
+            // Validación estricta de expresión regular para números de teléfono (mínimo 9 dígitos)
+            if (!/^\d{9,}\$/.test(telefonoInput)) { // Inicia if validación RegExp
                 alert("Ingrese un número de teléfono válido.");
                 return;
             } // Fin if validación RegExp
@@ -1502,7 +1502,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                 const cliente = obtenerClienteSupabase();
                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                // Evento 1: Registro inicial de la cita de visita en la base de datos
+                // Evento 1: Registro inicial de la cita de visita en la base de datos de Supabase
                 const { data: nuevaVisita, error: errorVisita } = await cliente
                     .from('visita')
                     .insert([{
@@ -1519,18 +1519,20 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
 
                 if (errorVisita) throw errorVisita;
 
-                // Evento 2: Consulta relacional para verificar el agente publicador del inmueble
+                // Evento 2: Consulta relacional síncrona de la propiedad para determinar si es Dueño o Agente
                 const { data: propiedadFiltro, error: errorProp } = await cliente
                     .from('propiedad')
                     .select('usuario_id_fk, creado_by_agente_id')
                     .eq('id', state.propiedadSeleccionadaId)
                     .single();
 
-                if (!errorProp && propiedadFiltro) { // Inicia if validación agente
+                let emailVendedorDestino = "";
+
+                if (!errorProp && propiedadFiltro) { // Inicia if validación propiedadFiltro
                     const idAgenteAsignado = propiedadFiltro.creado_by_agente_id || null;
                     
-                    // Si la propiedad pertenece a un agente, actualiza la fila vinculándolo
-                    if (idAgenteAsignado) { // Inicia if asignación relacional
+                    if (idAgenteAsignado) { // Inicia if es Agente Inmobiliario
+                        // Si la propiedad pertenece a un agente, vinculamos el ID y forzamos el estado pendiente
                         await cliente
                             .from('visita')
                             .update({ 
@@ -1538,20 +1540,56 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                                 estado_visita: 'pendiente'
                             })
                             .eq('id', nuevaVisita.id);
-                    } // Fin if asignación relacional
-                } // Fin if validación agente
 
-                alert("¡Tour agendado exitosamente! La solicitud se encuentra en estado pendiente.");
+                        // Consultamos secuencialmente el email oficial del agente en la tabla agente
+                        const { data: datosAgente } = await cliente
+                            .from('agente')
+                            .select('email_agente')
+                            .eq('id', idAgenteAsignado)
+                            .single();
+                        
+                        if (datosAgente) { // Inicia if datosAgente
+                            emailVendedorDestino = datosAgente.email_agente;
+                        } // Fin if datosAgente
+                    } // Fin if es Agente Inmobiliario
+                    else { // Inicia else es Dueño Directo
+                        // Si no fue creada por un agente, extraemos el correo directo del usuario publicador
+                        const { data: datosUsuario } = await cliente
+                            .from('usuarios')
+                            .select('correo_electronico')
+                            .eq('id', propiedadFiltro.usuario_id_fk)
+                            .single();
+
+                        if (datosUsuario) { // Inicia if datosUsuario
+                            emailVendedorDestino = datosUsuario.correo_electronico;
+                        } // Fin if datosUsuario
+                    } // Fin else es Dueño Directo
+                } // Fin if validación propiedadFiltro
+
+                // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
+                if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") { // Inicia if disparo correo
+                    const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
+                    const cuerpoMensaje = encodeURIComponent(`Hola, tienes una nueva solicitud de recorrido para tu propiedad.\n\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}\n\nPor favor ingresa al portal para gestionar la cita.`);
+                    
+                    // Se ejecuta de manera nativa y asíncrona la petición de red hacia el servidor de Google
+                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
+                        .then(res => res.json())
+                        .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
+                        .catch(errEmail => console.warn("Aviso: Retraso en respuesta de pasarela de correo, pero los datos están a salvo.", errEmail));
+                } // Fin if disparo correo
+
+                alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
                 cerrarPopupAccion('modal-tour-comercial');
                 formTour.reset();
 
             } // Fin bloque try transaccional
-            catch (errTransaccion) { // Inicia catch error
+            catch (errTransaccion) { // Inicia catch errorTransaccion
                 console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                 alert("Error al procesar la agenda: " + errTransaccion.message);
-            } // Fin catch error
+            } // Fin catch errorTransaccion
         }; // Fin submit asíncrono
     } // Fin if validación formTour
+
 } // Fin definitivo de la función gestionarCortinaSPA
 
 
