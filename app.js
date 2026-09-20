@@ -1176,9 +1176,10 @@ function ejecutarEnvioAppsScript(p, m, f, mx) {}
                     <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
                 </div>
 
-                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 32px; box-sizing: border-box; align-items: start;">
+                <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 32px; box-sizing: border-box; align-items: start;">
                     
-                    <div style="width: 100%; overflow: hidden;">
+                    <div style="flex: 1; min-width: 300px; overflow: hidden;">
+
                         
                         <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
                             <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
