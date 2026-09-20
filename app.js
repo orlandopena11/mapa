@@ -1590,20 +1590,21 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
 
                 if (errorVisita) throw errorVisita;
 
-                // Evento 2: Consulta relacional síncrona de la propiedad para determinar si es Dueño o Agente
-                const { data: propiedadFiltro, error: errorProp } = await cliente
-                    .from('propiedad')
-                    .select('usuario_id_fk, creado_by_agente_id')
-                    .eq('id', state.propiedadSeleccionadaId)
+                // Evento 2: Consulta relacional basada en la columna agente_id_fk de la tabla anuncio
+                const { data: anuncioFiltro, error: errorAnuncio } = await cliente
+                    .from('anuncio')
+                    .select('usuario_id_fk, agente_id_fk')
+                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
                     .single();
 
                 let emailVendedorDestino = "";
 
-                if (!errorProp && propiedadFiltro) { // Inicia if validación propiedadFiltro
-                    const idAgenteAsignado = propiedadFiltro.creado_by_agente_id || null;
-                    
-                    if (idAgenteAsignado) { // Inicia if es Agente Inmobiliario
-                        // Si la propiedad pertenece a un agente, vinculamos el ID y forzamos el estado pendiente
+                if (!errorAnuncio && anuncioFiltro) {
+                    // Validamos si la columna agente_id_fk tiene un valor asignado (es un agente)
+                    if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
+                        const idAgenteAsignado = anuncioFiltro.agente_id_fk;
+                        
+                        // Actualizamos la tabla visita vinculando al agente y manteniendo el estado pendiente
                         await cliente
                             .from('visita')
                             .update({ 
@@ -1612,44 +1613,43 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                             })
                             .eq('id', nuevaVisita.id);
 
-                        // Consultamos secuencialmente el email oficial del agente en la tabla agente
+                        // Consultamos el email oficial en la tabla agente_inmobiliario
                         const { data: datosAgente } = await cliente
-                            .from('agente')
+                            .from('agente_inmobiliario')
                             .select('email_agente')
                             .eq('id', idAgenteAsignado)
                             .single();
                         
-                        if (datosAgente) { // Inicia if datosAgente
+                        if (datosAgente) {
                             emailVendedorDestino = datosAgente.email_agente;
-                        } // Fin if datosAgente
-                    } // Fin if es Agente Inmobiliario
-                    else { // Inicia else es Dueño Directo
-                        // Si no fue creada por un agente, extraemos el correo directo del usuario publicador
+                        }
+                    } else {
+                        // Si no hay valor en agente_id_fk, es un Propietario: obtenemos el correo de usuario_autenticado
                         const { data: datosUsuario } = await cliente
-                            .from('usuarios')
+                            .from('usuario_autenticado')
                             .select('correo_electronico')
-                            .eq('id', propiedadFiltro.usuario_id_fk)
+                            .eq('id', anuncioFiltro.usuario_id_fk)
                             .single();
 
-                        if (datosUsuario) { // Inicia if datosUsuario
+                        if (datosUsuario) {
                             emailVendedorDestino = datosUsuario.correo_electronico;
-                        } // Fin if datosUsuario
-                    } // Fin else es Dueño Directo
-                } // Fin if validación propiedadFiltro
+                        }
+                    }
+                }
 
                 // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
-                if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") { // Inicia if disparo correo
+                if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                    const cuerpoMensaje = encodeURIComponent(`Hola, tienes una nueva solicitud de recorrido para tu propiedad.\n\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}\n\nPor favor ingresa al portal para gestionar la cita.`);
+                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
                     
-                    // Se ejecuta de manera nativa y asíncrona la petición de red hacia el servidor de Google
                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                         .then(res => res.json())
                         .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
-                        .catch(errEmail => console.warn("Aviso: Retraso en respuesta de pasarela de correo, pero los datos están a salvo.", errEmail));
-                } // Fin if disparo correo
+                        .catch(errEmail => console.warn("Aviso: Retraso en la respuesta de la pasarela, datos asegurados.", errEmail));
+                }
 
                 alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
+
                 cerrarPopupAccion('modal-tour-comercial');
                 formTour.reset();
 
