@@ -97,6 +97,37 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     return true;
 } // Fin de Function verificarAutorizacionAcceso
 
+// ==========================================================================
+// GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
+// ==========================================================================
+function validarAccesoFuncionalidadPremium() { // Inicia validarAccesoFuncionalidadPremium SRE
+    console.group("🛡️ [SRE CORTAFUEGOS CENTRAL] Evaluando credenciales de interacción premium...");
+    
+    // 1. Control de autenticación de sesión
+    if (!state.usuarioActual || !state.usuarioActual.id) {
+        console.warn("⚠️ ACL RECHAZADO: Sesión inexistente en el estado global.");
+        console.groupEnd();
+        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
+        if (typeof mostrarPopupAccion === "function") {
+            mostrarPopupAccion("modal-autenticacion-supabase");
+        }
+        return false;
+    }
+    
+    // 2. Control estricto de suspensión en tabla usuario_autenticado
+    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
+        console.error("❌ ACL RECHAZADO: El usuario se encuentra SUSPENDIDO por administración.");
+        console.groupEnd();
+        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción debido a infracciones de políticas.");
+        return false;
+    }
+    
+    console.log("✅ ACL CONFIGURADO: Permiso concedido con estado activo.");
+    console.groupEnd();
+    return true;
+} // Fin de la función validarAccesoFuncionalidadPremium SRE
+
+
 async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
     console.log("?? [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
     try {
@@ -329,9 +360,12 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
     botonCorazon.onclick = (e) => {
         if (e) { e.preventDefault(); e.stopPropagation(); }
-        if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+        // Consumo del Guardia Centralizado
+        if (!validarAccesoFuncionalidadPremium()) return; 
+        
         botonCorazon.style.color = (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') ? '#ffffff' : '#d92323';
     };
+
     contenedorFoto.appendChild(botonCorazon);
 
     if (totalFotos > 1) {
@@ -1440,23 +1474,23 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             gestionarCortinaSPA('cerrar');
         }; // Fin click cerrar cortina
 
-        document.getElementById('btn-solicitar-tour-galeria').onclick = () => { // Inicia click solicitar tour
-            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+        document.getElementById('btn-solicitar-tour-galeria').onclick = () => {
+            if (!validarAccesoFuncionalidadPremium()) return; // Cortafuegos central
 
-            // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
+                // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
         }; // Fin click solicitar tour
 
-        document.getElementById('btn-contactar-agente-galeria').onclick = () => { // Inicia click contactar agente
-            // Regla de negocio: Obliga a validar la sesión activa del usuario mediante el cortafuegos ACL antes de proceder
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+
+        document.getElementById('btn-contactar-agente-galeria').onclick = () => {
+            if (!validarAccesoFuncionalidadPremium()) return; // Cortafuegos central
 
             mostrarPopupAccion("modal-agent-comercial");
             inyectarDatosPropiedadAlMensaje();
-        }; // Fin click contactar agente
+        };  // Fin click contactar agente
+
 
         
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
