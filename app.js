@@ -746,12 +746,13 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         await supabase.auth.signOut(); 
                         return;
                     }
-                    state.usuarioActual = {
-                        id: String(session.user.id).trim(), 
-                        correo: correoUsuario,
-                        nombre: String(session.user.user_metadata?.full_name || session.user.user_metadata?.name || "Usuario Activo").trim(),
-                        estado_cuenta: datosUsuarioSheet?.estado_cuenta || "activo"
-                    };
+        state.usuarioActual = {
+            id: String(session.user.id).trim(),
+            correo: correoUsuario,
+            nombre: String((session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name)) || "Usuario Activo").trim(),
+            estado_cuenta: (datosUsuarioSheet && datosUsuarioSheet.estado_cuenta) || "activo"
+        };
+
                     if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
                 };
 
