@@ -1686,18 +1686,35 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                         .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
                         .catch(errEmail => console.warn("Aviso: Retraso en la respuesta de la pasarela, datos asegurados.", errEmail));
                 }
+                    alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
+                    cerrarPopupAccion('modal-tour-comercial');
+                    formTour.reset();
 
-                alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
-                cerrarPopupAccion('modal-tour-comercial');
-                formTour.reset();
                 } catch (errTransaccion) {
                     console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                     alert("Error al procesar la agenda: " + errTransaccion.message);
-                } // Fin del bloque catch
+                } // Fin del bloque catch transaccional
             }; // Fin del formTour.onsubmit
         } // Fin del if (formTour)
-    } // Fin del if (tipoPantalla === 'detalle')
-} // Fin de la función principal gestionarCortinaSPA
+
+        // --- RESTABLECIMIENTO DEL MOTOR CRÍTICO DE CÁLCULOS ZILLOW SRE ---
+        if (prop && prop.propiedad_id) {
+            // Despierta de forma nativa e inyecta los Zestimates, Gráficas e Hipoteca
+            inyectarSeccionesAdicionalesZillow(prop);
+        }
+
+        // Ejecutar el carrusel cinematográfico infinito original
+        reproducirSecuenciaCinematografica();
+        
+        // Resetea el scroll de la cortina al tope superior
+        cortina.scrollTop = 0; 
+    } // Fin del bloque if (tipoPantalla === 'detalle')
+
+    // Activa la clase visual en el contenedor nativo para abrir la segunda página
+    cortina.classList.add('cortina-activa');
+
+} // FIN DEFINITIVO DE LA FUNCIÓN gestionarCortinaSPA RESTABLECIDA
+
 
                            
 
