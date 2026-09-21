@@ -1475,7 +1475,8 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
         // ==========================================================================
         
         // Inyectar dinámicamente el botón de Ver Teléfono en el panel comercial de la Cortina SPA
-        const contenedorFijoFicha = document.querySelector('.columna-informacion-fija') || document.getElementById('btn-solicitar-tour-galeria')?.parentNode;
+        const contenedorFijoFicha = document.getElementById('btn-solicitar-tour-galeria') ? document.getElementById('btn-solicitar-tour-galeria').parentNode : null;
+
 
         let btnTelefonoSRE = document.getElementById('btn-ver-telefono-premium');
         
