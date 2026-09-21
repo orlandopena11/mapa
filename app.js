@@ -1197,23 +1197,19 @@ function inicializarEventosPopups() { // Inicia inicializarEventosPopups
     document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', () => cerrarPopupAccion('modal-tour-comercial'));
     document.getElementById('btn-navegacion-siguiente-tour')?.addEventListener('click', () => gestionarPasosModalTour(2));
 
-    // Intercepta el botón de la cortina detallada para obligar la verificación de identidad antes de abrir la agenda
+    // Vinculación directa y limpia al Guardia de Seguridad unificado sin clonaciones basura
     const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
-    if (btnSolicitarTourSelector) { // Inicia if btnSolicitarTourSelector
-        // Clonamos el nodo para limpiar de forma limpia y natural cualquier escuchador basura previo de IAs anteriores
-        const nuevoBtnSolicitar = btnSolicitarTourSelector.cloneNode(true);
-        btnSolicitarTourSelector.parentNode.replaceChild(nuevoBtnSolicitar, btnSolicitarTourSelector);
+    if (btnSolicitarTourSelector) {
+        btnSolicitarTourSelector.onclick = function(e) {
+            if (e) e.stopPropagation();
+            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
 
-        nuevoBtnSolicitar.addEventListener('click', () => { // Inicia click nuevoBtnSolicitar
-            // Regla de negocio: Si no pasa el firewall ACL (no logueado o suspendido), detiene el flujo por completo
-            if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
-
-            // Si la cuenta está limpia y activa, procede con la carga secuencial normal del tour
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
-        }); // Fin click nuevoBtnSolicitar
-    } // Fin if btnSolicitarTourSelector
+        };
+    }
+
 } // Fin inicializarEventosPopups
 
 
