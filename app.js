@@ -1688,15 +1688,16 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                 alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
                 cerrarPopupAccion('modal-tour-comercial');
                 formTour.reset();
+                } catch (errTransaccion) {
+                    console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
+                    alert("Error al procesar la agenda: " + errTransaccion.message);
+                } // Fin del bloque catch
+            }; // Fin del formTour.onsubmit
+        } // Fin del if (formTour)
+    } // Fin del if (tipoPantalla === 'detalle')
+} // Fin de la función principal gestionarCortinaSPA
 
-            } catch (errTransaccion) {
-                console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
-                alert("Error al procesar la agenda: " + errTransaccion.message);
-            }
-        }; // Cierre correcto del formTour.onsubmit SRE
-    } // Fin if validación formTour
-
-} // Fin definitivo de la función gestionarCortinaSPA
+                           
 
 
 // ==========================================================================
