@@ -1469,122 +1469,124 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             </div>
         `;
 
-        // Registra los eventos de control nativos sobre los elementos recién inyectados en el DOM de la cortina
-        document.getElementById('btn-cerrar-cortina').onclick = () => { // Inicia click cerrar cortina
+        // ==========================================================================
+        // CONTROL DE EVENTOS UNIFICADO Y SECCIÓN VER TELÉFONO PREMIUM (SRE)
+        // ==========================================================================
+        
+        // Inyectar dinámicamente el botón de Ver Teléfono en el panel comercial de la Cortina SPA
+        const contenedorFijoFicha = document.querySelector('.columna-informacion-fija, style*="position: sticky"');
+        let btnTelefonoSRE = document.getElementById('btn-ver-telefono-premium');
+        
+        if (!btnTelefonoSRE && contenedorFijoFicha) {
+            const divTel = document.createElement('div');
+            divTel.style.cssText = 'margin-top: 10px; width: 100%;';
+            divTel.innerHTML = `
+                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">📞 Ver Teléfono del Vendedor</button>
+                <div id="txt-telefono-desplegado" style="display: none; text-align: center; margin-top: 8px; font-size: 16px; font-weight: bold; color: #006aff;"></div>
+            `;
+            contenedorFijoFicha.appendChild(divTel);
+        }
+
+        // 1. Cierre de la ficha detallada
+        document.getElementById('btn-cerrar-cortina').onclick = (e) => {
+            e.stopPropagation();
             gestionarCortinaSPA('cerrar');
-        }; // Fin click cerrar cortina
+        };
 
-        document.getElementById('btn-solicitar-tour-galeria').onclick = () => {
-            if (!validarAccesoFuncionalidadPremium()) return; // Cortafuegos central
+        // 2. Funcionalidad Protegida: Solicitar Tour
+        document.getElementById('btn-solicitar-tour-galeria').onclick = (e) => {
+            e.stopPropagation();
+            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
 
-                // Si el acceso está permitido y la cuenta está limpia, despliega la agenda de visitas
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
-        }; // Fin click solicitar tour
+        };
 
-
-        document.getElementById('btn-contactar-agente-galeria').onclick = () => {
-            if (!validarAccesoFuncionalidadPremium()) return; // Cortafuegos central
+        // 3. Funcionalidad Protegida: Contactar Agente
+        document.getElementById('btn-contactar-agente-galeria').onclick = (e) => {
+            e.stopPropagation();
+            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
 
             mostrarPopupAccion("modal-agent-comercial");
             inyectarDatosPropiedadAlMensaje();
-        };  // Fin click contactar agente
+        };
 
+        // 4. NUEVA Funcionalidad Protegida: Ver Teléfono con consulta relacional a Supabase
+        const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
+        if (elementoBtnTelefono) {
+            elementoBtnTelefono.onclick = async (e) => {
+                e.stopPropagation();
+                if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
 
-        
+                elementoBtnTelefono.innerText = "⏳ Consultando número...";
+                try {
+                    const cliente = obtenerClienteSupabase();
+                    
+                    // Consultamos la tabla anuncio para conocer el origen del inmueble
+                    const { data: anuncioFiltro } = await cliente
+                        .from('anuncio')
+                        .select('usuario_id_fk, agente_id_fk')
+                        .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
+                        .single();
+
+                    let telefonoObtenido = "No registrado";
+
+                    if (anuncioFiltro) {
+                        if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
+                            // Si es Agente, extraemos el teléfono de la tabla agente_inmobiliario
+                            const { data: datosAgente } = await cliente
+                                .from('agente_inmobiliario')
+                                .select('telefono_agente')
+                                .eq('id', anuncioFiltro.agente_id_fk)
+                                .single();
+                            if (datosAgente) telefonoObtenido = datosAgente.telefono_agente;
+                        } else {
+                            // Si es Propietario, extraemos el teléfono de la tabla usuario_autenticado
+                            const { data: datosUsuario } = await cliente
+                                .from('usuario_autenticado')
+                                .select('telefono_contacto')
+                                .eq('id', anuncioFiltro.usuario_id_fk)
+                                .single();
+                            if (datosUsuario) telefonoObtenido = datosUsuario.telefono_contacto;
+                        }
+                    }
+
+                    const cajaTextoTelefono = document.getElementById('txt-telefono-desplegado');
+                    if (cajaTextoTelefono) {
+                        cajaTextoTelefono.innerText = `Número: ${telefonoObtenido}`;
+                        cajaTextoTelefono.style.display = "block";
+                        elementoBtnTelefono.style.display = "none";
+                    }
+                } catch (errTel) {
+                    console.error("Error al recuperar el teléfono:", errTel);
+                    elementoBtnTelefono.innerText = "📞 Ver Teléfono del Vendedor";
+                }
+            };
+        }
+
+        // Inicialización pasiva de la secuencia de imágenes
         const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
         const fotosArregloSeguro = prop.fotos || [];
         let indiceFotoSecuencia = 0;
 
         function reproducirSecuenciaCinematografica() {
             if (!imgAnimar || fotosArregloSeguro.length === 0) return;
-
             imgAnimar.src = fotosArregloSeguro[indiceFotoSecuencia];
-
             const animacionCorriendo = imgAnimar.animate([
                 { transform: 'scale(1.0) translate(0%, 0%)' },
                 { transform: 'scale(1.18) translate(2%, -1.5%)' }
-            ], {
-                duration: 8000,
-                iterations: 1,
-                easing: 'ease-in-out'
-            });
+            ], { duration: 8000, iterations: 1, easing: 'ease-in-out' });
 
             animacionCorriendo.onfinish = () => {
-                indiceFotoSecuencia = (indiceFotoSecuencia + 1) % fotosArregloSeguro.length;
-                reproducirSecuenciaCinematografica();
+                if (document.getElementById('foto-zillow-showcase-activa')) {
+                    indiceFotoSecuencia = (indiceFotoSecuencia + 1) % fotosArregloSeguro.length;
+                    reproducirSecuenciaCinematografica();
+                }
             };
         }
+
         
-        // --- ESCUDO CONDICIONAL SRE: SI NO HAY SELECCIÓN REAL, NO HACE NADA ---
-        if (prop && prop.propiedad_id) {
-            // Inyección automática y cálculo de las sub-fichas técnicas e interiores solo si se seleccionó una propiedad
-            inyectarSeccionesAdicionalesZillow(prop);
-        } else {
-            console.log("?? [SRE CONTROL] Inicialización pasiva de cortina. Esperando selección del interesado.");
-        }
-
-        // Ejecutar el carrusel cinematográfico infinito
-        reproducirSecuenciaCinematografica();
-
-        // Resetea el scroll de la cortina al tope superior para visualización móvil
-        cortina.scrollTop = 0; 
-    } // Fin if tipoPantalla === 'detalle'
-
-    // Activa la clase visual en el contenedor nativo
-    cortina.classList.add('cortina-activa');
-
-    // REASIGNACIÓN SECUENCIAL DEFINITIVA CON ESPÍAS DE DIAGNÓSTICO EN CONSOLA
-    if (tipoPantalla === 'detalle') { // Inicia if asignación post-render
-        const btnTourFisico = document.getElementById('btn-solicitar-tour-galeria');
-        const btnAgenteFisico = document.getElementById('btn-contactar-agente-galeria');
-
-        // ESPÍA 1: Verificación de existencia de nodos en el DOM actual
-        console.group("%c?? [ESPÍA DE MONITOREO DE NODOS]", "background: #002E50; color: #FFB91D; padding: 3px; font-weight: bold;");
-        console.log("¿Existe btn-solicitar-tour-galeria en el DOM?:", btnTourFisico ? "SÍ ✅" : "NO ❌");
-        console.log("¿Existe btn-contactar-agente-galeria en el DOM?:", btnAgenteFisico ? "SÍ ✅" : "NO ❌");
-        console.groupEnd();
-
-        if (btnTourFisico) { // Inicia if btnTourFisico
-            btnTourFisico.onclick = () => { // Inicia click solicitar tour
-                // ESPÍA 2: Intercepción del clic físico del usuario
-                console.log("%c?? [ESPÍA CLICK] Se detectó pulsación real en el botón 'Solicitar un Tour'.", "color: #006aff; font-weight: bold;");
-
-                // ESPÍA 3: Evaluación perimetral de seguridad
-                console.log("[ESPÍA SEGURIDAD] Invocando verificarAutorizacionAcceso()...");
-                if (typeof verificarAutorizacionAcceso === "function") { // Inicia if check f_seguridad
-                    const pasoFirewall = verificarAutorizacionAcceso();
-                    console.log("Resultado del firewall ACL:", pasoFirewall ? "PERMITIDO ??" : "REBOTADO/BLOQUEADO ❌");
-                    if (!pasoFirewall) return;
-                } // Fin if check f_seguridad
-
-                // ESPÍA 4: Seguimiento del despliegue visual del modal
-                console.group("%c?? [ESPÍA DISPARO] Pasó seguridad. Abriendo interfaces...", "color: #10b981; font-weight: bold;");
-                console.log("Ejecutando mostrarPopupAccion('modal-tour-comercial')...");
-                mostrarPopupAccion("modal-tour-comercial");
-                
-                console.log("Ejecutando calcularCalendarioTresCajas()...");
-                calcularCalendarioTresCajas();
-                
-                console.log("Ejecutando gestionarPasosModalTour(1)...");
-                gestionarPasosModalTour(1);
-                console.groupEnd();
-            }; // Fin click solicitar tour
-        } // Fin if btnTourFisico
-
-        if (btnAgenteFisico) { // Inicia if btnAgenteFisico
-            btnAgenteFisico.onclick = () => { // Inicia click contactar agente
-                console.log("%c?? [ESPÍA CLICK] Se detectó pulsación real en el botón 'Contactar Agente'.", "color: #006aff; font-weight: bold;");
-                
-                if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
-
-                mostrarPopupAccion("modal-agent-comercial");
-                inyectarDatosPropiedadAlMensaje();
-            }; // Fin click contactar agente
-        } // Fin if btnAgenteFisico
-    } // Fin if asignación post-render
-
     // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase y disparar la notificación por correo
     const formTour = document.getElementById('form-solicitar-tour-completo');
     if (formTour) { // Inicia if validación formTour
