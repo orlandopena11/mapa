@@ -1685,16 +1685,14 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                 }
 
                 alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
-
                 cerrarPopupAccion('modal-tour-comercial');
                 formTour.reset();
 
-            } // Fin bloque try transaccional
-            catch (errTransaccion) { // Inicia catch errorTransaccion
+            } catch (errTransaccion) {
                 console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                 alert("Error al procesar la agenda: " + errTransaccion.message);
-            } // Fin catch errorTransaccion
-        }; // Fin submit asíncrono
+            }
+        }; // Cierre correcto del formTour.onsubmit SRE
     } // Fin if validación formTour
 
 } // Fin definitivo de la función gestionarCortinaSPA
