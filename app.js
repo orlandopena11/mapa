@@ -100,32 +100,38 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
 // ==========================================================================
 // GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
 // ==========================================================================
-function validarAccesoFuncionalidadPremium() { // Inicia validarAccesoFuncionalidadPremium SRE
-    console.group("🛡️ [SRE CORTAFUEGOS CENTRAL] Evaluando credenciales de interacción premium...");
-    
-    // 1. Control de autenticación de sesión
-    if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("⚠️ ACL RECHAZADO: Sesión inexistente en el estado global.");
+async function validarAccesoFuncionalidadPremium() {
+    console.group("🔒 [CORTAFUEGOS CENTRAL] Evaluando estado de cuenta...");
+    const cliente = obtenerClienteSupabase();
+    if (!cliente) { console.groupEnd(); return false; }
+    const { data: { session } } = await cliente.auth.getSession();
+    if (!session || !session.user) {
         console.groupEnd();
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
-        if (typeof mostrarPopupAccion === "function") {
-            mostrarPopupAccion("modal-autenticacion-supabase");
+        const modalAuth = document.getElementById('modal-autenticacion-supabase');
+        if (modalAuth) modalAuth.style.display = "flex";
+        return false;
+    }
+    try {
+        const { data: usuarioBD } = await cliente.from('usuario_autenticado').select('estado_cuenta').eq('id', session.user.id).single();
+        const estado = usuarioBD ? String(usuarioBD.estado_cuenta).toLowerCase().trim() : "pendiente";
+        if (estado === "activo") {
+            state.usuarioActual = { id: session.user.id, correo: session.user.email, estado_cuenta: "activo" };
+            window.usuarioLogueado = session.user;
+            console.groupEnd();
+            return true;
         }
-        return false;
-    }
-    
-    // 2. Control estricto de suspensión en tabla usuario_autenticado
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        console.error("❌ ACL RECHAZADO: El usuario se encuentra SUSPENDIDO por administración.");
+        alert("Acceso Restringido: Su cuenta se encuentra en estado " + estado.toUpperCase() + ".");
+        const modalAuth = document.getElementById('modal-autenticacion-supabase');
+        if (modalAuth) modalAuth.style.display = "flex";
         console.groupEnd();
-        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción debido a infracciones de políticas.");
+        return false;
+    } catch (err) {
+        console.groupEnd();
         return false;
     }
-    
-    console.log("✅ ACL CONFIGURADO: Permiso concedido con estado activo.");
-    console.groupEnd();
-    return true;
-} // Fin de la función validarAccesoFuncionalidadPremium SRE
+}
+
 
 
 async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
@@ -1133,37 +1139,28 @@ function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincr
 } // Fin de Function ejecutarTuberiaSincronizada
 
 // Activa las tres pasarelas de autenticación nativas de Supabase para cumplir las reglas de negocio de la plataforma
-function inicializarAutenticacionTresCanalesSupabase() { // Inicia inicializarAutenticacionTresCanalesSupabase
+function inicializarAutenticacionTresCanalesSupabase() {
     const btnAutenticarEmail = document.getElementById('btn-autenticar');
-    if (btnAutenticarEmail) { // Inicia if btnAutenticarEmail
-        btnAutenticarEmail.addEventListener('click', async () => { // Inicia click login email
+    if (btnAutenticarEmail) {
+        btnAutenticarEmail.addEventListener('click', async () => {
             const emailValor = document.getElementById('login-email-input').value.trim();
-            if (!emailValor) {
-                alert("Por favor ingrese su correo electrónico.");
-                return;
-            }
-
-            try { // Inicia try login email
+            if (!emailValor) { alert("Por favor ingrese su correo electrónico."); return; }
+            try {
                 const cliente = obtenerClienteSupabase();
-                // Canal 1: Autenticación por enlace mágico al correo (Magic Link OTP)
-                const { error } = await cliente.auth.signInWithOtp({
-                    email: emailValor,
-                    options: {
-                        emailRedirectTo: window.location.origin // Redirecciona de vuelta de forma dinámica a la app
-                    }
-                });
-
+                const { error } = await cliente.auth.signInWithOtp({ email: emailValor, options: { emailRedirectTo: window.location.origin } });
                 if (error) throw error;
                 alert("¡Enlace enviado! Revise su correo electrónico para confirmar su cuenta y activar su acceso.");
                 cerrarPopupAccion('modal-autenticacion-supabase');
+            } catch (errAuth) { alert("Error en autenticación: " + errAuth.message); }
+        });
+    }
+    // Inyección elástica de escuchadores nativos para los botones OAuth en el entorno global
+    document.addEventListener('click', async (e) => {
+        if (e.target && e.target.id === 'btn-auth-google') { e.preventDefault(); await autenticarConGoogleSupabase(); }
+        if (e.target && e.target.id === 'btn-auth-facebook') { e.preventDefault(); await autenticarConFacebookSupabase(); }
+    });
+}
 
-            } // Fin try login email
-            catch (errAuth) { // Inicia catch email
-                alert("Error en autenticación: " + errAuth.message);
-            } // Fin catch email
-        }); // Fin click login email
-    } // Fin if btnAutenticarEmail
-} // Fin inicializarAutenticacionTresCanalesSupabase
 
 // Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
 function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
@@ -1492,24 +1489,25 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             gestionarCortinaSPA('cerrar');
         };
 
-        // 2. Funcionalidad Protegida: Solicitar Tour
-        document.getElementById('btn-solicitar-tour-galeria').onclick = (e) => {
-            e.stopPropagation();
-            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
+        // 2 y 3. Escucha elástica delegada para clics dinámicos dentro de la Cortina SPA
+        cortina.addEventListener('click', async (e) => {
+            if (e.target && e.target.id === 'btn-solicitar-tour-galeria') {
+                e.stopPropagation();
+                const esValido = await validarAccesoFuncionalidadPremium();
+                if (!esValido) return;
+                mostrarPopupAccion("modal-tour-comercial");
+                calcularCalendarioTresCajas();
+                gestionarPasosModalTour(1);
+            }
+            if (e.target && e.target.id === 'btn-contactar-agente-galeria') {
+                e.stopPropagation();
+                const esValido = await validarAccesoFuncionalidadPremium();
+                if (!esValido) return;
+                mostrarPopupAccion("modal-agent-comercial");
+                inyectarDatosPropiedadAlMensaje();
+            }
+        });
 
-            mostrarPopupAccion("modal-tour-comercial");
-            calcularCalendarioTresCajas();
-            gestionarPasosModalTour(1);
-        };
-
-        // 3. Funcionalidad Protegida: Contactar Agente
-        document.getElementById('btn-contactar-agente-galeria').onclick = (e) => {
-            e.stopPropagation();
-            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
-
-            mostrarPopupAccion("modal-agent-comercial");
-            inyectarDatosPropiedadAlMensaje();
-        };
 
         // 4. NUEVA Funcionalidad Protegida: Ver Teléfono con consulta relacional a Supabase
         const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
@@ -1672,11 +1670,11 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                     }
                 }
 
-                // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
-                if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
+                    // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
+                    if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${propiedadActivaSegura.direccion || propiedadActivaSegura.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
-                    
+                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
+               
                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                         .then(res => res.json())
                         .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
