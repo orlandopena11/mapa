@@ -104,12 +104,13 @@ async function validarAccesoFuncionalidadPremium() {
     console.group("🔒 [CORTAFUEGOS CENTRAL] Evaluando estado de cuenta...");
     const cliente = obtenerClienteSupabase();
     if (!cliente) { console.groupEnd(); return false; }
+    
     const { data: { session } } = await cliente.auth.getSession();
     if (!session || !session.user) {
         console.groupEnd();
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
-        const modalAuth = document.getElementById('modal-autenticacion-supabase');
-        if (modalAuth) modalAuth.style.display = "flex";
+        gestionarCortinaSPA('cerrar');
+        mostrarPopupAccion("modal-autenticacion-supabase");
         return false;
     }
     try {
@@ -122,15 +123,18 @@ async function validarAccesoFuncionalidadPremium() {
             return true;
         }
         alert("Acceso Restringido: Su cuenta se encuentra en estado " + estado.toUpperCase() + ".");
-        const modalAuth = document.getElementById('modal-autenticacion-supabase');
-        if (modalAuth) modalAuth.style.display = "flex";
+        gestionarCortinaSPA('cerrar');
+        mostrarPopupAccion("modal-autenticacion-supabase");
         console.groupEnd();
         return false;
     } catch (err) {
         console.groupEnd();
+        gestionarCortinaSPA('cerrar');
+        mostrarPopupAccion("modal-autenticacion-supabase");
         return false;
     }
 }
+
 
 
 
