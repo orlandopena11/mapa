@@ -1489,24 +1489,27 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             gestionarCortinaSPA('cerrar');
         };
 
-        // 2 y 3. Escucha elástica delegada para clics dinámicos dentro de la Cortina SPA
-        cortina.addEventListener('click', async (e) => {
+        // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
+        cortina.addEventListener('click', (e) => {
             if (e.target && e.target.id === 'btn-solicitar-tour-galeria') {
                 e.stopPropagation();
-                const esValido = await validarAccesoFuncionalidadPremium();
-                if (!esValido) return;
-                mostrarPopupAccion("modal-tour-comercial");
-                calcularCalendarioTresCajas();
-                gestionarPasosModalTour(1);
+                validarAccesoFuncionalidadPremium().then((esValido) => {
+                    if (!esValido) return;
+                    mostrarPopupAccion("modal-tour-comercial");
+                    calcularCalendarioTresCajas();
+                    gestionarPasosModalTour(1);
+                });
             }
             if (e.target && e.target.id === 'btn-contactar-agente-galeria') {
                 e.stopPropagation();
-                const esValido = await validarAccesoFuncionalidadPremium();
-                if (!esValido) return;
-                mostrarPopupAccion("modal-agent-comercial");
-                inyectarDatosPropiedadAlMensaje();
+                validarAccesoFuncionalidadPremium().then((esValido) => {
+                    if (!esValido) return;
+                    mostrarPopupAccion("modal-agent-comercial");
+                    inyectarDatosPropiedadAlMensaje();
+                });
             }
         });
+
 
 
         // 4. NUEVA Funcionalidad Protegida: Ver Teléfono con consulta relacional a Supabase
