@@ -744,49 +744,45 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                try { // Inicia Bloque Transaccional de Sincronizacion de Registro de Retorno
-                    // 1. Verificamos si el usuario ya cuenta con un registro en la tabla de negocio
+                try { // Inicia Bloque Transaccional de Sincronizacion de Registro de Retorno SRE
+                    // Buscamos el registro asociado al correo para conocer su estado de cuenta en la tabla de negocio
                     const { data: usuarioExistente } = await cliente
                         .from('usuario_autenticado')
                         .select('*')
                         .eq('correo', correoUsuario)
                         .maybeSingle();
 
-                    if (!usuarioExistente) {
-                        // 2. Si no existe registro, es un usuario nuevo regresando de confirmar su correo: Hacemos el INSERT en estado "pendiente"
-                        console.log("⚡ Registrando nuevo interesado en la tabla de negocio con estado PENDIENTE...");
-                        const { error: insertError } = await cliente
-                            .from('usuario_autenticado')
-                            .insert([{
-                                id: session.user.id,
-                                correo: correoUsuario,
-                                nombre: "Interesado Registrado",
-                                apellido: "Pendiente Activación"
-                            }]);
-
-                        if (insertError) throw insertError;
-
-                        // 3. Simulación inmediata del proceso de comprobación exitosa: Actualizamos el estado a "activo" en el acto
-                        console.log("⚡ Validación del correo completada con éxito. Actualizando a estado ACTIVO...");
+                    if (usuarioExistente) { // Inicia bloque de procesamiento de usuario existente
+                        const estadoActual = String(usuarioExistente.estado_cuenta || "").toLowerCase().trim();
                         
-                        // NOTA: Como la tabla de la base de datos actual mostrada en tu captura no posee físicamente la columna 'estado_cuenta',
-                        // el frontend procede a almacenar y activar el flag de autorización de forma local en el estado global inmutable
-                        state.usuarioActual = {
-                            id: session.user.id,
-                            correo: correoUsuario,
-                            estado_cuenta: "activo"
-                        };
-                        alert("¡Autenticación completada con éxito! Su cuenta ha sido validada y activada de forma inmediata.");
-                    } else {
-                        // 4. Si el usuario ya existía previamente en la tabla, heredamos su autorización de acceso activa directamente
-                        state.usuarioActual = {
-                            id: session.user.id,
-                            correo: correoUsuario,
-                            estado_cuenta: "activo"
-                        };
-                    } // Fin de la verificacion de existencia
-                } catch (errRetorno) {
-                    console.error("Aviso en flujo de sincronización de tablas Supabase:", errRetorno.message);
+                        if (estadoActual === "pendiente") {
+                            // REQUERIMIENTO 2: Una vez que valida el correo electrónico, modificamos la columna estado_cuenta a ACTIVO en tu tabla
+                            console.log("⚡ Enlace verificado. Realizando UPDATE de estado_cuenta a ACTIVO...");
+                            const { error: updateError } = await cliente
+                                .from('usuario_autenticado')
+                                .update({ 
+                                    usuario_id: session.user.id, 
+                                    estado_cuenta: "activo",
+                                    verificado: true,
+                                    último_acceso: new Date().toLocaleDateString('es-PE'),
+                                    fecha_actualizacion: new Date().toLocaleDateString('es-PE')
+                                })
+                                .eq('correo', correoUsuario);
+
+                            if (updateError) throw updateError;
+                            alert("¡Validación completada con éxito! Su cuenta ha sido activada en el sistema. Ahora puede solicitar un tour.");
+                        }
+                    } // Fin de bloque de procesamiento de usuario existente
+                    
+                    // Sincronizamos las variables del estado global inmutable para dar pase libre en el Firewall
+                    state.usuarioActual = {
+                        id: session.user.id,
+                        correo: correoUsuario,
+                        estado_cuenta: "activo"
+                    };
+                } catch (errRetorno) { // Fin de bloque de procesamiento de usuario existente
+
+                console.error("Aviso en flujo de sincronización de tablas Supabase:", errRetorno.message);
                 } // Fin de Bloque Transaccional
 
                 const idScriptSeguridad = "sre-jsonp-firewall-auth";
@@ -1209,13 +1205,42 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                 throw new Error(mensajeCastellano);
             }
 
-            if (esRegistroNuevo) { // Flujo Operativo Exclusivo para la Opcion Crear Cuenta
+            if (esRegistroNuevo) { // Flujo Operativo Exclusivo para la Opcion Crear Cuenta SRE
                 if (usuarioBD) {
                     alert("Aviso: Este correo electrónico ya se encuentra registrado. Por favor use el botón 'Continuar' para iniciar sesión.");
                     return;
                 }
-            } else { // Flujo Operativo Exclusivo para el Boton Continuar Tradicional
-                if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
+                
+                console.log("⚡ Generando UUID estructurado e insertando nuevo interesado en estado PENDIENTE...");
+                // Algoritmo nativo matematico para autogenerar un identificador UUID v4 valido compatible con campos Postgres
+                const uuidNativoPostgres = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                    const r = Math.random() * 16 | 0;
+                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+
+                // REQUERIMIENTO 1: Ejecuta el INSERT en la tabla utilizando los nombres exactos de tus columnas visualizadas
+                const { error: insertError } = await cliente
+                    .from('usuario_autenticado')
+                    .insert([{
+                        usuario_id: uuidNativoPostgres,
+                        rol_id_fk: 3,
+                        nombre: "Interesado",
+                        apellido: "Nuevo Registro",
+                        correo: emailValor,
+                        password_hash: "99999999",
+                        teléfono: "999999999",
+                        estado_cuenta: "pendiente",
+                        verificado: false,
+                        creado_por: emailValor,
+                        fecha_creacion: new Date().toLocaleDateString('es-PE')
+                    }]);
+
+                if (insertError) throw new Error("No se pudo pre-registrar el perfil en la tabla de negocio: " + insertError.message);
+                
+            } else { // Flujo Operativo Exclusivo para el Boton Continuar Tradicional SRE
+
+            if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
                     const estado = String(usuarioBD.estado_cuenta).toLowerCase().trim();
                     if (estado !== "activo") {
                         alert(`Acceso Restringido: Su cuenta está registrada pero se encuentra en estado ${estado.toUpperCase()}.`);
