@@ -1403,24 +1403,6 @@ supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback o
         } // Fin de Bloque Transaccional
     }
 }); // Fin de Callback onAuthStateChange
-
-    // Vinculación elástica inicial para capturar el clic en el enlace "Crear cuenta"
-    document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        inicializacionModalEstadosVistaSRE('registro');
-    });
-
-
-    // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
-    document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
-        e.preventDefault();
-        await autenticarConGoogleSupabase();
-    }); // Fin de Disparador Google
-
-    document.getElementById('btn-auth-facebook')?.addEventListener('click', async (e) => { // Inicia Disparador Facebook
-        e.preventDefault();
-        await autenticarConFacebookSupabase();
-    }); // Fin de Disparador Facebook
 } // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
 
 
