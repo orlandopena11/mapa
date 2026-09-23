@@ -1183,7 +1183,10 @@ function inicializacionModalEstadosVistaSRE(modoDestino) { // Inicia la Funcion 
         if (wrapperRegistro) wrapperRegistro.style.display = 'flex';
         if (subtitulo) subtitulo.style.display = 'block';
         if (lblEmail) lblEmail.innerText = "Dirección de correo para registrar cuenta *";
-        if (btnPrincipal) btnPrincipal.innerText = "Confirmar Registro";
+        if (btnPrincipal) {
+            btnPrincipal.innerText = "Confirmar Registro"; // Fuerza el cambio de texto real del boton
+            btnPrincipal.setAttribute('data-modo', 'registro');
+        }
         if (linkConmutador) {
             linkConmutador.innerHTML = `¿Ya tiene una cuenta aprobada? <a href="#" id="link-volver-login-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Inicie sesión aquí</a>`;
             document.getElementById('link-volver-login-sre')?.addEventListener('click', (e) => {
@@ -1195,7 +1198,10 @@ function inicializacionModalEstadosVistaSRE(modoDestino) { // Inicia la Funcion 
         if (wrapperRegistro) wrapperRegistro.style.display = 'none';
         if (subtitulo) subtitulo.style.display = 'none';
         if (lblEmail) lblEmail.innerText = "Dirección de correo electrónico *";
-        if (btnPrincipal) btnPrincipal.innerText = "Continuar";
+        if (btnPrincipal) {
+            btnPrincipal.innerText = "Continuar"; // Restablece el boton al modo Login
+            btnPrincipal.setAttribute('data-modo', 'login');
+        }
         if (linkConmutador) {
             linkConmutador.innerHTML = `¿Nuevo en Inmobiliaria en Surco? <a href="#" id="link-crear-cuenta-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Crear cuenta</a>`;
             document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
@@ -1215,7 +1221,6 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
         const emailValor = emailInput ? emailInput.value.trim() : "";
         if (!emailValor) { alert("Por favor ingrese su dirección de correo electrónico."); return; }
         
-        // Captura de los nuevos campos de datos requeridos desde la sub-pantalla del Frontend
         let nombreValor = "Interesado";
         let apellidoValor = "Nuevo Registro";
         let telefonoValor = "999999999";
@@ -1261,14 +1266,13 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                 
                 console.log("⚡ Generando UUID e Insertando registro inicial en la tabla con estado PENDIENTE...");
                 
-                // Algoritmo nativo matematico para autogenerar un UUID v4 valido compatible con Postgres
                 const uuidValidoPostgres = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                     const r = Math.random() * 16 | 0;
                     const v = c === 'x' ? r : (r & 0x3 | 0x8);
                     return v.toString(16);
                 });
 
-                // Insertamos el nuevo interesado usando los datos capturados y corrigiendo el nombre de la columna sin tilde
+                // Insertamos el nuevo interesado resolviendo la columna 'teléfono' (con tilde)
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
                     .insert([{
@@ -1277,8 +1281,8 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         nombre: nombreValor,
                         apellido: apellidoValor,
                         correo: emailValor,
-                        password_hash: telefonoValor.slice(0, 8), // Clave inicial basica por defecto
-                        teléfono: telefonoValor, // Nombre de columna exacto mapeado de Supabase sin tilde
+                        password_hash: telefonoValor.slice(0, 8), 
+                        teléfono: telefonoValor, 
                         estado_cuenta: "pendiente",
                         verificado: false,
                         creado_por: emailValor,
@@ -1301,7 +1305,6 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                 } // Fin de la Validacion de Estado
             }
 
-            // Disparo del enlace mágico con la ruta de retorno corregida para evitar el error 404
             const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname; 
             const { error: errorOtp } = await cliente.auth.signInWithOtp({ 
                 email: emailValor, 
@@ -1312,12 +1315,13 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
             
             alert(esRegistroNuevo ? "¡Cuenta pre-registrada con éxito en estado PENDIENTE! Le hemos enviado un enlace de confirmación a su correo." : "¡Enlace de acceso enviado! Revise su bandeja de entrada para ingresar.");
             cerrarPopupAccion('modal-autenticacion-supabase');
-            inicializacionModalEstadosVistaSRE('login'); // Restablecemos el modal a su estado inicial pasivo
+            inicializacionModalEstadosVistaSRE('login'); 
         } catch (errAuth) { // Inicia Captura de Errores de Autenticacion
             alert("Error en el proceso: " + errAuth.message); 
         } finally { // Reestablece Siempre el Estado Inicial del Boton
             if (btnAutenticarEmail) {
-                btnAutenticarEmail.innerText = esRegistroNuevo ? "Confirmar Registro" : "Continuar";
+                const modoActual = btnAutenticarEmail.getAttribute('data-modo') || 'login';
+                btnAutenticarEmail.innerText = modoActual === 'registro' ? "Confirmar Registro" : "Continuar";
                 btnAutenticarEmail.disabled = false;
             }
         } // Fin de Bloque de Consulta
@@ -1325,10 +1329,80 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
 
     if (btnAutenticarEmail) { // Inicia Condicional de Existencia del Boton Email
         btnAutenticarEmail.addEventListener('click', async () => { // Inicia Evento Click para Email Tradicional
-            const esRegistro = btnAutenticarEmail.innerText === "Confirmar Registro";
-            await procesarAutenticacionMagicaSRE(esRegistro);
+            const modoActual = btnAutenticarEmail.getAttribute('data-modo') || 'login';
+            await procesarAutenticacionMagicaSRE(modoActual === 'registro');
         }); // Fin de Evento Click para Email Tradicional
     } // Fin de Condicional de Existencia del Boton Email
+
+    document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        inicializacionModalEstadosVistaSRE('registro');
+    });
+
+        // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
+    document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
+        e.preventDefault();
+        await autenticarConGoogleSupabase();
+    }); // Fin de Disparador Google
+
+    document.getElementById('btn-auth-facebook')?.addEventListener('click', async (e) => { // Inicia Disparador Facebook
+        e.preventDefault();
+        await autenticarConFacebookSupabase();
+    }); // Fin de Disparador Facebook
+} // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
+
+
+// ==========================================================================
+// CALLBACK CENTRALIZADO DE ESCUCHA DE RETORNO SUPABASE (onAuthStateChange)
+// ==========================================================================
+// NOTA COMPLEMENTARIA: Este fragmento intercepta al interesado cuando regresa de su correo tras validar el enlace mágico
+supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback onAuthStateChange
+    console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
+    
+    if (session && session.user) { // Inicia Bloque de Sesion Activa Encontrada
+        const correoUsuario = String(session.user.email).trim();
+        window.usuarioLogueado = session.user;
+        const cliente = obtenerClienteSupabase();
+
+        try { // Inicia Bloque Transaccional de Confirmacion y Activacion de Cuenta
+            const { data: usuarioExistente } = await cliente
+                .from('usuario_autenticado')
+                .select('*')
+                .eq('correo', correoUsuario)
+                .maybeSingle();
+
+            if (usuarioExistente) { // Inicia bloque de usuario existente
+                const estadoActual = String(usuarioExistente.estado_cuenta || "").toLowerCase().trim();
+                
+                if (estadoActual === "pendiente") {
+                    // REQUERIMIENTO 2: Modificamos el estado_cuenta de PENDIENTE a ACTIVO y asociamos el UUID de autenticacion definitivo
+                    console.log("⚡ Enlace validado. Actualizando estado_cuenta a ACTIVO...");
+                    const { error: updateError } = await cliente
+                        .from('usuario_autenticado')
+                        .update({ 
+                            usuario_id: session.user.id, 
+                            estado_cuenta: "activo",
+                            verificado: true,
+                            último_acceso: new Date().toLocaleDateString('es-PE'),
+                            fecha_actualizacion: new Date().toLocaleDateString('es-PE')
+                        })
+                        .eq('correo', correoUsuario);
+
+                    if (updateError) throw updateError;
+                    alert("¡Validación completada con éxito! Su cuenta ha sido activada. Ya puede solicitar un tour.");
+                }
+            } // Fin de bloque de usuario existente
+            
+            state.usuarioActual = {
+                id: session.user.id,
+                correo: correoUsuario,
+                estado_cuenta: "activo"
+            };
+        } catch (errRetorno) {
+            console.error("Error en flujo de actualización de estado_cuenta a activo:", errRetorno.message);
+        } // Fin de Bloque Transaccional
+    }
+}); // Fin de Callback onAuthStateChange
 
     // Vinculación elástica inicial para capturar el clic en el enlace "Crear cuenta"
     document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
