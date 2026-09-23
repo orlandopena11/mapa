@@ -1345,18 +1345,9 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
         await autenticarConGoogleSupabase();
     }); // Fin de Disparador Google
 
-    document.getElementById('btn-auth-facebook')?.addEventListener('click', async (e) => { // Inicia Disparador Facebook
-        e.preventDefault();
-        await autenticarConFacebookSupabase();
-    }); // Fin de Disparador Facebook
-} // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
+}); // Fin de Callback onAuthStateChange
 
-
-// ==========================================================================
-// CALLBACK CENTRALIZADO DE ESCUCHA DE RETORNO SUPABASE (onAuthStateChange)
-// ==========================================================================
-// NOTA COMPLEMENTARIA: Este fragmento intercepta al interesado cuando regresa de su correo tras validar el enlace mágico
-supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback onAuthStateChange
+    supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback onAuthStateChange
     console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
     
     if (session && session.user) { // Inicia Bloque de Sesion Activa Encontrada
