@@ -1143,27 +1143,73 @@ function ejecutarTuberiaSincronizada() { // Inicia Function ejecutarTuberiaSincr
 } // Fin de Function ejecutarTuberiaSincronizada
 
 // Activa las tres pasarelas de autenticación nativas de Supabase para cumplir las reglas de negocio de la plataforma
-function inicializarAutenticacionTresCanalesSupabase() {
+function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion inicializarAutenticacionTresCanalesSupabase SRE
     const btnAutenticarEmail = document.getElementById('btn-autenticar');
-    if (btnAutenticarEmail) {
-        btnAutenticarEmail.addEventListener('click', async () => {
+    if (btnAutenticarEmail) { // Inicia Condicional de Existencia del Boton Email
+        btnAutenticarEmail.addEventListener('click', async () => { // Inicia Evento Click para Email
             const emailValor = document.getElementById('login-email-input').value.trim();
             if (!emailValor) { alert("Por favor ingrese su correo electrónico."); return; }
-            try {
+            
+            btnAutenticarEmail.innerText = "⏳ Verificando registro...";
+            btnAutenticarEmail.disabled = true;
+            
+            try { // Inicia Bloque de Consulta y Verificacion Transaccional
                 const cliente = obtenerClienteSupabase();
-                const { error } = await cliente.auth.signInWithOtp({ email: emailValor, options: { emailRedirectTo: window.location.origin } });
+                const { data: usuarioBD, error: errorBD } = await cliente
+                    .from('usuario_autenticado')
+                    .select('estado_cuenta')
+                    .eq('correo_electronico', emailValor)
+                    .maybeSingle();
+
+                if (errorBD) throw new Error("Error al consultar la base de datos: " + errorBD.message);
+
+                if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
+                    const estado = String(usuarioBD.estado_cuenta).toLowerCase().trim();
+                    if (estado !== "activo") {
+                        alert(`Acceso Restringido: Su correo está registrado pero su cuenta se encuentra ${estado.toUpperCase()}.`);
+                        btnAutenticarEmail.innerText = "Continuar";
+                        btnAutenticarEmail.disabled = false;
+                        return;
+                    }
+                } else { // Caso de Correo Inexistente en la Tabla de Negocio
+                    alert("Acceso Restringido: Este correo electrónico no se encuentra registrado en nuestro sistema.");
+                    btnAutenticarEmail.innerText = "Continuar";
+                    btnAutenticarEmail.disabled = false;
+                    return;
+                } // Fin de la Validacion de Estado
+
+                const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname; 
+                const { error } = await cliente.auth.signInWithOtp({ 
+                    email: emailValor, 
+                    options: { emailRedirectTo: URL_RETORNO_CORRECTA } 
+                });
+                
                 if (error) throw error;
-                alert("¡Enlace enviado! Revise su correo electrónico para confirmar su cuenta y activar su acceso.");
+                alert("¡Enlace de acceso enviado! Revise su correo electrónico para autenticar su cuenta.");
                 cerrarPopupAccion('modal-autenticacion-supabase');
-            } catch (errAuth) { alert("Error en autenticación: " + errAuth.message); }
-        });
-    }
-    // Inyección elástica de escuchadores nativos para los botones OAuth en el entorno global
-    document.addEventListener('click', async (e) => {
-        if (e.target && e.target.id === 'btn-auth-google') { e.preventDefault(); await autenticarConGoogleSupabase(); }
-        if (e.target && e.target.id === 'btn-auth-facebook') { e.preventDefault(); await autenticarConFacebookSupabase(); }
-    });
-}
+            } catch (errAuth) { // Inicia Captura de Errores de Autenticacion
+                alert("Error en proceso: " + errAuth.message); 
+            } finally { // Reestablece Siempre el Estado Inicial del Boton
+                if (btnAutenticarEmail) {
+                    btnAutenticarEmail.innerText = "Continuar";
+                    btnAutenticarEmail.disabled = false;
+                }
+            } // Fin de Bloque de Consulta
+        }); // Fin de Evento Click para Email
+    } // Fin de Condicional de Existencia del Boton Email
+
+    // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
+    document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
+        e.preventDefault();
+        await autenticarConGoogleSupabase();
+    }); // Fin de Disparador Google
+
+    document.getElementById('btn-auth-facebook')?.addEventListener('click', async (e) => { // Inicia Disparador Facebook
+        e.preventDefault();
+        await autenticarConFacebookSupabase();
+    }); // Fin de Disparador Facebook
+} // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
+
 
 
 // Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
