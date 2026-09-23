@@ -100,8 +100,8 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
 // ==========================================================================
 // GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
 // ==========================================================================
-async function validarAccesoFuncionalidadPremium() {
-    console.group("🔒 [CORTAFUEGOS CENTRAL] Evaluando estado de cuenta...");
+async function validarAccesoFuncionalidadPremium() { // Inicia la Funcion validarAccesoFuncionalidadPremium SRE
+    console.group("?? [CORTAFUEGOS CENTRAL] Evaluando estado de cuenta...");
     const cliente = obtenerClienteSupabase();
     if (!cliente) { console.groupEnd(); return false; }
     
@@ -114,7 +114,8 @@ async function validarAccesoFuncionalidadPremium() {
         return false;
     }
     try {
-        const { data: usuarioBD } = await cliente.from('usuario_autenticado').select('estado_cuenta').eq('id', session.user.id).single();
+        // Correccion de Columna Primaria: Consultamos 'usuario_id' para hacer Match exacto con tu tabla Postgres
+        const { data: usuarioBD } = await cliente.from('usuario_autenticado').select('estado_cuenta').eq('usuario_id', session.user.id).single();
         const estado = usuarioBD ? String(usuarioBD.estado_cuenta).toLowerCase().trim() : "pendiente";
         if (estado === "activo") {
             state.usuarioActual = { id: session.user.id, correo: session.user.email, estado_cuenta: "activo" };
@@ -133,7 +134,8 @@ async function validarAccesoFuncionalidadPremium() {
         mostrarPopupAccion("modal-autenticacion-supabase");
         return false;
     }
-}
+} // Fin de la Funcion validarAccesoFuncionalidadPremium SRE
+
 
 
 
