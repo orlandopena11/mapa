@@ -1343,12 +1343,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
     document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
         e.preventDefault();
         await autenticarConGoogleSupabase();
-//    }); // Fin de Disparador Google
 
-// }); // Fin de Callback onAuthStateChange
-
-//    supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback onAuthStateChange
-//    console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
     
     if (session && session.user) { // Inicia Bloque de Sesion Activa Encontrada
         const correoUsuario = String(session.user.email).trim();
