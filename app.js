@@ -745,12 +745,27 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 const cliente = obtenerClienteSupabase();
 
                 try { // Inicia Bloque Transaccional de Sincronizacion de Registro de Retorno SRE
-                    // Buscamos el registro asociado al correo para conocer su estado de cuenta en la tabla de negocio
+                    // Buscamos la fila usando el correo electrónico que es el dato real existente
                     const { data: usuarioExistente } = await cliente
                         .from('usuario_autenticado')
                         .select('*')
-                        .eq('correo', correoUsuario)
+                        .eq('correo', session.user.email)
                         .maybeSingle();
+
+                    if (usuarioExistente && String(usuarioExistente.estado_cuenta || "").toLowerCase().trim() === "pendiente") {
+                        console.log("? Enlace verificado. Realizando UPDATE de estado_cuenta a ACTIVO...");
+                        const { error: updateError } = await cliente
+                            .from('usuario_autenticado')
+                            .update({ 
+                                usuario_id: session.user.id, 
+                                estado_cuenta: "activo",
+                                verificado: true,
+                                ultimo_acceso: new Date().toISOString().split('T')[0],
+                                fecha_actualizacion: new Date().toISOString().split('T')[0]
+                            })
+                            .eq('correo', session.user.email);
+                    }
+
 
                     if (usuarioExistente) { // Inicia bloque de procesamiento de usuario existente
                         const estadoActual = String(usuarioExistente.estado_cuenta || "").toLowerCase().trim();
