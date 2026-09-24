@@ -1286,11 +1286,11 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         estado_cuenta: "pendiente",
                         verificado: false,
                         creado_por: emailValor,
-                        fecha_creacion: new Date().toLocaleDateString('es-PE')
+                        fecha_creacion: new Date().toISOString().split('T')[0]
                     }]);
 
                 if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
-                
+        
             } else { // Flujo Operativo para el Boton Continuar de Logueo Tradicional
                 if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
                     const estado = String(usuarioBD.estado_cuenta).toLowerCase().trim();
