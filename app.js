@@ -1355,8 +1355,28 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
     });
 
         // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
-    }); // Fin de Disparador Google unido
+        document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const cliente = obtenerClienteSupabase();
+                await cliente.auth.signInWithOAuth({ 
+                    provider: 'google',
+                    options: { redirectTo: window.location.origin + window.location.pathname }
+                });
+            } catch (errG) { console.error("Error OAuth Google:", errG.message); }
+        });
+
+        document.getElementById('btn-auth-facebook')?.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                const cliente = obtenerClienteSupabase();
+                await cliente.auth.signInWithOAuth({ provider: 'facebook' });
+            } catch (errF) { console.error("Error OAuth Facebook:", errF.message); }
+        });
 } // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
+
+// Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
+
 
 // Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
 function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
