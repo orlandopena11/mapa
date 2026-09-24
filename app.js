@@ -1357,11 +1357,17 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
         // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
     document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
         e.preventDefault();
-        await autenticarConGoogleSupabase();
+        try {
+            const cliente = obtenerClienteSupabase();
+            await cliente.auth.signInWithOAuth({ 
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + window.location.pathname
+                }
+            });
+        } catch (errG) { console.error("Error al invocar pasarela de Google:", errG.message); }
+    }); // Fin de Disparador Google
 
-    
-    if (session && session.user) { // Inicia Bloque de Sesion Activa Encontrada
-        const correoUsuario = String(session.user.email).trim();
         window.usuarioLogueado = session.user;
         const cliente = obtenerClienteSupabase();
 
