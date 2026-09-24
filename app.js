@@ -1282,7 +1282,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         apellido: apellidoValor,
                         correo: emailValor,
                         password_hash: telefonoValor.slice(0, 8), 
-                        teléfono: telefonoValor, 
+                        telefono: telefonoValor, 
                         estado_cuenta: "pendiente",
                         verificado: false,
                         creado_por: emailValor,
@@ -1714,7 +1714,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             const divTel = document.createElement('div');
             divTel.style.cssText = 'margin-top: 10px; width: 100%;';
             divTel.innerHTML = `
-                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">📞 Ver Teléfono del Vendedor</button>
+                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">📞 Ver Telefono del Vendedor</button>
                 <div id="txt-telefono-desplegado" style="display: none; text-align: center; margin-top: 8px; font-size: 16px; font-weight: bold; color: #006aff;"></div>
             `;
             contenedorFijoFicha.appendChild(divTel);
@@ -1796,8 +1796,8 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                         elementoBtnTelefono.style.display = "none";
                     }
                 } catch (errTel) {
-                    console.error("Error al recuperar el teléfono:", errTel);
-                    elementoBtnTelefono.innerText = "📞 Ver Teléfono del Vendedor";
+                    console.error("Error al recuperar el telefono:", errTel);
+                    elementoBtnTelefono.innerText = "📞 Ver Telefono del Vendedor";
                 }
             };
         }
@@ -1833,7 +1833,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
             // Validación estricta de expresión regular nativa para números de teléfono puros de mínimo 9 dígitos
             if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
-                alert("Ingrese un número de teléfono válido.");
+                alert("Ingrese un número de telefono válido.");
                 return;
             } // Fin if validación RegExp
 
@@ -1913,7 +1913,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                     // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
                     if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
+                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTelefono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
                
                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                         .then(res => res.json())
