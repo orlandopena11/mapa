@@ -1355,62 +1355,14 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
     });
 
         // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
-    document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => { // Inicia Disparador Google
-        e.preventDefault();
-        try {
-            const cliente = obtenerClienteSupabase();
-            await cliente.auth.signInWithOAuth({ 
-                provider: 'google',
-                options: {
-                    redirectTo: window.location.origin + window.location.pathname
-                }
-            });
-        } catch (errG) { console.error("Error al invocar pasarela de Google:", errG.message); }
-    }); // Fin de Disparador Google
-
-        window.usuarioLogueado = session.user;
-        const cliente = obtenerClienteSupabase();
-
-        try { // Inicia Bloque Transaccional de Confirmacion y Activacion de Cuenta
-            const { data: usuarioExistente } = await cliente
-                .from('usuario_autenticado')
-                .select('*')
-                .eq('correo', correoUsuario)
-                .maybeSingle();
-
-            if (usuarioExistente) { // Inicia bloque de usuario existente
-                const estadoActual = String(usuarioExistente.estado_cuenta || "").toLowerCase().trim();
-                
-                if (estadoActual === "pendiente") {
-                    // REQUERIMIENTO 2: Modificamos el estado_cuenta de PENDIENTE a ACTIVO y asociamos el UUID de autenticacion definitivo
-                    console.log("⚡ Enlace validado. Actualizando estado_cuenta a ACTIVO...");
-                    const { error: updateError } = await cliente
-                        .from('usuario_autenticado')
-                        .update({ 
-                            usuario_id: session.user.id, 
-                            estado_cuenta: "activo",
-                            verificado: true,
-                            último_acceso: new Date().toLocaleDateString('es-PE'),
-                            fecha_actualizacion: new Date().toLocaleDateString('es-PE')
-                        })
-                        .eq('correo', correoUsuario);
-
-                    if (updateError) throw updateError;
-                    alert("¡Validación completada con éxito! Su cuenta ha sido activada. Ya puede solicitar un tour.");
-                }
-            } // Fin de bloque de usuario existente
-            
-            state.usuarioActual = {
-                id: session.user.id,
-                correo: correoUsuario,
-                estado_cuenta: "activo"
-            };
-        } catch (errRetorno) {
-            console.error("Error en flujo de actualización de estado_cuenta a activo:", errRetorno.message);
-        } // Fin de Bloque Transaccional
-    }
-}); // Fin de Callback onAuthStateChange
+    }); // Fin de Disparador Google unido
 } // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
+
+// Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
+function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
+    // Actúa como un escudo de paso vacío exigido por el motor de renderizado de la Parte 12
+} // Fin interceptarFirewallSeguridadUsuario
+
 
 
 
