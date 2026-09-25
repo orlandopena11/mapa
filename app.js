@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
     // ====================================================================================
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook formateando las fechas en formato ISO AAAA-MM-DD (Evita Error 22008 Datestyle).
+    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook inyectando un UUID válido (Evita Error 23502 Not-Null en usuario_id).
     // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
@@ -778,20 +778,17 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                // Consulta relacional directa utilizando la columna plana "correo"
+                // Consulta de control directo usando el campo plano correo
                 cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
-                    // Construcción de la fecha en formato nativo ISO compatible con PostgreSQL (AAAA-MM-DD)
-                    const fechaActual = new Date();
-                    const anio = fechaActual.getFullYear();
-                    const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
-                    const dia = String(fechaActual.getDate()).padStart(2, '0');
-                    const hoyFormatoIso = `${anio}-${mes}-${dia}`;
+                    // Formateador estricto de fecha ISO AAAA-MM-DD
+                    const fActual = new Date();
+                    const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
                     if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real
                         const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
                         if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
-                            // El interesado confirmó su correo. Actualizamos su estado e historial usando el formato ISO sintonizado.
+                            // El interesado confirmó su correo. Actualizamos su estado a ACTIVO mapeando las fechas ISO.
                             cliente.from('usuario_autenticado').update({ 
                                 estado_cuenta: "activo",
                                 verificado: true,
@@ -805,12 +802,18 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }); // Fin Promesa Update Pendiente
                         } // Fin Condicional Enlace Tradicional Verificado
                         else { // Inicio Otros Estados (Activo / Suspendido)
-                            // Transfiere el estado de cuenta plano al entorno global para el control de los cortafuegos
+                            // Enlaza el estado plano actual de la BD a la memoria del cortafuegos
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
                         } // Fin Otros Estados (Activo / Suspendido)
                     } // Fin Validación Registro Existente Real
-                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Formato de Tiempo Saneado)
-                        // Registramos al usuario de Google/Facebook mapeando la fecha ISO limpia sin romper las restricciones de datestyle
+                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Inyección de UUID Seguro)
+                        // El correo no existe. Generamos un UUID plano de 36 caracteres en la aplicación para cumplir la restricción NOT NULL de tu Postgres.
+                        const uuidGeneradoApp = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                            const r = Math.random() * 16 | 0;
+                            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                            return v.toString(16);
+                        });
+
                         const metadatos = session.user.user_metadata || {};
                         const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
                         
@@ -818,27 +821,28 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
                         
                         cliente.from('usuario_autenticado').insert([{
+                            usuario_id: uuidGeneradoApp, // Inyección de la llave primaria requerida por tu BD
                             rol_id_fk: 3,
                             nombre: stringNombre,
                             apellido: stringApellido,
                             correo: correoUsuario,
-                            password_hash: "11051105", // Inicialización de clave en formato de texto numérico puro conforme a tu esquema
+                            password_hash: "15021502", // Inicialización uniforme del campo de texto numérico
                             telefono: "999999999",
                             estado_cuenta: "activo",
                             verificado: true,
                             creado_por: "OAuth-System",
-                            ultimo_acceso: hoyFormatoIso, // Inserción de tiempo en formato AAAA-MM-DD
+                            ultimo_acceso: hoyFormatoIso,
                             fecha_creacion: hoyFormatoIso,
                             fecha_actualizacion: hoyFormatoIso
                         }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
                             if (!insertError) { // Inicio Éxito Insert OAuth
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en formato ISO.");
+                                console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente con UUID generado.");
                             } else { // Inicio Manejo Error Insert
-                                console.error("? [SRE AUTH ERROR] Fallo al insertar registro con nombres de columna planos:", insertError);
+                                console.error("? [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError);
                             } // Fin Manejo Error Insert
                         }); // Fin Promesa Insert OAuth
-                    } // Fin Flujo Registro Autónomo Redes Sociales (Formato de Tiempo Saneado)
+                    } // Fin Flujo Registro Autónomo Redes Sociales (Inyección de UUID Seguro)
                 }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
             } // Fin Control Sesión Activa
             else { // Inicio Control Cierre de Sesión / Anónimo
@@ -847,6 +851,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // Fin Control Cierre de Sesión / Anónimo
         }); // Fin Callback Central onAuthStateChange
     } // Fin Control Central Supabase
+
 
 
 
