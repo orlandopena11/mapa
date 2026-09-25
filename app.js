@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
     // ====================================================================================
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook dejando la generación de la llave primaria a la base de datos.
+    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook respetando los nombres de columna planos sin tildes de tu esquema.
     // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
@@ -778,20 +778,20 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                // Consulta relacional pasiva basándose únicamente en el correo como identificador comercial
+                // Consulta relacional directa utilizando la columna plana "correo"
                 cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
-                    const hoyIso = new Date().toISOString().split('T')[0];
+                    const hoyFormatoPeru = new Date().toLocaleDateString('es-PE');
 
                     if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real
                         const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
                         if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
-                            // El interesado viene de confirmar su correo. Actualizamos su estado a ACTIVO.
+                            // El interesado confirmó su correo. Actualizamos su estado e historial usando las columnas planas de tu esquema.
                             cliente.from('usuario_autenticado').update({ 
                                 estado_cuenta: "activo",
                                 verificado: true,
-                                ultimo_acceso: hoyIso,
-                                fecha_actualizacion: hoyIso
+                                ultimo_acceso: hoyFormatoPeru,
+                                fecha_actualizacion: hoyFormatoPeru
                             }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente
                                 if (!updateError) { // Inicio Éxito Update
                                     state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
@@ -800,35 +800,40 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }); // Fin Promesa Update Pendiente
                         } // Fin Condicional Enlace Tradicional Verificado
                         else { // Inicio Otros Estados (Activo / Suspendido)
-                            // Vincula el estado real de la BD al cliente web para el control de los cortafuegos premium
+                            // Transfiere el estado de cuenta plano al entorno global para control de los cortafuegos
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
                         } // Fin Otros Estados (Activo / Suspendido)
                     } // Fin Validación Registro Existente Real
-                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (OAuth Sin Llave Forzada)
-                        // El correo no existe en la tabla. Dejamos que la base de datos genere la llave primaria de la fila automáticamente.
+                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Columnas Planas Sin Tildes)
+                        // Registramos al usuario de Google/Facebook mapeando los nombres de columna planos y exactos de tu Postgres.
                         const metadatos = session.user.user_metadata || {};
-                        const nombreCompleto = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
-                        const primerNombre = nombreCompleto[0] || "Interesado";
-                        const apellidoCompuesto = nombreCompleto.slice(1).join(" ") || "OAuth";
+                        const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
+                        
+                        const stringNombre = String(partesNombre[0] || "Interesado").trim();
+                        const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
                         
                         cliente.from('usuario_autenticado').insert([{
                             rol_id_fk: 3,
-                            nombre: primerNombre,
-                            apellido: apellidoCompuesto,
+                            nombre: stringNombre,
+                            apellido: stringApellido,
                             correo: correoUsuario,
-                            password_hash: "OAUTH_EXTERNAL_PROVIDER",
-                            telefono: "999999999",
+                            password_hash: "OAUTH_EXT",
+                            telefono: "999999999", // Nombre de columna corregido a plano sin tilde
                             estado_cuenta: "activo",
                             verificado: true,
                             creado_por: "OAuth-System",
-                            fecha_creacion: hoyIso
+                            ultimo_acceso: hoyFormatoPeru, // Nombre de columna corregido a plano sin tilde
+                            fecha_creacion: hoyFormatoPeru,
+                            fecha_actualizacion: hoyFormatoPeru
                         }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
                             if (!insertError) { // Inicio Éxito Insert OAuth
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en la tabla.");
-                            } // Fin Éxito Insert OAuth
+                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en columnas planas.");
+                            } else { // Inicio Manejo Error Insert
+                                console.error("? [SRE AUTH ERROR] Fallo al insertar registro con nombres de columna planos:", insertError);
+                            } // Fin Manejo Error Insert
                         }); // Fin Promesa Insert OAuth
-                    } // Fin Flujo Registro Autónomo Redes Sociales (OAuth Sin Llave Forzada)
+                    } // Fin Flujo Registro Autónomo Redes Sociales (Columnas Planas Sin Tildes)
                 }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
             } // Fin Control Sesión Activa
             else { // Inicio Control Cierre de Sesión / Anónimo
@@ -837,6 +842,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // Fin Control Cierre de Sesión / Anónimo
         }); // Fin Callback Central onAuthStateChange
     } // Fin Control Central Supabase
+
 
 
 }); // Fin de EventListener DOMContentLoaded
