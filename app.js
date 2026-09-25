@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
     // ====================================================================================
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-    // Sirve para validar tokens, activar cuentas tradicionales pendientes y registrar perfiles de Google/Facebook.
+    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook dejando la generación de la llave primaria a la base de datos.
     // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
@@ -778,17 +778,16 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                // Consulta relacional pasiva en segundo plano para verificar el estado_cuenta en la BD
-                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Select Usuario
+                // Consulta relacional pasiva basándose únicamente en el correo como identificador comercial
+                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
                     const hoyIso = new Date().toISOString().split('T')[0];
 
-                    if (usuarioBD) { // Inicio Validación Registro Existente
+                    if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real
                         const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
                         if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
-                            // El interesado viene de presionar su enlace de correo. Actualizamos a ACTIVO y verificado a TRUE.
+                            // El interesado viene de confirmar su correo. Actualizamos su estado a ACTIVO.
                             cliente.from('usuario_autenticado').update({ 
-                                usuario_id: session.user.id, 
                                 estado_cuenta: "activo",
                                 verificado: true,
                                 ultimo_acceso: hoyIso,
@@ -801,20 +800,21 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }); // Fin Promesa Update Pendiente
                         } // Fin Condicional Enlace Tradicional Verificado
                         else { // Inicio Otros Estados (Activo / Suspendido)
-                            // Almacena el estado real para que los cortafuegos protejan o permitan las acciones
+                            // Vincula el estado real de la BD al cliente web para el control de los cortafuegos premium
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
                         } // Fin Otros Estados (Activo / Suspendido)
-                    } // Fin Validación Registro Existente
-                    else { // Inicio Flujo Registro Autónomo Redes Sociales (OAuth)
-                        // Primera vez que ingresa con Google/Facebook. No requiere confirmación, se crea como ACTIVO y TRUE directamente.
+                    } // Fin Validación Registro Existente Real
+                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (OAuth Sin Llave Forzada)
+                        // El correo no existe en la tabla. Dejamos que la base de datos genere la llave primaria de la fila automáticamente.
                         const metadatos = session.user.user_metadata || {};
-                        const nombreCompleto = (metadatos.full_name || metadatos.name || "Interesado Social").split(" ");
+                        const nombreCompleto = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
+                        const primerNombre = nombreCompleto[0] || "Interesado";
+                        const apellidoCompuesto = nombreCompleto.slice(1).join(" ") || "OAuth";
                         
                         cliente.from('usuario_autenticado').insert([{
-                            usuario_id: session.user.id,
                             rol_id_fk: 3,
-                            nombre: nombreCompleto[0] || "Interesado",
-                            apellido: nombreCompleto.slice(1).join(" ") || "OAuth",
+                            nombre: primerNombre,
+                            apellido: apellidoCompuesto,
                             correo: correoUsuario,
                             password_hash: "OAUTH_EXTERNAL_PROVIDER",
                             telefono: "999999999",
@@ -825,11 +825,11 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
                             if (!insertError) { // Inicio Éxito Insert OAuth
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en estado ACTIVO.");
+                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en la tabla.");
                             } // Fin Éxito Insert OAuth
                         }); // Fin Promesa Insert OAuth
-                    } // Fin Flujo Registro Autónomo Redes Sociales (OAuth)
-                }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Select Usuario
+                    } // Fin Flujo Registro Autónomo Redes Sociales (OAuth Sin Llave Forzada)
+                }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
             } // Fin Control Sesión Activa
             else { // Inicio Control Cierre de Sesión / Anónimo
                 state.usuarioActual = null;
@@ -837,6 +837,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // Fin Control Cierre de Sesión / Anónimo
         }); // Fin Callback Central onAuthStateChange
     } // Fin Control Central Supabase
+
 
 }); // Fin de EventListener DOMContentLoaded
 
