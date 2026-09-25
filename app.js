@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
     // ====================================================================================
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook inyectando un UUID válido (Evita Error 23502 Not-Null en usuario_id).
+    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook blindando el flujo contra inserciones de llaves duplicadas (Evita Error 23505).
     // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
@@ -778,9 +778,9 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                // Consulta de control directo usando el campo plano correo
+                // Consulta relacional directa utilizando la columna plana "correo" como llave única de negocio
                 cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
-                    // Formateador estricto de fecha ISO AAAA-MM-DD
+                    // Formateador estricto de fecha ISO AAAA-MM-DD para evitar el desbordamiento datestyle
                     const fActual = new Date();
                     const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
@@ -801,48 +801,57 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                 } // Fin Éxito Update
                             }); // Fin Promesa Update Pendiente
                         } // Fin Condicional Enlace Tradicional Verificado
-                        else { // Inicio Otros Estados (Activo / Suspendido)
-                            // Enlaza el estado plano actual de la BD a la memoria del cortafuegos
+                        else { // Inicio Otros Estados (Activo / Suspendido / Registrado)
+                            // Bloqueo de re-inserción: Si el usuario ya existe con cualquier estado, solo vinculamos el control al estado global
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
-                        } // Fin Otros Estados (Activo / Suspendido)
+                        } // Fin Otros Estados (Activo / Suspendido / Registrado)
                     } // Fin Validación Registro Existente Real
-                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Inyección de UUID Seguro)
-                        // El correo no existe. Generamos un UUID plano de 36 caracteres en la aplicación para cumplir la restricción NOT NULL de tu Postgres.
-                        const uuidGeneradoApp = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                            const r = Math.random() * 16 | 0;
-                            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                            return v.toString(16);
-                        });
-
-                        const metadatos = session.user.user_metadata || {};
-                        const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
-                        
-                        const stringNombre = String(partesNombre[0] || "Interesado").trim();
-                        const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
-                        
-                        cliente.from('usuario_autenticado').insert([{
-                            usuario_id: uuidGeneradoApp, // Inyección de la llave primaria requerida por tu BD
-                            rol_id_fk: 3,
-                            nombre: stringNombre,
-                            apellido: stringApellido,
-                            correo: correoUsuario,
-                            password_hash: "15021502", // Inicialización uniforme del campo de texto numérico
-                            telefono: "999999999",
-                            estado_cuenta: "activo",
-                            verificado: true,
-                            creado_por: "OAuth-System",
-                            ultimo_acceso: hoyFormatoIso,
-                            fecha_creacion: hoyFormatoIso,
-                            fecha_actualizacion: hoyFormatoIso
-                        }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
-                            if (!insertError) { // Inicio Éxito Insert OAuth
+                    else { // Inicio Flujo de Verificación Anti-Duplicados (OAuth Seguro)
+                        // Doble escudo: Evaluamos si el ID de Supabase ya existe en el backend antes de intentar un alta
+                        cliente.from('usuario_autenticado').select('usuario_id').eq('usuario_id', session.user.id).maybeSingle().then(({ data: chequeoId }) => { // Inicio Promesa Chequeo ID
+                            if (chequeoId) { // Inicio Caso ID Existente
+                                // Si el ID ya existe, se asume sesión activa regular y se le asigna pase libre directo sin insertar nada
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente con UUID generado.");
-                            } else { // Inicio Manejo Error Insert
-                                console.error("? [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError);
-                            } // Fin Manejo Error Insert
-                        }); // Fin Promesa Insert OAuth
-                    } // Fin Flujo Registro Autónomo Redes Sociales (Inyección de UUID Seguro)
+                            } // Fin Caso ID Existente
+                            else { // Inicio Caso Usuario Totalmente Nuevo
+                                // El registro no existe bajo ningún concepto. Procedemos a insertar la fila inyectando el UUID.
+                                const uuidGeneradoApp = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                                    const r = Math.random() * 16 | 0;
+                                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                                    return v.toString(16);
+                                });
+
+                                const metadatos = session.user.user_metadata || {};
+                                const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
+                                
+                                const stringNombre = String(partesNombre || "Interesado").trim();
+                                const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
+                                
+                                cliente.from('usuario_autenticado').insert([{
+                                    usuario_id: uuidGeneradoApp,
+                                    rol_id_fk: 3,
+                                    nombre: stringNombre,
+                                    apellido: stringApellido,
+                                    correo: correoUsuario,
+                                    password_hash: "15021502",
+                                    telefono: "999999999",
+                                    estado_cuenta: "activo",
+                                    verificado: true,
+                                    creado_por: "OAuth-System",
+                                    ultimo_acceso: hoyFormatoIso,
+                                    fecha_creacion: hoyFormatoIso,
+                                    fecha_actualizacion: hoyFormatoIso
+                                }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
+                                    if (!insertError) { // Inicio Éxito Insert OAuth
+                                        state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
+                                        console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente con UUID generado.");
+                                    } else { // Inicio Manejo Error Insert
+                                        console.error("? [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError);
+                                    } // Fin Manejo Error Insert
+                                }); // Fin Promesa Insert OAuth
+                            } // Fin Caso Usuario Totalmente Nuevo
+                        }); // Fin Promesa Chequeo ID
+                    } // Fin Flujo de Verificación Anti-Duplicados (OAuth Seguro)
                 }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
             } // Fin Control Sesión Activa
             else { // Inicio Control Cierre de Sesión / Anónimo
@@ -851,6 +860,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // Fin Control Cierre de Sesión / Anónimo
         }); // Fin Callback Central onAuthStateChange
     } // Fin Control Central Supabase
+
 
 
 
