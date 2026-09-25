@@ -767,7 +767,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
     // ====================================================================================
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook respetando los nombres de columna planos sin tildes de tu esquema.
+    // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook formateando las fechas en formato ISO AAAA-MM-DD (Evita Error 22008 Datestyle).
     // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
@@ -780,18 +780,23 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
                 // Consulta relacional directa utilizando la columna plana "correo"
                 cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
-                    const hoyFormatoPeru = new Date().toLocaleDateString('es-PE');
+                    // Construcción de la fecha en formato nativo ISO compatible con PostgreSQL (AAAA-MM-DD)
+                    const fechaActual = new Date();
+                    const anio = fechaActual.getFullYear();
+                    const mes = String(fechaActual.getMonth() + 1).padStart(2, '0');
+                    const dia = String(fechaActual.getDate()).padStart(2, '0');
+                    const hoyFormatoIso = `${anio}-${mes}-${dia}`;
 
                     if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real
                         const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
                         if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
-                            // El interesado confirmó su correo. Actualizamos su estado e historial usando las columnas planas de tu esquema.
+                            // El interesado confirmó su correo. Actualizamos su estado e historial usando el formato ISO sintonizado.
                             cliente.from('usuario_autenticado').update({ 
                                 estado_cuenta: "activo",
                                 verificado: true,
-                                ultimo_acceso: hoyFormatoPeru,
-                                fecha_actualizacion: hoyFormatoPeru
+                                ultimo_acceso: hoyFormatoIso,
+                                fecha_actualizacion: hoyFormatoIso
                             }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente
                                 if (!updateError) { // Inicio Éxito Update
                                     state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
@@ -800,12 +805,12 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }); // Fin Promesa Update Pendiente
                         } // Fin Condicional Enlace Tradicional Verificado
                         else { // Inicio Otros Estados (Activo / Suspendido)
-                            // Transfiere el estado de cuenta plano al entorno global para control de los cortafuegos
+                            // Transfiere el estado de cuenta plano al entorno global para el control de los cortafuegos
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
                         } // Fin Otros Estados (Activo / Suspendido)
                     } // Fin Validación Registro Existente Real
-                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Columnas Planas Sin Tildes)
-                        // Registramos al usuario de Google/Facebook mapeando los nombres de columna planos y exactos de tu Postgres.
+                    else if (!usuarioBD) { // Inicio Flujo Registro Autónomo Redes Sociales (Formato de Tiempo Saneado)
+                        // Registramos al usuario de Google/Facebook mapeando la fecha ISO limpia sin romper las restricciones de datestyle
                         const metadatos = session.user.user_metadata || {};
                         const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
                         
@@ -817,23 +822,23 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             nombre: stringNombre,
                             apellido: stringApellido,
                             correo: correoUsuario,
-                            password_hash: "OAUTH_EXT",
-                            telefono: "999999999", // Nombre de columna corregido a plano sin tilde
+                            password_hash: "11051105", // Inicialización de clave en formato de texto numérico puro conforme a tu esquema
+                            telefono: "999999999",
                             estado_cuenta: "activo",
                             verificado: true,
                             creado_por: "OAuth-System",
-                            ultimo_acceso: hoyFormatoPeru, // Nombre de columna corregido a plano sin tilde
-                            fecha_creacion: hoyFormatoPeru,
-                            fecha_actualizacion: hoyFormatoPeru
+                            ultimo_acceso: hoyFormatoIso, // Inserción de tiempo en formato AAAA-MM-DD
+                            fecha_creacion: hoyFormatoIso,
+                            fecha_actualizacion: hoyFormatoIso
                         }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
                             if (!insertError) { // Inicio Éxito Insert OAuth
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en columnas planas.");
+                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en formato ISO.");
                             } else { // Inicio Manejo Error Insert
                                 console.error("? [SRE AUTH ERROR] Fallo al insertar registro con nombres de columna planos:", insertError);
                             } // Fin Manejo Error Insert
                         }); // Fin Promesa Insert OAuth
-                    } // Fin Flujo Registro Autónomo Redes Sociales (Columnas Planas Sin Tildes)
+                    } // Fin Flujo Registro Autónomo Redes Sociales (Formato de Tiempo Saneado)
                 }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
             } // Fin Control Sesión Activa
             else { // Inicio Control Cierre de Sesión / Anónimo
@@ -842,6 +847,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // Fin Control Cierre de Sesión / Anónimo
         }); // Fin Callback Central onAuthStateChange
     } // Fin Control Central Supabase
+
 
 
 
