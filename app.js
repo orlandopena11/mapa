@@ -735,124 +735,109 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
 } // Fin de Function procesarDatosDelMotor
 
 document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DOMContentLoaded
-    if (typeof supabase !== "undefined" && supabase !== null) {
-        supabase.auth.onAuthStateChange(async (event, session) => { // Inicia Callback onAuthStateChange
-            console.log(`?? [SRE ESPÍA AUTH] Evento disparado: ${event}`);
+    // ====================================================================================
+    // BLOQUE 1: INICIALIZACIÓN INMEDIATA DEL MOTOR CARTOGRÁFICO (PÚBLICO)
+    // Sirve para renderizar el lienzo de Leaflet en el contenedor DOM sin depender de sesiones.
+    // ====================================================================================
+    if (typeof L !== 'undefined' && document.getElementById('map-instance')) { // Inicio Condicional Mapa
+        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        window.map.invalidateSize({ animate: false });
+    } // Fin Condicional Mapa
+
+    // ====================================================================================
+    // BLOQUE 2: DESPLIEGUE INMEDIATO DEL CATÁLOGO DE PROPIEDADES (PÚBLICO)
+    // Sirve para activar los filtros y leer la vista SQL de Supabase de manera atómica.
+    // ====================================================================================
+    inicializarEventosDeFiltros();
+    cargarDatosDesdeSupabase();
+
+    // ====================================================================================
+    // BLOQUE 3: NAVEGACIÓN CAPA MÓVIL
+    // Sirve para ocultar la tarjeta flotante en dispositivos móviles al presionar cerrar.
+    // ====================================================================================
+    const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
+    if (btnCerrarTarjetaMovil) { // Inicio Condicional Botón Móvil
+        btnCerrarTarjetaMovil.onclick = (e) => { // Inicio Evento Click Móvil
+            e.stopPropagation();
+            const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+            if (cajaFlotanteMovil) cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
+        }; // Fin Evento Click Móvil
+    } // Fin Condicional Botón Móvil
+
+    // ====================================================================================
+    // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
+    // Sirve para validar tokens, activar cuentas tradicionales pendientes y registrar perfiles de Google/Facebook.
+    // ====================================================================================
+    if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
+        supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
+            console.log(`?? [SRE ESPÍA AUTH] Evento pasivo de sesión detectado: ${event}`);
             
-            if (session && session.user) { // Inicia Bloque de Sesion Activa Encontrada
+            if (session && session.user) { // Inicio Control Sesión Activa
                 const correoUsuario = String(session.user.email).trim();
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                try { // Inicia Bloque Transaccional de Sincronizacion de Registro de Retorno SRE
-                    // Buscamos la fila usando el correo electrónico que es el dato real existente
-                    const { data: usuarioExistente } = await cliente
-                        .from('usuario_autenticado')
-                        .select('*')
-                        .eq('correo', session.user.email)
-                        .maybeSingle();
+                // Consulta relacional pasiva en segundo plano para verificar el estado_cuenta en la BD
+                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Select Usuario
+                    const hoyIso = new Date().toISOString().split('T')[0];
 
-                    if (usuarioExistente && String(usuarioExistente.estado_cuenta || "").toLowerCase().trim() === "pendiente") {
-                        console.log("? Enlace verificado. Realizando UPDATE de estado_cuenta a ACTIVO...");
-                        const { error: updateError } = await cliente
-                            .from('usuario_autenticado')
-                            .update({ 
+                    if (usuarioBD) { // Inicio Validación Registro Existente
+                        const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
+                        
+                        if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
+                            // El interesado viene de presionar su enlace de correo. Actualizamos a ACTIVO y verificado a TRUE.
+                            cliente.from('usuario_autenticado').update({ 
                                 usuario_id: session.user.id, 
                                 estado_cuenta: "activo",
                                 verificado: true,
-                                ultimo_acceso: new Date().toISOString().split('T')[0],
-                                fecha_actualizacion: new Date().toISOString().split('T')[0]
-                            })
-                            .eq('correo', session.user.email);
-                    }
-
-
-                    if (usuarioExistente) { // Inicia bloque de procesamiento de usuario existente
-                        const estadoActual = String(usuarioExistente.estado_cuenta || "").toLowerCase().trim();
+                                ultimo_acceso: hoyIso,
+                                fecha_actualizacion: hoyIso
+                            }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente
+                                if (!updateError) { // Inicio Éxito Update
+                                    state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
+                                    alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
+                                } // Fin Éxito Update
+                            }); // Fin Promesa Update Pendiente
+                        } // Fin Condicional Enlace Tradicional Verificado
+                        else { // Inicio Otros Estados (Activo / Suspendido)
+                            // Almacena el estado real para que los cortafuegos protejan o permitan las acciones
+                            state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
+                        } // Fin Otros Estados (Activo / Suspendido)
+                    } // Fin Validación Registro Existente
+                    else { // Inicio Flujo Registro Autónomo Redes Sociales (OAuth)
+                        // Primera vez que ingresa con Google/Facebook. No requiere confirmación, se crea como ACTIVO y TRUE directamente.
+                        const metadatos = session.user.user_metadata || {};
+                        const nombreCompleto = (metadatos.full_name || metadatos.name || "Interesado Social").split(" ");
                         
-                        if (estadoActual === "pendiente") {
-                            // REQUERIMIENTO 2: Una vez que valida el correo electrónico, modificamos la columna estado_cuenta a ACTIVO en tu tabla
-                            console.log("⚡ Enlace verificado. Realizando UPDATE de estado_cuenta a ACTIVO...");
-                            const { error: updateError } = await cliente
-                                .from('usuario_autenticado')
-                                .update({ 
-                                    usuario_id: session.user.id, 
-                                    estado_cuenta: "activo",
-                                    verificado: true,
-                                    último_acceso: new Date().toLocaleDateString('es-PE'),
-                                    fecha_actualizacion: new Date().toLocaleDateString('es-PE')
-                                })
-                                .eq('correo', correoUsuario);
-
-                            if (updateError) throw updateError;
-                            alert("¡Validación completada con éxito! Su cuenta ha sido activada en el sistema. Ahora puede solicitar un tour.");
-                        }
-                    } // Fin de bloque de procesamiento de usuario existente
-                    
-                    // Sincronizamos las variables del estado global inmutable para dar pase libre en el Firewall
-                    state.usuarioActual = {
-                        id: session.user.id,
-                        correo: correoUsuario,
-                        estado_cuenta: "activo"
-                    };
-                } catch (errRetorno) { // Fin de bloque de procesamiento de usuario existente
-
-                console.error("Aviso en flujo de sincronización de tablas Supabase:", errRetorno.message);
-                } // Fin de Bloque Transaccional
-
-                const idScriptSeguridad = "sre-jsonp-firewall-auth";
-                let scriptExistente = document.getElementById(idScriptSeguridad);
-                if (scriptExistente) scriptExistente.remove();
-                
-                window.procesarVerificacionEstadoACL = async (datosUsuarioSheet) => {
-                    console.log("??? [SRE ESPÍA ACL PROCESADOR] Respuesta de cuenta:", datosUsuarioSheet);
-                    if (typeof ejecutarTuberiaSincronizada === 'function') ejecutarTuberiaSincronizada();
-                };
-
-                const scriptp = document.createElement('script');
-                scriptp.id = idScriptSeguridad;
-                if (typeof urlMiScriptGoogle !== "undefined") {
-                    scriptp.src = `${urlMiScriptGoogle}?accion=leer_estado_usuario&correo=${encodeURIComponent(correoUsuario)}&callback=procesarVerificacionEstadoACL`;
-                    document.body.appendChild(scriptp);
-                }
-            } else { // Caso de Cierre de Sesion o Ausencia de Credenciales
-
-                state.usuarioActual = null; 
+                        cliente.from('usuario_autenticado').insert([{
+                            usuario_id: session.user.id,
+                            rol_id_fk: 3,
+                            nombre: nombreCompleto[0] || "Interesado",
+                            apellido: nombreCompleto.slice(1).join(" ") || "OAuth",
+                            correo: correoUsuario,
+                            password_hash: "OAUTH_EXTERNAL_PROVIDER",
+                            telefono: "999999999",
+                            estado_cuenta: "activo",
+                            verificado: true,
+                            creado_por: "OAuth-System",
+                            fecha_creacion: hoyIso
+                        }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
+                            if (!insertError) { // Inicio Éxito Insert OAuth
+                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
+                                console.log("?? [SRE AUTH] Perfil de autenticación social registrado con éxito en estado ACTIVO.");
+                            } // Fin Éxito Insert OAuth
+                        }); // Fin Promesa Insert OAuth
+                    } // Fin Flujo Registro Autónomo Redes Sociales (OAuth)
+                }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Select Usuario
+            } // Fin Control Sesión Activa
+            else { // Inicio Control Cierre de Sesión / Anónimo
+                state.usuarioActual = null;
                 window.usuarioLogueado = null;
-                console.log("?? Estado Auth: Sin sesión de usuario activa.");
-            }
-        }); // Fin de Callback onAuthStateChange
-    }
+            } // Fin Control Cierre de Sesión / Anónimo
+        }); // Fin Callback Central onAuthStateChange
+    } // Fin Control Central Supabase
 
-    if (typeof L !== 'undefined' && document.getElementById('map-instance')) {
-        window.map = L.map('map-instance', { zoomControl: true }).setView([-12.125, -76.995], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
-    }
-
-    setTimeout(() => { // Inicia Timer de inicialización y sincronización limpia SRE
-        inicializarEventosDeFiltros();
-        if (window.map) {
-       //     window.map.on('moveend', renderizarMapaZillow);
-       //     window.map.invalidateSize(); 
-       // Quitamos el escuchador 'moveend' para evitar que el mapa se autosabotee en bucle
-            window.map.invalidateSize({ animate: false });
-        }
-        
-        // --- NUEVO: CONEXIÓN LIMPIA PARA DESPERTAR EL CATÁLOGO DE INMUEBLES SRE ---
-        cargarDatosDesdeSupabase();
-
-        const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
-
-        if (btnCerrarTarjetaMovil) {
-            btnCerrarTarjetaMovil.onclick = (e) => {
-                e.stopPropagation();
-                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-                if (cajaFlotanteMovil) {
-                    cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
-                }
-            };
-        }
-    }, 100); // Fin de Timer de inicialización
 }); // Fin de EventListener DOMContentLoaded
 
 // ==========================================================================
