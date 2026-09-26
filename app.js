@@ -793,7 +793,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             cliente.from('usuario_autenticado').update({ 
                                 estado_cuenta: "activo",
                                 verificado: true,
-                                último_acceso: hoyFormatoProduccion, // Sincronizado con tilde según esquema real
+                                ultimo_acceso: hoyFormatoProduccion, // Sincronizado con tilde según esquema real
                                 fecha_actualizacion: hoyFormatoProduccion
                             }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente SRE
   
@@ -835,7 +835,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                     estado_cuenta: "activo",
                                     verificado: true,
                                     creado_por: "OAuth-System",
-                                    último_acceso: hoyFormatoProduccion, // Corregido con tilde y formato DD/MM/AAAA
+                                    ultimo_acceso: hoyFormatoProduccion, // Corregido con tilde y formato DD/MM/AAAA
                                     fecha_creacion: hoyFormatoProduccion,
                                     fecha_actualizacion: hoyFormatoProduccion
                                 }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth SRE
