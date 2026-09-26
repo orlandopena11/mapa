@@ -831,7 +831,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                     apellido: stringApellido,
                                     correo: correoUsuario,
                                     password_hash: "15021502",
-                                    teléfono: "953799309", // Corregido con tilde según columna real
+                                    telefono: "953799309", // Corregido con tilde según columna real
                                     estado_cuenta: "activo",
                                     verificado: true,
                                     creado_por: "OAuth-System",
@@ -1313,7 +1313,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         apellido: apellidoValor,
                         correo: emailValor,
                         password_hash: telefonoValor.slice(0, 8), 
-                        teléfono: telefonoValor, // Sincronizado con tilde
+                        telefono: telefonoValor, // Sincronizado con tilde
                         estado_cuenta: "pendiente",
                         verificado: false,
                         creado_por: emailValor,
