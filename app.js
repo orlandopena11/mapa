@@ -848,7 +848,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                 }); // Fin Promesa Insert OAuth SRE
                             } // Fin Caso Usuario Totalmente Nuevo SRE
 
-                            } // Fin Caso Usuario Totalmente Nuevo
+                           // } // Fin Caso Usuario Totalmente Nuevo
                         }); // Fin Promesa Chequeo ID
                     } // Fin Flujo de Verificación Anti-Duplicados (OAuth Seguro)
                 }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
