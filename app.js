@@ -1300,7 +1300,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                     return v.toString(16);
                 });
 
-                // Insertamos el nuevo interesado resolviendo la columna 'teléfono' (con tilde)
+                // Insertamos el nuevo interesado resolviendo la columna 'telefono' (con tilde)
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
                     .insert([{
@@ -1702,10 +1702,10 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
         `;
 
         // ==========================================================================
-        // CONTROL DE EVENTOS UNIFICADO Y SECCIÓN VER TELÉFONO PREMIUM (SRE)
+        // CONTROL DE EVENTOS UNIFICADO Y SECCIÓN VER TELEFONO PREMIUM (SRE)
         // ==========================================================================
         
-        // Inyectar dinámicamente el botón de Ver Teléfono en el panel comercial de la Cortina SPA
+        // Inyectar dinámicamente el botón de Ver Telefono en el panel comercial de la Cortina SPA
         const contenedorFijoFicha = document.getElementById('btn-solicitar-tour-galeria') ? document.getElementById('btn-solicitar-tour-galeria').parentNode : null;
 
 
@@ -1750,7 +1750,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
 
 
 
-        // 4. NUEVA Funcionalidad Protegida: Ver Teléfono con consulta relacional a Supabase
+        // 4. NUEVA Funcionalidad Protegida: Ver Telefono con consulta relacional a Supabase
         const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
         if (elementoBtnTelefono) {
             elementoBtnTelefono.onclick = async (e) => {
@@ -1772,7 +1772,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
 
                     if (anuncioFiltro) {
                         if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
-                            // Si es Agente, extraemos el teléfono de la tabla agente_inmobiliario
+                            // Si es Agente, extraemos el telefono de la tabla agente_inmobiliario
                             const { data: datosAgente } = await cliente
                                 .from('agente_inmobiliario')
                                 .select('telefono_agente')
@@ -1780,7 +1780,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
                                 .single();
                             if (datosAgente) telefonoObtenido = datosAgente.telefono_agente;
                         } else {
-                            // Si es Propietario, extraemos el teléfono de la tabla usuario_autenticado
+                            // Si es Propietario, extraemos el telefono de la tabla usuario_autenticado
                             const { data: datosUsuario } = await cliente
                                 .from('usuario_autenticado')
                                 .select('telefono_contacto')
@@ -1832,7 +1832,7 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
             e.preventDefault();
             
             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
-            // Validación estricta de expresión regular nativa para números de teléfono puros de mínimo 9 dígitos
+            // Validación estricta de expresión regular nativa para números de telefono puros de mínimo 9 dígitos
             if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
                 alert("Ingrese un número de telefono válido.");
                 return;
