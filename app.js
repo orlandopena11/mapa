@@ -778,15 +778,14 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
- // REEMPLAZAR:
-                // Consulta relacional directa utilizando la columna plana "correo" como llave única de negocio
                 cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario SRE
-                    // Formateador adaptado al esquema de producción DD/MM/AAAA
+                    // Formateador corregido a formato ISO estándar exigido por PostgreSQL para evitar el error out of range
                     const fActual = new Date();
-                    const hoyFormatoProduccion = `${String(fActual.getDate()).padStart(2, '0')}/${String(fActual.getMonth() + 1).padStart(2, '0')}/${fActual.getFullYear()}`;
+                    const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
                     if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real SRE
-                        const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
+
+                const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
                         if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado SRE
                             // El interesado confirmó su correo. Actualizamos su estado a ACTIVO mapeando las columnas y fechas exactas.
@@ -1299,10 +1298,9 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                     return v.toString(16);
                 });
 
-// REEMPLAZAR:
-                // Insertamos el nuevo interesado acoplándonos al formato de fecha de producción y columnas con tilde
+            // Insertamos el nuevo interesado acoplándonos al formato ISO nativo de la base de datos para corregir el desbordamiento
                 const fActual = new Date();
-                const hoyFormatoProduccion = `${String(fActual.getDate()).padStart(2, '0')}/${String(fActual.getMonth() + 1).padStart(2, '0')}/${fActual.getFullYear()}`;
+                const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
