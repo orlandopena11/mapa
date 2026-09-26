@@ -833,7 +833,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                     password_hash: "15021502",
                                     telefono: "953799309", // Corregido con tilde según columna real
                                     estado_cuenta: "activo",
-                                    verificado: true,
+                                    verificado: TRUE,
                                     creado_por: "OAuth-System",
                                     ultimo_acceso: hoyFormatoProduccion, // Corregido con tilde y formato DD/MM/AAAA
                                     fecha_creacion: hoyFormatoProduccion,
