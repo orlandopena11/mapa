@@ -778,24 +778,26 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
+ // REEMPLAZAR:
                 // Consulta relacional directa utilizando la columna plana "correo" como llave única de negocio
-                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario
-                    // Formateador estricto de fecha ISO AAAA-MM-DD para evitar el desbordamiento datestyle
+                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario SRE
+                    // Formateador adaptado al esquema de producción DD/MM/AAAA
                     const fActual = new Date();
-                    const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
+                    const hoyFormatoProduccion = `${String(fActual.getDate()).padStart(2, '0')}/${String(fActual.getMonth() + 1).padStart(2, '0')}/${fActual.getFullYear()}`;
 
-                    if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real
+                    if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real SRE
                         const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
                         
-                        if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado
-                            // El interesado confirmó su correo. Actualizamos su estado a ACTIVO mapeando las fechas ISO.
+                        if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado SRE
+                            // El interesado confirmó su correo. Actualizamos su estado a ACTIVO mapeando las columnas y fechas exactas.
                             cliente.from('usuario_autenticado').update({ 
                                 estado_cuenta: "activo",
                                 verificado: true,
-                                ultimo_acceso: hoyFormatoIso,
-                                fecha_actualizacion: hoyFormatoIso
-                            }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente
-                                if (!updateError) { // Inicio Éxito Update
+                                último_acceso: hoyFormatoProduccion, // Sincronizado con tilde según esquema real
+                                fecha_actualizacion: hoyFormatoProduccion
+                            }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente SRE
+  
+                        if (!updateError) { // Inicio Éxito Update
                                     state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                                     alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
                                 } // Fin Éxito Update
@@ -813,42 +815,39 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                 // Si el ID ya existe, se asume sesión activa regular y se le asigna pase libre directo sin insertar nada
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                             } // Fin Caso ID Existente
-                            else { // Inicio Caso Usuario Totalmente Nuevo
-                                // El registro no existe bajo ningún concepto. Procedemos a insertar la fila inyectando el UUID.
-                                const uuidGeneradoApp = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-                                    const r = Math.random() * 16 | 0;
-                                    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                                    return v.toString(16);
-                                });
-
+// REEMPLAZAR:
+                            else { // Inicio Caso Usuario Totalmente Nuevo SRE
+                                // El registro no existe bajo ningún concepto. Procedemos a insertar la fila usando el id real de la sesión como usuario_id
                                 const metadatos = session.user.user_metadata || {};
                                 const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
                                 
-                                const stringNombre = String(partesNombre || "Interesado").trim();
+                                const stringNombre = String(partesNombre[0] || "Interesado").trim();
                                 const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
                                 
                                 cliente.from('usuario_autenticado').insert([{
-                                    usuario_id: uuidGeneradoApp,
+                                    usuario_id: session.user.id, // ID único de la sesión de Supabase Auth
                                     rol_id_fk: 3,
                                     nombre: stringNombre,
                                     apellido: stringApellido,
                                     correo: correoUsuario,
                                     password_hash: "15021502",
-                                    telefono: "999999999",
+                                    teléfono: "953799309", // Corregido con tilde según columna real
                                     estado_cuenta: "activo",
                                     verificado: true,
                                     creado_por: "OAuth-System",
-                                    ultimo_acceso: hoyFormatoIso,
-                                    fecha_creacion: hoyFormatoIso,
-                                    fecha_actualizacion: hoyFormatoIso
-                                }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth
-                                    if (!insertError) { // Inicio Éxito Insert OAuth
+                                    último_acceso: hoyFormatoProduccion, // Corregido con tilde y formato DD/MM/AAAA
+                                    fecha_creacion: hoyFormatoProduccion,
+                                    fecha_actualizacion: hoyFormatoProduccion
+                                }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth SRE
+                                    if (!insertError) { // Inicio Éxito Insert OAuth SRE
                                         state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                        console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente con UUID generado.");
-                                    } else { // Inicio Manejo Error Insert
-                                        console.error("? [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError);
-                                    } // Fin Manejo Error Insert
-                                }); // Fin Promesa Insert OAuth
+                                        console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente.");
+                                    } else { // Inicio Manejo Error Insert SRE
+                                        console.error("❌ [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError.message);
+                                    } // Fin Manejo Error Insert SRE
+                                }); // Fin Promesa Insert OAuth SRE
+                            } // Fin Caso Usuario Totalmente Nuevo SRE
+
                             } // Fin Caso Usuario Totalmente Nuevo
                         }); // Fin Promesa Chequeo ID
                     } // Fin Flujo de Verificación Anti-Duplicados (OAuth Seguro)
@@ -1300,7 +1299,11 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                     return v.toString(16);
                 });
 
-                // Insertamos el nuevo interesado resolviendo la columna 'telefono' (con tilde)
+// REEMPLAZAR:
+                // Insertamos el nuevo interesado acoplándonos al formato de fecha de producción y columnas con tilde
+                const fActual = new Date();
+                const hoyFormatoProduccion = `${String(fActual.getDate()).padStart(2, '0')}/${String(fActual.getMonth() + 1).padStart(2, '0')}/${fActual.getFullYear()}`;
+
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
                     .insert([{
@@ -1310,12 +1313,13 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         apellido: apellidoValor,
                         correo: emailValor,
                         password_hash: telefonoValor.slice(0, 8), 
-                        telefono: telefonoValor, 
+                        teléfono: telefonoValor, // Sincronizado con tilde
                         estado_cuenta: "pendiente",
                         verificado: false,
                         creado_por: emailValor,
-                        fecha_creacion: new Date().toISOString().split('T')[0]
+                        fecha_creacion: hoyFormatoProduccion // Formato DD/MM/AAAA coordinado
                     }]);
+
 
                 if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
         
