@@ -1061,8 +1061,6 @@ function inicializarEventosDeFiltros() {
             // Espera activa de 600ms para evitar saturar la API mientras el usuario escribe
             timerBusqueda = setTimeout(async () => {
                 try {
-                    // Consulta al servidor oficial de Nominatim con la sintaxis de interpolación correcta
-               //     const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
                     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
                     const data = await res.json();
 
