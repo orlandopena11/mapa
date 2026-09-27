@@ -774,14 +774,24 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
             console.log(`📡 [SRE AUTH] Evento pasivo de sesión detectado: ${event}`);
             
-            if (session && session.user) { // Inicio Control Sesión Activa SRE
-                const correoUsuario = String(session.user.email).trim();
-                window.usuarioLogueado = session.user;
-                const cliente = obtenerClienteSupabase();
+            // FILTRADO DE EVENTOS: Si no hay sesion activa o el evento no corresponde a un inicio o refresco de token, detenemos el flujo de forma limpia
+            if (!session || !session.user || (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED")) { // Inicio Filtro de Seguridad SRE
+                if (!session) {
+                    state.usuarioActual = null;
+                    window.usuarioLogueado = null;
+                }
+                return; // Aborta la ejecucion de manera natural evitando evaluar propiedades nulas
+            } // Fin Filtro de Seguridad SRE
 
-                const fActual = new Date();
-                const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
+            // Garantizado al 100% que la sesion asincrona inicial ya termino de cargar en este milisegundo
+            const correoUsuario = String(session.user.email).trim();
+            window.usuarioLogueado = session.user;
+            const cliente = obtenerClienteSupabase();
 
+            const fActual = new Date();
+            const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
+
+     
                 // CANAL SOCIAL: Si ingresa mediante cuenta de Google o Facebook, efectúa el INSERT autónomo como ACTIVO
                 if (session.app_metadata.provider === "google" || session.app_metadata.provider === "facebook" || (session.user.identities && session.user.identities.provider !== "email")) { // Inicio Flujo Canales Sociales SRE
                     const metadatos = session.user.user_metadata || {};
