@@ -769,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
     // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook blindando el flujo contra inserciones de llaves duplicadas (Evita Error 23505).
     // ====================================================================================
-// REEMPLAZAR:
+
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase SRE
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
             console.log(`📡 [SRE AUTH] Evento pasivo de sesión detectado: ${event}`);
@@ -1310,7 +1310,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
             // Insertamos el nuevo interesado acoplándonos al formato ISO nativo de la base de datos para corregir el desbordamiento
                 const fActual = new Date();
                 const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
-// REEMPLAZAR:
+
                 // INSERT inicial estricto con estado_cuenta en 'pendiente' libre de tildes y con fecha ISO pura
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
