@@ -863,7 +863,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                     }); // Fin Promesa Chequeo Correo SRE
                 } // Fin Flujo Canal Tradicional Correo SRE
 
-            } // Fin Control Sesión Activa SRE
+            }); // Fin Control Sesión Activa SRE
             else { // Inicio Control Cierre de Sesión / Anónimo SRE
                 state.usuarioActual = null;
                 window.usuarioLogueado = null;
