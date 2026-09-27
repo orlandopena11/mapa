@@ -769,95 +769,97 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
     // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook blindando el flujo contra inserciones de llaves duplicadas (Evita Error 23505).
     // ====================================================================================
-    if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase
-        supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange
-            console.log(`?? [SRE ESPÍA AUTH] Evento pasivo de sesión detectado: ${event}`);
+// REEMPLAZAR:
+    if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase SRE
+        supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
+            console.log(`📡 [SRE AUTH] Evento pasivo de sesión detectado: ${event}`);
             
-            if (session && session.user) { // Inicio Control Sesión Activa
+            if (session && session.user) { // Inicio Control Sesión Activa SRE
                 const correoUsuario = String(session.user.email).trim();
                 window.usuarioLogueado = session.user;
                 const cliente = obtenerClienteSupabase();
 
-                cliente.from('usuario_autenticado').select('*').eq('correo', correoUsuario).maybeSingle().then(({ data: usuarioBD }) => { // Inicio Promesa Resuelta Select Usuario SRE
-                    // Formateador corregido a formato ISO estándar exigido por PostgreSQL para evitar el error out of range
-                    const fActual = new Date();
-                    const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
+                const fActual = new Date();
+                const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
-                    if (usuarioBD && usuarioBD.correo) { // Inicio Validación Registro Existente Real SRE
+                // CANAL SOCIAL: Si ingresa mediante cuenta de Google o Facebook, efectúa el INSERT autónomo como ACTIVO
+                if (session.app_metadata.provider === "google" || session.app_metadata.provider === "facebook" || (session.user.identities && session.user.identities.provider !== "email")) { // Inicio Flujo Canales Sociales SRE
+                    const metadatos = session.user.user_metadata || {};
+                    const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
+                    const stringNombre = String(partesNombre || "Interesado").trim();
+                    const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
 
-                const estadoActual = String(usuarioBD.estado_cuenta || "").toLowerCase().trim();
-                        
-                        if (estadoActual === "pendiente") { // Inicio Condicional Enlace Tradicional Verificado SRE
-                            // El interesado confirmó su correo. Actualizamos su estado a ACTIVO mapeando las columnas y fechas exactas.
-                            cliente.from('usuario_autenticado').update({ 
-                                estado_cuenta: "activo",
-                                verificado: true,
-                                ultimo_acceso: hoyFormatoProduccion, // Sincronizado con tilde según esquema real
-                                fecha_actualizacion: hoyFormatoProduccion
-                            }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Update Pendiente SRE
-  
-                        if (!updateError) { // Inicio Éxito Update
-                                    state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                    alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
-                                } // Fin Éxito Update
-                            }); // Fin Promesa Update Pendiente
-                        } // Fin Condicional Enlace Tradicional Verificado
-                        else { // Inicio Otros Estados (Activo / Suspendido / Registrado)
-                            // Bloqueo de re-inserción: Si el usuario ya existe con cualquier estado, solo vinculamos el control al estado global
-                            state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
-                        } // Fin Otros Estados (Activo / Suspendido / Registrado)
-                    } // Fin Validación Registro Existente Real
-                    else { // Inicio Flujo de Verificación Anti-Duplicados (OAuth Seguro)
-                        // Doble escudo: Evaluamos si el ID de Supabase ya existe en el backend antes de intentar un alta
-                        cliente.from('usuario_autenticado').select('usuario_id').eq('usuario_id', session.user.id).maybeSingle().then(({ data: chequeoId }) => { // Inicio Promesa Chequeo ID
-                            if (chequeoId) { // Inicio Caso ID Existente
-                                // Si el ID ya existe, se asume sesión activa regular y se le asigna pase libre directo sin insertar nada
-                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                            } // Fin Caso ID Existente
-// REEMPLAZAR:
-                            else { // Inicio Caso Usuario Totalmente Nuevo SRE
-                                // El registro no existe bajo ningún concepto. Procedemos a insertar la fila usando el id real de la sesión como usuario_id
-                                const metadatos = session.user.user_metadata || {};
-                                const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado Social").trim().split(" ");
-                                
-                                const stringNombre = String(partesNombre[0] || "Interesado").trim();
-                                const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
-                                
-                                cliente.from('usuario_autenticado').insert([{
-                                    usuario_id: session.user.id, // ID único de la sesión de Supabase Auth
-                                    rol_id_fk: 3,
-                                    nombre: stringNombre,
-                                    apellido: stringApellido,
-                                    correo: correoUsuario,
-                                    password_hash: "15021502",
-                                    telefono: "953799309", // Corregido con tilde según columna real
+                    // Propiedades en JavaScript estrictamente sin tildes y fechas en formato estándar ISO YYYY-MM-DD
+                    cliente.from('usuario_autenticado').insert([{
+                        usuario_id: session.user.id, 
+                        rol_id_fk: 3,
+                        nombre: stringNombre,
+                        apellido: stringApellido,
+                        correo: correoUsuario,
+                        password_hash: "15021502",
+                        telefono: "953799309", 
+                        estado_cuenta: "activo",
+                        verificado: true,
+                        creado_por: "OAuth-System",
+                        ultimo_acceso: hoyFormatoIso, 
+                        fecha_creacion: hoyFormatoIso,
+                        fecha_actualizacion: hoyFormatoIso
+                    }]).then(({ error: insertSocialError }) => { // Inicio Promesa Alta Canal Social SRE
+                        if (!insertSocialError) {
+                            state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
+                            console.log("🎉 [SRE AUTH] Autenticación Social Exitosa: Registro inyectado como ACTIVO.");
+                        } else if (insertSocialError.code === "23505" || insertSocialError.message.includes("duplicate")) {
+                            // Si la cuenta social ya existe, se lee el registro en memoria global para otorgar pase libre inmediato
+                            cliente.from('usuario_autenticado').select('estado_cuenta').eq('usuario_id', session.user.id).maybeSingle().then(({ data: usuarioExistente }) => {
+                                const estadoReal = usuarioExistente ? String(usuarioExistente.estado_cuenta).toLowerCase().trim() : "activo";
+                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoReal };
+                                console.log("🔒 [SRE AUTH] Pase libre autorizado para cuenta social existente. Estado:", estadoReal);
+                            });
+                        } else {
+                            console.error("❌ [SRE AUTH ERROR] Falla al insertar registro social:", insertSocialError.message);
+                        }
+                    }); // Fin Promesa Alta Canal Social SRE
+                } // Fin Flujo Canales Sociales SRE
+                
+                // CANAL TRADICIONAL (EMAIL OTP): Reservado exclusivamente para flujos manuales de confirmación de correo
+                else { // Inicio Flujo Canal Tradicional Correo SRE
+                    cliente.from('usuario_autenticado').select('estado_cuenta').eq('correo', correoUsuario).maybeSingle().then(({ data: registroTransitorio }) => { // Inicio Promesa Chequeo Correo SRE
+                        if (registroTransitorio) {
+                            const estadoActual = String(registroTransitorio.estado_cuenta).toLowerCase().trim();
+                            
+                            if (estadoActual === "pendiente") { // Inicio Transición Pendiente a Activo por Link SRE
+                                // El interesado hace clic en el enlace. Promocionamos la cuenta a ACTIVO sincronizando el ID
+                                cliente.from('usuario_autenticado').update({ 
+                                    usuario_id: session.user.id, 
                                     estado_cuenta: "activo",
                                     verificado: true,
-                                    creado_por: "OAuth-System",
-                                    ultimo_acceso: hoyFormatoProduccion, // Corregido con tilde y formato DD/MM/AAAA
-                                    fecha_creacion: hoyFormatoProduccion,
-                                    fecha_actualizacion: hoyFormatoProduccion
-                                }]).then(({ error: insertError }) => { // Inicio Promesa Insert OAuth SRE
-                                    if (!insertError) { // Inicio Éxito Insert OAuth SRE
+                                    ultimo_acceso: hoyFormatoIso,
+                                    fecha_actualizacion: hoyFormatoIso
+                                }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Promoción Cuenta SRE
+                                    if (!updateError) {
                                         state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                        console.log("?? [SRE AUTH] Perfil de autenticación social insertado correctamente.");
-                                    } else { // Inicio Manejo Error Insert SRE
-                                        console.error("❌ [SRE AUTH ERROR] Rechazo final de fila por la BD:", insertError.message);
-                                    } // Fin Manejo Error Insert SRE
-                                }); // Fin Promesa Insert OAuth SRE
-                            } // Fin Caso Usuario Totalmente Nuevo SRE
-
-                           // } // Fin Caso Usuario Totalmente Nuevo
-                        }); // Fin Promesa Chequeo ID
-                    } // Fin Flujo de Verificación Anti-Duplicados (OAuth Seguro)
-                }).catch(errRetorno => console.warn("Aviso en sincronización pasiva de cuenta predial:", errRetorno.message)); // Fin Promesa Resuelta Select Usuario
-            } // Fin Control Sesión Activa
-            else { // Inicio Control Cierre de Sesión / Anónimo
+                                        alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
+                                        console.log("🔒 [SRE AUTH] Cuenta tradicional activada exitosamente mediante link de confirmación.");
+                                    } else {
+                                        console.error("❌ [SRE AUTH ERROR] No se pudo activar la cuenta pendiente:", updateError.message);
+                                    }
+                                }); // Fin Promesa Promoción Cuenta SRE
+                            } // Fin Transición Pendiente a Activo por Link SRE
+                            else {
+                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
+                                console.log("✅ [SRE AUTH] Sesión tradicional restaurada. Estado de cuenta:", estadoActual);
+                            }
+                        }
+                    }); // Fin Promesa Chequeo Correo SRE
+                } // Fin Flujo Canal Tradicional Correo SRE
+            } // Fin Control Sesión Activa SRE
+            else { // Inicio Control Cierre de Sesión / Anónimo SRE
                 state.usuarioActual = null;
                 window.usuarioLogueado = null;
-            } // Fin Control Cierre de Sesión / Anónimo
-        }); // Fin Callback Central onAuthStateChange
-    } // Fin Control Central Supabase
+            } // Fin Control Cierre de Sesión / Anónimo SRE
+        }); // Fin Callback Central onAuthStateChange SRE
+    } // Fin Control Central Supabase SRE
+
 
 
 
@@ -1301,22 +1303,25 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
             // Insertamos el nuevo interesado acoplándonos al formato ISO nativo de la base de datos para corregir el desbordamiento
                 const fActual = new Date();
                 const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
-
+// REEMPLAZAR:
+                // INSERT inicial estricto con estado_cuenta en 'pendiente' libre de tildes y con fecha ISO pura
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
                     .insert([{
-                        usuario_id: uuidValidoPostgres,
+                        usuario_id: uuidValidoPostgres, 
                         rol_id_fk: 3,
                         nombre: nombreValor,
                         apellido: apellidoValor,
                         correo: emailValor,
                         password_hash: telefonoValor.slice(0, 8), 
-                        telefono: telefonoValor, // Sincronizado con tilde
-                        estado_cuenta: "pendiente",
+                        telefono: telefonoValor, // Propiedad de JS limpia sin tilde
+                        estado_cuenta: "pendiente", 
                         verificado: false,
                         creado_por: emailValor,
-                        fecha_creacion: hoyFormatoProduccion // Formato DD/MM/AAAA coordinado
+                        fecha_creacion: fechaIsoEstandar, // Formato estándar ISO YYYY-MM-DD
+                        fecha_actualizacion: fechaIsoEstandar
                     }]);
+
 
 
                 if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
