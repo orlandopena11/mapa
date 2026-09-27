@@ -862,16 +862,15 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }
                         }
                     }); // Fin Promesa Chequeo Correo SRE
+                    
                 } // Fin Flujo Canal Tradicional Correo SRE
-            } // Fin de la condicional del Canal Social SRE (Llave que faltaba agregar)
-
-        }); // Fin Control Sesión Activa SRE
-        else { // Inicio Control Cierre de Sesion / Anonimo SRE
-
+            } // Fin Control Sesion Activa SRE (Cierre del bloque de usuario autenticado)
+            else { // Inicio Control Cierre de Sesion / Anonimo SRE
                 state.usuarioActual = null;
                 window.usuarioLogueado = null;
             } // Fin Control Cierre de Sesion / Anonimo SRE
-        }); // Fin Callback Central onAuthStateChange SRE
+        }); // Fin Callback Central onAuthStateChange SRE (Cierre del metodo de Supabase)
+
     } // Fin Control Central Supabase SRE
 
 }); // Fin definitivo de la instruccion DOMContentLoaded balanceada de la Parte 12 SRE
