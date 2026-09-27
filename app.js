@@ -862,6 +862,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         }
                     }); // Fin Promesa Chequeo Correo SRE
                 } // Fin Flujo Canal Tradicional Correo SRE
+
             } // Fin Control Sesión Activa SRE
             else { // Inicio Control Cierre de Sesión / Anónimo SRE
                 state.usuarioActual = null;
@@ -870,13 +871,8 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
         }); // Fin Callback Central onAuthStateChange SRE
     } // Fin Control Central Supabase SRE
 
+}); // Fin definitivo de la instrucción DOMContentLoaded balanceada de la Parte 12 SRE
 
-
-
-
-
-
-}); // Fin de EventListener DOMContentLoaded
 
 // ==========================================================================
 // PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
