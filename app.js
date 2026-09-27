@@ -862,19 +862,11 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             }
                         }
                     }); // Fin Promesa Chequeo Correo SRE
-                    
                 } // Fin Flujo Canal Tradicional Correo SRE
-            } // Fin Control Sesion Activa SRE (Cierre del bloque de usuario autenticado)
-            else { // Inicio Control Cierre de Sesion / Anonimo SRE
-                state.usuarioActual = null;
-                window.usuarioLogueado = null;
-            } // Fin Control Cierre de Sesion / Anonimo SRE
-        }); // Fin Callback Central onAuthStateChange SRE (Cierre del metodo de Supabase)
-
-    } // Fin Control Central Supabase SRE
-
-}); // Fin definitivo de la instruccion DOMContentLoaded balanceada de la Parte 12 SRE
-
+            } // Cierre del bloque de usuario autenticado
+        }); // Cierre del metodo de Supabase
+    } // Cierre de Control Central Supabase
+} // <-- AGREGA ESTA LLAVE AQUÍ PARA CERRAR LA FUNCIÓN MAESTRA DEL BLOCK DE AUTENTICACIÓN
 
 // ==========================================================================
 // PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
