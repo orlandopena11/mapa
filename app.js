@@ -850,23 +850,23 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                         state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                                         alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
                                         console.log("🔒 [SRE AUTH] Cuenta tradicional activada exitosamente mediante link de confirmación.");
-// REEMPLAZAR:
+
                                     } else {
                                         console.error("? [SRE AUTH ERROR] No se pudo activar la cuenta pendiente:", updateError.message);
                                     }
                                 }); // Fin Promesa Promoción Cuenta SRE
-                            } // Fin Transición Pendiente a Activo por Link SRE
-                            else {
+                            } // [FIN] Condicional: Cierre de la transición de cuenta pendiente
+                            else { // [INICIO] Condicional: Si la cuenta tradicional ya se encontraba activa
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
                                 console.log("? [SRE AUTH] Sesión tradicional restaurada. Estado de cuenta:", estadoActual);
-                            }
-                        }
-                    }); // Fin Promesa Chequeo Correo SRE
-                } // Fin Flujo Canal Tradicional Correo SRE
-            } // Cierre del bloque de usuario autenticado
-        }); // Cierre del metodo de Supabase
-    } // Cierre de Control Central Supabase
-} // <-- AGREGA ESTA LLAVE AQUÍ PARA CERRAR LA FUNCIÓN MAESTRA DEL BLOCK DE AUTENTICACIÓN
+                            } // [FIN] Condicional: Si la cuenta tradicional ya se encontraba activa
+                        } // [FIN] Condicional: Cierre de la validación de existencia del registro transitorio
+                    }); // [FIN] Promesa: Cierre del .then() encargado del chequeo de correo en Supabase
+                } // [FIN] Condicional: Cierre de la sección else correspondiente al Canal Tradicional Correo
+            } // [FIN] Condicional: Cierre del filtro de seguridad estructural de sesión y usuario activo
+        }); // [FIN] Método: Cierre definitivo del callback onAuthStateChange perteneciente a Supabase
+    } // [FIN] Condicional: Cierre del control perimetral de existencia de la instancia central Supabase
+} // [FIN] Método: Cierre absoluto del escuchador principal de eventos DOMContentLoaded de la Parte 12
 
 // ==========================================================================
 // PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
