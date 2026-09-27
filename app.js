@@ -850,22 +850,24 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                                         state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                                         alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
                                         console.log("🔒 [SRE AUTH] Cuenta tradicional activada exitosamente mediante link de confirmación.");
+// REEMPLAZAR:
                                     } else {
-                                        console.error("❌ [SRE AUTH ERROR] No se pudo activar la cuenta pendiente:", updateError.message);
+                                        console.error("? [SRE AUTH ERROR] No se pudo activar la cuenta pendiente:", updateError.message);
                                     }
                                 }); // Fin Promesa Promoción Cuenta SRE
                             } // Fin Transición Pendiente a Activo por Link SRE
                             else {
                                 state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
-                                console.log("✅ [SRE AUTH] Sesión tradicional restaurada. Estado de cuenta:", estadoActual);
+                                console.log("? [SRE AUTH] Sesión tradicional restaurada. Estado de cuenta:", estadoActual);
                             }
                         }
                     }); // Fin Promesa Chequeo Correo SRE
                 } // Fin Flujo Canal Tradicional Correo SRE
+            } // Fin de la condicional del Canal Social SRE (Llave que faltaba agregar)
 
-            } // Fin Control Sesión Activa SRE
+        }); // Fin Control Sesión Activa SRE
+        else { // Inicio Control Cierre de Sesion / Anonimo SRE
 
-            else { // Inicio Control Cierre de Sesion / Anonimo SRE
                 state.usuarioActual = null;
                 window.usuarioLogueado = null;
             } // Fin Control Cierre de Sesion / Anonimo SRE
