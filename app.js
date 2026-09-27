@@ -864,14 +864,15 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                 } // Fin Flujo Canal Tradicional Correo SRE
 
             }); // Fin Control Sesión Activa SRE
-            else { // Inicio Control Cierre de Sesión / Anónimo SRE
+
+            else { // Inicio Control Cierre de Sesion / Anonimo SRE
                 state.usuarioActual = null;
                 window.usuarioLogueado = null;
-            } // Fin Control Cierre de Sesión / Anónimo SRE
+            } // Fin Control Cierre de Sesion / Anonimo SRE
         }); // Fin Callback Central onAuthStateChange SRE
     } // Fin Control Central Supabase SRE
 
-}); // Fin definitivo de la instrucción DOMContentLoaded balanceada de la Parte 12 SRE
+}); // Fin definitivo de la instruccion DOMContentLoaded balanceada de la Parte 12 SRE
 
 
 // ==========================================================================
