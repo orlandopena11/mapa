@@ -815,7 +815,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                     const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
 
                     // Propiedades en JavaScript estrictamente sin tildes y fechas en formato estándar ISO YYYY-MM-DD
-                    cliente.from('usuario_autenticado').insert([{
+                        cliente.from('usuario_autenticado').upsert({
                         usuario_id: session.user.id, 
                         rol_id_fk: 3,
                         nombre: stringNombre,
