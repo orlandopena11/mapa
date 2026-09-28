@@ -1316,8 +1316,11 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                         estado_cuenta: "pendiente", 
                         verificado: false,
                         creado_por: emailValor,
-                        fecha_creacion: fechaIsoEstandar, // Formato estándar ISO YYYY-MM-DD
-                        fecha_actualizacion: fechaIsoEstandar
+                        fecha_creacion: hoyFormatoProduccion, 
+                        fecha_actualizacion: hoyFormatoProduccion
+
+                        // fecha_creacion: fechaIsoEstandar, // Formato estándar ISO YYYY-MM-DD
+                        // fecha_actualizacion: fechaIsoEstandar
                     }]);
 
 
