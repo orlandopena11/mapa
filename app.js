@@ -15,11 +15,23 @@ if (typeof window.correoUsuarioLogueado === "undefined") {
     window.correoUsuarioLogueado = ""; 
 }
 
-if (typeof actualizarBotonCuenta !== "function") {
-    var actualizarBotonCuenta = function() { // Inicia Function actualizarBotonCuenta
-        console.log("[SRE] Simulación de actualización de botón de cuenta."); 
-    }; // Fin de Function actualizarBotonCuenta
-}
+ function actualizarBotonCuenta() { 
+     const navbar = document.querySelector('header.navbar-global');
+     if (!navbar) return;
+     let indicador = document.getElementById('user-session-badge');
+     if (!indicador && window.usuarioLogueado) {
+         indicador = document.createElement('span');
+         indicador.id = 'user-session-badge';
+         indicador.style.cssText = 'margin-left: auto; padding: 6px 14px; background: #002e50; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ffffff;';
+         navbar.appendChild(indicador);
+     }
+     if (indicador) {
+         indicador.textContent = window.usuarioLogueado ? `👤 ${window.usuarioLogueado.email}` : '';
+         indicador.style.display = window.usuarioLogueado ? 'inline-block' : 'none';
+     }
+ }
+
+
 
 const state = {
     propiedades: [],
@@ -794,8 +806,9 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
 
      
-                // CANAL SOCIAL: Si ingresa mediante cuenta de Google o Facebook, efectúa el INSERT autónomo como ACTIVO
-                if (session.app_metadata.provider === "google" || session.app_metadata.provider === "facebook" || (session.user.identities && session.user.identities.provider !== "email")) { // Inicio Flujo Canales Sociales SRE
+            // CANAL SOCIAL: Si ingresa mediante cuenta de Google o Facebook, efectúa el INSERT autónomo como ACTIVO
+            if (session?.app_metadata?.provider === "google" || session?.app_metadata?.provider === "facebook" || (session?.user?.identities && session?.user?.identities[0]?.provider !== "email")) { // Inicio Flujo Canales Sociales SRE
+
                     const metadatos = session.user.user_metadata || {};
                     const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
                     const stringNombre = String(partesNombre || "Interesado").trim();
