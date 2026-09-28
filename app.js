@@ -833,7 +833,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         if (!insertSocialError) {
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                             console.log("🎉 [SRE AUTH] Autenticación Social Exitosa: Registro inyectado como ACTIVO.");
-                        } else if (insertSocialError.code === "23505" || insertSocialError.message.includes("duplicate")) {
+                        } else if (insertSocialError.code === "23505" || insertSocialError.message?.includes("duplicate") || insertSocialError.message?.includes("row-level security policy")) {
                             // Si la cuenta social ya existe, se lee el registro en memoria global para otorgar pase libre inmediato
                             cliente.from('usuario_autenticado').select('estado_cuenta').eq('usuario_id', session.user.id).maybeSingle().then(({ data: usuarioExistente }) => {
                                 const estadoReal = usuarioExistente ? String(usuarioExistente.estado_cuenta).toLowerCase().trim() : "activo";
