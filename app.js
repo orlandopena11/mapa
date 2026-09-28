@@ -2441,3 +2441,5 @@ async function inyectarCapacidadCompraZillow(prop) { // Abre la función princip
         ejecutarRecalculoHipoteca();
     }
 }
+}
+}
