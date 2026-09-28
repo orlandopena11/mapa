@@ -842,7 +842,6 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                             if (estadoActual === "pendiente") { // Inicio Transición Pendiente a Activo por Link SRE
                                 // El interesado hace clic en el enlace. Promocionamos la cuenta a ACTIVO sincronizando el ID
                                 cliente.from('usuario_autenticado').update({ 
-                                    usuario_id: session.user.id, 
                                     estado_cuenta: "activo",
                                     verificado: true,
                                     ultimo_acceso: hoyFormatoIso,
