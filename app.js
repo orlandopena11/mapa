@@ -864,7 +864,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                     }); // [FIN] Promesa: Cierre del .then() encargado del chequeo de correo en Supabase
                 } // [FIN] Condicional: Cierre de la sección else correspondiente al Canal Tradicional Correo
             } // [FIN] Condicional: Cierre del filtro de seguridad estructural de sesión y usuario activo
-        }); // [FIN] Método: Cierre definitivo del callback onAuthStateChange perteneciente a Supabase
+        );  // [FIN] Método: Cierre definitivo del callback onAuthStateChange perteneciente a Supabase
     } // [FIN] Condicional: Cierre del control perimetral de existencia de la instancia central Supabase
 } // [FIN] Método: Cierre absoluto del escuchador principal de eventos DOMContentLoaded de la Parte 12
 
