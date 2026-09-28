@@ -866,7 +866,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             } // [FIN] Condicional: Cierre del filtro de seguridad estructural de sesión y usuario activo
         );  // [FIN] Método: Cierre definitivo del callback onAuthStateChange perteneciente a Supabase
     } // [FIN] Condicional: Cierre del control perimetral de existencia de la instancia central Supabase
-} // [FIN] Método: Cierre absoluto del escuchador principal de eventos DOMContentLoaded de la Parte 12
+}) // [FIN] Método: Cierre absoluto del escuchador principal de eventos DOMContentLoaded de la Parte 12
 
 // ==========================================================================
 // PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
