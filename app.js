@@ -775,13 +775,15 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
             console.log(`📡 [SRE AUTH] Evento pasivo de sesión detectado: ${event}`);
             
             // FILTRADO DE EVENTOS: Si no hay sesion activa o el evento no corresponde a un inicio o refresco de token, detenemos el flujo de forma limpia
-            if (!session || !session.user || (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED")) { // Inicio Filtro de Seguridad SRE
-                if (!session) {
-                    state.usuarioActual = null;
-                    window.usuarioLogueado = null;
-                }
-                return; // Aborta la ejecucion de manera natural evitando evaluar propiedades nulas
-            } // Fin Filtro de Seguridad SRE
+          //  if (!session || !session.user || (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED")) { // Inicio Filtro de Seguridad SRE
+
+             // FILTRADO DE EVENTOS: Si no hay sesion activa, limpiamos y detenemos el flujo de forma limpia
+             if (!session || !session.user) { 
+                 state.usuarioActual = null;
+                 window.usuarioLogueado = null;
+                 return; // Aborta la ejecucion de manera natural evitando evaluar propiedades nulas
+             } // Fin Filtro de Seguridad Quirúrgico SRE
+          
 
             // Garantizado al 100% que la sesion asincrona inicial ya termino de cargar en este milisegundo
             const correoUsuario = String(session.user.email).trim();
