@@ -829,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                         ultimo_acceso: hoyFormatoIso, 
                         fecha_creacion: hoyFormatoIso,
                         fecha_actualizacion: hoyFormatoIso
-                    }]).then(({ error: insertSocialError }) => { // Inicio Promesa Alta Canal Social SRE
+                    }).then(({ error: insertSocialError }) => { // Inicio Promesa Alta Canal Social SRE
                         if (!insertSocialError) {
                             state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
                             console.log("🎉 [SRE AUTH] Autenticación Social Exitosa: Registro inyectado como ACTIVO.");
