@@ -771,3 +771,31 @@ div.leaflet-marker-icon.map-price-pill {
 @keyframes kenBurnsPaneo { 0% { transform: scale(1.1) translateX(0%); } 100% { transform: scale(1.1) translateX(-6%); } }
 @keyframes kenBurnsPaneoReverso { 0% { transform: scale(1.1) translateX(-6%); } 100% { transform: scale(1.1) translateX(0%); } }
 @keyframes kenBurnsZoomAtras { 0% { transform: scale(1.16) translate(-1%, 1%); } 100% { transform: scale(1.0); } }
+
+
+/* ==========================================================================
+   INTERFAZ DE FILTROS ADAPTATIVOS PARA PANTALLAS MÓVILES Y TÁCTILES
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* Evita que los paneles de filtros se desborden lateralmente en teléfonos */
+    div.app-container .dropdown-content-panel {
+        position: fixed;
+        top: 110px;
+        left: 5%;
+        width: 90%;
+        max-width: 90%;
+        min-width: 90%;
+        box-sizing: border-box;
+        z-index: 100005;
+    }
+    
+    /* Amplía las zonas de pulsación táctil (Checkboxes y Radios) */
+    div.app-container .filter-checkbox-label {
+        padding: 8px 0;
+    }
+
+    /* Ajuste elástico de la Cortina SPA para que el botón 'Cerrar' no colisione con muescas físicas */
+    div.app-container .cortina-escondida {
+        padding-top: env(safe-area-inset-top, 0px);
+    }
+}
