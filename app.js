@@ -660,50 +660,34 @@ function renderizarMapaZillow() {
         L.DomEvent.disableClickPropagation(contenedorPopupMaster);
         L.DomEvent.disableScrollPropagation(contenedorPopupMaster);
 
-        if (window.innerWidth > 768) {
-            marcador.bindPopup(contenedorPopupMaster, { 
-                maxWidth: 300, 
-                minWidth: 260, 
-                className: 'zillow-custom-popup-wrapper', 
-                autoPan: true, 
-                closeOnClick: false 
-            });
-        }
+// ==========================================================================
+// NUEVA FUNCIONALIDAD: RENDERIZADO ADAPTATIVO UNIFICADO (LAPTOP, TABLETA Y TELÉFONO)
+// ==========================================================================
 
-        // Evento nativo del Marcador en el Mapa
-        marcador.on('click', (e) => {
-            L.DomEvent.stopPropagation(e);
-            state.propiedadSeleccionadaId = prop.id;
+// Vinculamos el popup de manera universal para todos los dispositivos
+marcador.bindPopup(contenedorPopupMaster, { 
+    maxWidth: 280, 
+    minWidth: 250, 
+    className: 'zillow-custom-popup-wrapper', 
+    autoPan: true, 
+    closeOnClick: true 
+});
 
-            if (window.innerWidth <= 768) {
-                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-                const targetContenido = document.getElementById("target-contenido-movil-sre");
+// Evento nativo unificado y optimizado para la selección táctil y de escritorio
+marcador.on('click', (e) => {
+    L.DomEvent.stopPropagation(e);
+    state.propiedadSeleccionadaId = prop.id;
 
-                if (cajaFlotanteMovil && targetContenido) {
-                    targetContenido.innerHTML = `
-                        <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
-                            <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
-                                <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba</span>
-                                <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
-                            </div>
-                        </div>
-                    `;
-                    targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
-                    cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
-                }
-            } else {
-                // Sincronización del scroll automático hacia el catálogo derecho al hacer clic en un punto del mapa
-                const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
-                if (tarjetaDesktop) { 
-                    tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    tarjetaDesktop.style.outline = '3px solid #006aff'; 
-                    tarjetaDesktop.style.borderRadius = '12px';
-                    setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
-                }
-            }
-        });
+    // Ejecuta la sincronización visual en laptop/desktop si el elemento existe en el DOM lateral
+    const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+    if (tarjetaDesktop && window.innerWidth > 768) { 
+        tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tarjetaDesktop.style.outline = '3px solid #006aff'; 
+        tarjetaDesktop.style.borderRadius = '12px';
+        setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
+    }
+});
+
 
         // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
         carruselPopup.addEventListener('click', (ev) => {
