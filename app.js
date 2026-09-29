@@ -405,6 +405,97 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         btnDer.style.zIndex = "20";
 
         const desplazarRiel = (direction) => {
+// ==========================================================================
+// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA (SANEADO)
+// ==========================================================================
+function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
+    const propiedad = prop;
+
+    // --- ESPÍA 3: INYECCIÓN EN EL CARRUSEL ---
+    console.warn(`[ESPÍA DOM] Construyendo carrusel para: ${propiedad.id}. ¿Viene como popup?: ${esPopup}. Fotos disponibles en este nodo: ${propiedad.fotos ? propiedad.fotos.length : 0}`);
+
+    const contenedorFoto = document.createElement('div');
+    contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
+    contenedorFoto.style.position = 'relative';
+    contenedorFoto.style.overflow = 'hidden';
+    contenedorFoto.style.width = '100%';
+    contenedorFoto.style.height = esPopup ? '140px' : '180px';
+
+    const rielCarrusel = document.createElement('div');
+    rielCarrusel.className = 'carrusel-imagenes';
+    rielCarrusel.setAttribute('data-foto-activa', '0');
+    rielCarrusel.style.display = 'flex';
+    rielCarrusel.style.width = '100%';
+    rielCarrusel.style.height = '100%';
+    rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
+    contenedorFoto.appendChild(rielCarrusel);
+
+    const totalFotos = Math.min(propiedad.fotos.length, 5);
+    const dotsArray = [];
+    const contenedorDots = document.createElement('div');
+    contenedorDots.className = 'indicadores-carrusel';
+
+    for (let i = 0; i < totalFotos; i++) {
+        const img = document.createElement('img');
+        img.src = prop.fotos[i];
+        img.alt = `${prop.titulo} - Vista ${i + 1}`;
+        img.style.width = '100%';
+        img.style.minWidth = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.flexShrink = '0';
+        rielCarrusel.appendChild(img);
+
+        const dot = document.createElement('span');
+        dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
+        contenedorDots.appendChild(dot);
+        dotsArray.push(dot);
+    }
+    contenedorFoto.appendChild(contenedorDots);
+
+    // Botón Corazón Favorito
+    const botonCorazon = document.createElement('button');
+    botonCorazon.innerHTML = '❤'; 
+    botonCorazon.className = 'corazon-favorito';
+    botonCorazon.style.position = "absolute";
+    botonCorazon.style.top = "12px";
+    botonCorazon.style.right = "12px";
+    botonCorazon.style.background = "rgba(0,0,0,0.45)";
+    botonCorazon.style.border = "none";
+    botonCorazon.style.borderRadius = "50%";
+    botonCorazon.style.width = "32px";
+    botonCorazon.style.height = "32px";
+    botonCorazon.style.cursor = "pointer";
+    botonCorazon.style.fontSize = "16px";
+    botonCorazon.style.display = "flex";
+    botonCorazon.style.alignItems = "center";
+    botonCorazon.style.justifyContent = "center";
+    botonCorazon.style.zIndex = "20";
+    botonCorazon.style.color = "#fff";
+
+    botonCorazon.onclick = (e) => {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        // Consumo del Guardia Centralizado
+        if (!validarAccesoFuncionalidadPremium()) return; 
+        
+        botonCorazon.style.color = (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') ? '#ffffff' : '#d92323';
+    };
+
+    contenedorFoto.appendChild(botonCorazon);
+
+    if (totalFotos > 1) {
+        let indiceFotoActual = 0;
+        const btnlzq = document.createElement('button');
+        btnlzq.className = 'flecha-carrusel flecha-izq'; 
+        btnlzq.textContent = '‹';
+        btnlzq.style.zIndex = "20";
+        
+        const btnDer = document.createElement('button');
+        btnDer.className = 'flecha-carrusel flecha-der'; 
+        btnDer.textContent = '›';
+        btnDer.style.zIndex = "20";
+
+        const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
             rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
             rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
@@ -414,57 +505,23 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
             });
         };
         
-// ==========================================================================
-// NUEVA FUNCIONALIDAD: INTERACTIVIDAD OMNICANAL (LAPTOP, TABLETA Y MÓVIL)
-// ==========================================================================
-
-// Vinculación elástica del Popup nativo para que se adapte dimensionalmente
-marcador.bindPopup(contenedorPopupMaster, { 
-    maxWidth: 280, 
-    minWidth: 250, 
-    className: 'zillow-custom-popup-wrapper', 
-    autoPan: true, 
-    closeOnClick: true 
-});
-
-// Manejador unificado de navegación e inyección de datos SPA
-const activarDetalleInmueble = (ev) => {
-    if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
-        ev.stopPropagation();
-        return; // Respeta las flechas del slider sin disparar la pantalla completa
-    }
-    if (window.map) window.map.closePopup();
-    state.propiedadSeleccionadaId = prop.id;
-    gestionarCortinaSPA('detalle', prop);
-};
-
-// Doble escucha segura para garantizar respuesta inmediata en pantallas táctiles y ratón
-carruselPopup.addEventListener('click', activarDetalleInmueble);
-carruselPopup.addEventListener('touchstart', activarDetalleInmueble, { passive: true });
-
-marcador.on('click', (e) => {
-    L.DomEvent.stopPropagation(e);
-    state.propiedadSeleccionadaId = prop.id;
-
-    // Sincronización inteligente: Si está en laptop/desktop hace scroll, si está en móvil/tableta enfoca el marcador
-    const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
-    if (tarjetaDesktop && window.innerWidth > 768) { 
-        tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        tarjetaDesktop.style.outline = '3px solid #006aff'; 
-        tarjetaDesktop.style.borderRadius = '12px';
-        setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
-    }
-});
-
-window.capaMarcadores.addLayer(marcador);
-
-
         btnlzq.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(-1); };
         btnDer.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(1); };
         
         contenedorFoto.appendChild(btnlzq); 
         contenedorFoto.appendChild(btnDer);
     }
+
+    const etiquetaFlotante = document.createElement('div');
+    etiquetaFlotante.className = 'etiqueta-foto-zillow';
+    etiquetaFlotante.textContent = prop.titulo || '';
+
+    contenedorFoto.appendChild(etiquetaFlotante);
+    
+    return contenedorFoto;
+} // Fin de Function construirRielCarruselComponente
+
+  //  }
 
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
