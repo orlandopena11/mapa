@@ -414,11 +414,50 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
             });
         };
         
-        // ESCUDOS DE SEGURIDAD PARA LEAFLET Y DESKTOP
-        if (typeof L !== 'undefined' && L.DomEvent) {
-            L.DomEvent.disableClickPropagation(btnlzq);
-            L.DomEvent.disableClickPropagation(btnDer);
-        }
+// ==========================================================================
+// NUEVA FUNCIONALIDAD: INTERACTIVIDAD OMNICANAL (LAPTOP, TABLETA Y MÓVIL)
+// ==========================================================================
+
+// Vinculación elástica del Popup nativo para que se adapte dimensionalmente
+marcador.bindPopup(contenedorPopupMaster, { 
+    maxWidth: 280, 
+    minWidth: 250, 
+    className: 'zillow-custom-popup-wrapper', 
+    autoPan: true, 
+    closeOnClick: true 
+});
+
+// Manejador unificado de navegación e inyección de datos SPA
+const activarDetalleInmueble = (ev) => {
+    if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
+        ev.stopPropagation();
+        return; // Respeta las flechas del slider sin disparar la pantalla completa
+    }
+    if (window.map) window.map.closePopup();
+    state.propiedadSeleccionadaId = prop.id;
+    gestionarCortinaSPA('detalle', prop);
+};
+
+// Doble escucha segura para garantizar respuesta inmediata en pantallas táctiles y ratón
+carruselPopup.addEventListener('click', activarDetalleInmueble);
+carruselPopup.addEventListener('touchstart', activarDetalleInmueble, { passive: true });
+
+marcador.on('click', (e) => {
+    L.DomEvent.stopPropagation(e);
+    state.propiedadSeleccionadaId = prop.id;
+
+    // Sincronización inteligente: Si está en laptop/desktop hace scroll, si está en móvil/tableta enfoca el marcador
+    const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+    if (tarjetaDesktop && window.innerWidth > 768) { 
+        tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        tarjetaDesktop.style.outline = '3px solid #006aff'; 
+        tarjetaDesktop.style.borderRadius = '12px';
+        setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
+    }
+});
+
+window.capaMarcadores.addLayer(marcador);
+
 
         btnlzq.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(-1); };
         btnDer.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(1); };
@@ -545,9 +584,6 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 } // Fin de Function renderizarCatalogoTarjetas
 
 
-// ==========================================================================
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
-// ==========================================================================
 // ==========================================================================
 // PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
 // ==========================================================================
