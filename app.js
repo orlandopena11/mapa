@@ -989,20 +989,41 @@ function inicializarEventosDeFiltros() {
         const panel = wrapper.querySelector('.dropdown-content-panel');
         if (!boton || !panel) return;
 
-        boton.addEventListener('click', (e) => {
+// ==========================================================================
+// NUEVA FUNCIONALIDAD: FILTROS INTERACTIVOS OMNICANAL (MÓVIL, TABLETA Y LAPTOP)
+// ==========================================================================
+        const conmutarFiltroPanel = (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            document.querySelectorAll('.dropdown-content-panel').forEach(p => { if (p !== panel) p.classList.remove('show'); });
-            document.querySelectorAll('.filter-btn').forEach(b => { if (b !== boton) b.classList.remove('active'); });
+            
+            // Cerramos de forma limpia cualquier otro panel que esté abierto en la barra
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => { 
+                if (p !== panel) p.classList.remove('show'); 
+            });
+            document.querySelectorAll('.filter-btn').forEach(b => { 
+                if (b !== boton) b.classList.remove('active'); 
+            });
+            
+            // Alternamos de forma reactiva el estado del panel seleccionado
             panel.classList.toggle('show'); 
             boton.classList.toggle('active');
-        });
+        };
+
+        // Doble pasarela de eventos para garantizar respuesta instantánea con ratón o dedos
+        boton.addEventListener('click', conmutarFiltroPanel);
+        boton.addEventListener('touchend', conmutarFiltroPanel);
     });
 
-    // Cerrar desplegables al hacer clic fuera
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    });
+    // Cierre inteligente y pasivo de desplegables al tocar cualquier zona libre de la pantalla
+    const cerrarPanelesResiduales = (e) => {
+        if (!e.target.closest('.filter-dropdown-wrapper')) {
+            document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        }
+    };
+
+    document.addEventListener('click', cerrarPanelesResiduales);
+    document.addEventListener('touchend', cerrarPanelesResiduales);
 
     // Detener la propagación de clics dentro del panel para evitar que se cierre solo
     document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
