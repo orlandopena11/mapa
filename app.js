@@ -584,15 +584,70 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 } // Fin de Function renderizarCatalogoTarjetas
 
 
-// ==========================================================================
-// PARTE 10 DE 15: CONTROLADOR CARTOGRÁFICO Y GEOCODIFICACIÓN DE BÚSQUEDA
-// ==========================================================================
+
+/**
+ * FABRICANTE MODULAR DEL CONTENEDOR POPUP MASTER REPARADO PARA LEAFLET
+ * Extrae la creación visual y sus escuchadores para resolver la advertencia 1550 de JSHint.
+ */
+function construirContenedorPopupLeaflet(prop) {
+    const contenedorPopupMaster = document.createElement('div');
+    contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
+    contenedorPopupMaster.style.width = '260px';
+    
+    // Creamos el carrusel pasando el flag 'true' para indicar que es contexto Popup
+    const carruselPopup = construirRielCarruselComponente(prop, true);
+    contenedorPopupMaster.appendChild(carruselPopup);
+
+    const datosPopup = document.createElement('div');
+    datosPopup.className = 'datos-popup-info';
+    datosPopup.innerHTML = `
+        <div class="precio" style="color: #000000; font-size: 18px; font-weight: 800; margin-bottom: 2px;">
+            $${prop.precio_base ? Number(prop.precio_base).toLocaleString('en-US') : 'Precio no disponible'}
+        </div>
+        <div class="caracteristicas-inmueble" style="font-size: 11px; color: #4a5568; margin-bottom: 2px;">
+            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
+        </div>
+        <div class="detalles-adicionales" style="font-size: 11px; color: #718096; line-height: 1.3;">
+            <div style="font-weight: bold; color: #1a202c;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
+            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
+            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+        </div>
+        <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${prop.direccion ? prop.direccion + (prop.distrito ? ', ' + prop.distrito : '') : String(prop.titulo || '')}
+        </div>
+    `;
+
+    contenedorPopupMaster.appendChild(datosPopup);
+
+    // ESCUDO DE SEGURIDAD LEAFLET: Evita que el evento 'click' y 'pointerdown' se propague al mapa base
+    L.DomEvent.disableClickPropagation(contenedorPopupMaster);
+    L.DomEvent.disableScrollPropagation(contenedorPopupMaster);
+
+    // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
+    const ejecutarTransicionDetalle = (ev) => {
+        if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
+            ev.stopPropagation();
+            return; // Deja operar las flechas sin abrir el detalle de la casa
+        }
+        if (window.map) window.map.closePopup();
+        state.propiedadSeleccionadaId = prop.id;
+        gestionarCortinaSPA('detalle', prop);
+    };
+
+    // Doble enlace seguro para interactividad en laptops y gestos fluidos en móviles/tabletas
+    carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
+    carruselPopup.addEventListener('touchstart', ejecutarTransicionDetalle, { passive: true });
+
+    return contenedorPopupMaster;
+}
+
+/**
+ * FUNCIÓN MAESTRA: Encargada únicamente del control de capas y encuadre geométrico del mapa.
+ */
 function renderizarMapaZillow() { 
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // --- REPARACIÓN DE REDISEÑO ASÍNCRONO SRE ---
-    // Fuerza a Leaflet a recalcular el ancho y alto del contenedor en el DOM antes de pintar.
-    // Esto evita que la propiedad de Lima Centro u otras queden invisibles por falta de actualización del lienzo.
+    // Fuerza a Leaflet a recalcular el ancho y alto del contenedor en el DOM antes de pintar
     window.map.invalidateSize({ animate: false });
 
     // 1. LIMPIEZA ATÓMICA Y VACIADO DE MARCADORES PREVIOS EN MEMORIA DE LEAFLET
@@ -603,45 +658,19 @@ function renderizarMapaZillow() {
     window.capaMarcadores = L.layerGroup().addTo(window.map);
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
-
-    // 2. FILTRADO ESTRICTO DE COORDENADAS VÁLIDAS
     const coordenadasValidas = [];
-    filtradas.forEach(p => {
-        const parsedLat = parseFloat(p.latitud);
-        const parsedLng = parseFloat(p.longitud);
 
-        // Corrección: Validamos que sean números reales finitos sin importar el distrito
-        if (!isNaN(parsedLat) && !isNaN(parsedLng) && isFinite(parsedLat) && isFinite(parsedLng)) {
-            coordenadasValidas.push([parsedLat, parsedLng]);
-        }
-    });
-
-    // 3. ENCUADRE DINÁMICO GEOMÉTRICO PANORÁMICO SRE
-    if (coordenadasValidas.length > 0 && window.map) {
-        try {
-            if (coordenadasValidas.length === 1) {
-                // Centrado exacto si solo hay un elemento
-                window.map.setView(coordenadasValidas, 14, { animate: true });
-            } else {
-                // Creamos los límites de Leaflet unificando Surco y Lima Centro de forma nativa
-                const limitesMapa = L.latLngBounds(coordenadasValidas);
-                
-                // Sintaxis fija: dejamos 30 píxeles exactos de margen en los bordes para encuadrar todo
-                window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 13, animate: true });
-            }
-        } catch (errGeometrico) {
-            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
-        }
-    }
-
-
-
-    // 4. CREACIÓN Y AÑADIDO DE MARCADORES
+    // 2. CREACIÓN Y AÑADIDO DE MARCADORES MEDIANTE BUCLE AISLADO
     filtradas.forEach(prop => {
         const parsedLat = parseFloat(prop.latitud);
         const parsedLng = parseFloat(prop.longitud);
 
-        if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) return;
+        // Filtrado estricto de coordenadas válidas provenientes de Supabase
+        if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) {
+            return;
+        }
+
+        coordenadasValidas.push([parsedLat, parsedLng]);
 
         const precioCompacto = formatearPrecioCompacto(prop.precio_base);
         let claseColorBurbuja = prop.estado_publicacion === 'vendida' ? 'vendido-dorado' : (prop.tipo_anuncio === 'Alquiler' ? 'alquiler-naranja' : 'venta-azul');
@@ -653,92 +682,73 @@ function renderizarMapaZillow() {
             iconAnchor: L.point(40, 15)
         });
 
-        let marcador;
-        try {
-            marcador = L.marker([parsedLat, parsedLng], { icon: iconoBurbuja });
-        } catch (errBucle) {
-            return;
-        }
+        const marcador = L.marker([parsedLat, parsedLng], { icon: iconoBurbuja });
 
-        // ==========================================================================
-        // CONSTRUCCIÓN DEL CONTENEDOR POPUP MASTER REPARADO PARA LEAFLET
-        // ==========================================================================
-        const contenedorPopupMaster = document.createElement('div');
-        contenedorPopupMaster.className = 'tarjeta-casa popup-card'; 
-        contenedorPopupMaster.style.width = '260px';
-        
-        // Creamos el carrusel pasando el flag 'true' para indicar que es contexto Popup
-        const carruselPopup = construirRielCarruselComponente(prop, true);
-        contenedorPopupMaster.appendChild(carruselPopup);
+        // Inyección limpia delegada del Popup Constructor
+        const contenedorPopupMaster = construirContenedorPopupLeaflet(prop);
 
-        const datosPopup = document.createElement('div');
-        datosPopup.className = 'datos-popup-info';
-        datosPopup.innerHTML = `
-            <div class="precio" style="color: #000000; font-size: 18px; font-weight: 800; margin-bottom: 2px;">
-                $${prop.precio_base ? Number(prop.precio_base).toLocaleString('en-US') : 'Precio no disponible'}
-            </div>
-            <div class="caracteristicas-inmueble" style="font-size: 11px; color: #4a5568; margin-bottom: 2px;">
-                ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
-            </div>
-            <div class="detalles-adicionales" style="font-size: 11px; color: #718096; line-height: 1.3;">
-                <div style="font-weight: bold; color: #1a202c;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
-                <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
-                <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
-            </div>
-            <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                ${prop.direccion ? prop.direccion + (prop.distrito ? ', ' + prop.distrito : '') : String(prop.titulo || '')}
-            </div>
-        `; // Fin de asignación de datosPopup.innerHTML con interpolación segura SRE
+        marcador.bindPopup(contenedorPopupMaster, { 
+            maxWidth: 300, 
+            minWidth: 260, 
+            className: 'zillow-custom-popup-wrapper', 
+            autoPan: true, 
+            closeOnClick: false 
+        });
 
-        contenedorPopupMaster.appendChild(datosPopup);
-
-        // ESCUDO DE SEGURIDAD LEAFLET: Evita que el evento 'click' y 'pointerdown' se propague al mapa base
-        L.DomEvent.disableClickPropagation(contenedorPopupMaster);
-        L.DomEvent.disableScrollPropagation(contenedorPopupMaster);
-
-// ==========================================================================
-// NUEVA FUNCIONALIDAD: RENDERIZADO ADAPTATIVO UNIFICADO (LAPTOP, TABLETA Y TELÉFONO)
-// ==========================================================================
-
-// Vinculamos el popup de manera universal para todos los dispositivos
-marcador.bindPopup(contenedorPopupMaster, { 
-    maxWidth: 280, 
-    minWidth: 250, 
-    className: 'zillow-custom-popup-wrapper', 
-    autoPan: true, 
-    closeOnClick: true 
-});
-
-// Evento nativo unificado y optimizado para la selección táctil y de escritorio
-marcador.on('click', (e) => {
-    L.DomEvent.stopPropagation(e);
-    state.propiedadSeleccionadaId = prop.id;
-
-    // Ejecuta la sincronización visual en laptop/desktop si el elemento existe en el DOM lateral
-    const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
-    if (tarjetaDesktop && window.innerWidth > 768) { 
-        tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        tarjetaDesktop.style.outline = '3px solid #006aff'; 
-        tarjetaDesktop.style.borderRadius = '12px';
-        setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
-    }
-});
-
-
-        // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
-        carruselPopup.addEventListener('click', (ev) => {
-            if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
-                ev.stopPropagation();
-                return; // Deja operar las flechas sin abrir el detalle de la casa
-            }
-            if (window.map) window.map.closePopup();
+        // Evento nativo del Marcador sobre el lienzo
+        marcador.on('click', (e) => {
+            L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
-            gestionarCortinaSPA('detalle', prop);
+
+            if (window.innerWidth <= 768) {
+                // Comportamiento elástico en móviles: Actualiza y muestra el overlay flotante inferior estilo Zillow
+                const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+                const targetContenido = document.getElementById("target-contenido-movil-sre");
+
+                if (cajaFlotanteMovil && targetContenido) {
+                    targetContenido.innerHTML = `
+                        <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
+                            <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+                            <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
+                                <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
+                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba</span>
+                                <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
+                            </div>
+                        </div>
+                    `;
+                    targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
+                    cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
+                }
+            } else {
+                // Sincronización del scroll automático hacia el catálogo derecho en computadoras de escritorio
+                const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
+                if (tarjetaDesktop) { 
+                    tarjetaDesktop.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    tarjetaDesktop.style.outline = '3px solid #006aff'; 
+                    tarjetaDesktop.style.borderRadius = '12px';
+                    setTimeout(() => { tarjetaDesktop.style.outline = 'none'; }, 2000); 
+                }
+            }
         });
 
         window.capaMarcadores.addLayer(marcador);
     });
+
+    // 3. ENCUADRE DINÁMICO GEOMÉTRICO PANORÁMICO SRE
+    if (coordenadasValidas.length > 0) {
+        try {
+            if (coordenadasValidas.length === 1) {
+                window.map.setView(coordenadasValidas, 14, { animate: true });
+            } else {
+                const limitesMapa = L.latLngBounds(coordenadasValidas);
+                window.map.fitBounds(limitesMapa, { padding: 30, maxZoom: 13, animate: true });
+            }
+        } catch (errGeometrico) {
+            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
+        }
+    }
 }
+
 
 
 // ==========================================================================
