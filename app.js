@@ -510,9 +510,17 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         
         contenedorFoto.appendChild(btnlzq); 
         contenedorFoto.appendChild(btnDer);
-    }
+    } // <-- Cierra correctamente el bloque condicional del carrusel fotográfico
 
     const etiquetaFlotante = document.createElement('div');
+    etiquetaFlotante.className = 'etiqueta-foto-zillow';
+    etiquetaFlotante.textContent = prop.titulo || '';
+
+    contenedorFoto.appendChild(etiquetaFlotante);
+    
+    return contenedorFoto;
+} // <-- Cierra de forma exacta la función global construirRielCarruselComponente
+
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
     etiquetaFlotante.textContent = prop.titulo || '';
 
