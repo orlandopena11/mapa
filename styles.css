@@ -643,40 +643,122 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 /* ==========================================================================
-   PARTE 5 DE 5: MEDIA QUERIES Y ANIMACIONES CINEMATOGRÁFICAS RECUPERADAS
+   NUEVA FUNCIONALIDAD: DISTRIBUCIÓN RESPONSIVA UNIFICADA (SIN !IMPORTANT)
    ========================================================================== */
+@media (max-width: 1024px) {
+    /* Optimización específica para Tabletas (Split View equilibrado) */
+    div.app-container main.split-view .map-wrapper {
+        width: 40%;
+    }
+    div.app-container main.split-view .properties-panel {
+        width: 60%;
+        padding: 16px;
+    }
+    div.app-container .properties-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+    }
+}
+
 @media (max-width: 768px) {
-    .navbar-global {
+    /* Optimización específica para Teléfonos y Pantallas Pequeñas */
+    div.app-container header.navbar-global {
         padding: 6px 12px;
-        gap: 8px;
+        gap: 10px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-    .navbar-brand-logo { height: 24px; }
-    .search-input { width: 150px; font-size: 12px; }
-    .filter-btn { padding: 6px 12px; font-size: 11px; }
-    .split-view { height: calc(100vh - 60px); width: 100vw; display: block; }
-    .map-wrapper { width: 100% !important; height: 100% !important; position: absolute; top: 0; left: 0; }
-    .properties-panel { display: none !important; }
-    #tarjeta-flotante-movil-sre {
+    div.app-container header.navbar-global .navbar-brand-logo { 
+        height: 26px; 
+        width: auto;
+    }
+    div.app-container .search-input { 
+        width: 160px; 
+        font-size: 13px; 
+    }
+    div.app-container .filter-btn { 
+        padding: 6px 12px; 
+        font-size: 12px; 
+    }
+    
+    /* Modificación del contenedor maestro a flujo elástico vertical */
+    div.app-container main.split-view { 
+        display: flex;
+        flex-direction: column;
         position: absolute;
-        bottom: 20px;
+        top: 60px;
+        height: calc(100vh - 60px); 
+        width: 100vw; 
+        overflow: hidden;
+    }
+    
+    /* El mapa ocupa exactamente la mitad superior */
+    div.app-container main.split-view .map-wrapper { 
+        width: 100%; 
+        height: 50%; 
+        position: relative;
+        border-right: none;
+        border-bottom: 1px solid var(--gris-borde);
+    }
+    
+    /* El catálogo toma vida en la mitad inferior de forma fluida */
+    div.app-container main.split-view .properties-panel { 
+        display: block;
+        width: 100%;
+        height: 50%;
+        padding: 16px;
+        overflow-y: auto;
+    }
+
+    div.app-container .properties-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 14px;
+    }
+
+    /* Ajuste posicional del mapa para dispositivos móviles */
+    div.app-container .leaflet-top.leaflet-left { 
+        top: 10px; 
+        left: 10px; 
+    }
+
+    /* Capa flotante móvil optimizada */
+    div.app-container #tarjeta-flotante-movil-sre {
+        position: absolute;
+        bottom: 16px;
         left: 5%;
         width: 90%;
         background-color: var(--blanco);
         border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); 
+        box-shadow: 0 4px 25px rgba(0, 0, 0, 0.18); 
         z-index: 4000;
-        padding: 14px;
+        padding: 12px;
         box-sizing: border-box;
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
+        transition: transform 0.3s ease, opacity 0.2s;
         cursor: pointer;
     }
-    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-oculta { transform: translateY(150%); opacity: 0; pointer-events: none; }
-    #tarjeta-flotante-movil-sre.tarjeta-movil-sre-visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .btn-cerrar-sre-flotante { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 22px; color: #718096; cursor: pointer; line-height: 1; z-index: 10; }
-    .leaflet-top.leaflet-left { top: 75px !important; left: 10px !important; }
+    div.app-container #tarjeta-flotante-movil-sre.tarjeta-movil-sre-oculta { 
+        transform: translateY(160%); 
+        opacity: 0; 
+        pointer-events: none; 
+    }
+    div.app-container #tarjeta-flotante-movil-sre.tarjeta-movil-sre-visible { 
+        transform: translateY(0); 
+        opacity: 1; 
+        pointer-events: auto; 
+    }
+    div.app-container .btn-cerrar-sre-flotante { 
+        position: absolute; 
+        top: 6px; 
+        right: 10px; 
+        background: none; 
+        border: none; 
+        font-size: 20px; 
+        color: var(--gris-neutro); 
+        cursor: pointer; 
+        z-index: 10; 
+    }
 }
+
 
 .mosaico-zillow-galeria .contenedor-foto-animada,
 .foto-secundarias-grid .contenedor-foto-animada { overflow: hidden; position: relative; border-radius: 6px; background-color: var(--gris-borde); }
