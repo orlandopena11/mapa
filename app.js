@@ -664,20 +664,59 @@ function renderizarMapaZillow() {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                 const targetContenido = document.getElementById("target-contenido-movil-sre");
 
-                if (cajaFlotanteMovil && targetContenido) {
-                    targetContenido.innerHTML = `
-                        <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
-                            <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
-                            <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
-                                <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                                <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba</span>
-                                <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
-                            </div>
-                        </div>
+     //           if (cajaFlotanteMovil && targetContenido) {
+     //               targetContenido.innerHTML = `
+     //                   <div class="sre-movil-overlay-card" style="display:flex; gap:14px; padding:6px 0; align-items:center; font-family:sans-serif;">
+     //                       <img src="${prop.fotos ? prop.fotos[0] : ''}" style="width:105px; height:85px; object-fit:cover; border-radius:6px; background-color:#f0f2f5;">
+     //                       <div style="display:flex; flex-direction:column; gap:3px; flex:1; overflow:hidden;">
+     //                           <strong style="font-size:19px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
+     //                           <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba</span>
+     //                           <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
+     //                       </div>
+     //                   </div>
+     //               `;
+     //               targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
+     //               cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
+     //           }
+                    if (cajaFlotanteMovil && targetContenido) {
+                    targetContenido.innerHTML = ''; // Vaciamos el contenedor estático
+                    
+                    const contenedorEstructura = document.createElement('div');
+                    contenedorEstructura.style.cssText = 'display:flex; flex-direction:column; gap:8px; font-family:sans-serif;';
+
+                    // Inyectamos el riel interactivo dinámico con flechas para celular
+                    const carruselMovilActivo = construirRielCarruselComponente(prop, true);
+                    contenedorEstructura.appendChild(carruselMovilActivo);
+
+                    const textoDatos = document.createElement('div');
+                    textoDatos.style.cssText = 'display:flex; flex-direction:column; gap:2px; padding:4px 0; cursor:pointer;';
+                    textoDatos.innerHTML = `
+                        <strong style="font-size:20px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
+                        <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida || 0} m²</span>
+                        <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                     `;
-                    targetContenido.onclick = () => { gestionarCortinaSPA('detalle', prop); };
+
+                    // Si tocan los textos, se abre la ficha completa SPA
+                    textoDatos.onclick = (e) => {
+                        e.stopPropagation();
+                        gestionarCortinaSPA('detalle', prop);
+                    };
+
+                    // Si tocan el carrusel, solo abre el detalle si NO se pulsó una flecha de cambio de foto
+                    carruselMovilActivo.onclick = (e) => {
+                        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+                            e.stopPropagation();
+                            return;
+                        }
+                        gestionarCortinaSPA('detalle', prop);
+                    };
+
+                    contenedorEstructura.appendChild(textoDatos);
+                    targetContenido.appendChild(contenedorEstructura);
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
                 }
+ 
+                
             } else {
                 // Sincronización del scroll automático hacia el catálogo derecho en computadoras de escritorio
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
