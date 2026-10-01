@@ -521,26 +521,6 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     return contenedorFoto;
 } // <-- Cierra de forma exacta la función global construirRielCarruselComponente
 
-    etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = prop.titulo || '';
-
-    contenedorFoto.appendChild(etiquetaFlotante);
-    
-    return contenedorFoto;
-} // Fin de Function construirRielCarruselComponente
-
-}
-}
-
-//    const etiquetaFlotante = document.createElement('div');
-//    etiquetaFlotante.className = 'etiqueta-foto-zillow';
-//    etiquetaFlotante.textContent = prop.titulo || '';
-
-//    contenedorFoto.appendChild(etiquetaFlotante);
-    
-//    return contenedorFoto;
-// } // Fin de Function construirRielCarruselComponente
-
 
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
