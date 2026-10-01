@@ -840,3 +840,37 @@ div.app-container .contenedor-foto .flecha-der {
 div.app-container .contenedor-foto .flecha-carrusel:hover {
     background-color: rgba(0, 0, 0, 0.85);
 }
+
+/* ==========================================================================
+   VISIBILIDAD CONTROLADA DE FLECHAS EN LA ETIQUETA FLOTANTE MÓVIL
+   ========================================================================== */
+
+/* Subimos la especificidad por jerarquía de ID para forzar el display */
+#tarjeta-flotante-movil-sre .popup-carrusel-context .flecha-carrusel {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro redondo para contraste táctil */
+    color: #ffffff; /* Signos ‹ y › en color blanco puro nítido */
+    border: none;
+    width: 36px; /* Área táctil ampliada de acuerdo a las directrices móviles */
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 24px;
+    z-index: 45; /* Capa prioritaria por encima del riel de Cloudinary */
+    opacity: 1; /* Forzamos la visibilidad sin disparadores hover de ratón */
+}
+
+/* Posicionamiento milimétrico sobre los extremos laterales de la imagen en celular */
+#tarjeta-flotante-movil-sre .popup-carrusel-context .flecha-izq {
+    left: 10px;
+}
+
+#tarjeta-flotante-movil-sre .popup-carrusel-context .flecha-der {
+    right: 10px;
+}
