@@ -530,6 +530,7 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 } // Fin de Function construirRielCarruselComponente
 
 }
+}
 
 //    const etiquetaFlotante = document.createElement('div');
 //    etiquetaFlotante.className = 'etiqueta-foto-zillow';
