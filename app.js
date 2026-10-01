@@ -406,94 +406,6 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
         const desplazarRiel = (direction) => {
 // ==========================================================================
-// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA (SANEADO)
-// ==========================================================================
-function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
-    const propiedad = prop;
-
-    // --- ESPÍA 3: INYECCIÓN EN EL CARRUSEL ---
-    console.warn(`[ESPÍA DOM] Construyendo carrusel para: ${propiedad.id}. ¿Viene como popup?: ${esPopup}. Fotos disponibles en este nodo: ${propiedad.fotos ? propiedad.fotos.length : 0}`);
-
-    const contenedorFoto = document.createElement('div');
-    contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
-    contenedorFoto.style.position = 'relative';
-    contenedorFoto.style.overflow = 'hidden';
-    contenedorFoto.style.width = '100%';
-    contenedorFoto.style.height = esPopup ? '140px' : '180px';
-
-    const rielCarrusel = document.createElement('div');
-    rielCarrusel.className = 'carrusel-imagenes';
-    rielCarrusel.setAttribute('data-foto-activa', '0');
-    rielCarrusel.style.display = 'flex';
-    rielCarrusel.style.width = '100%';
-    rielCarrusel.style.height = '100%';
-    rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
-    contenedorFoto.appendChild(rielCarrusel);
-
-    const totalFotos = Math.min(propiedad.fotos.length, 5);
-    const dotsArray = [];
-    const contenedorDots = document.createElement('div');
-    contenedorDots.className = 'indicadores-carrusel';
-
-    for (let i = 0; i < totalFotos; i++) {
-        const img = document.createElement('img');
-        img.src = prop.fotos[i];
-        img.alt = `${prop.titulo} - Vista ${i + 1}`;
-        img.style.width = '100%';
-        img.style.minWidth = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.flexShrink = '0';
-        rielCarrusel.appendChild(img);
-
-        const dot = document.createElement('span');
-        dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
-        contenedorDots.appendChild(dot);
-        dotsArray.push(dot);
-    }
-    contenedorFoto.appendChild(contenedorDots);
-
-    // Botón Corazón Favorito
-    const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '❤'; 
-    botonCorazon.className = 'corazon-favorito';
-    botonCorazon.style.position = "absolute";
-    botonCorazon.style.top = "12px";
-    botonCorazon.style.right = "12px";
-    botonCorazon.style.background = "rgba(0,0,0,0.45)";
-    botonCorazon.style.border = "none";
-    botonCorazon.style.borderRadius = "50%";
-    botonCorazon.style.width = "32px";
-    botonCorazon.style.height = "32px";
-    botonCorazon.style.cursor = "pointer";
-    botonCorazon.style.fontSize = "16px";
-    botonCorazon.style.display = "flex";
-    botonCorazon.style.alignItems = "center";
-    botonCorazon.style.justifyContent = "center";
-    botonCorazon.style.zIndex = "20";
-    botonCorazon.style.color = "#fff";
-
-    botonCorazon.onclick = (e) => {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        // Consumo del Guardia Centralizado
-        if (!validarAccesoFuncionalidadPremium()) return; 
-        
-        botonCorazon.style.color = (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') ? '#ffffff' : '#d92323';
-    };
-
-    contenedorFoto.appendChild(botonCorazon);
-
-    if (totalFotos > 1) {
-        let indiceFotoActual = 0;
-        const btnlzq = document.createElement('button');
-        btnlzq.className = 'flecha-carrusel flecha-izq'; 
-        btnlzq.textContent = '‹';
-        btnlzq.style.zIndex = "20";
-        
-        const btnDer = document.createElement('button');
-        btnDer.className = 'flecha-carrusel flecha-der'; 
-        btnDer.textContent = '›';
-        btnDer.style.zIndex = "20";
 
         const desplazarRiel = (direction) => {
             indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
@@ -510,7 +422,7 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
         
         contenedorFoto.appendChild(btnlzq); 
         contenedorFoto.appendChild(btnDer);
-    } // <-- Cierra correctamente el bloque condicional del carrusel fotográfico
+    }
 
     const etiquetaFlotante = document.createElement('div');
     etiquetaFlotante.className = 'etiqueta-foto-zillow';
@@ -519,10 +431,8 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     contenedorFoto.appendChild(etiquetaFlotante);
     
     return contenedorFoto;
-} // <-- Cierra de forma exacta la función global construirRielCarruselComponente
-
 }
-
+            
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
