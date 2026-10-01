@@ -531,14 +531,14 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
 
 }
 
-    const etiquetaFlotante = document.createElement('div');
-    etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = prop.titulo || '';
+//    const etiquetaFlotante = document.createElement('div');
+//    etiquetaFlotante.className = 'etiqueta-foto-zillow';
+//    etiquetaFlotante.textContent = prop.titulo || '';
 
-    contenedorFoto.appendChild(etiquetaFlotante);
+//    contenedorFoto.appendChild(etiquetaFlotante);
     
-    return contenedorFoto;
-} // Fin de Function construirRielCarruselComponente
+//    return contenedorFoto;
+// } // Fin de Function construirRielCarruselComponente
 
 
 // ==========================================================================
