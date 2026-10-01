@@ -801,3 +801,42 @@ div.leaflet-marker-icon.map-price-pill {
         padding-top: env(safe-area-inset-top, 0px);
     }
 }
+
+/* ==========================================================================
+   ESTILOS DE VISIBILIDAD Y ESPECIFICIDAD ADAPTATIVA PARA LAS FLECHAS
+   ========================================================================== */
+
+/* Elevamos la prioridad encadenando las clases del contenedor padre visual */
+div.app-container .contenedor-foto .flecha-carrusel {
+    display: flex;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.6); /* Círculo oscuro de contraste */
+    color: #ffffff; /* Signos en blanco puro */
+    border: none;
+    width: 34px; /* Tamaño táctil y visual cómodo */
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 22px;
+    z-index: 35; /* Capa superior: por encima de la imagen y del corazón */
+    opacity: 1; /* Visibles siempre tanto en laptop como en celular */
+    transition: background-color 0.2s;
+}
+
+/* Ubicación exacta en los bordes internos del riel de fotos */
+div.app-container .contenedor-foto .flecha-izq { 
+    left: 8px; 
+}
+div.app-container .contenedor-foto .flecha-der { 
+    right: 8px; 
+}
+
+/* Efecto interactivo limpio al pasar el cursor sobre el botón */
+div.app-container .contenedor-foto .flecha-carrusel:hover {
+    background-color: rgba(0, 0, 0, 0.85);
+}
