@@ -432,7 +432,9 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     
     return contenedorFoto;
 }
-            
+    
+}            
+
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
 // ==========================================================================
