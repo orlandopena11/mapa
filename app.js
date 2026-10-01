@@ -339,14 +339,35 @@ function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Func
     rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
     contenedorFoto.appendChild(rielCarrusel);
 
-    const totalFotos = Math.min(propiedad.fotos.length, 5);
+        // Filtro elástico: si galeria_fotos de la vista viene como texto crudo en el celular, lo parsea a Array real
+    let arrayFotosSeguro = [];
+    const origenVisual = propiedad.fotos || propiedad.galeria_fotos;
+
+    if (Array.isArray(origenVisual)) {
+        arrayFotosSeguro = origenVisual;
+    } else if (typeof origenVisual === 'string') {
+        try {
+            // Remueve formateos raros o parsea el string ["Foto1", "Foto2"] de la vista de Supabase
+            arrayFotosSeguro = JSON.parse(origenVisual);
+        } catch (e) {
+            arrayFotosSeguro = origenVisual.includes(',') ? origenVisual.split(',') : [origenVisual];
+        }
+    }
+
+    const totalFotos = Math.min(arrayFotosSeguro.length, 5);
     const dotsArray = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
 
+    //const totalFotos = Math.min(propiedad.fotos.length, 5);
+    //const dotsArray = [];
+    //const contenedorDots = document.createElement('div');
+    //contenedorDots.className = 'indicadores-carrusel';
+
     for (let i = 0; i < totalFotos; i++) {
         const img = document.createElement('img');
-        img.src = prop.fotos[i];
+        img.src = arrayFotosSeguro[i];
+        //img.src = prop.fotos[i];
         img.alt = `${prop.titulo} - Vista ${i + 1}`;
         img.style.width = '100%';
         img.style.minWidth = '100%';
