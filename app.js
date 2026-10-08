@@ -1480,15 +1480,6 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
         });
 } // Fin de la Funcion inicializarAutenticacionTresCanalesSupabase SRE
 
-// Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
-
-
-// Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
-//function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
-    // Actúa como un escudo de paso vacío exigido por el motor de renderizado de la Parte 12
-//} // Fin interceptarFirewallSeguridadUsuario
-
-
 
 
 
