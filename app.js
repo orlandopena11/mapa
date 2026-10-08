@@ -316,145 +316,171 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 // ==========================================================================
 // PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA
 // ==========================================================================
-function construirRielCarruselComponente(prop, esPopup = false) { // Inicia Function construirRielCarruselComponente
-    const propiedad = prop;
-
-    // --- ESPÍA 3: INYECCIÓN EN EL CARRUSEL ---
-    console.warn(`[ESPÍA DOM] Construyendo carrusel para: ${propiedad.id}. ¿Viene como popup?: ${esPopup}. Fotos disponibles en este nodo: ${propiedad.fotos ? propiedad.fotos.length : 0}`);
-
-    
+function construirRielCarruselComponente(prop, esPopup = false) {
     const contenedorFoto = document.createElement('div');
-    contenedorFoto.className = esPopup ? 'contenedor-foto popup-carrusel-context' : 'contenedor-foto';
-    contenedorFoto.style.position = 'relative';
-    contenedorFoto.style.overflow = 'hidden';
-    contenedorFoto.style.width = '100%';
-    contenedorFoto.style.height = esPopup ? '140px' : '180px';
+    contenedorFoto.className = esPopup
+        ? 'contenedor-foto popup-carrusel-context'
+        : 'contenedor-foto';
+
+    Object.assign(contenedorFoto.style, {
+        position: 'relative',
+        overflow: 'hidden',
+        width: '100%',
+        height: esPopup ? '140px' : '180px'
+    });
 
     const rielCarrusel = document.createElement('div');
     rielCarrusel.className = 'carrusel-imagenes';
-    rielCarrusel.setAttribute('data-foto-activa', '0');
-    rielCarrusel.style.display = 'flex';
-    rielCarrusel.style.width = '100%';
-    rielCarrusel.style.height = '100%';
-    rielCarrusel.style.transition = 'transform 0.3s ease-in-out';
+    rielCarrusel.dataset.fotoActiva = '0';
+
+    Object.assign(rielCarrusel.style, {
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        transition: 'transform 0.3s ease-in-out'
+    });
+
     contenedorFoto.appendChild(rielCarrusel);
 
-        // Filtro elástico: si galeria_fotos de la vista viene como texto crudo en el celular, lo parsea a Array real
-    let arrayFotosSeguro = [];
-    const origenVisual = propiedad.fotos || propiedad.galeria_fotos;
+    let fotos = prop.fotos || prop.galeria_fotos || [];
 
-    if (Array.isArray(origenVisual)) {
-        arrayFotosSeguro = origenVisual;
-    } else if (typeof origenVisual === 'string') {
+    if (typeof fotos === 'string') {
         try {
-            // Remueve formateos raros o parsea el string ["Foto1", "Foto2"] de la vista de Supabase
-            arrayFotosSeguro = JSON.parse(origenVisual);
-        } catch (e) {
-            arrayFotosSeguro = origenVisual.includes(',') ? origenVisual.split(',') : [origenVisual];
+            const parsed = JSON.parse(fotos);
+            fotos = Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            fotos = fotos.split(',');
         }
     }
 
-    const totalFotos = Math.min(arrayFotosSeguro.length, 5);
-    const dotsArray = [];
+    if (!Array.isArray(fotos)) fotos = [];
+
+    fotos = fotos
+        .map(foto => String(foto || '').trim())
+        .filter(Boolean)
+        .slice(0, 5);
+
+    if (fotos.length === 0) {
+        fotos = [
+            'https://res.cloudinary.com/obw6ciov/image/upload/Foto15_havrr3.webp'
+        ];
+    }
+
+    const dots = [];
     const contenedorDots = document.createElement('div');
     contenedorDots.className = 'indicadores-carrusel';
 
-    //const totalFotos = Math.min(propiedad.fotos.length, 5);
-    //const dotsArray = [];
-    //const contenedorDots = document.createElement('div');
-    //contenedorDots.className = 'indicadores-carrusel';
-
-    for (let i = 0; i < totalFotos; i++) {
+    fotos.forEach((url, index) => {
         const img = document.createElement('img');
-        img.src = arrayFotosSeguro[i];
-        //img.src = prop.fotos[i];
-        img.alt = `${prop.titulo} - Vista ${i + 1}`;
-        img.style.width = '100%';
-        img.style.minWidth = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.flexShrink = '0';
+        img.src = url;
+        img.alt = `${prop.titulo || 'Propiedad'} - Vista ${index + 1}`;
+
+        Object.assign(img.style, {
+            width: '100%',
+            minWidth: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            flexShrink: '0'
+        });
+
         rielCarrusel.appendChild(img);
 
         const dot = document.createElement('span');
-        dot.className = i === 0 ? 'punto-indicator activo' : 'punto-indicator';
+        dot.className = index === 0
+            ? 'punto-indicator activo'
+            : 'punto-indicator';
+
         contenedorDots.appendChild(dot);
-        dotsArray.push(dot);
-    }
+        dots.push(dot);
+    });
+
     contenedorFoto.appendChild(contenedorDots);
 
-    // Botón Corazón Favorito
     const botonCorazon = document.createElement('button');
-    botonCorazon.innerHTML = '♥'; 
+    botonCorazon.type = 'button';
+    botonCorazon.textContent = '♥';
     botonCorazon.className = 'corazon-favorito';
-    botonCorazon.style.position = "absolute";
-    botonCorazon.style.top = "12px";
-    botonCorazon.style.right = "12px";
-    botonCorazon.style.background = "rgba(0,0,0,0.45)";
-    botonCorazon.style.border = "none";
-    botonCorazon.style.borderRadius = "50%";
-    botonCorazon.style.width = "32px";
-    botonCorazon.style.height = "32px";
-    botonCorazon.style.cursor = "pointer";
-    botonCorazon.style.fontSize = "16px";
-    botonCorazon.style.display = "flex";
-    botonCorazon.style.alignItems = "center";
-    botonCorazon.style.justifyContent = "center";
-    botonCorazon.style.zIndex = "20";
-    botonCorazon.style.color = "#fff";
 
-    botonCorazon.onclick = (e) => {
-        if (e) { e.preventDefault(); e.stopPropagation(); }
-        // Consumo del Guardia Centralizado
-        if (!validarAccesoFuncionalidadPremium()) return; 
-        
-        botonCorazon.style.color = (botonCorazon.style.color === 'rgb(217, 35, 35)' || botonCorazon.style.color === '#d92323') ? '#ffffff' : '#d92323';
-    };
+    Object.assign(botonCorazon.style, {
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+        background: 'rgba(0,0,0,0.45)',
+        border: 'none',
+        borderRadius: '50%',
+        width: '32px',
+        height: '32px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: '20',
+        color: state.favoritos.has(String(prop.id)) ? '#d92323' : '#fff'
+    });
+
+    botonCorazon.addEventListener('click', async event => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (!(await validarAccesoFuncionalidadPremium())) return;
+
+        const id = String(prop.id);
+
+        if (state.favoritos.has(id)) {
+            state.favoritos.delete(id);
+            botonCorazon.style.color = '#fff';
+        } else {
+            state.favoritos.add(id);
+            botonCorazon.style.color = '#d92323';
+        }
+    });
 
     contenedorFoto.appendChild(botonCorazon);
 
-    if (totalFotos > 1) {
+    if (fotos.length > 1) {
         let indiceFotoActual = 0;
-        const btnlzq = document.createElement('button');
-        btnlzq.className = 'flecha-carrusel flecha-izq'; 
-        btnlzq.textContent = '‹';
-        btnlzq.style.zIndex = "20";
-        
-        const btnDer = document.createElement('button');
-        btnDer.className = 'flecha-carrusel flecha-der'; 
-        btnDer.textContent = '›';
-        btnDer.style.zIndex = "20";
 
-        const desplazarRiel = (direction) => {
-// ==========================================================================
+        const desplazarRiel = direction => {
+            indiceFotoActual =
+                (indiceFotoActual + direction + fotos.length) % fotos.length;
 
-        const desplazarRiel = (direction) => {
-            indiceFotoActual = (indiceFotoActual + direction + totalFotos) % totalFotos;
-            rielCarrusel.setAttribute('data-foto-activa', String(indiceFotoActual));
-            rielCarrusel.style.transform = `translateX(-${indiceFotoActual * 100}%)`;
-            dotsArray.forEach((d, idx) => {
-                if (idx === indiceFotoActual) d.classList.add('activo');
-                else d.classList.remove('activo');
+            rielCarrusel.dataset.fotoActiva = String(indiceFotoActual);
+            rielCarrusel.style.transform =
+                `translateX(-${indiceFotoActual * 100}%)`;
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('activo', index === indiceFotoActual);
             });
         };
-        
-        btnlzq.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(-1); };
-        btnDer.onclick = (e) => { e.stopPropagation(); e.preventDefault(); desplazarRiel(1); };
-        
-        contenedorFoto.appendChild(btnlzq); 
-        contenedorFoto.appendChild(btnDer);
+
+        const crearFlecha = (clase, texto, direction) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = `flecha-carrusel ${clase}`;
+            button.textContent = texto;
+            button.style.zIndex = '20';
+
+            button.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                desplazarRiel(direction);
+            });
+
+            contenedorFoto.appendChild(button);
+        };
+
+        crearFlecha('flecha-izq', '‹', -1);
+        crearFlecha('flecha-der', '›', 1);
     }
 
-    const etiquetaFlotante = document.createElement('div');
-    etiquetaFlotante.className = 'etiqueta-foto-zillow';
-    etiquetaFlotante.textContent = prop.titulo || '';
+    const etiqueta = document.createElement('div');
+    etiqueta.className = 'etiqueta-foto-zillow';
+    etiqueta.textContent = prop.titulo || '';
+    contenedorFoto.appendChild(etiqueta);
 
-    contenedorFoto.appendChild(etiquetaFlotante);
-    
     return contenedorFoto;
-}
-    
-}            
+}         
 
 // ==========================================================================
 // PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
