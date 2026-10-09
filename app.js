@@ -1533,7 +1533,19 @@ async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebook
 } // Fin autenticarConFacebookSupabase
 
 // Ejecución pasiva e inmediata del inicializador en el hilo principal
-setTimeout(() => { inicialisadorEjecucion = inicializarAutenticacionTresCanalesSupabase(); }, 150);
+//setTimeout(() => { inicialisadorEjecucion = inicializarAutenticacionTresCanalesSupabase(); }, 150);
+function ejecutarCuandoDOMEsteListo(callback) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', callback, { once: true });
+    } else {
+        callback();
+    }
+}
+
+ejecutarCuandoDOMEsteListo(() => {
+    inicializarAutenticacionTresCanalesSupabase();
+    inicializarEventosPopups();
+});
 
 
 // Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas con firewall ACL
