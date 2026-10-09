@@ -441,7 +441,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
         color: state.favoritos.has(String(prop.id)) ? '#d92323' : '#fff'
     });
 
-    botonCorazon.addEventListener('click', async event => {
+    botonCorazon.addEventListener('click', async (event) => {
         event.preventDefault();
         event.stopPropagation();
 
