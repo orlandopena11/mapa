@@ -1546,8 +1546,8 @@ function inicializarEventosPopups() { // Inicia inicializarEventosPopups
     if (btnSolicitarTourSelector) {
         btnSolicitarTourSelector.onclick = function(e) {
             if (e) e.stopPropagation();
-            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
-
+//            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
+              if (!(await validarAccesoFuncionalidadPremium())) return;
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
@@ -1864,8 +1864,9 @@ function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlM
         if (elementoBtnTelefono) {
             elementoBtnTelefono.onclick = async (e) => {
                 e.stopPropagation();
-                if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
-
+                // if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
+                if (!(await validarAccesoFuncionalidadPremium())) return;
+                
                 elementoBtnTelefono.innerText = "⏳ Consultando número...";
                 try {
                     const cliente = obtenerClienteSupabase();
