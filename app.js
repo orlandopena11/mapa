@@ -856,106 +856,183 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
     // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
     // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook blindando el flujo contra inserciones de llaves duplicadas (Evita Error 23505).
     // ====================================================================================
-
+    // ====================================================================================
+    // PARTE 1 DE 3: CONFIGURACIÓN INICIAL, DESLOGUEO Y FORMATO DE FECHA POSTGRESQL
+    // ====================================================================================
     if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase SRE
         supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
-            console.log(`📡 [SRE AUTH] Evento pasivo de sesión detectado: ${event}`);
-            
-            // FILTRADO DE EVENTOS: Si no hay sesion activa o el evento no corresponde a un inicio o refresco de token, detenemos el flujo de forma limpia
-          //  if (!session || !session.user || (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED")) { // Inicio Filtro de Seguridad SRE
+            console.log(`%c?? [SRE AUTH] Evento pasivo de sesión detectado: ${event}`, "color: #ffb91d; font-weight: bold;");
 
-             // FILTRADO DE EVENTOS: Si no hay sesion activa, limpiamos y detenemos el flujo de forma limpia
-             if (!session || !session.user) { 
-                 state.usuarioActual = null;
-                 window.usuarioLogueado = null;
-                 return; // Aborta la ejecucion de manera natural evitando evaluar propiedades nulas
-             } // Fin Filtro de Seguridad Quirúrgico SRE
-          
+            // Diferir las llamadas a la base de datos para no bloquear el callback de autenticación de Supabase
+            setTimeout(async () => {
+                const user = session?.user;
 
-            // Garantizado al 100% que la sesion asincrona inicial ya termino de cargar en este milisegundo
-            const correoUsuario = String(session.user.email).trim();
-            window.usuarioLogueado = session.user;
-            const cliente = obtenerClienteSupabase();
+                // REGLA DE NEGOCIO: Si no hay sesión activa, limpiamos y detenemos el flujo de forma limpia
+                if (!user) {
+                    state.usuarioActual = null;
+                    window.usuarioLogueado = null;
+                    actualizarBotonCuenta();
+                    console.log("? [SRE AUTH] Sesión inactiva o cerrada. Estado global de seguridad reseteado.");
+                    return;
+                }
 
-            const fActual = new Date();
-            const hoyFormatoIso = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
+                // Sincronización inmediata de la variable de ventana para componentes de UI
+                window.usuarioLogueado = user;
+                actualizarBotonCuenta();
 
-     
-            // CANAL SOCIAL: Si ingresa mediante cuenta de Google o Facebook, efectúa el INSERT autónomo como ACTIVO
-            if (session?.app_metadata?.provider === "google" || session?.app_metadata?.provider === "facebook" || (session?.user?.identities && session?.user?.identities[0]?.provider !== "email")) { // Inicio Flujo Canales Sociales SRE
+                try {
+                    const cliente = obtenerClienteSupabase();
+                    if (!cliente) throw new Error("Instancia de cliente Supabase no disponible.");
 
-                    const metadatos = session.user.user_metadata || {};
-                    const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
-                    const stringNombre = String(partesNombre || "Interesado").trim();
-                    const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
+                    const correo = String(user.email || '').trim().toLowerCase();
+                    // Detectar proveedor de manera robusta desde app_metadata o identities
+                    const proveedor = user.app_metadata?.provider || (user.identities && user.identities?.provider);
+                    
+                    // CORRECCIÓN ATÓMICA: Formato estricto Postgres YYYY-MM-DD (ej: 2026-10-08)
+                    const fActual = new Date();
+                    const hoyFormatoIso = [
+                        fActual.getFullYear(),
+                        String(fActual.getMonth() + 1).padStart(2, '0'),
+                        String(fActual.getDate()).padStart(2, '0')
+                    ].join('-');
 
-                    // Propiedades en JavaScript estrictamente sin tildes y fechas en formato estándar ISO YYYY-MM-DD
-                        cliente.from('usuario_autenticado').upsert({
-                        usuario_id: session.user.id, 
-                        rol_id_fk: 3,
-                        nombre: stringNombre,
-                        apellido: stringApellido,
-                        correo: correoUsuario,
-                        password_hash: "15021502",
-                        telefono: "953799309", 
-                        estado_cuenta: "activo",
-                        verificado: true,
-                        creado_por: "OAuth-System",
-                        ultimo_acceso: hoyFormatoIso, 
-                        fecha_creacion: hoyFormatoIso,
-                        fecha_actualizacion: hoyFormatoIso
-                    }).then(({ error: insertSocialError }) => { // Inicio Promesa Alta Canal Social SRE
-                        if (!insertSocialError) {
-                            state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                            console.log("🎉 [SRE AUTH] Autenticación Social Exitosa: Registro inyectado como ACTIVO.");
-                        } else if (insertSocialError.code === "23505" || insertSocialError.message?.includes("duplicate") || insertSocialError.message?.includes("row-level security policy")) {
-                            // Si la cuenta social ya existe, se lee el registro en memoria global para otorgar pase libre inmediato
-                            cliente.from('usuario_autenticado').select('estado_cuenta').eq('usuario_id', session.user.id).maybeSingle().then(({ data: usuarioExistente }) => {
-                                const estadoReal = usuarioExistente ? String(usuarioExistente.estado_cuenta).toLowerCase().trim() : "activo";
-                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoReal };
-                                console.log("🔒 [SRE AUTH] Pase libre autorizado para cuenta social existente. Estado:", estadoReal);
-                            });
-                        } else {
-                            console.error("❌ [SRE AUTH ERROR] Falla al insertar registro social:", insertSocialError.message);
-                        }
-                    }); // Fin Promesa Alta Canal Social SRE
-                } // Fin Flujo Canales Sociales SRE
-                
-                // CANAL TRADICIONAL (EMAIL OTP): Reservado exclusivamente para flujos manuales de confirmación de correo
-                else { // Inicio Flujo Canal Tradicional Correo SRE
-                    cliente.from('usuario_autenticado').select('estado_cuenta').eq('correo', correoUsuario).maybeSingle().then(({ data: registroTransitorio }) => { // Inicio Promesa Chequeo Correo SRE
-                        if (registroTransitorio) {
-                            const estadoActual = String(registroTransitorio.estado_cuenta).toLowerCase().trim();
+                    console.log(`? [SRE AUTH PROCESSING] Evaluando interesado: ${correo} | Proveedor: ${proveedor} | Fecha: ${hoyFormatoIso}`);
+
+                                        // ====================================================================================
+                    // PARTE 2 DE 3: CANAL AUTOMÁTICO - PROVEEDORES SOCIALES (GOOGLE / FACEBOOK)
+                    // ====================================================================================
+                    if (proveedor === 'google' || proveedor === 'facebook') {
+                        // 1. Buscamos si ya existe el registro mapeado bajo su UUID real de Supabase
+                        const { data: perfilSocial, error: errorBusquedaSocial } = await cliente
+                            .from('usuario_autenticado')
+                            .select('estado_cuenta, verificado')
+                            .eq('usuario_id', user.id)
+                            .maybeSingle();
+
+                        if (errorBusquedaSocial) throw errorBusquedaSocial;
+
+                        // REGLA DE NEGOCIO SOCIAL: Si no existe, lo registramos de forma autónoma inmediatamente como ACTIVO
+                        if (!perfilSocial) {
+                            console.warn('?? [SRE AUTH] Primer inicio de sesión OAuth detectado. Registrando perfil en la tabla...');
                             
-                            if (estadoActual === "pendiente") { // Inicio Transición Pendiente a Activo por Link SRE
-                                // El interesado hace clic en el enlace. Promocionamos la cuenta a ACTIVO sincronizando el ID
-                                cliente.from('usuario_autenticado').update({ 
-                                    estado_cuenta: "activo",
-                                    verificado: true,
-                                    ultimo_acceso: hoyFormatoIso,
-                                    fecha_actualizacion: hoyFormatoIso
-                                }).eq('correo', correoUsuario).then(({ error: updateError }) => { // Inicio Promesa Promoción Cuenta SRE
-                                    if (!updateError) {
-                                        state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: "activo" };
-                                        alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
-                                        console.log("🔒 [SRE AUTH] Cuenta tradicional activada exitosamente mediante link de confirmación.");
+                            const metadatos = user.user_metadata || {};
+                            const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
+                            const stringNombre = String(partesNombre || "Interesado").trim();
+                            const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
+                            const telefonoOAuth = metadatos.phone || "999999999";
 
-                                    } else {
-                                        console.error("? [SRE AUTH ERROR] No se pudo activar la cuenta pendiente:", updateError.message);
-                                    }
-                                }); // Fin Promesa Promoción Cuenta SRE
-                            } // [FIN] Condicional: Cierre de la transición de cuenta pendiente
-                            else { // [INICIO] Condicional: Si la cuenta tradicional ya se encontraba activa
-                                state.usuarioActual = { id: session.user.id, correo: correoUsuario, estado_cuenta: estadoActual };
-                                console.log("? [SRE AUTH] Sesión tradicional restaurada. Estado de cuenta:", estadoActual);
-                            } // [FIN] Condicional: Si la cuenta tradicional ya se encontraba activa
-                        } // [FIN] Condicional: Cierre de la validación de existencia del registro transitorio
-                    }); // [FIN] Promesa: Cierre del .then() encargado del chequeo de correo en Supabase
-                } // [FIN] Condicional: Cierre de la sección else correspondiente al Canal Tradicional Correo
-            } // [FIN] Condicional: Cierre del filtro de seguridad estructural de sesión y usuario activo
-        );  // [FIN] Método: Cierre definitivo del callback onAuthStateChange perteneciente a Supabase
-    } // [FIN] Condicional: Cierre del control perimetral de existencia de la instancia central Supabase
-}) // [FIN] Método: Cierre absoluto del escuchador principal de eventos DOMContentLoaded de la Parte 12
+                            const { error: insertSocialError } = await cliente
+                                .from('usuario_autenticado')
+                                .upsert({
+                                    usuario_id: user.id, // Su ID real y único de autenticación centralizada
+                                    rol_id_fk: 3,        // Rol estándar de interesado / cliente
+                                    nombre: stringNombre,
+                                    apellido: stringApellido,
+                                    correo: correo,
+                                    password_hash: "OAuth-No-Pass",
+                                    telefono: telefonoOAuth, 
+                                    estado_cuenta: "activo",
+                                    verificado: true, // No requiere validar por correo
+                                    creado_por: `OAuth-${proveedor}`,
+                                    ultimo_acceso: hoyFormatoIso, // Guardado seguro YYYY-MM-DD
+                                    fecha_creacion: hoyFormatoIso,
+                                    fecha_actualizacion: hoyFormatoIso
+                                });
+
+                            if (insertSocialError) throw insertSocialError;
+
+                            state.usuarioActual = { id: user.id, correo, estado_cuenta: "activo" };
+                            console.log("?? [SRE AUTH] Registro de cuenta social completado exitosamente como ACTIVO.");
+                            return;
+                        }
+
+                        // REGLA DE NEGOCIO CRÍTICA: Evaluar si el administrador suspendió la cuenta social
+                        const estadoSocialReal = String(perfilSocial.estado_cuenta || '').toLowerCase().trim();
+                        if (estadoSocialReal === "suspendido") {
+                            console.error("? ACL BLOQUEO SOCIAL: El interesado se encuentra SUSPENDIDO.");
+                            state.usuarioActual = { id: user.id, correo, estado_cuenta: "suspendido" };
+                            alert("Acceso Restringido: Su cuenta se encuentra SUSPENDIDA por el administrador de la plataforma.");
+                            return;
+                        }
+
+                        // Si está activo, otorgamos pase directo en la memoria de la app
+                        state.usuarioActual = { id: user.id, correo, estado_cuenta: estadoSocialReal };
+                        console.log(`? [SRE AUTH] Pase libre autorizado para cuenta social existente. Estado: ${estadoSocialReal.toUpperCase()}`);
+                        return;
+                    }
+
+                                        // ====================================================================================
+                    // PARTE 3 DE 3: CANAL TRADICIONAL (EMAIL) Y ENLAZADO DE UUID POSTGRESQL
+                    // ====================================================================================
+                    // Buscamos el registro de pre-registro utilizando el índice único del correo electrónico
+                    const { data: perfilTradicional, error: errorBusquedaTradicional } = await cliente
+                        .from('usuario_autenticado')
+                        .select('usuario_id, estado_cuenta, verificado')
+                        .eq('correo', correo)
+                        .maybeSingle();
+
+                    if (errorBusquedaTradicional) throw errorBusquedaTradicional;
+
+                    // Si no existe un registro previo en la tabla de negocio, es una anomalía
+                    if (!perfilTradicional) {
+                        console.warn("? [SRE AUTH] Alerta: Autenticado en Supabase, pero no figura en la tabla mapeada.");
+                        state.usuarioActual = null;
+                        return;
+                    }
+
+                    const estadoActual = String(perfilTradicional.estado_cuenta || '').toLowerCase().trim();
+
+                    // REGLA DE NEGOCIO CRÍTICA: Si el administrador lo suspendió, se bloquea el acceso de inmediato
+                    if (estadoActual === "suspendido") {
+                        console.error("? ACL BLOQUEO TRADICIONAL: El interesado por correo se encuentra SUSPENDIDO.");
+                        state.usuarioActual = { id: user.id, correo, estado_cuenta: "suspendido" };
+                        alert("Acceso Restringido: Su cuenta se encuentra SUSPENDIDA por el administrador de la plataforma.");
+                        return;
+                    }
+
+                    // Configuración dinámica de la carga útil de sincronización
+                    const cambiosSincronizacion = { 
+                        usuario_id: user.id, // Reemplaza permanentemente el UUID transitorio del frontend por el de Supabase Auth
+                        ultimo_acceso: hoyFormatoIso, // Guardado seguro YYYY-MM-DD
+                        fecha_actualizacion: hoyFormatoIso
+                    }; 
+                    
+                    // REGLA DE NEGOCIO: Si está 'pendiente', el usuario acaba de verificar su correo por primera vez
+                    if (estadoActual === 'pendiente') {
+                        cambiosSincronizacion.estado_cuenta = 'activo';
+                        cambiosSincronizacion.verificado = true;
+                    }
+
+                    // Ejecutar la actualización atómica en PostgreSQL afectando la fila correspondiente
+                    const { error: updateTradicionalError } = await cliente
+                        .from('usuario_autenticado')
+                        .update(cambiosSincronizacion)
+                        .eq('correo', correo);
+
+                    if (updateTradicionalError) throw updateTradicionalError;
+
+                    // Establecer estado de seguridad en la memoria reactiva de la aplicación
+                    state.usuarioActual = {
+                        id: user.id,
+                        correo,
+                        estado_cuenta: estadoActual === 'pendiente' ? 'activo' : estadoActual
+                    };
+
+                    if (estadoActual === 'pendiente') {
+                        alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
+                        console.log("?? [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
+                    } else {
+                        console.log(`? [SRE AUTH] Sesión tradicional restaurada con éxito. Estado: ${estadoActual.toUpperCase()}`);
+                    }
+
+                } catch (err) {
+                    console.error('? [SRE AUTH CRÍTICO] Excepción capturada en la tubería de sincronización:', err);
+                    state.usuarioActual = null;
+                }
+            }, 0);
+        });  // Fin definitivo del callback onAuthStateChange perteneciente a Supabase
+    } // Fin del control perimetral de existencia de la instancia central Supabase
+
 
 // ==========================================================================
 // PARTE 13 DE 15: CONTROLADOR DE FILTROS CON BOTONES APLICAR Y SELECCIONAR TODOS
