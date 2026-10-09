@@ -1,4 +1,4 @@
-/* jshint esversion: 11 *//* jshint esversion: 11 */
+/* jshint esversion: 11 */
 
 // ==========================================================================
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
