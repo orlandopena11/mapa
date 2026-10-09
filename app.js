@@ -1030,85 +1030,102 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
                             console.log(`? [SRE AUTH PROCESSING] Evaluando interesado: ${correo} | Proveedor: ${proveedor} | Fecha: ${hoyFormatoIso}`);
 
-                            // ====================================================================================
-                            // PARTE 2 DE 3: CANAL AUTOMÁTICO - PROVEEDORES SOCIALES (GOOGLE / FACEBOOK)
-                            // ====================================================================================
-                            if (proveedor === 'google' || proveedor === 'facebook') {
-                                // 1. Buscamos si ya existe el registro mapeado bajo su UUID real de Supabase
-                                const {
-                                    data: perfilSocial,
-                                    error: errorBusquedaSocial
-                                } = await cliente
+                    // ----------------------------------------------------------------------
+                    // CANAL AUTOMÁTICO: PROVEEDORES SOCIALES (GOOGLE / FACEBOOK) - CORREGIDO PARA EVITAR DUPLICADOS
+                    // ----------------------------------------------------------------------
+                    if (proveedor === 'google' || proveedor === 'facebook') {
+                        // 1. Buscamos primero si ya existe por el UUID de Supabase Auth
+                        let { data: perfilSocial, error: errorBusquedaSocial } = await cliente
+                            .from('usuario_autenticado')
+                            .select('usuario_id, estado_cuenta, verificado')
+                            .eq('usuario_id', user.id)
+                            .maybeSingle();
+
+                        if (errorBusquedaSocial) throw errorBusquedaSocial;
+
+                        // 2. Si no existe por ID, hacemos el rastreo inteligente por CORREO para evitar conflictos 409
+                        if (!perfilSocial) {
+                            console.log('? [SRE AUTH] Buscando vinculación existente por correo electrónico...');
+                            const { data: perfilPorCorreo, error: errorPorCorreo } = await cliente
+                                .from('usuario_autenticado')
+                                .select('usuario_id, estado_cuenta, verificado')
+                                .eq('correo', correo)
+                                .maybeSingle();
+
+                            if (errorPorCorreo) throw errorPorCorreo;
+
+                            if (perfilPorCorreo) {
+                                console.log('?? [SRE AUTH] Correo preexistente detectado. Acoplando UUID de red social de forma atómica...');
+                                
+                                // Unificamos el registro existente reemplazando el ID temporal por el real de Supabase
+                                const { error: errorSincronizacionOAuth } = await cliente
                                     .from('usuario_autenticado')
-                                    .select('estado_cuenta, verificado')
-                                    .eq('usuario_id', user.id)
-                                    .maybeSingle();
+                                    .update({ 
+                                        usuario_id: user.id,
+                                        ultimo_acceso: hoyFormatoIso,
+                                        fecha_actualizacion: hoyFormatoIso
+                                    })
+                                    .eq('correo', correo);
 
-                                if (errorBusquedaSocial) throw errorBusquedaSocial;
-
-                                // REGLA DE NEGOCIO SOCIAL: Si no existe, lo registramos de forma autónoma inmediatamente como ACTIVO
-                                if (!perfilSocial) {
-                                    console.warn('?? [SRE AUTH] Primer inicio de sesión OAuth detectado. Registrando perfil en la tabla...');
-
-                                    const metadatos = user.user_metadata || {};
-                                    const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
-                                    const stringNombre = String(partesNombre || "Interesado").trim();
-                                    const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
-                                    const telefonoOAuth = metadatos.phone || "999999999";
-
-                                    const {
-                                        error: insertSocialError
-                                    } = await cliente
-                                        .from('usuario_autenticado')
-                                        .upsert({
-                                            usuario_id: user.id, // Su ID real y único de autenticación centralizada
-                                            rol_id_fk: 3, // Rol estándar de interesado / cliente
-                                            nombre: stringNombre,
-                                            apellido: stringApellido,
-                                            correo: correo,
-                                            password_hash: "OAuth-No-Pass",
-                                            telefono: telefonoOAuth,
-                                            estado_cuenta: "activo",
-                                            verificado: true, // No requiere validar por correo
-                                            creado_por: `OAuth-${proveedor}`,
-                                            ultimo_acceso: hoyFormatoIso, // Guardado seguro YYYY-MM-DD
-                                            fecha_creacion: hoyFormatoIso,
-                                            fecha_actualizacion: hoyFormatoIso
-                                        });
-
-                                    if (insertSocialError) throw insertSocialError;
-
-                                    state.usuarioActual = {
-                                        id: user.id,
-                                        correo,
-                                        estado_cuenta: "activo"
-                                    };
-                                    console.log("?? [SRE AUTH] Registro de cuenta social completado exitosamente como ACTIVO.");
-                                    return;
-                                }
-
-                                // REGLA DE NEGOCIO CRÍTICA: Evaluar si el administrador suspendió la cuenta social
-                                const estadoSocialReal = String(perfilSocial.estado_cuenta || '').toLowerCase().trim();
-                                if (estadoSocialReal === "suspendido") {
-                                    console.error("? ACL BLOQUEO SOCIAL: El interesado se encuentra SUSPENDIDO.");
-                                    state.usuarioActual = {
-                                        id: user.id,
-                                        correo,
-                                        estado_cuenta: "suspendido"
-                                    };
-                                    alert("Acceso Restringido: Su cuenta se encuentra SUSPENDIDA por el administrador de la plataforma.");
-                                    return;
-                                }
-
-                                // Si está activo, otorgamos pase directo en la memoria de la app
-                                state.usuarioActual = {
-                                    id: user.id,
-                                    correo,
-                                    estado_cuenta: estadoSocialReal
+                                if (errorSincronizacionOAuth) throw errorSincronizacionOAuth;
+                                
+                                perfilSocial = { 
+                                    usuario_id: user.id, 
+                                    estado_cuenta: perfilPorCorreo.estado_cuenta 
                                 };
-                                console.log(`? [SRE AUTH] Pase libre autorizado para cuenta social existente. Estado: ${estadoSocialReal.toUpperCase()}`);
-                                return;
                             }
+                        }
+
+                        // 3. Si definitivamente es un usuario 100% nuevo (no hay ID ni correo previo en la BD)
+                        if (!perfilSocial) {
+                            console.warn('?? [SRE AUTH] Creando registro autónomo nuevo para el interesado social...');
+                            
+                            const metadatos = user.user_metadata || {};
+                            const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
+                            const stringNombre = String(partesNombre[0] || "Interesado").trim();
+                            const stringApellido = String(partesNombre.slice(1).join(" ") || "OAuth").trim();
+                            const telefonoOAuth = metadatos.phone || "999999999";
+
+                            const { error: insertSocialError } = await cliente
+                                .from('usuario_autenticado')
+                                .insert([{
+                                    usuario_id: user.id,
+                                    rol_id_fk: 3,
+                                    nombre: stringNombre,
+                                    apellido: stringApellido,
+                                    correo: correo,
+                                    password_hash: "OAuth-No-Pass",
+                                    telefono: telefonoOAuth, 
+                                    estado_cuenta: "activo",
+                                    verificado: true,
+                                    creado_por: `OAuth-${proveedor}`,
+                                    ultimo_acceso: hoyFormatoIso,
+                                    fecha_creacion: hoyFormatoIso,
+                                    fecha_actualizacion: hoyFormatoIso
+                                }]);
+
+                            if (insertSocialError) throw insertSocialError;
+
+                            state.usuarioActual = { id: user.id, correo, estado_cuenta: "activo" };
+                            console.log("?? [SRE AUTH] Registro de cuenta social completado exitosamente como ACTIVO.");
+                            return;
+                        }
+
+                        // 4. Evaluar si el administrador suspendió la cuenta social vinculada
+                        const estadoSocialReal = String(perfilSocial.estado_cuenta || '').toLowerCase().trim();
+                        if (estadoSocialReal === "suspendido") {
+                            console.error("? ACL BLOQUEO SOCIAL: El interesado se encuentra SUSPENDIDO.");
+                            state.usuarioActual = { id: user.id, correo, estado_cuenta: "suspendido" };
+                            alert("Acceso Restringido: Su cuenta se encuentra SUSPENDIDA por el administrador.");
+                            return;
+                        }
+
+                        // Pase libre autorizado en memoria
+                        state.usuarioActual = { id: user.id, correo, estado_cuenta: estadoSocialReal };
+                        console.log(`? [SRE AUTH] Acceso concedido a cuenta social existente. Estado: ${estadoSocialReal.toUpperCase()}`);
+                        return;
+                    }
+
 
                             // ====================================================================================
                             // PARTE 3 DE 3: CANAL TRADICIONAL (EMAIL) Y ENLAZADO DE UUID POSTGRESQL
