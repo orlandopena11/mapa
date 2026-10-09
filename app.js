@@ -170,6 +170,88 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
     return false;
 }
 
+            function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
+                // ==========================================================================
+                // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
+                // ==========================================================================
+                const filtroTransaccion = state.filtros.estado || "Venta";
+
+                // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
+                if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
+                    return false;
+                }
+
+                if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) {
+                    return false;
+                }
+
+                if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
+                    return false;
+                }
+
+                // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
+                const inputDireccion = document.getElementById('search-address');
+                if (inputDireccion && inputDireccion.value.trim() !== "") {
+                    const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                    const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                    if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
+                        return false;
+                    }
+                }
+
+                // --- FILTROS DE RANGOS Y DIMENSIONES ---
+                if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
+                // Evaluación corregida SRE: procesa el filtro de forma reactiva si el valor es mayor a 0
+                // --- INICIO DE REEMPLAZO PUNTUAL: CARACTERÍSTICAS FÍSICAS, TIPOS Y LISTADOS SRE ---
+
+                // Evaluación de habitaciones (Enteros) y baños (Flotantes para admitir 1.5 o medios baños de forma exacta)
+                if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
+                    if ((parseInt(prop.habitaciones, 10) || 0) < state.filtros.habitaciones) return false;
+                }
+                if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
+                    if ((parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
+                }
+
+                // Filtrado multi-selección de tipos de propiedad (Casas, Departamentos, Terrenos, etc.)
+                if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
+                    if (!state.filtros.tiposPropiedad.has(String(prop.tipo_propiedad || '').trim())) return false;
+                }
+
+                // Implementación de regla de negocio omitida: Filtrado por Origen o Tipo de Listado
+                if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
+                    const origenPublicacion = String(prop.situacion_propiedad || prop.creado_por || "").toLowerCase().trim();
+                    if (origenPublicacion !== "" && !state.filtros.tiposListado.has(origenPublicacion)) {
+                        return false;
+                    } // Fin de validación inside Set tiposListado
+                }
+
+                // --- FIN DE REEMPLAZO PUNTUAL SRE ---
+
+
+                // ==========================================================================
+                // INICIO DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
+                // ==========================================================================
+                const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
+                const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
+
+                // Si el usuario no tiene ningún checkbox avanzado seleccionado, se muestra la configuración por defecto
+                if (checkboxesMarcados.length > 0) {
+                    const situacionBD = String(prop.situacion_propiedad || "").trim();
+                    const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
+
+                    if (!coincideFiltro) {
+                        return false;
+                    } // Fin de if coincideFiltro
+                } // Fin de if checkboxesMarcados
+
+                return true;
+            } // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuración por defecto SRE
+            // ==========================================================================
+            // FIN DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
+            // ==========================================================================
 
 
 
@@ -1366,89 +1448,6 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
 
             // ==========================================================================
             // PARTE 15 DE 15: FILTRADO MULTIDIMENSIONAL SIN TILDES Y DESPLIEGUE DE FICHA DETALLE
-            // ==========================================================================
-
-            function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
-                // ==========================================================================
-                // REGLA DE INTEGRIDAD ESTRICTA SRE DE TRANSACCIONES COMERCIALES
-                // ==========================================================================
-                const filtroTransaccion = state.filtros.estado || "Venta";
-
-                // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
-                if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
-                    return false;
-                }
-
-                if ((filtroTransaccion === "Alquiler" || filtroTransaccion === "Para el alquiler") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Alquiler")) {
-                    return false;
-                }
-
-                if ((filtroTransaccion === "Vendido" || filtroTransaccion === "Vendidas") && prop.estado_publicacion !== "vendida") {
-                    return false;
-                }
-
-                // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
-                const inputDireccion = document.getElementById('search-address');
-                if (inputDireccion && inputDireccion.value.trim() !== "") {
-                    const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-                    const direccionProp = String(prop.direccion || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    const distritoProp = String(prop.distrito || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    const tituloProp = String(prop.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-                    if (!direccionProp.includes(textoBusqueda) && !distritoProp.includes(textoBusqueda) && !tituloProp.includes(textoBusqueda)) {
-                        return false;
-                    }
-                }
-
-                // --- FILTROS DE RANGOS Y DIMENSIONES ---
-                if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
-                // Evaluación corregida SRE: procesa el filtro de forma reactiva si el valor es mayor a 0
-                // --- INICIO DE REEMPLAZO PUNTUAL: CARACTERÍSTICAS FÍSICAS, TIPOS Y LISTADOS SRE ---
-
-                // Evaluación de habitaciones (Enteros) y baños (Flotantes para admitir 1.5 o medios baños de forma exacta)
-                if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
-                    if ((parseInt(prop.habitaciones, 10) || 0) < state.filtros.habitaciones) return false;
-                }
-                if (state.filtros.banos !== undefined && state.filtros.banos > 0) {
-                    if ((parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
-                }
-
-                // Filtrado multi-selección de tipos de propiedad (Casas, Departamentos, Terrenos, etc.)
-                if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
-                    if (!state.filtros.tiposPropiedad.has(String(prop.tipo_propiedad || '').trim())) return false;
-                }
-
-                // Implementación de regla de negocio omitida: Filtrado por Origen o Tipo de Listado
-                if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
-                    const origenPublicacion = String(prop.situacion_propiedad || prop.creado_por || "").toLowerCase().trim();
-                    if (origenPublicacion !== "" && !state.filtros.tiposListado.has(origenPublicacion)) {
-                        return false;
-                    } // Fin de validación inside Set tiposListado
-                }
-
-                // --- FIN DE REEMPLAZO PUNTUAL SRE ---
-
-
-                // ==========================================================================
-                // INICIO DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
-                // ==========================================================================
-                const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
-                const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
-
-                // Si el usuario no tiene ningún checkbox avanzado seleccionado, se muestra la configuración por defecto
-                if (checkboxesMarcados.length > 0) {
-                    const situacionBD = String(prop.situacion_propiedad || "").trim();
-                    const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
-
-                    if (!coincideFiltro) {
-                        return false;
-                    } // Fin de if coincideFiltro
-                } // Fin de if checkboxesMarcados
-
-                return true;
-            } // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuración por defecto SRE
-            // ==========================================================================
-            // FIN DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
             // ==========================================================================
 
 
