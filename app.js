@@ -370,7 +370,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
         try {
             const parsed = JSON.parse(fotos);
             fotos = Array.isArray(parsed) ? parsed : [parsed];
-        } catch {
+        } catch (err) {
             fotos = fotos.split(',');
         }
     }
