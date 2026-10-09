@@ -1450,10 +1450,12 @@ function inicializacionModalEstadosVistaSRE(modoDestino) { // Inicia la Funcion 
 function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion inicializarAutenticacionTresCanalesSupabase SRE
     const btnAutenticarEmail = document.getElementById('btn-autenticar');
     
-    // Funcion interna reutilizable para procesar el Login o Registro Traducido al Castellano
+    // ====================================================================================
+    // PROCESADOR DEL FORMULARIO DE ALTA Y LOGUEO TRADICIONAL (EMAIL OTP)
+    // ====================================================================================
     const procesarAutenticacionMagicaSRE = async (esRegistroNuevo) => { // Inicia Funcion procesarAutenticacionMagicaSRE
         const emailInput = document.getElementById('login-email-input');
-        const emailValor = emailInput ? emailInput.value.trim() : "";
+        const emailValor = emailInput ? emailInput.value.trim().toLowerCase() : "";
         if (!emailValor) { alert("Por favor ingrese su dirección de correo electrónico."); return; }
         
         let nombreValor = "Interesado";
@@ -1476,7 +1478,7 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
         }
 
         if (btnAutenticarEmail) {
-            btnAutenticarEmail.innerText = esRegistroNuevo ? "⏳ Procesando Alta..." : "⏳ Verificando registro...";
+            btnAutenticarEmail.innerText = esRegistroNuevo ? "? Procesando Alta..." : "? Verificando registro...";
             btnAutenticarEmail.disabled = true;
         }
         
@@ -1492,49 +1494,50 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
 
             if (errorBD) throw new Error("Error al consultar la base de datos: " + errorBD.message);
 
-            if (esRegistroNuevo) { // REQUERIMIENTO 1: Flujo de creacion con INSERT inmediato de datos en estado PENDIENTE
+            if (esRegistroNuevo) { // REQUERIMIENTO: Flujo de creacion con INSERT en estado PENDIENTE
                 if (usuarioBD) {
                     alert("Aviso: Este correo electrónico ya se encuentra registrado en el sistema. Use la opción de Iniciar Sesión tradicional.");
                     inicializacionModalEstadosVistaSRE('login');
                     return;
                 }
                 
-                console.log("⚡ Generando UUID e Insertando registro inicial en la tabla con estado PENDIENTE...");
+                console.log("? Validando y estructurando fecha limpia para PostgreSQL...");
                 
-                const uuidValidoPostgres = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                // CORRECCIÓN ATÓMICA: Formato estricto Postgres YYYY-MM-DD (ej: 2026-10-08)
+                const fActual = new Date();
+                const hoyFormatoProduccion = [
+                    fActual.getFullYear(),
+                    String(fActual.getMonth() + 1).padStart(2, '0'),
+                    String(fActual.getDate()).padStart(2, '0')
+                ].join('-');
+
+                // Generación de un UUID temporal seguro para la inserción inicial (será sobreescrito por Supabase Auth en el primer login)
+                const uuidTemporalPostgres = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                     const r = Math.random() * 16 | 0;
                     const v = c === 'x' ? r : (r & 0x3 | 0x8);
                     return v.toString(16);
                 });
 
-            // Insertamos el nuevo interesado acoplándonos al formato ISO nativo de la base de datos para corregir el desbordamiento
-                const fActual = new Date();
-                const hoyFormatoProduccion = `${fActual.getFullYear()}-${String(fActual.getMonth() + 1).padStart(2, '0')}-${String(fActual.getDate()).padStart(2, '0')}`;
-
-                // INSERT inicial estricto con estado_cuenta en 'pendiente' libre de tildes y con fecha ISO pura
+                // INSERT inicial estricto con estado_cuenta en 'pendiente' libre de tildes y con fecha ISO pura YYYY-MM-DD
                 const { error: insertError } = await cliente
                     .from('usuario_autenticado')
                     .insert([{
-                        usuario_id: uuidValidoPostgres, 
+                        usuario_id: uuidTemporalPostgres, 
                         rol_id_fk: 3,
                         nombre: nombreValor,
                         apellido: apellidoValor,
                         correo: emailValor,
-                        password_hash: telefonoValor.slice(0, 8), 
-                        telefono: telefonoValor, // Propiedad de JS limpia sin tilde
+                        password_hash: "Email-OTP-Flow", 
+                        telefono: telefonoValor, // Nombre de columna limpio y corregido
                         estado_cuenta: "pendiente", 
                         verificado: false,
                         creado_por: emailValor,
-                        fecha_creacion: hoyFormatoProduccion, 
+                        fecha_creacion: hoyFormProduccion, 
                         fecha_actualizacion: hoyFormatoProduccion
-
-                        // fecha_creacion: fechaIsoEstandar, // Formato estándar ISO YYYY-MM-DD
-                        // fecha_actualizacion: fechaIsoEstandar
                     }]);
 
-
-
                 if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
+                console.log("?? Pre-registro exitoso en estado PENDIENTE.");
         
             } else { // Flujo Operativo para el Boton Continuar de Logueo Tradicional
                 if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
@@ -1547,9 +1550,10 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
                     alert("Acceso Restringido: El correo ingresado no figura en nuestro sistema. Si es nuevo, use la opción 'Crear cuenta'.");
                     inicializacionModalEstadosVistaSRE('registro');
                     return;
-                } // Fin de la Validacion de Estado
+                }
             }
 
+            // Despacho del enlace mágico a la bandeja de entrada del interesado
             const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname; 
             const { error: errorOtp } = await cliente.auth.signInWithOtp({ 
                 email: emailValor, 
@@ -1561,17 +1565,18 @@ function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion in
             alert(esRegistroNuevo ? "¡Cuenta pre-registrada con éxito en estado PENDIENTE! Le hemos enviado un enlace de confirmación a su correo." : "¡Enlace de acceso enviado! Revise su bandeja de entrada para ingresar.");
             cerrarPopupAccion('modal-autenticacion-supabase');
             inicializacionModalEstadosVistaSRE('login'); 
-        } catch (errAuth) { // Inicia Captura de Errores de Autenticacion
+        } catch (errAuth) { 
             alert("Error en el proceso: " + errAuth.message); 
-        } finally { // Reestablece Siempre el Estado Inicial del Boton
+        } finally { 
             if (btnAutenticarEmail) {
                 const modoActual = btnAutenticarEmail.getAttribute('data-modo') || 'login';
                 btnAutenticarEmail.innerText = modoActual === 'registro' ? "Confirmar Registro" : "Continuar";
                 btnAutenticarEmail.disabled = false;
             }
-        } // Fin de Bloque de Consulta
+        } 
     }; // Fin de Funcion procesarAutenticacionMagicaSRE
 
+    
     if (btnAutenticarEmail) { // Inicia Condicional de Existencia del Boton Email
         btnAutenticarEmail.addEventListener('click', async () => { // Inicia Evento Click para Email Tradicional
             const modoActual = btnAutenticarEmail.getAttribute('data-modo') || 'login';
