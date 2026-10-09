@@ -642,7 +642,7 @@ function construirContenedorPopupLeaflet(prop) {
 
     // Doble enlace seguro para interactividad en laptops y gestos fluidos en móviles/tabletas
     carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
-    carruselPopup.addEventListener('touchstart', ejecutarTransicionDetalle, { passive: true });
+    //carruselPopup.addEventListener('touchstart', ejecutarTransicionDetalle, { passive: true });
 
     return contenedorPopupMaster;
 }
@@ -1618,7 +1618,13 @@ function calcularCalendarioTresCajas() { // Inicia calcularCalendarioTresCajas
 
         const diaTexto = diasSemana[fechaCaja.getDay()];
         const fechaFormateada = `${fechaCaja.getDate()} de ${meses[fechaCaja.getMonth()]}`;
-        const valorDataIso = fechaCaja.toISOString().split('T')[0];
+        //const valorDataIso = fechaCaja.toISOString().split('T')[0];
+        const valorDataIso = [
+            fechaCaja.getFullYear(),
+            String(fechaCaja.getMonth() + 1).padStart(2, '0'),
+            String(fechaCaja.getDate()).padStart(2, '0')
+            ].join('-');
+
 
         const cajaNode = document.createElement('div');
         cajaNode.className = 'caja-fecha-item';
