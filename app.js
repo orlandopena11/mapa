@@ -1546,7 +1546,7 @@ function inicializarEventosPopups() { // Inicia inicializarEventosPopups
     if (btnSolicitarTourSelector) {
         btnSolicitarTourSelector.onclick = function(e) {
             if (e) e.stopPropagation();
-//            if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
+            // if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
               if (!(await validarAccesoFuncionalidadPremium())) return;
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
