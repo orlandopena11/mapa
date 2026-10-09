@@ -2813,3 +2813,4 @@ document.addEventListener("DOMContentLoaded", () => { // Inicia EventListener DO
                     ejecutarRecalculoHipoteca();
                 }
             }
+}); // <-- AGREGA ESTA LLAVE ABAJO (Cierra el DOMContentLoaded del archivo)
