@@ -109,44 +109,66 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     return true;
 } // Fin de Function verificarAutorizacionAcceso
 
+
 // ==========================================================================
 // GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
 // ==========================================================================
-async function validarAccesoFuncionalidadPremium() { // Inicia la Funcion validarAccesoFuncionalidadPremium SRE
-    console.group("?? [CORTAFUEGOS CENTRAL] Evaluando estado de cuenta...");
-    const cliente = obtenerClienteSupabase();
-    if (!cliente) { console.groupEnd(); return false; }
+function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optimizado
+    console.group("?? [CORTAFUEGOS CENTRAL] Evaluando permisos de interacción...");
     
-    const { data: { session } } = await cliente.auth.getSession();
-    if (!session || !session.user) {
+    // 1. VERIFICACIÓN DE AUTENTICACIÓN: ¿Existe un estado de usuario en memoria?
+    if (!state.usuarioActual || !state.usuarioActual.id) {
+        console.warn("? ACL BLOQUEADO: El interesado no ha iniciado sesión.");
         console.groupEnd();
+        
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
-        gestionarCortinaSPA('cerrar');
-        mostrarPopupAccion("modal-autenticacion-supabase");
-        return false;
-    }
-    try {
-        // Correccion de Columna Primaria: Consultamos 'usuario_id' para hacer Match exacto con tu tabla Postgres
-        const { data: usuarioBD } = await cliente.from('usuario_autenticado').select('estado_cuenta').eq('usuario_id', session.user.id).single();
-        const estado = usuarioBD ? String(usuarioBD.estado_cuenta).toLowerCase().trim() : "pendiente";
-        if (estado === "activo") {
-            state.usuarioActual = { id: session.user.id, correo: session.user.email, estado_cuenta: "activo" };
-            window.usuarioLogueado = session.user;
-            console.groupEnd();
-            return true;
+        
+        // Cierra estructuras visuales abiertas si existen
+        if (typeof gestionarCortinaSPA === "function") gestionarCortinaSPA('cerrar');
+        if (typeof cerrarTodosLosPaneles === "function") cerrarTodosLosPaneles();
+        
+        // Despliega el popup de autenticación de Supabase de forma inmediata
+        if (typeof mostrarPopupAccion === "function") {
+            mostrarPopupAccion("modal-autenticacion-supabase");
         }
-        alert("Acceso Restringido: Su cuenta se encuentra en estado " + estado.toUpperCase() + ".");
-        gestionarCortinaSPA('cerrar');
-        mostrarPopupAccion("modal-autenticacion-supabase");
-        console.groupEnd();
-        return false;
-    } catch (err) {
-        console.groupEnd();
-        gestionarCortinaSPA('cerrar');
-        mostrarPopupAccion("modal-autenticacion-supabase");
         return false;
     }
-} // Fin de la Funcion validarAccesoFuncionalidadPremium SRE
+    
+    // 2. VERIFICACIÓN DE ESTADO: Extraemos el estado limpio de la cuenta
+    const estadoCuenta = String(state.usuarioActual.estado_cuenta || '').toLowerCase().trim();
+    console.log(`? Interesado identificado: ${state.usuarioActual.correo} | Estado: ${estadoCuenta.toUpperCase()}`);
+
+    // REGLA DE NEGOCIO: Si el estado es SUSPENDIDO, se bloquea el acceso de inmediato
+    if (estadoCuenta === "suspendido") {
+        console.error("? ACL BLOQUEO CENTRAL: Intento de uso por usuario SUSPENDIDO.");
+        console.groupEnd();
+        
+        alert("Cuenta Suspendida: No tiene autorización para realizar acciones premium en la plataforma.");
+        if (typeof gestionarCortinaSPA === "function") gestionarCortinaSPA('cerrar');
+        return false;
+    }
+
+    // REGLA DE NEGOCIO: Si el estado es PENDIENTE (no ha hecho clic en el enlace de su correo)
+    if (estadoCuenta === "pendiente") {
+        console.warn("? ACL BLOQUEO CENTRAL: Cuenta aún en estado PENDIENTE.");
+        console.groupEnd();
+        
+        alert("Acceso Restringido: Por favor, revise su correo electrónico y valide su cuenta usando el enlace enviado para activar sus beneficios.");
+        return false;
+    }
+    
+    // 3. ACCESO PERMITIDO: Si llegó aquí es porque su estado es 'activo'
+    if (estadoCuenta === "activo") {
+        console.log("?? ACL PERMITIDO: Interesado activo y autorizado para funciones Premium.");
+        console.groupEnd();
+        return true;
+    }
+
+    // Fallback de seguridad por si existe un estado desconocido en la base de datos
+    console.warn(`? ACL BLOQUEADO: Estado de cuenta desconocido (${estadoCuenta}).`);
+    console.groupEnd();
+    return false;
+}
 
 
 
