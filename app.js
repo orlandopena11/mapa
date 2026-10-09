@@ -991,7 +991,7 @@ function inicializarEventosDeFiltros() {
 
         // Doble pasarela de eventos para garantizar respuesta instantánea con ratón o dedos
         boton.addEventListener('click', conmutarFiltroPanel);
-        boton.addEventListener('touchend', conmutarFiltroPanel);
+        //boton.addEventListener('touchend', conmutarFiltroPanel);
     });
 
     // Cierre inteligente y pasivo de desplegables al tocar cualquier zona libre de la pantalla
