@@ -1933,7 +1933,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } // Fin inyectarDatosPropiedadAlMensaje
 
 
-            function gestionarCortinaSPA(tipoPantalla, prop) {
+            window.gestionarCortinaSPA = function(tipoPantalla, prop) {
                 const cortina = document.getElementById('cortina-spa');
                 if (!cortina) return;
                 if (tipoPantalla === 'cerrar') {
