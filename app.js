@@ -15,6 +15,25 @@ if (typeof window.correoUsuarioLogueado === "undefined") {
     window.correoUsuarioLogueado = "";
 }
 
+const state = {
+    propiedades: [],
+    favoritos: new Set(),
+    usuarioActual: null,
+    propiedadSeleccionadaId: null,
+    filtros: {
+        estado: 'Venta',
+        precioMin: 0,
+        precioMax: Infinity,
+        habitaciones: 0,
+        camasExactas: false,
+        banos: 0,
+        tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
+        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
+    },
+    limpiadoresDOM: new Map()
+}; // Fin de asignación del objeto global state
+
+
 function actualizarBotonCuenta() {
     const navbar = document.querySelector('header.navbar-global');
     if (!navbar) return;
@@ -32,22 +51,6 @@ function actualizarBotonCuenta() {
 }
 
 
-
-const state = {
-    propiedades: [],
-    favoritos: new Set(),
-    filtros: {
-        estado: 'Venta',
-        precioMin: 0,
-        precioMax: Infinity,
-        camas: 0,
-        camasExactas: false,
-        baños: 0,
-        tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
-        tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
-    },
-    limpiadoresDOM: new Map()
-}; // Fin de asignación del objeto global state
 
 
 // ==========================================================================
