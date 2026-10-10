@@ -1021,7 +1021,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // Diferir las llamadas a la base de datos para no bloquear el callback de autenticación de Supabase
                     setTimeout(async () => {
-                        const user = session?.user;
+                        //const user = session?.user;
+                        const user = (session && session.user) ? session.user : null;
 
                         // REGLA DE NEGOCIO: Si no hay sesión activa, limpiamos y detenemos el flujo de forma limpia
                         if (!user) {
