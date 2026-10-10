@@ -764,7 +764,13 @@ function construirContenedorPopupLeaflet(prop) {
 
     // Doble enlace seguro para interactividad en laptops y gestos fluidos en móviles/tabletas
     carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
-    //carruselPopup.addEventListener('touchstart', ejecutarTransicionDetalle, { passive: true });
+// { --- INICIO DE ENLACE TÁCTIL SEGURO PARA DETALLE SPA SRE ---
+    carruselPopup.addEventListener('touchend', (ev) => {
+        if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
+            return; // No interrumpe la navegación de las flechas
+        }
+        ejecutarTransicionDetalle(ev);
+    }, { passive: true });
 
     return contenedorPopupMaster;
 }
@@ -875,8 +881,21 @@ function renderizarMapaZillow() {
                         gestionarCortinaSPA('detalle', prop);
                     };
 
-                    // Si tocan el carrusel, solo abre el detalle si NO se pulsó una flecha de cambio de foto
-                    carruselMovilActivo.onclick = (e) => {
+
+
+                    // { --- INICIO DE INTERCEPCIÓN MULTITÁCTIL FLOTANTE MÓVIL SRE ---
+                    const transicionMovilSPA = (e) => {
+                        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+                            e.stopPropagation();
+                            return; /* Deja operar las flechas sin saltar al detalle */
+                        }
+                        gestionarCortinaSPA('detalle', prop);
+                    };
+                    carruselMovilActivo.addEventListener('click', transicionMovilSPA);
+                    carruselMovilActivo.addEventListener('touchend', transicionMovilSPA, { passive: true });
+                    // --- FIN DE INTERCEPCIÓN MULTITÁCTIL                        
+                        
+                        
                         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
                             e.stopPropagation();
                             return;
