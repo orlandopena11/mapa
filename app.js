@@ -896,12 +896,12 @@ function renderizarMapaZillow() {
                     // --- FIN DE INTERCEPCIÓN MULTITÁCTIL                        
                         
                         
-                        if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
-                            e.stopPropagation();
-                            return;
-                        }
-                        gestionarCortinaSPA('detalle', prop);
-                    };
+                    //    if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
+                    //        e.stopPropagation();
+                    //        return;
+                    //    }
+                    //    gestionarCortinaSPA('detalle', prop);
+                    //};
 
                     contenedorEstructura.appendChild(textoDatos);
                     targetContenido.appendChild(contenedorEstructura);
