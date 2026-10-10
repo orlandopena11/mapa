@@ -850,7 +850,6 @@ function renderizarMapaZillow() {
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                 const targetContenido = document.getElementById("target-contenido-movil-sre");
 
-
                 if (cajaFlotanteMovil && targetContenido) {
                     targetContenido.innerHTML = ''; // Vaciamos el contenedor estático
 
@@ -869,14 +868,15 @@ function renderizarMapaZillow() {
                         <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                     `;
 
-// { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE REPARACIÓN DE LLAVES SRE ---
                     const ejecutarTransicionMovil = (ev) => {
                         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
                             ev.stopPropagation();
                             return;
                         }
-                        if (typeof gestionarCortinaSPA === "function") {
-                            gestionarCortinaSPA('detalle', prop);
+                        
+                        // Asegurando el acceso de la función en el ámbito global mediante el objeto window
+                        if (typeof window.gestionarCortinaSPA === "function") {
+                            window.gestionarCortinaSPA('detalle', prop);
                         }
                     };
 
@@ -889,11 +889,8 @@ function renderizarMapaZillow() {
                     contenedorEstructura.appendChild(textoDatos);
                     targetContenido.appendChild(contenedorEstructura);
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
-                } // Cierre correcto de: if (cajaFlotanteMovil && targetContenido)
-                // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE ---
-
-
-                } else {
+                }
+            } else {
                 // Sincronización del scroll automático hacia el catálogo derecho en computadoras de escritorio
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
                 if (tarjetaDesktop) {
@@ -929,14 +926,11 @@ function renderizarMapaZillow() {
                 });
             }
         } catch (errGeometrico) {
-            console.warn("⚠️ [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
+            console.warn("?? [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
         }
     }
 }
 
-
-
-// ==========================================================================
 // PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
 // ==========================================================================
 
