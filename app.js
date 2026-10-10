@@ -577,18 +577,24 @@ function construirRielCarruselComponente(prop, esPopup = false) {
             button.textContent = texto;
             button.style.zIndex = '20';
 
-            button.addEventListener('click', event => {
+            // Manejador unificado con soporte síncrono dual para ratón y tacto móvil
+            const ejecutarCambio = event => {
                 event.preventDefault();
                 event.stopPropagation();
                 desplazarRiel(direction);
-            });
+            }; // Fin de ejecutarCambio
+
+            button.addEventListener('click', ejecutarCambio);
+            button.addEventListener('touchstart', ejecutarCambio, { passive: false });
 
             contenedorFoto.appendChild(button);
-        };
-
+        }; /* Fin de crearFlecha */        
+ 
         crearFlecha('flecha-izq', '‹', -1);
         crearFlecha('flecha-der', '›', 1);
-    }
+        // Dos líneas de código posteriores que se conservan intactas como calce de cierre:
+
+    }  /* Fin de if fotos.length > 1 */ 
 
     const etiqueta = document.createElement('div');
     etiqueta.className = 'etiqueta-foto-zillow';
