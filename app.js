@@ -869,29 +869,31 @@ function renderizarMapaZillow() {
                         <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                     `;
 
-                    // { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE CAPTURA MULTITÁCTIL MÓVIL SRE ---
-                    // Manejador único centralizado que responde inmediatamente a clics o toques con el dedo
+// { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE REPARACIÓN DE LLAVES SRE ---
                     const ejecutarTransicionMovil = (ev) => {
                         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
                             ev.stopPropagation();
-                            return; /* Permite cambiar de foto en el celular sin abrir el detalle */
+                            return;
                         }
                         if (typeof gestionarCortinaSPA === "function") {
                             gestionarCortinaSPA('detalle', prop);
                         }
-                    }; // Fin de ejecutarTransicionMovil
+                    };
 
-// { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE CALCE DIRECTO MÓVIL SRE ---
-            // Activación síncrona nativa de respuesta al toque o clic móvil en el contenedor flotante
-            const contenedorFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
-            if (contenedorFlotanteMovil) {
-                contenedorFlotanteMovil.onclick = ejecutarTransicionMovil;
-                contenedorFlotanteMovil.ontouchend = ejecutarTransicionMovil;
-            }
-// --- FIN DEL REEMPLAZO QUIRÚRGICO SRE ---
+                    const contenedorFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+                    if (contenedorFlotanteMovil) {
+                        contenedorFlotanteMovil.onclick = ejecutarTransicionMovil;
+                        contenedorFlotanteMovil.ontouchend = ejecutarTransicionMovil;
+                    }
+
+                    contenedorEstructura.appendChild(textoDatos);
+                    targetContenido.appendChild(contenedorEstructura);
+                    cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
+                } // Cierre correcto de: if (cajaFlotanteMovil && targetContenido)
+                // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE ---
 
 
-            } else {
+                } else {
                 // Sincronización del scroll automático hacia el catálogo derecho en computadoras de escritorio
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
                 if (tarjetaDesktop) {
