@@ -753,24 +753,31 @@ function construirContenedorPopupLeaflet(prop) {
 
     // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
     const ejecutarTransicionDetalle = (ev) => {
+
+    // { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE ALINEACIÓN DE LLAVES SRE ---
         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
             ev.stopPropagation();
             return; // Deja operar las flechas sin abrir el detalle de la casa
         }
         if (window.map) window.map.closePopup();
         state.propiedadSeleccionadaId = prop.id;
-        gestionarCortinaSPA('detalle', prop);
-    };
+        
+        if (typeof gestionarCortinaSPA === "function") {
+            gestionarCortinaSPA('detalle', prop);
+        }
+    }; // Fin correcto de la función ejecutarTransicionDetalle (Movido aquí para abrir el bloque)
 
     // Doble enlace seguro para interactividad en laptops y gestos fluidos en móviles/tabletas
     carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
-// { --- INICIO DE ENLACE TÁCTIL SEGURO PARA DETALLE SPA SRE ---
+
+    // --- INICIO DE ENLACE TÁCTIL SEGURO PARA DETALLE SPA SRE ---
     carruselPopup.addEventListener('touchend', (ev) => {
         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
             return; // No interrumpe la navegación de las flechas
         }
         ejecutarTransicionDetalle(ev);
     }, { passive: true });
+    // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE
 
     return contenedorPopupMaster;
 }
