@@ -881,15 +881,14 @@ function renderizarMapaZillow() {
                         }
                     }; // Fin de ejecutarTransicionMovil
 
-                    // Enlazamos de forma explícita la foto del carrusel para móviles
-                    carruselMovilActivo.addEventListener('click', ejecutarTransicionMovil);
-                    carruselMovilActivo.addEventListener('touchend', ejecutarTransicionMovil, { passive: true });
-
-                    // Enlazamos de forma explícita el bloque inferior de textos
-                    textoDatos.addEventListener('click', ejecutarTransicionMovil);
-                    textoDatos.addEventListener('touchend', ejecutarTransicionMovil, { passive: true });
-                    // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE
-                }
+// { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE CALCE DIRECTO MÓVIL SRE ---
+            // Activación síncrona nativa de respuesta al toque o clic móvil en el contenedor flotante
+            const contenedorFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
+            if (contenedorFlotanteMovil) {
+                contenedorFlotanteMovil.onclick = ejecutarTransicionMovil;
+                contenedorFlotanteMovil.ontouchend = ejecutarTransicionMovil;
+            }
+// --- FIN DEL REEMPLAZO QUIRÚRGICO SRE ---
 
 
             } else {
