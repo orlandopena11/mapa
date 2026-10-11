@@ -2078,7 +2078,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById('btn-cerrar-cortina').onclick = (e) => {
                         e.stopPropagation();
                         gestionarCortinaSPA('cerrar');
-                    };
+                    
 
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
@@ -2086,56 +2086,72 @@ document.addEventListener("DOMContentLoaded", () => {
                      * Resuelve el fallo de promesas asíncronas evaluando el booleano síncrono nativo en cualquier pantalla.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c[SRE ESPÍA CONTROL] Evaluando pulsación en botón: ${idBoton}`, "color: #002e50; font-weight: bold;");
+                        console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
                         
                         // Extracción síncrona limpia para corregir el quiebre sintáctico de la consola
                         const tieneAccesoValido = validarAccesoFuncionalidadPremium();
-                        console.log("[SRE ESPÍA FIREWALL] Estado de autorización arrojado por el cortafuegos:", tieneAccesoValido);
+                        console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
 
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
-                                console.log("[SRE ACCIÓN PERMITIDA] Desplegando modal de agendamiento de visitas...");
+                                console.log("%c[SRE ESPÍA TOUR SUCCESS] Permisos aprobados. Desplegando modal_tour.", "color: #10b981; font-weight: bold;");
                                 mostrarPopupAccion("modal-tour-comercial");
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
+                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
+                                console.warn("[SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso. Redirigiendo a Login Supabase.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
-                                console.log("[SRE ACCIÓN PERMITIDA] Desplegando modal de asignación de asesores...");
+                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] Permisos aprobados. Desplegando modal_agente y cargando mensaje.", "color: #10b981; font-weight: bold;");
                                 mostrarPopupAccion("modal-agent-comercial");
                                 inyectarDatosPropiedadAlMensaje();
+                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
+                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso. Redirigiendo a Login Supabase.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
-                    // Buscamos los elementos directamente en el DOM recién inyectados para asegurar el enlace del evento estable
-                    const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
-                    const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
+                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 100ms a que el DOM se asiente antes de acoplar los escuchadores
+                    setTimeout(() => { // Inicia bloque setTimeout diferidor
+                        console.group("%c?? [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
+                        
+                        const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
+                        const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
 
-                    if (botonTourFisicoSRE) { // Inicia enlace de eventos para el botón de Tour
-                        const manejarClickTour = (e) => { // Inicia manejador click Tour
-                            e.preventDefault();
-                            e.stopPropagation();
-                            ejecutarFlujoModalProtegidoSRE('btn-solicitar-tour-galeria');
-                        }; // Fin de manejador click Tour
-                        botonTourFisicoSRE.addEventListener('click', manejarClickTour);
-                        botonTourFisicoSRE.addEventListener('touchend', manejarClickTour, { passive: false });
-                    } // Fin de enlace de eventos para el botón de Tour
+                        console.log("[SRE ESPÍA DOM] ¿Se encontró botón de Tour en la ficha?:", botonTourFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
+                        console.log("[SRE ESPÍA DOM] ¿Se encontró botón de Agente en la ficha?:", botonAgenteFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
 
-                    if (botonAgenteFisicoSRE) { // Inicia enlace de eventos para el botón de Agente
-                        const manejarClickAgente = (e) => { // Inicia manejador click Agente
-                            e.preventDefault();
-                            e.stopPropagation();
-                            ejecutarFlujoModalProtegidoSRE('btn-contactar-agente-galeria');
-                        }; // Fin de manejador click Agente
-                        botonAgenteFisicoSRE.addEventListener('click', manejarClickAgente);
-                        botonAgenteFisicoSRE.addEventListener('touchend', manejarClickAgente, { passive: false });
-                    } // Fin de enlace de eventos para el botón de Agente
+                        if (botonTourFisicoSRE) { // Inicia acoplamiento para el botón de Tour
+                            const manejarClickTour = (e) => { // Inicia manejador click Tour
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log("[SRE ESPÍA INTERACCIÓN TÁCTIL/RATÓN] Disparado evento en botón Tour");
+                                ejecutarFlujoModalProtegidoSRE('btn-solicitar-tour-galeria');
+                            }; // Fin de manejador click Tour
+                            botonTourFisicoSRE.addEventListener('click', manejarClickTour);
+                            botonTourFisicoSRE.addEventListener('touchend', manejarClickTour, { passive: false });
+                            console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Tour.");
+                        } // Fin de acoplamiento para el botón de Tour
 
+                        if (botonAgenteFisicoSRE) { // Inicia acoplamiento para el botón de Agente
+                            const manejarClickAgente = (e) => { // Inicia manejador click Agente
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log("[SRE ESPÍA INTERACCIÓN TÁCTIL/RATÓN] Disparado evento en botón Agente");
+                                ejecutarFlujoModalProtegidoSRE('btn-contactar-agente-galeria');
+                            }; // Fin de manejador click Agente
+                            botonAgenteFisicoSRE.addEventListener('click', manejarClickAgente);
+                            botonAgenteFisicoSRE.addEventListener('touchend', manejarClickAgente, { passive: false });
+                            console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Agente.");
+                        } // Fin de acoplamiento para el botón de Agente
+
+                        console.groupEnd();
+                    }, 100); // Fin de bloque setTimeout diferidor
 
 
                     // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
