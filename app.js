@@ -2083,27 +2083,33 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
                      * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Garantiza el correcto funcionamiento omnicanal en laptops, tabletas y celulares.
+                     * Corrige el fallo sintáctico evaluando el booleano síncrono mediante una bifurcación condicional limpia.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
+                        console.group(`%c[SRE ESPÍA CONTROL] Evaluando pulsación en botón: ${idBoton}`, "color: #002e50; font-weight: bold;");
+                        
+                        // CORRECCIÓN ATÓMICA: Extracción directa de la bandera booleana para subsanar el TypeError de la Promesa
+                        const tieneAccesoValido = validarAccesoFuncionalidadPremium();
+                        console.log("[SRE ESPÍA FIREWALL] Estado de autorización arrojado por el cortafuegos:", tieneAccesoValido);
+
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
-                            validarAccesoFuncionalidadPremium().then((esValido) => { // Inicia promesa asíncrona de acceso a visitas
-                                if (esValido) { // Inicia bloque si el acceso es válido para visitas
-                                    mostrarPopupAccion("modal-tour-comercial");
-                                    calcularCalendarioTresCajas();
-                                    gestionarPasosModalTour(1);
-                                } // Fin de bloque si el acceso es válido para visitas
-                            }); // Fin de promesa asíncrona de acceso a visitas
+                            if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
+                                console.log("[SRE ACCIÓN PERMITIDA] Desplegando modal de agendamiento de visitas...");
+                                mostrarPopupAccion("modal-tour-comercial");
+                                calcularCalendarioTresCajas();
+                                gestionarPasosModalTour(1);
+                            } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
-                            validarAccesoFuncionalidadPremium().then((esValido) => { // Inicia promesa asíncrona de acceso a agentes
-                                if (esValido) { // Inicia bloque si el acceso es válido para agentes
-                                    mostrarPopupAccion("modal-agent-comercial");
-                                    inyectarDatosPropiedadAlMensaje();
-                                } // Fin de bloque si el acceso es válido para agentes
-                            }); // Fin de promesa asíncrona de acceso a agentes
+                            if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
+                                console.log("[SRE ACCIÓN PERMITIDA] Desplegando modal de asignación de asesores...");
+                                mostrarPopupAccion("modal-agent-comercial");
+                                inyectarDatosPropiedadAlMensaje();
+                            } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
+                        
+                        console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
                     // Manejador centralizado para interceptar las interacciones de los botones de acción en la Cortina SPA
@@ -2116,11 +2122,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         } // Fin de validación de ID de botón
                     }; // Fin de función interceptora de eventos táctiles y de ratón
 
-                    // Doble pasarela síncrona nativa para asegurar compatibilidad total en laptops, tabletas y celulares
-                    cortina.addEventListener('click', interceptarPulsacionFichaSPA);
-                    cortina.addEventListener('touchend', interceptarPulsacionFichaSPA, { passive: false });
 
-                                        // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
+                    // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) { // Inicia bloque de control para la existencia de formAgente
                         formAgente.onsubmit = async (eventSubmit) => { // Inicia submit asíncrono para Contactar Agente
