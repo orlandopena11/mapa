@@ -2074,22 +2074,22 @@ document.addEventListener("DOMContentLoaded", () => {
                         contenedorFijoFicha.appendChild(divTel);
                     }
 
-                    // 1. Cierre de la ficha detallada
+// 1. Cierre de la ficha detallada
                     const botonCerrarCortinaSRE = document.getElementById('btn-cerrar-cortina');
                     if (botonCerrarCortinaSRE) { // Inicia validación física del botón de cierre
                         botonCerrarCortinaSRE.onclick = (e) => { // Inicia manejador onclick de cierre
                             e.stopPropagation();
                             gestionarCortinaSPA('cerrar');
-                        }; // FIN DEL MANEJADOR ONCLICK PERFECTAMENTE CERRADO Y CORREGIDO POR EL MOTOR SRE
-                    } // Fin de validación del botón de cierre
+                        }; // [FIX SRE CRÍTICO]: CIERRE DE LA FUNCIÓN FLECHA
+                    } // [FIX SRE CRÍTICO]: CIERRE DEL IF CONDICIONAL
 
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
                      * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Evalúa el booleano síncrono nativo corrigiendo de raíz el TypeError en cualquier pantalla.
+                     * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
+                        console.group(`%c🕵️ [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
                         
                         // Extracción síncrona limpia para corregir el quiebre sintáctico de la consola
                         const tieneAccesoValido = validarAccesoFuncionalidadPremium();
@@ -2102,7 +2102,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
-                                console.warn("[SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso.");
+                                console.warn("🚨 [SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
@@ -2112,7 +2112,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 mostrarPopupAccion("modal-agent-comercial");
                                 inyectarDatosPropiedadAlMensaje();
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
-                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso.");
+                                console.warn("🚨 [SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
@@ -2121,7 +2121,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
                     setTimeout(() => { // Inicia bloque setTimeout diferidor
-                        console.group("%c?? [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
+                        console.group("%c⚙️ [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
                         
                         const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
                         const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
@@ -2131,11 +2131,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (botonTourFisicoSRE) { // Inicia acoplamiento para el botón de Tour
                             const manejarClickTour = (e) => { // Inicia manejador click Tour
-                                e.preventDefault();
+                                // El preventDefault aquí es crucial para evitar el "Ghost Click" (doble disparo) en móviles
+                                if (e.cancelable) e.preventDefault(); 
                                 e.stopPropagation();
-                                console.log("[SRE ESPÍA INTERACCIÓN TÁCTIL/RATÓN] Disparado evento en botón Tour");
+                                console.log(`[SRE ESPÍA INTERACCIÓN] Disparado evento nativo: ${e.type} en botón Tour`);
                                 ejecutarFlujoModalProtegidoSRE('btn-solicitar-tour-galeria');
                             }; // Fin de manejador click Tour
+                            
                             botonTourFisicoSRE.addEventListener('click', manejarClickTour);
                             botonTourFisicoSRE.addEventListener('touchend', manejarClickTour, { passive: false });
                             console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Tour.");
@@ -2143,11 +2145,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (botonAgenteFisicoSRE) { // Inicia acoplamiento para el botón de Agente
                             const manejarClickAgente = (e) => { // Inicia manejador click Agente
-                                e.preventDefault();
+                                if (e.cancelable) e.preventDefault(); 
                                 e.stopPropagation();
-                                console.log("[SRE ESPÍA INTERACCIÓN TÁCTIL/RATÓN] Disparado evento en botón Agente");
+                                console.log(`[SRE ESPÍA INTERACCIÓN] Disparado evento nativo: ${e.type} en botón Agente`);
                                 ejecutarFlujoModalProtegidoSRE('btn-contactar-agente-galeria');
                             }; // Fin de manejador click Agente
+                            
                             botonAgenteFisicoSRE.addEventListener('click', manejarClickAgente);
                             botonAgenteFisicoSRE.addEventListener('touchend', manejarClickAgente, { passive: false });
                             console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Agente.");
