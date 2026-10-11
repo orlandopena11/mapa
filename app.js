@@ -2379,17 +2379,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             const horaSeleccionada = document.getElementById('hora-principal').value;
                             const fechasArreglo = Array.from(fechasSeleccionadasTour);
 
-                            try { // Inicia bloque try transaccional
-                                const cliente = obtenerClienteSupabase();
-                                if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Evento 1: Registro de la cita delegando la creación del ID y fecha_creacion a Supabase de forma nativa
+                                // Evento 1: Registro de la cita adaptando las fechas al formato exacto DD/MM/YYYY de tu tabla visita
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
-                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || ""; // Tomamos la primera fecha elegida (ej: "2026-10-12")
+                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || ""; 
                                 
-                                // Formateamos al estándar ISO TIMESTAMP combinando fecha + hora (ej: "2026-10-12T10:00:00")
-                                const timestampIsoEstructuradoSRE = `${primeraFechaEscogidaSRE}T${horaSeleccionada}:00`;
-                                console.log("[SRE ESPÍA TIMESTAMPTZ] Cadena para fecha_visita:", timestampIsoEstructuradoSRE);
+                                // Formateamos al estándar de tu tabla (ej: "25/07/2026 10:00")
+                                const timestampLatinoSRE = `${primeraFechaEscogidaSRE} ${horaSeleccionada}`;
+                                
+                                const fechaActualTransaccion = new Date();
+                                const fechaCreacionLatina = [
+                                    String(fechaActualTransaccion.getDate()).padStart(2, '0'),
+                                    String(fechaActualTransaccion.getMonth() + 1).padStart(2, '0'),
+                                    fechaActualTransaccion.getFullYear()
+                                ].join('/') + ` ${String(fechaActualTransaccion.getHours()).padStart(2, '0')}:${String(fechaActualTransaccion.getMinutes()).padStart(2, '0')}:${String(fechaActualTransaccion.getSeconds()).padStart(2, '0')}`;
 
                                 const {
                                     data: nuevaVisita,
@@ -2398,14 +2401,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        anuncio_id_fk: 'ANUN-001', // Calce referencial requerido por el esquema
+                                        anuncio_id_fk: 'ANUN-001', 
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
-                                        fecha_visita: timestampIsoEstructuradoSRE, // Se envía la marca ISO pura
-                                        estado_visita: 'pendiente'
+                                        fecha_visita: timestampLatinoSRE, 
+                                        tipo_visita: 'presencial',
+                                        estado_visita: 'pendiente',
+                                        estado_lead: 'nuevo',
+                                        fecha_creacion: fechaCreacionLatina
                                     }])
-                                   .select()
+                                    .select()
                                     .single();
 
                                 if (errorVisita) throw errorVisita;
@@ -2423,46 +2429,119 @@ document.addEventListener("DOMContentLoaded", () => {
                                 let emailVendedorDestino = "";
 
                                 if (!errorAnuncio && anuncioFiltro) {
-                                    // Validamos si la columna agente_id_fk tiene un valor asignado (es un agente)
                                     if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
                                         const idAgenteAsignado = anuncioFiltro.agente_id_fk;
 
-                                        // Actualizamos la tabla visita vinculando al agente y manteniendo el estado pendiente
                                         await cliente
                                             .from('visita')
                                             .update({
                                                 agente_id_fk: idAgenteAsignado,
                                                 estado_visita: 'pendiente'
                                             })
-                                            .eq('id', nuevaVisita.id);
+                                            .eq('visita_id', nuevaVisita.visita_id);
 
-                                        // Consultamos el email oficial en la tabla agente_inmobiliario
                                         const {
                                             data: datosAgente
                                         } = await cliente
                                             .from('agente_inmobiliario')
-                                            .select('email_agente')
-                                            .eq('id', idAgenteAsignado)
+                                            .select('correo')
+                                            .eq('agente_id', idAgenteAsignado)
                                             .single();
 
                                         if (datosAgente) {
-                                            emailVendedorDestino = datosAgente.email_agente;
+                                            emailVendedorDestino = datosAgente.correo;
                                         }
                                     } else {
-                                        // Si no hay valor en agente_id_fk, es un Propietario: obtenemos el correo de usuario_autenticado
                                         const {
                                             data: datosUsuario
                                         } = await cliente
                                             .from('usuario_autenticado')
-                                            .select('correo_electronico')
-                                            .eq('id', anuncioFiltro.usuario_id_fk)
+                                            .select('correo')
+                                            .eq('usuario_id', anuncioFiltro.usuario_id_fk)
                                             .single();
 
                                         if (datosUsuario) {
-                                            emailVendedorDestino = datosUsuario.correo_electronico;
+                                            emailVendedorDestino = datosUsuario.correo;
                                         }
                                     }
+                                } /* Fin de validacion estructural SRE */
+
+                                try { // Inicia bloque try transaccional
+                                const cliente = obtenerClienteSupabase();
+                             if (!cliente) throw new Error("Cliente Supabase inaccesible.");   
+
+                                         // Evento 1: Consulta de agentes por prioridad seleccionando la columna nativa verdadera 'correo' y la PK 'agente_id'
+                                const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
+                                    .from('agente_inmobiliario')
+                                    .select('agente_id, prioridad, leads, leads_recibidos, correo')
+                                    .order('prioridad', { ascending: true });
+
+                                if (errorAgentes) throw errorAgentes;
+
+                                let agenteAsignadoSRE = null;
+                                for (let i = 0; i < listaAgentes.length; i++) {
+                                    const agenteEvaluado = listaAgentes[i];
+                                    const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
+                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos || 0, 10);
+
+                                    if (actualesLeads < maxLeads) {
+                                        agenteAsignadoSRE = agenteEvaluado;
+                                        break;
+                                    }
                                 }
+
+                                if (!agenteAsignadoSRE) {
+                                    throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
+                                }
+
+                                const fechaTransaccion = new Date();
+                                const fechaFormatoLatinoSRE = [
+                                    String(fechaTransaccion.getDate()).padStart(2, '0'),
+                                    String(fechaTransaccion.getMonth() + 1).padStart(2, '0'),
+                                    fechaTransaccion.getFullYear()
+                                ].join('/') + ` ${String(fechaTransaccion.getHours()).padStart(2, '0')}:${String(fechaTransaccion.getMinutes()).padStart(2, '0')}`;
+
+                                // Evento 2: Registro del lead mapeando las columnas nativas de tu tabla contacte_agente
+                                const { error: errorInsertLead } = await clienteSupabaseSRE
+                                    .from('contacte_agente')
+                                    .insert([{
+                                        anuncio_id_fk: 'ANUN-001', 
+                                        propiedad_id_fk: state.propiedadSeleccionadaId,
+                                        agente_id_fk: agenteAsignadoSRE.agente_id,
+                                        nombre: nombreAgenteInput,
+                                        apellidos: '', 
+                                        email_interesado: emailAgenteInput,
+                                        telefono: telefonoAgenteInput,
+                                        fecha_contacte: fechaFormatoLatinoSRE,
+                                        tipo_visita: 'agente',
+                                        estado_visita: 'pendiente',
+                                        estado_lead: 'pendiente',
+                                        creado_por: emailAgenteInput,
+                                        fecha_creacion: fechaFormatoLatinoSRE
+                                    }]);
+
+                                if (errorInsertLead) throw errorInsertLead;
+
+                                // Evento 3: Incremento del contador mapeando agente_id
+                                const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
+                                const { error: errorUpdateAgente } = await clienteSupabaseSRE
+                                    .from('agente_inmobiliario')
+                                    .update({ leads_recibidos: nuevosLeadsRecibidos })
+                                    .eq('agente_id', agenteAsignadoSRE.agente_id);
+
+                                if (errorUpdateAgente) throw errorUpdateAgente;
+
+                                // Evento 4: Disparo asíncrono utilizando la propiedad unificada correo del asesor
+                                if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
+                                    const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
+                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}`);
+                                    
+                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
+                                        .then(resMail => resMail.json())
+                                        .then(resData => console.log("Notificación SRE despachada al Agente:", resData))
+                                        .catch(errMail => console.warn("Pasarela de correo en procesamiento asíncrono.", errMail));
+                                } /* Fin de logica de contacto unificada SRE */
+                                    
 
                                 // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
