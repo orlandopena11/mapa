@@ -655,18 +655,22 @@ div.leaflet-marker-icon.map-price-pill {
 /* ==========================================================================
    ESTRUCTURA CONTENEDORA DE LAS VENTANAS FLOTANTES DE REGISTRO (SRE FIJADO)
    ========================================================================== */
-.modal-accion-contenido {
-    background-color: var(--blanco); /* Fondo blanco sólido para bloquear la transparencia */
+/* ==========================================================================
+   ESTRUCTURA CONTENEDORA DE LAS VENTANAS FLOTANTES DE REGISTRO (SRE FIJADO)
+   ========================================================================== */
+.modal-accion-contenido, #form-contactar-agente {
+    background-color: var(--blanco) !important; /* Fuerza el fondo blanco bloqueando transparencias */
     width: 100%;
-    max-width: 460px; /* Tamaño máximo adaptativo de Zillow */
+    max-width: 460px;
     padding: 24px;
-    border-radius: 12px; /* Esquinas redondeadas suaves */
+    border-radius: 12px;
     box-sizing: border-box;
     position: relative;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Sombra perimetral de destaque */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     font-family: inherit;
-    color: var(--texto-principal); /* Fuerza el color de texto legible */
+    color: var(--texto-principal);
 }
+
 
 /* Ajustes elásticos complementarios para el orden interno del formulario del Tour */
 .modal-tour-body-scroll {
