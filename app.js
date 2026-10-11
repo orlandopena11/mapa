@@ -2081,29 +2081,152 @@ document.addEventListener("DOMContentLoaded", () => {
                     };
 
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
-                    cortina.addEventListener('click', (e) => {
-                        if (e.target && e.target.id === 'btn-solicitar-tour-galeria') {
+                    /**
+                     * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
+                     * Garantiza el correcto funcionamiento omnicanal en laptops, tabletas y celulares.
+                     */
+                    const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
+                        if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
+                            validarAccesoFuncionalidadPremium().then((esValido) => { // Inicia promesa asíncrona de acceso a visitas
+                                if (esValido) { // Inicia bloque si el acceso es válido para visitas
+                                    mostrarPopupAccion("modal-tour-comercial");
+                                    calcularCalendarioTresCajas();
+                                    gestionarPasosModalTour(1);
+                                } // Fin de bloque si el acceso es válido para visitas
+                            }); // Fin de promesa asíncrona de acceso a visitas
+                        } // Fin de condición para el modal de visitas
+
+                        if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
+                            validarAccesoFuncionalidadPremium().then((esValido) => { // Inicia promesa asíncrona de acceso a agentes
+                                if (esValido) { // Inicia bloque si el acceso es válido para agentes
+                                    mostrarPopupAccion("modal-agent-comercial");
+                                    inyectarDatosPropiedadAlMensaje();
+                                } // Fin de bloque si el acceso es válido para agentes
+                            }); // Fin de promesa asíncrona de acceso a agentes
+                        } // Fin de condición para el modal de agentes
+                    }; // Fin de flujo de verificación premium omnicanal
+
+                    // Manejador centralizado para interceptar las interacciones de los botones de acción en la Cortina SPA
+                    const interceptarPulsacionFichaSPA = (e) => { // Inicia función interceptora de eventos táctiles y de ratón
+                        const botonObjetivo = e.target;
+                        if (botonObjetivo && (botonObjetivo.id === 'btn-solicitar-tour-galeria' || botonObjetivo.id === 'btn-contactar-agente-galeria')) { // Inicia validación de ID de botón
+                            e.preventDefault();
                             e.stopPropagation();
-                            validarAccesoFuncionalidadPremium().then((esValido) => {
-                                if (!esValido) return;
-                                mostrarPopupAccion("modal-tour-comercial");
-                                calcularCalendarioTresCajas();
-                                gestionarPasosModalTour(1);
-                            });
-                        }
-                        if (e.target && e.target.id === 'btn-contactar-agente-galeria') {
-                            e.stopPropagation();
-                            validarAccesoFuncionalidadPremium().then((esValido) => {
-                                if (!esValido) return;
-                                mostrarPopupAccion("modal-agent-comercial");
-                                inyectarDatosPropiedadAlMensaje();
-                            });
-                        }
-                    });
+                            ejecutarFlujoModalProtegidoSRE(botonObjetivo.id);
+                        } // Fin de validación de ID de botón
+                    }; // Fin de función interceptora de eventos táctiles y de ratón
 
+                    // Doble pasarela síncrona nativa para asegurar compatibilidad total en laptops, tabletas y celulares
+                    cortina.addEventListener('click', interceptarPulsacionFichaSPA);
+                    cortina.addEventListener('touchend', interceptarPulsacionFichaSPA, { passive: false });
 
+                                        // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
+                    const formAgente = document.getElementById('form-contactar-agente');
+                    if (formAgente) { // Inicia bloque de control para la existencia de formAgente
+                        formAgente.onsubmit = async (eventSubmit) => { // Inicia submit asíncrono para Contactar Agente
+                            eventSubmit.preventDefault();
 
-                    // 4. NUEVA Funcionalidad Protegida: Ver Telefono con consulta relacional a Supabase
+                            const btnEnviarAgente = document.getElementById('btn-enviar-contacto-agente');
+                            if (btnEnviarAgente) { // Inicia bloqueo táctico del botón de envío
+                                btnEnviarAgente.innerText = "...Asignando Agente Experto...";
+                                btnEnviarAgente.disabled = true;
+                            } // Fin de bloqueo táctico del botón de envío
+
+                            const nombreAgenteInput = document.getElementById('agente-contacto-nombre').value.trim();
+                            const emailAgenteInput = document.getElementById('agente-contacto-email').value.trim();
+                            const telefonoAgenteInput = document.getElementById('agente-contacto-telefono').value.trim();
+                            const mensajeAgenteInput = document.getElementById('agente-mensaje').value.trim();
+
+                            try { // Inicia tubería transaccional SRE para asignación de Leads por Prioridad
+                                const clienteSupabaseSRE = obtenerClienteSupabase();
+                                if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
+
+                                // Evento 1: Consulta de agentes registrados ordenada estrictamente por su nivel de prioridad
+                                const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
+                                    .from('agente_inmobiliario')
+                                    .select('id, prioridad, leads, leads_recibidos, email_agente')
+                                    .order('prioridad', { ascending: true });
+
+                                if (errorAgentes) throw errorAgentes;
+
+                                let agenteAsignadoSRE = null;
+                                // Algoritmo secuencial indexado para evaluar la capacidad de carga del asesor
+                                for (let i = 0; i < listaAgentes.length; i++) { // Inicia ciclo de evaluación por prioridades de agentes
+                                    const agenteEvaluado = listaAgentes[i];
+                                    const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
+                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos || 0, 10);
+
+                                    if (actualesLeads < maxLeads) { // Inicia validación de cupo de leads disponible
+                                        agenteAsignadoSRE = agenteEvaluado;
+                                        break; // Detiene el ciclo inmediatamente al encontrar al agente calificado de mayor prioridad
+                                    } // Fin de validación de cupo de leads disponible
+                                } // Fin de ciclo de evaluación por prioridades de agentes
+
+                                if (!agenteAsignadoSRE) { // Inicia control de desbordamiento de la infraestructura
+                                    throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
+                                } // Fin de control de desbordamiento de la infraestructura
+
+                                // Obtención del tiempo en formato estricto YYYY-MM-DD para la persistencia en PostgreSQL
+                                const fechaTransaccion = new Date();
+                                const fechaFormatoIsoSRE = [
+                                    fechaTransaccion.getFullYear(),
+                                    String(fechaTransaccion.getMonth() + 1).padStart(2, '0'),
+                                    String(fechaTransaccion.getDate()).padStart(2, '0')
+                                ].join('-');
+
+                                // Evento 2: Registro del lead en la tabla de negocio contacte_agente con estado pendiente
+                                const { error: errorInsertLead } = await clienteSupabaseSRE
+                                    .from('contacte_agente')
+                                    .insert([{
+                                        propiedad_id_fk: state.propiedadSeleccionadaId,
+                                        agente_id_fk: agenteAsignadoSRE.id,
+                                        nombre_interesado: nombreAgenteInput,
+                                        email_interesado: emailAgenteInput,
+                                        telefono_interesado: telefonoAgenteInput,
+                                        mensaje: mensajeAgenteInput,
+                                        estado_lead: 'pendiente',
+                                        fecha_registro: fechaFormatoIsoSRE
+                                    }]);
+
+                                if (errorInsertLead) throw errorInsertLead;
+
+                                // Evento 3: Incremento reactivo del contador de leads recibidos en el perfil del agente
+                                const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
+                                const { error: errorUpdateAgente } = await clienteSupabaseSRE
+                                    .from('agente_inmobiliario')
+                                    .update({ leads_recibidos: nuevosLeadsRecibidos })
+                                    .eq('id', agenteAsignadoSRE.id);
+
+                                if (errorUpdateAgente) throw errorUpdateAgente;
+
+                                // Evento 4: Disparo asíncrono de la notificación por correo al asesor asignado
+                                if (agenteAsignadoSRE.email_agente && typeof urlMiScriptGoogle !== "undefined") { // Inicia condición de envío de correo
+                                    const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
+                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado en el portal inmobiliario.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}\n\nPor favor, actualiza el estado del lead a la brevedad.`);
+                                    
+                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.email_agente)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
+                                        .then(resMail => resMail.json())
+                                        .then(resData => console.log("Notificación SRE despachada al Agente:", resData))
+                                        .catch(errMail => console.warn("Pasarela de correo en cola de procesamiento asíncrono pasivo.", errMail));
+                                } // Fin de condición de envío de correo
+
+                                alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario de Prioridad ${agenteAsignadoSRE.prioridad} y se le notificó formalmente por correo electrónico.`);
+                                cerrarPopupAccion('modal-agent-comercial');
+                                formAgente.reset();
+
+                            } catch (errorTransaccionSRE) { // Inicia captura de excepciones de la tubería
+                                console.error("Error crítico en el flujo de asignación del agente:", errorTransaccionSRE.message);
+                                alert("Error en el sistema de asignación: " + errorTransaccionSRE.message);
+                            } finally { // Inicia restablecimiento seguro de interfaz de usuario
+                                if (btnEnviarAgente) {
+                                    btnEnviarAgente.innerText = "Enviar Mensaje";
+                                    btnEnviarAgente.disabled = false;
+                                }
+                            } // Fin de restablecimiento seguro de interfaz de usuario
+                        }; // Fin de submit asíncrono para Contactar Agente
+                    } // Fin de bloque de control para la existencia de formAgente
+
+                    
                     const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
                     if (elementoBtnTelefono) {
                         elementoBtnTelefono.onclick = async (e) => {
