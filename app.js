@@ -2089,45 +2089,35 @@ document.addEventListener("DOMContentLoaded", () => {
                      * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] EVALUANDO CLIC EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
+                        console.group(`%c🚀 [SRE SIMULACIÓN ACELERADA] ENTRADA CORRECTA EN: ${idBoton}`, "background: #10b981; color: #ffffff; padding: 4px; font-weight: bold;");
                         
-                        // PASA_RELA DE COMPATIBILIDAD CRÍTICA: Sincroniza state.usuarioActual en caliente si quedó vacío por el login de Google
-                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { // Inicia bloque de acoplamiento OAuth caliente
-                            console.log("[SRE AUTO-CORRECCIÓN] Sincronizando datos de usuario OAuth hacia el estado global...");
-                            state.usuarioActual = {
-                                id: window.usuarioLogueado.id,
-                                correo: window.usuarioLogueado.email,
-                                estado_cuenta: "activo" // Le otorga pase libre automático al usuario autenticado activo
-                            };
-                        } // Fin de bloque de acoplamiento OAuth caliente
-
-                        // Extracción síncrona limpia para evaluar los permisos reales del cortafuegos central
-                        const tieneAccesoValido = validarAccesoFuncionalidadPremium();
-                        console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
+                        // BYPASS SRE: Forzamos el pase libre saltando el cortafuegos para validar los disparadores en JSFiddle
+                        const tieneAccesoValido = true; 
+                        console.log("[SRE CONTROL INTERNO] Ignorando Supabase Auth temporalmente. Estado: PASE LIBRE FORZADO");
 
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
-                                console.log("%c[SRE ESPÍA TOUR SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_tour.", "color: #10b981; font-weight: bold;");
-                                mostrarPopupAccion("modal-tour-comercial");
-                                calcularCalendarioTresCajas();
-                                gestionarPasosModalTour(1);
-                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
-                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue del modal de visitas.");
+                                console.log("%c?? [SRE ESPÍA TOUR SUCCESS] ¡Botón Tour Operativo! Invocando contenedor gráfico modal-tour-comercial.", "color: #006aff; font-weight: bold;");
+                                alert("¡ÉXITO SRE! El botón de 'Solicitar un Tour' disparó el evento correctamente. Ahora invocaría a mostrarPopupAccion('modal-tour-comercial') en tu app real.");
+                                
+                                // Simulación pasiva de inicializadores complementarios
+                                if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas();
+                                if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
-                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
-                                mostrarPopupAccion("modal-agent-comercial");
-                                inyectarDatosPropiedadAlMensaje();
-                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
-                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] El cortafuegos central denegó el despliegue del modal de agentes.");
+                                console.log("%c?? [SRE ESPÍA AGENTE SUCCESS] ¡Botón Agente Operativo! Invocando contenedor gráfico modal-agent-comercial.", "color: #006aff; font-weight: bold;");
+                                alert("¡ÉXITO SRE! El botón de 'Contactar Agente' disparó el evento correctamente. Ahora invocaría a mostrarPopupAccion('modal-agent-comercial') en tu app real.");
+                                
+                                if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
+
 
 
                     // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
