@@ -2083,12 +2083,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
                      * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Corrige el fallo sintáctico evaluando el booleano síncrono mediante una bifurcación condicional limpia.
+                     * Resuelve el fallo de promesas asíncronas evaluando el booleano síncrono nativo en cualquier pantalla.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
                         console.group(`%c[SRE ESPÍA CONTROL] Evaluando pulsación en botón: ${idBoton}`, "color: #002e50; font-weight: bold;");
                         
-                        // CORRECCIÓN ATÓMICA: Extracción directa de la bandera booleana para subsanar el TypeError de la Promesa
+                        // Extracción síncrona limpia para corregir el quiebre sintáctico de la consola
                         const tieneAccesoValido = validarAccesoFuncionalidadPremium();
                         console.log("[SRE ESPÍA FIREWALL] Estado de autorización arrojado por el cortafuegos:", tieneAccesoValido);
 
@@ -2112,15 +2112,30 @@ document.addEventListener("DOMContentLoaded", () => {
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
-                    // Manejador centralizado para interceptar las interacciones de los botones de acción en la Cortina SPA
-                    const interceptarPulsacionFichaSPA = (e) => { // Inicia función interceptora de eventos táctiles y de ratón
-                        const botonObjetivo = e.target;
-                        if (botonObjetivo && (botonObjetivo.id === 'btn-solicitar-tour-galeria' || botonObjetivo.id === 'btn-contactar-agente-galeria')) { // Inicia validación de ID de botón
+                    // Buscamos los elementos directamente en el DOM recién inyectados para asegurar el enlace del evento estable
+                    const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
+                    const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
+
+                    if (botonTourFisicoSRE) { // Inicia enlace de eventos para el botón de Tour
+                        const manejarClickTour = (e) => { // Inicia manejador click Tour
                             e.preventDefault();
                             e.stopPropagation();
-                            ejecutarFlujoModalProtegidoSRE(botonObjetivo.id);
-                        } // Fin de validación de ID de botón
-                    }; // Fin de función interceptora de eventos táctiles y de ratón
+                            ejecutarFlujoModalProtegidoSRE('btn-solicitar-tour-galeria');
+                        }; // Fin de manejador click Tour
+                        botonTourFisicoSRE.addEventListener('click', manejarClickTour);
+                        botonTourFisicoSRE.addEventListener('touchend', manejarClickTour, { passive: false });
+                    } // Fin de enlace de eventos para el botón de Tour
+
+                    if (botonAgenteFisicoSRE) { // Inicia enlace de eventos para el botón de Agente
+                        const manejarClickAgente = (e) => { // Inicia manejador click Agente
+                            e.preventDefault();
+                            e.stopPropagation();
+                            ejecutarFlujoModalProtegidoSRE('btn-contactar-agente-galeria');
+                        }; // Fin de manejador click Agente
+                        botonAgenteFisicoSRE.addEventListener('click', manejarClickAgente);
+                        botonAgenteFisicoSRE.addEventListener('touchend', manejarClickAgente, { passive: false });
+                    } // Fin de enlace de eventos para el botón de Agente
+
 
 
                     // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
