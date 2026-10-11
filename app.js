@@ -2083,7 +2083,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
                      * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Resuelve el fallo de promesas asíncronas evaluando el booleano síncrono nativo en cualquier pantalla.
+                     * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
                         console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
@@ -2099,7 +2099,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
-                                console.warn("[SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso. Redirigiendo a Login Supabase.");
+                                console.warn("[SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
@@ -2109,14 +2109,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                 mostrarPopupAccion("modal-agent-comercial");
                                 inyectarDatosPropiedadAlMensaje();
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
-                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso. Redirigiendo a Login Supabase.");
+                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
-                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 100ms a que el DOM se asiente antes de acoplar los escuchadores
+                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente después de leer la vista antes de acoplar los escuchadores
                     setTimeout(() => { // Inicia bloque setTimeout diferidor
                         console.group("%c?? [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
                         
@@ -2151,10 +2151,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         } // Fin de acoplamiento para el botón de Agente
 
                         console.groupEnd();
-                    }, 100); // Fin de bloque setTimeout diferidor
+                    }, 150); // Fin de bloque setTimeout diferidor
 
-
-                    // CONFIGURACIÓN ASÍNCRONA TRANSACCIONAL DEL FORMULARIO CONTACTE AGENTE CON REGLAS SRE DE PRIORIDAD
+                        
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) { // Inicia bloque de control para la existencia de formAgente
                         formAgente.onsubmit = async (eventSubmit) => { // Inicia submit asíncrono para Contactar Agente
