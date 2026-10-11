@@ -634,18 +634,24 @@ div.leaflet-marker-icon.map-price-pill {
 
 
 
+/* ==========================================================================
+   ESTRUCTURA DE SUPERPOSICIÓN DE VENTANAS FLOTANTES PRESERVADAS (SRE SUBSANADO)
+   ========================================================================== */
 .modal-accion-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.6); /* Incremento leve de contraste de fondo */
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 7000;
+    /* REQUERIMIENTO ATÓMICO: Se eleva el z-index a 999999 para romper la barrera de la Cortina SPA y flotar al frente */
+    z-index: 999999; 
+    box-sizing: border-box;
 }
+
 
 /* ==========================================================================
    NUEVA FUNCIONALIDAD: DISTRIBUCIÓN RESPONSIVA UNIFICADA (SIN !IMPORTANT)
