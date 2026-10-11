@@ -652,6 +652,39 @@ div.leaflet-marker-icon.map-price-pill {
     box-sizing: border-box;
 }
 
+/* ==========================================================================
+   ESTRUCTURA CONTENEDORA DE LAS VENTANAS FLOTANTES DE REGISTRO (SRE FIJADO)
+   ========================================================================== */
+.modal-accion-contenido {
+    background-color: var(--blanco); /* Fondo blanco sólido para bloquear la transparencia */
+    width: 100%;
+    max-width: 460px; /* Tamaño máximo adaptativo de Zillow */
+    padding: 24px;
+    border-radius: 12px; /* Esquinas redondeadas suaves */
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* Sombra perimetral de destaque */
+    font-family: inherit;
+    color: var(--texto-principal); /* Fuerza el color de texto legible */
+}
+
+/* Ajustes elásticos complementarios para el orden interno del formulario del Tour */
+.modal-tour-body-scroll {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 4px;
+    box-sizing: border-box;
+}
+
+.caja-fecha-item {
+    transition: all 0.15s ease-in-out;
+}
+
+.caja-fecha-item:hover {
+    border-color: var(--azul-zillow);
+    background-color: rgba(0, 106, 255, 0.02);
+}
+
 
 /* ==========================================================================
    NUEVA FUNCIONALIDAD: DISTRIBUCIÓN RESPONSIVA UNIFICADA (SIN !IMPORTANT)
