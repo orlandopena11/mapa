@@ -2089,67 +2089,66 @@ document.addEventListener("DOMContentLoaded", () => {
                      * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c🚀 [SRE SIMULACIÓN ACELERADA] ENTRADA CORRECTA EN: ${idBoton}`, "background: #10b981; color: #ffffff; padding: 4px; font-weight: bold;");
+                        console.group(`%c?? [SRE RADAR INTEGRAL] PROCESANDO DISPARO EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
                         
-                        // BYPASS SRE: Forzamos el pase libre saltando el cortafuegos para validar los disparadores en JSFiddle
-                        const tieneAccesoValido = true; 
-                        console.log("[SRE CONTROL INTERNO] Ignorando Supabase Auth temporalmente. Estado: PASE LIBRE FORZADO");
+                        // PASA_RELA DE COMPATIBILIDAD CRÍTICA: Sincroniza state.usuarioActual si quedó vacío por el login de Google
+                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { // Inicia bloque de acoplamiento OAuth caliente
+                            console.log("[SRE AUTO-CORRECCIÓN] Sincronizando datos de usuario OAuth hacia el estado global...");
+                            state.usuarioActual = {
+                                id: window.usuarioLogueado.id,
+                                correo: window.usuarioLogueado.email,
+                                estado_cuenta: "activo" // Concede pase libre inmediato al usuario autenticado activo
+                            };
+                        } // Fin de bloque de acoplamiento OAuth caliente
+
+                        // Extracción síncrona limpia para evaluar los permisos reales del cortafuegos central
+                        const tieneAccesoValido = validarAccesoFuncionalidadPremium();
+                        console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
 
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
-                                console.log("%c?? [SRE ESPÍA TOUR SUCCESS] ¡Botón Tour Operativo! Invocando contenedor gráfico modal-tour-comercial.", "color: #006aff; font-weight: bold;");
-                                alert("¡ÉXITO SRE! El botón de 'Solicitar un Tour' disparó el evento correctamente. Ahora invocaría a mostrarPopupAccion('modal-tour-comercial') en tu app real.");
-                                
-                                // Simulación pasiva de inicializadores complementarios
-                                if (typeof calcularCalendarioTresCajas === "function") calcularCalendarioTresCajas();
-                                if (typeof gestionarPasosModalTour === "function") gestionarPasosModalTour(1);
+                                console.log("%c[SRE ESPÍA TOUR SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_tour.", "color: #10b981; font-weight: bold;");
+                                mostrarPopupAccion("modal-tour-comercial");
+                                calcularCalendarioTresCajas();
+                                gestionarPasosModalTour(1);
+                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
+                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue del modal de visitas.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
-                                console.log("%c?? [SRE ESPÍA AGENTE SUCCESS] ¡Botón Agente Operativo! Invocando contenedor gráfico modal-agent-comercial.", "color: #006aff; font-weight: bold;");
-                                alert("¡ÉXITO SRE! El botón de 'Contactar Agente' disparó el evento correctamente. Ahora invocaría a mostrarPopupAccion('modal-agent-comercial') en tu app real.");
-                                
-                                if (typeof inyectarDatosPropiedadAlMensaje === "function") inyectarDatosPropiedadAlMensaje();
+                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
+                                mostrarPopupAccion("modal-agent-comercial");
+                                inyectarDatosPropiedadAlMensaje();
+                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
+                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] El cortafuegos central denegó el despliegue del modal de agentes.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
+                    // SOLUCIÓN ATÓMICA DE PRODUCCIÓN: Escucha delegada directa en el objeto local 'cortina' para vencer la duplicidad de IDs
+                    const manejarPulsacionFichaInmuebleSRE = (e) => { // Inicia callback de intercepción elástica
+                        const elementoTocado = e.target;
+                        if (!elementoTocado) return;
 
+                        // Evaluamos de forma elástica si el clic se dio sobre el ID o sobre algún contenedor interno del botón
+                        const idBotonEncontrado = elementoTocado.id || (elementoTocado.closest('button') ? elementoTocado.closest('button').id : '');
 
-                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
-                    setTimeout(() => { // Inicia bloque setTimeout diferidor
-                        console.group("%c⚙️ [SRE ESPÍA VINCULACIÓN] VERIFICANDO INSTANCIACIÓN EN DOM", "background: #002e50; color: #ffffff; padding: 2px;");
-                        
-                        const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
-                        const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
+                        if (idBotonEncontrado === 'btn-solicitar-tour-galeria' || idBotonEncontrado === 'btn-contactar-agente-galeria') { // Inicia condición de coincidencia exacta
+                            if (e.cancelable) e.preventDefault();
+                            e.stopPropagation();
+                            console.log(`[SRE CAPTURA DE DELEGACIÓN] Capturado clic real en pantalla. Botón detectado: ${idBotonEncontrado}`);
+                            ejecutarFlujoModalProtegidoSRE(idBotonEncontrado);
+                        } // Fin de condición de coincidencia exacta
+                    }; // Fin de callback de intercepción elástica
 
-                        console.log("[SRE ESPÍA DOM] Estado del nodo de Tour:", botonTourFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
-                        console.log("[SRE ESPÍA DOM] Estado del nodo de Agente:", botonAgenteFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
-
-                        if (botonTourFisicoSRE) { // Inicia acoplamiento directo para Tour
-                            botonTourFisicoSRE.onclick = (e) => { // Inicia handler click Tour SRE
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log("[SRE DISPARO EXITOSO] El usuario presionó Solicitar un Tour");
-                                alert("¡ÉXITO DEFINITIVO SRE! El clic en SOLICITAR UN TOUR funciona perfectamente y fue interceptado de forma nativa.");
-                            }; // Fin de handler click Tour SRE
-                        } // Fin de acoplamiento directo para Tour
-
-                        if (botonAgenteFisicoSRE) { // Inicia acoplamiento directo para Agente
-                            botonAgenteFisicoSRE.onclick = (e) => { // Inicia handler click Agente SRE
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log("[SRE DISPARO EXITOSO] El usuario presionó Contactar Agente");
-                                alert("¡ÉXITO DEFINITIVO SRE! El clic en CONTACTAR AGENTE funciona perfectamente y fue interceptado de forma nativa.");
-                            }; // Fin de handler click Agente SRE
-                        } // Fin de acoplamiento directo para Agente
-
-                        console.groupEnd();
-                    }, 250); // Fin de bloque setTimeout diferidor aumentándole el margen a 250ms para asegurar el pintado
+                    // Enlazamos directamente al contenedor local 'cortina' recién renderizado (Inmune a destrucciones por innerHTML)
+                    cortina.addEventListener('click', manejarPulsacionFichaInmuebleSRE);
+                    cortina.addEventListener('touchend', manejarPulsacionFichaInmuebleSRE, { passive: false });
+                    console.log("%c-> [SRE INFRAESTRUCTURA] Escuchas elásticas enlazadas directamente a la Cortina SPA.", "color: #10b981; font-weight: bold;");
 
 
 
