@@ -2395,7 +2395,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         creado_por: emailInput,       // Mapeado a la columna real 'creado_por' en tu base de datos
                                         telefono: telefonoInput,   // Mapeado a la columna real 'telefono' en tu base de datos
                                         hora_visita: horaSeleccionada,
-                                        fechas_propuestas: fechasArreglo,
+                                        fecha_visita: fechasArreglo,
                                         estado_visita: 'pendiente'
                                     }])
                                    .select()
