@@ -2392,7 +2392,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         nombre: nombreInput,       // Mapeado a la columna real 'nombre' en tu base de datos
-                                        correo: emailInput,       // Mapeado a la columna real 'correo' en tu base de datos
+                                        creado_por: emailInput,       // Mapeado a la columna real 'creado_por' en tu base de datos
                                         telefono: telefonoInput,   // Mapeado a la columna real 'telefono' en tu base de datos
                                         hora_visita: horaSeleccionada,
                                         fechas_propuestas: fechasArreglo,
