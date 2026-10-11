@@ -2383,7 +2383,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Evento 1: Registro inicial de la cita de visita con los nombres de columna correctos del esquema de Supabase
+                                // Evento 1: Registro inicial de la cita unificando Fecha + Hora en la columna real 'fecha_visita'
+                                const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
+                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
+                                
+                                // REQUERIMIENTO ATÓMICO: Unimos la fecha ISO del carrusel con el texto de la hora seleccionada
+                                const stringFechaHoraUnificadoSRE = `${primeraFechaEscogidaSRE} - ${horaSeleccionada}`;
+                                console.log("[SRE ESPÍA UNIFICACIÓN] Cadena estructurada para fecha_visita:", stringFechaHoraUnificadoSRE);
+
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2391,11 +2398,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        nombre: nombreInput,       // Mapeado a la columna real 'nombre' en tu base de datos
-                                        creado_por: emailInput,       // Mapeado a la columna real 'creado_por' en tu base de datos
-                                        telefono: telefonoInput,   // Mapeado a la columna real 'telefono' en tu base de datos
-                                        hora_visita: horaSeleccionada,
-                                        fecha_visita: fechasArreglo,
+                                        nombre: nombreInput,
+                                        creado_por: emailInput,
+                                        telefono: telefonoInput,
+                                        fecha_visita: stringFechaHoraUnificadoSRE, // CORRECCIÓN ATÓMICA: Campo único unificado uniendo fecha + hora
                                         estado_visita: 'pendiente'
                                     }])
                                    .select()
