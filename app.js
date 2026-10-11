@@ -2383,13 +2383,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Evento 1: Registro inicial de la cita unificando Fecha + Hora en la columna real 'fecha_visita'
+                                // Evento 1: Registro de la cita delegando la creación del ID y fecha_creacion a Supabase de forma nativa
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
-                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
+                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || ""; // Tomamos la primera fecha elegida (ej: "2026-10-12")
                                 
-                                // REQUERIMIENTO ATÓMICO: Unimos la fecha ISO del carrusel con el texto de la hora seleccionada
-                                const stringFechaHoraUnificadoSRE = `${primeraFechaEscogidaSRE} - ${horaSeleccionada}`;
-                                console.log("[SRE ESPÍA UNIFICACIÓN] Cadena estructurada para fecha_visita:", stringFechaHoraUnificadoSRE);
+                                // Formateamos al estándar ISO TIMESTAMP combinando fecha + hora (ej: "2026-10-12T10:00:00")
+                                const timestampIsoEstructuradoSRE = `${primeraFechaEscogidaSRE}T${horaSeleccionada}:00`;
+                                console.log("[SRE ESPÍA TIMESTAMPTZ] Cadena para fecha_visita:", timestampIsoEstructuradoSRE);
 
                                 const {
                                     data: nuevaVisita,
@@ -2398,10 +2398,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        nombre: nombreInput,
+                                        anuncio_id_fk: 'ANUN-001', // Calce referencial requerido por el esquema
+                                        nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
-                                        fecha_visita: stringFechaHoraUnificadoSRE, // CORRECCIÓN ATÓMICA: Campo único unificado uniendo fecha + hora
+                                        fecha_visita: timestampIsoEstructuradoSRE, // Se envía la marca ISO pura
                                         estado_visita: 'pendiente'
                                     }])
                                    .select()
