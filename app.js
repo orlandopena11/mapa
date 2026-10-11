@@ -2368,17 +2368,19 @@ document.addEventListener("DOMContentLoaded", () => {
                             e.preventDefault();
 
                             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
-                            // Validación estricta de expresión regular nativa para números de telefono puros de mínimo 9 dígitos
-                            if (!/^\d{9,}$/.test(telefonoInput)) { // Inicia if validación RegExp
+                            // Validación de expresión regular nativa para números de telefono puros de mínimo 9 dígitos
+                            if (!/^\d{9,}\$/.test(telefonoInput)) { 
                                 alert("Ingrese un número de telefono válido.");
                                 return;
-                            } // Fin if validación RegExp
+                            } 
 
                             const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
                             const emailInput = document.getElementById('tour-contacto-email').value.trim();
                             const horaSeleccionada = document.getElementById('hora-principal').value;
-                            const fechasArreglo = Array.from(fechasSeleccionadasTour);
 
+                            try { // Inicia bloque try transaccional
+                                const cliente = obtenerClienteSupabase();
+                                if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
                                 // Evento 1: Registro de la cita adaptando las fechas al formato exacto DD/MM/YYYY de tu tabla visita
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
@@ -2464,95 +2466,19 @@ document.addEventListener("DOMContentLoaded", () => {
                                             emailVendedorDestino = datosUsuario.correo;
                                         }
                                     }
-                                } /* Fin de validacion estructural SRE */
-
-                                try { // Inicia bloque try transaccional
-                                const cliente = obtenerClienteSupabase();
-                             if (!cliente) throw new Error("Cliente Supabase inaccesible.");   
-
-                                         // Evento 1: Consulta de agentes por prioridad seleccionando la columna nativa verdadera 'correo' y la PK 'agente_id'
-                                const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
-                                    .from('agente_inmobiliario')
-                                    .select('agente_id, prioridad, leads, leads_recibidos, correo')
-                                    .order('prioridad', { ascending: true });
-
-                                if (errorAgentes) throw errorAgentes;
-
-                                let agenteAsignadoSRE = null;
-                                for (let i = 0; i < listaAgentes.length; i++) {
-                                    const agenteEvaluado = listaAgentes[i];
-                                    const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
-                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos || 0, 10);
-
-                                    if (actualesLeads < maxLeads) {
-                                        agenteAsignadoSRE = agenteEvaluado;
-                                        break;
-                                    }
                                 }
-
-                                if (!agenteAsignadoSRE) {
-                                    throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
-                                }
-
-                                const fechaTransaccion = new Date();
-                                const fechaFormatoLatinoSRE = [
-                                    String(fechaTransaccion.getDate()).padStart(2, '0'),
-                                    String(fechaTransaccion.getMonth() + 1).padStart(2, '0'),
-                                    fechaTransaccion.getFullYear()
-                                ].join('/') + ` ${String(fechaTransaccion.getHours()).padStart(2, '0')}:${String(fechaTransaccion.getMinutes()).padStart(2, '0')}`;
-
-                                // Evento 2: Registro del lead mapeando las columnas nativas de tu tabla contacte_agente
-                                const { error: errorInsertLead } = await clienteSupabaseSRE
-                                    .from('contacte_agente')
-                                    .insert([{
-                                        anuncio_id_fk: 'ANUN-001', 
-                                        propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        agente_id_fk: agenteAsignadoSRE.agente_id,
-                                        nombre: nombreAgenteInput,
-                                        apellidos: '', 
-                                        email_interesado: emailAgenteInput,
-                                        telefono: telefonoAgenteInput,
-                                        fecha_contacte: fechaFormatoLatinoSRE,
-                                        tipo_visita: 'agente',
-                                        estado_visita: 'pendiente',
-                                        estado_lead: 'pendiente',
-                                        creado_por: emailAgenteInput,
-                                        fecha_creacion: fechaFormatoLatinoSRE
-                                    }]);
-
-                                if (errorInsertLead) throw errorInsertLead;
-
-                                // Evento 3: Incremento del contador mapeando agente_id
-                                const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
-                                const { error: errorUpdateAgente } = await clienteSupabaseSRE
-                                    .from('agente_inmobiliario')
-                                    .update({ leads_recibidos: nuevosLeadsRecibidos })
-                                    .eq('agente_id', agenteAsignadoSRE.agente_id);
-
-                                if (errorUpdateAgente) throw errorUpdateAgente;
-
-                                // Evento 4: Disparo asíncrono utilizando la propiedad unificada correo del asesor
-                                if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
-                                    const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
-                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}`);
-                                    
-                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
-                                        .then(resMail => resMail.json())
-                                        .then(resData => console.log("Notificación SRE despachada al Agente:", resData))
-                                        .catch(errMail => console.warn("Pasarela de correo en procesamiento asíncrono.", errMail));
-                                } /* Fin de logica de contacto unificada SRE */
-                                    
 
                                 // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
                                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTelefono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechasArreglo.join(', ')}`);
+                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTelefono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
 
                                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                                         .then(res => res.json())
                                         .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
-                                        .catch(errEmail => console.warn("Aviso: Retraso en la respuesta de la pasarela, datos asegurados.", errEmail));
+                                        .catch(errEmail => console.warn("Aviso: Retraso en la pasarela, datos asegurados.", errEmail));
                                 }
+
                                 alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
                                 cerrarPopupAccion('modal-tour-comercial');
                                 formTour.reset();
@@ -2560,9 +2486,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             } catch (errTransaccion) {
                                 console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                                 alert("Error al procesar la agenda: " + errTransaccion.message);
-                            } // Fin del bloque catch transaccional
+                            } 
                         }; // Fin del formTour.onsubmit
                     } // Fin del if (formTour)
+
 
                     // --- RESTABLECIMIENTO DEL MOTOR CRÍTICO DE CÁLCULOS ZILLOW SRE ---
                     if (prop && prop.propiedad_id) {
