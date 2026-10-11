@@ -2107,14 +2107,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
-                                console.log("%c[SRE ESPÍA TOUR SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_tour.", "color: #10b981; font-weight: bold;");
+                                console.log("%c[SRE ESPÍA TOUR SUCCESS] Permisos aprobados. Poblando datos del inmueble en el modal...", "color: #10b981; font-weight: bold;");
+                                
+                                // Extraemos la propiedad seleccionada en tiempo real de la memoria reactiva del catálogo
+                                const propActualTour = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
+                                if (propActualTour) { // Inicia inyección de metadatos al sub-bloque del modal
+                                    const imgMini = document.getElementById('modal-tour-mini-foto');
+                                    const dirMini = document.getElementById('modal-tour-mini-direccion');
+                                    const specsMini = document.getElementById('modal-tour-mini-specs');
+                                    
+                                    if (imgMini) imgMini.src = propActualTour.fotos && propActualTour.fotos[0] ? propActualTour.fotos[0] : "";
+                                    if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Dirección no disponible";
+                                    if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m² AC`;
+                                } // Fin de inyección de metadatos al sub-bloque del modal
+
                                 mostrarPopupAccion("modal-tour-comercial");
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
-                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue del modal de visitas.");
+                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
+                        
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
