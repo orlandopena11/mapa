@@ -2122,43 +2122,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
                     setTimeout(() => { // Inicia bloque setTimeout diferidor
-                        console.group("%c⚙️ [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
+                        console.group("%c⚙️ [SRE ESPÍA VINCULACIÓN] VERIFICANDO INSTANCIACIÓN EN DOM", "background: #002e50; color: #ffffff; padding: 2px;");
                         
                         const botonTourFisicoSRE = document.getElementById('btn-solicitar-tour-galeria');
                         const botonAgenteFisicoSRE = document.getElementById('btn-contactar-agente-galeria');
 
-                        console.log("[SRE ESPÍA DOM] ¿Se encontró botón de Tour en la ficha?:", botonTourFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
-                        console.log("[SRE ESPÍA DOM] ¿Se encontró botón de Agente en la ficha?:", botonAgenteFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
+                        console.log("[SRE ESPÍA DOM] Estado del nodo de Tour:", botonTourFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
+                        console.log("[SRE ESPÍA DOM] Estado del nodo de Agente:", botonAgenteFisicoSRE ? "SÍ (VÁLIDO)" : "NO (ERROR / NULL)");
 
-                        if (botonTourFisicoSRE) { // Inicia acoplamiento para el botón de Tour
-                            const manejarClickTour = (e) => { // Inicia manejador click Tour
-                                // El preventDefault aquí es crucial para evitar el "Ghost Click" (doble disparo) en móviles
-                                if (e.cancelable) e.preventDefault(); 
+                        if (botonTourFisicoSRE) { // Inicia acoplamiento directo para Tour
+                            botonTourFisicoSRE.onclick = (e) => { // Inicia handler click Tour SRE
+                                e.preventDefault();
                                 e.stopPropagation();
-                                console.log(`[SRE ESPÍA INTERACCIÓN] Disparado evento nativo: ${e.type} en botón Tour`);
-                                ejecutarFlujoModalProtegidoSRE('btn-solicitar-tour-galeria');
-                            }; // Fin de manejador click Tour
-                            
-                            botonTourFisicoSRE.addEventListener('click', manejarClickTour);
-                            botonTourFisicoSRE.addEventListener('touchend', manejarClickTour, { passive: false });
-                            console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Tour.");
-                        } // Fin de acoplamiento para el botón de Tour
+                                console.log("[SRE DISPARO EXITOSO] El usuario presionó Solicitar un Tour");
+                                alert("¡ÉXITO DEFINITIVO SRE! El clic en SOLICITAR UN TOUR funciona perfectamente y fue interceptado de forma nativa.");
+                            }; // Fin de handler click Tour SRE
+                        } // Fin de acoplamiento directo para Tour
 
-                        if (botonAgenteFisicoSRE) { // Inicia acoplamiento para el botón de Agente
-                            const manejarClickAgente = (e) => { // Inicia manejador click Agente
-                                if (e.cancelable) e.preventDefault(); 
+                        if (botonAgenteFisicoSRE) { // Inicia acoplamiento directo para Agente
+                            botonAgenteFisicoSRE.onclick = (e) => { // Inicia handler click Agente SRE
+                                e.preventDefault();
                                 e.stopPropagation();
-                                console.log(`[SRE ESPÍA INTERACCIÓN] Disparado evento nativo: ${e.type} en botón Agente`);
-                                ejecutarFlujoModalProtegidoSRE('btn-contactar-agente-galeria');
-                            }; // Fin de manejador click Agente
-                            
-                            botonAgenteFisicoSRE.addEventListener('click', manejarClickAgente);
-                            botonAgenteFisicoSRE.addEventListener('touchend', manejarClickAgente, { passive: false });
-                            console.log("-> Escuchadores (click/touchend) vinculados con éxito al botón de Agente.");
-                        } // Fin de acoplamiento para el botón de Agente
+                                console.log("[SRE DISPARO EXITOSO] El usuario presionó Contactar Agente");
+                                alert("¡ÉXITO DEFINITIVO SRE! El clic en CONTACTAR AGENTE funciona perfectamente y fue interceptado de forma nativa.");
+                            }; // Fin de handler click Agente SRE
+                        } // Fin de acoplamiento directo para Agente
 
                         console.groupEnd();
-                    }, 150); // Fin de bloque setTimeout diferidor
+                    }, 250); // Fin de bloque setTimeout diferidor aumentándole el margen a 250ms para asegurar el pintado
+
 
 
                         
