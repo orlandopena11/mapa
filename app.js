@@ -45,7 +45,7 @@ function actualizarBotonCuenta() {
         navbar.appendChild(indicador);
     }
     if (indicador) {
-        indicador.textContent = window.usuarioLogueado ? `👤 ${window.usuarioLogueado.email}` : '';
+        indicador.textContent = window.usuarioLogueado ? `▶ ${window.usuarioLogueado.email}` : '';
         indicador.style.display = window.usuarioLogueado ? 'inline-block' : 'none';
     }
 }
@@ -60,7 +60,7 @@ function actualizarBotonCuenta() {
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co';
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
-console.warn("?? [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
+console.warn(">> [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
 
 let supabase = null;
 
@@ -72,9 +72,9 @@ function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
     if (supabase) {
-        console.log("? [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
+        console.log("OK [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("? [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+        console.error("XX [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
     }
     return supabase;
 } // Fin de Function obtenerClienteSupabase
@@ -87,11 +87,11 @@ obtenerClienteSupabase();
 // ==========================================================================
 
 function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
-    console.group("??? [SRE ESPÍA ACL] Verificando credenciales de interacción");
+    console.group(">>> [SRE ESPÍA ACL] Verificando credenciales de interacción");
     console.log("Usuario actual en estado:", state.usuarioActual);
 
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("? ACL BLOQUEADO: Sesión inexistente.");
+        console.warn("!! ACL BLOQUEADO: Sesión inexistente.");
         console.groupEnd();
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
         if (typeof mostrarPopupAccion === "function") {
@@ -101,13 +101,13 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     }
 
     if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        console.error("? ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
+        console.error("XX ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
         console.groupEnd();
         alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
         return false;
     }
 
-    console.log("?? ACL PERMITIDO: Cuenta activa y autorizada.");
+    console.log(">> ACL PERMITIDO: Cuenta activa y autorizada.");
     console.groupEnd();
     return true;
 } // Fin de Function verificarAutorizacionAcceso
@@ -116,34 +116,58 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
 // ==========================================================================
 // GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
 // ==========================================================================
-function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optimizado
-    console.group("?? [CORTAFUEGOS CENTRAL] Evaluando permisos de interacción...");
+
+// --- REPARACIÓN QUIRÚRGICA PUNTO 1: Cortafuegos de Sesión async/await con recuperación caliente ---
+async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Async Optimizado
+    console.group(">> [CORTAFUEGOS CENTRAL] Evaluando permisos de interacción...");
 
     // 1. VERIFICACIÓN DE AUTENTICACIÓN: ¿Existe un estado de usuario en memoria?
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("? ACL BLOQUEADO: El interesado no ha iniciado sesión.");
+        console.warn("!! ACL: Estado de usuario vacío. Intento caliente de recuperación de sesión nativa...");
+
+        // Intento caliente: leer la sesión nativa activa del navegador desde Supabase Auth
+        try {
+            const cliente = obtenerClienteSupabase();
+            if (cliente) {
+                const { data: { session } } = await cliente.auth.getSession();
+
+                // Si existe una sesión activa válida de Supabase, sincroniza el objeto en memoria
+                if (session && session.user && session.user.id) {
+                    state.usuarioActual = {
+                        id: session.user.id,
+                        correo: session.user.email,
+                        estado_cuenta: 'activo'
+                    };
+                    console.log(">> [CORTAFUEGOS] Sesión nativa recuperada y sincronizada para:", state.usuarioActual.correo);
+                    console.groupEnd();
+                    return true; // Permite el paso para evitar la alerta falsa de "Acceso Restringido"
+                }
+            }
+        } catch (errRecuperacion) {
+            console.warn("!! [CORTAFUEGOS] Fallo en el intento caliente de recuperación de sesión:", errRecuperacion.message);
+        }
+
+        // Si no se pudo recuperar la sesión, se bloquea el acceso de forma tradicional
+        console.warn("X ACL BLOQUEADO: El interesado no ha iniciado sesión.");
         console.groupEnd();
 
         alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
 
-        // Cierra estructuras visuales abiertas si existen
         if (typeof gestionarCortinaSPA === "function") gestionarCortinaSPA('cerrar');
         if (typeof cerrarTodosLosPaneles === "function") cerrarTodosLosPaneles();
 
-        // Despliega el popup de autenticación de Supabase de forma inmediata
         if (typeof mostrarPopupAccion === "function") {
             mostrarPopupAccion("modal-autenticacion-supabase");
         }
         return false;
-    }
+    } // Fin de verificación de usuario vacío con intento caliente
 
     // 2. VERIFICACIÓN DE ESTADO: Extraemos el estado limpio de la cuenta
     const estadoCuenta = String(state.usuarioActual.estado_cuenta || '').toLowerCase().trim();
-    console.log(`? Interesado identificado: ${state.usuarioActual.correo} | Estado: ${estadoCuenta.toUpperCase()}`);
+    console.log(`> Interesado identificado: ${state.usuarioActual.correo} | Estado: ${estadoCuenta.toUpperCase()}`);
 
-    // REGLA DE NEGOCIO: Si el estado es SUSPENDIDO, se bloquea el acceso de inmediato
     if (estadoCuenta === "suspendido") {
-        console.error("? ACL BLOQUEO CENTRAL: Intento de uso por usuario SUSPENDIDO.");
+        console.error("X ACL BLOQUEO CENTRAL: Intento de uso por usuario SUSPENDIDO.");
         console.groupEnd();
 
         alert("Cuenta Suspendida: No tiene autorización para realizar acciones premium en la plataforma.");
@@ -151,27 +175,24 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
         return false;
     }
 
-    // REGLA DE NEGOCIO: Si el estado es PENDIENTE (no ha hecho clic en el enlace de su correo)
     if (estadoCuenta === "pendiente") {
-        console.warn("? ACL BLOQUEO CENTRAL: Cuenta aún en estado PENDIENTE.");
+        console.warn("! ACL BLOQUEO CENTRAL: Cuenta aún en estado PENDIENTE.");
         console.groupEnd();
 
         alert("Acceso Restringido: Por favor, revise su correo electrónico y valide su cuenta usando el enlace enviado para activar sus beneficios.");
         return false;
     }
 
-    // 3. ACCESO PERMITIDO: Si llegó aquí es porque su estado es 'activo'
     if (estadoCuenta === "activo") {
-        console.log("?? ACL PERMITIDO: Interesado activo y autorizado para funciones Premium.");
+        console.log(">> ACL PERMITIDO: Interesado activo y autorizado para funciones Premium.");
         console.groupEnd();
         return true;
     }
 
-    // Fallback de seguridad por si existe un estado desconocido en la base de datos
-    console.warn(`? ACL BLOQUEADO: Estado de cuenta desconocido (${estadoCuenta}).`);
+    console.warn(`X ACL BLOQUEADO: Estado de cuenta desconocido (${estadoCuenta}).`);
     console.groupEnd();
     return false;
-}
+} // Fin de Function validarAccesoFuncionalidadPremium async
 
             function evaluarCriteriosDeFiltrado(prop) { // Inicia Function evaluarCriteriosDeFiltrado
                 // ==========================================================================
@@ -179,7 +200,6 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
                 // ==========================================================================
                 const filtroTransaccion = state.filtros.estado || "Venta";
 
-                // --- REGLAS DE NEGOCIO DIRECTAS, PLANAS Y EXACTAS CON VALOR 'vendida' SRE ---
                 if ((filtroTransaccion === "Venta" || filtroTransaccion === "En venta") && (prop.estado_publicacion !== "disponible" || prop.tipo_anuncio !== "Venta")) {
                     return false;
                 }
@@ -192,7 +212,6 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
                     return false;
                 }
 
-                // --- FILTRO SECUNDARIO: BUSCADOR DE TEXTO DIRECTO ---
                 const inputDireccion = document.getElementById('search-address');
                 if (inputDireccion && inputDireccion.value.trim() !== "") {
                     const textoBusqueda = inputDireccion.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
@@ -205,12 +224,8 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
                     }
                 }
 
-                // --- FILTROS DE RANGOS Y DIMENSIONES ---
                 if (prop.precio_base < state.filtros.precioMin || prop.precio_base > state.filtros.precioMax) return false;
-                // Evaluación corregida SRE: procesa el filtro de forma reactiva si el valor es mayor a 0
-                // --- INICIO DE REEMPLAZO PUNTUAL: CARACTERÍSTICAS FÍSICAS, TIPOS Y LISTADOS SRE ---
 
-                // Evaluación de habitaciones (Enteros) y baños (Flotantes para admitir 1.5 o medios baños de forma exacta)
                 if (state.filtros.habitaciones !== undefined && state.filtros.habitaciones > 0) {
                     if ((parseInt(prop.habitaciones, 10) || 0) < state.filtros.habitaciones) return false;
                 }
@@ -218,12 +233,10 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
                     if ((parseFloat(prop.banos) || 0) < state.filtros.banos) return false;
                 }
 
-                // Filtrado multi-selección de tipos de propiedad (Casas, Departamentos, Terrenos, etc.)
                 if (state.filtros.tiposPropiedad && state.filtros.tiposPropiedad.size > 0) {
                     if (!state.filtros.tiposPropiedad.has(String(prop.tipo_propiedad || '').trim())) return false;
                 }
 
-                // Implementación de regla de negocio omitida: Filtrado por Origen o Tipo de Listado
                 if (state.filtros.tiposListado && state.filtros.tiposListado.size > 0) {
                     const origenPublicacion = String(prop.situacion_propiedad || prop.creado_por || "").toLowerCase().trim();
                     if (origenPublicacion !== "" && !state.filtros.tiposListado.has(origenPublicacion)) {
@@ -231,16 +244,9 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
                     } // Fin de validación inside Set tiposListado
                 }
 
-                // --- FIN DE REEMPLAZO PUNTUAL SRE ---
-
-
-                // ==========================================================================
-                // INICIO DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
-                // ==========================================================================
                 const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
                 const checkboxesMarcados = Array.from(checkboxesFisicosEnPantalla).filter(cb => cb.checked);
 
-                // Si el usuario no tiene ningún checkbox avanzado seleccionado, se muestra la configuración por defecto
                 if (checkboxesMarcados.length > 0) {
                     const situacionBD = String(prop.situacion_propiedad || "").trim();
                     const coincideFiltro = checkboxesMarcados.some(cb => String(cb.value).trim() === situacionBD);
@@ -252,19 +258,15 @@ function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Optim
 
                 return true;
             } // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuración por defecto SRE
-            // ==========================================================================
-            // FIN DE VALIDACIÓN DE COMPLEMENTO EN EL PANEL EXTENDIDO SRE
-            // ==========================================================================
 
 
 
 async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
-    console.log("?? [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
+    console.log(">> [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
 
-        // Consultamos directamente la vista unificada del catálogo mapeado
         const {
             data,
             error
@@ -274,8 +276,7 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 
         if (error) throw error;
 
-        // --- ESPÍA DE CONTROL 1: INSPECCIÓN DE RESPUESTA CRUDA SUPABASE ---
-        console.group("%c?? [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
+        console.group("%c>> [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
         console.log("Cantidad total devuelta por la Vista SQL:", data.length);
         if (data.length > 0) {
             console.log("Estructura del primer registro (PROP-001):", data[0]);
@@ -291,7 +292,7 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
         procesarDatosDelMotor(paqueteData);
 
     } catch (err) {
-        console.error("? [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
+        console.error("X [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
     }
 } // Fin de Function cargarDatosDesdeSupabase
 
@@ -304,30 +305,23 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
 
     let fotosUnificadas = [];
 
-    // --- ESPÍA 1: VALOR CRUDO DE LA BASE DE DATOS ---
     console.group(`[ESPÍA FOTOS] Evaluando propiedad ID: ${prop.propiedad_id || prop.id}`);
     console.log("Origen galeria_fotos:", prop.galeria_fotos);
     console.log("Origen foto_despliegue:", prop.foto_despliegue);
     console.log("Origen foto_principal:", prop.foto_principal);
     console.groupEnd();
 
-
-    // MODIFICACIÓN ÚNICA: Lee directamente el nuevo arreglo unificado 'galeria_fotos' generado por la vista de Supabase
     const origenFotos = prop.galeria_fotos;
-
 
     if (origenFotos) {
         let coleccionCruda = [];
 
-        // Si viene como Array nativo de Postgres (La Vista SQL agrupada)
         if (Array.isArray(origenFotos)) {
             coleccionCruda = origenFotos;
         } else if (typeof origenFotos === 'string') {
-            // Si la celda de texto de la tabla arrastra comas internas, las pica en elementos individuales
             coleccionCruda = origenFotos.includes(',') ? origenFotos.split(',') : [origenFotos];
         }
 
-        // Procesamos y limpiamos cada fragmento de imagen obtenido de forma individual
         coleccionCruda.forEach(nombreFoto => {
             if (!nombreFoto) return;
             let texto = String(nombreFoto).trim();
@@ -336,7 +330,6 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
             if (texto.startsWith('http://') || texto.startsWith('https://')) {
                 fotosUnificadas.push(texto);
             } else {
-                // Reemplaza los espacios en blanco accidentales por guiones bajos
                 texto = texto.replace(/\s+/g, '_');
                 fotosUnificadas.push(urlBaseCloudinary + texto);
             }
@@ -347,14 +340,11 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
 
-    // --- ESPÍA 2: RESULTADO DE LA NORMALIZACIÓN ---
     console.log(`[ESPÍA RESULTADO] Propiedad: ${prop.propiedad_id || prop.id} -> Total fotos detectadas final: ${fotosUnificadas.length}`, fotosUnificadas);
 
-    // RETORNO DE ATRIBUTOS PLANOS Y PUROS DE LA NUEVA TABLA PROPIEDAD
     const latNum = parseFloat(prop.latitud);
     const lngNum = parseFloat(prop.longitud);
 
-    // RETORNO DE ATRIBUTOS CON EL NOMBRE DE COLUMNA REAL Y VERDADERO SRE
     const idVerdadero = String(prop.propiedad_id || prop.id || "");
 
     const res = {
@@ -366,14 +356,13 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         precio_base: parseFloat(prop.precio_base || 0),
         estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
         tipo_anuncio: String(prop.tipo_anuncio || "Venta").trim(),
-        destacado: String(prop.destacado || "no").trim(), // Inyección limpia de la columna nativa de la vista
+        destacado: String(prop.destacado || "no").trim(),
         tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
 
         subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
         direccion: String(prop.direccion || "").trim(),
         descripcion: String(prop.descripcion || "").trim(),
 
-        // Características Físicas Sincronizadas
         area_terreno: parseFloat(prop.area_terreno || 0),
         area_construida: parseFloat(prop.area_construida || 0),
         habitaciones: parseInt(prop.habitaciones || 0, 10),
@@ -383,7 +372,6 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         estado_propiedad: String(prop.estado_propiedad || "").trim(),
         moneda: String(prop.moneda || "USD").trim(),
 
-        // Bloque de Control e Inventario Técnico
         cuota_mantenimiento: parseFloat(prop.cuota_mantenimiento || 0),
         situacion_propiedad: String(prop.situacion_propiedad || "").trim(),
         sotano: String(prop.sotano || "no").trim(),
@@ -391,7 +379,6 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         vista: String(prop.vista || "Ninguna").trim(),
         creado_por: String(prop.creado_por || "").trim(),
 
-        // Georreferenciación Plana Directa desde Supabase NUMERIC
         distrito: String(prop.distrito || "").trim(),
         latitud: !isNaN(latNum) ? latNum : null,
         longitud: !isNaN(lngNum) ? lngNum : null,
@@ -401,8 +388,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         amenidades: prop.amenidades || []
     };
 
-    // --- ESPÍA DE CONTROL 2: TRÁNSITO DE NORMALIZACIÓN ---
-    console.log(`%c?? [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    console.log(`%c>> [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
 
     return res;
 } // Fin de Function normalizarPropiedad
@@ -514,7 +500,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
 
     const botonCorazon = document.createElement('button');
     botonCorazon.type = 'button';
-    botonCorazon.textContent = '♥';
+    botonCorazon.textContent = '\u2665';
     botonCorazon.className = 'corazon-favorito';
 
     Object.assign(botonCorazon.style, {
@@ -577,7 +563,6 @@ function construirRielCarruselComponente(prop, esPopup = false) {
             button.textContent = texto;
             button.style.zIndex = '20';
 
-            // Manejador unificado con soporte síncrono dual para ratón y tacto móvil
             const ejecutarCambio = event => {
                 event.preventDefault();
                 event.stopPropagation();
@@ -588,13 +573,12 @@ function construirRielCarruselComponente(prop, esPopup = false) {
             button.addEventListener('touchstart', ejecutarCambio, { passive: false });
 
             contenedorFoto.appendChild(button);
-        }; /* Fin de crearFlecha */        
- 
-        crearFlecha('flecha-izq', '‹', -1);
-        crearFlecha('flecha-der', '›', 1);
-        // Dos líneas de código posteriores que se conservan intactas como calce de cierre:
+        }; /* Fin de crearFlecha */
 
-    }  /* Fin de if fotos.length > 1 */ 
+        crearFlecha('flecha-izq', '\u2039', -1);
+        crearFlecha('flecha-der', '\u203a', 1);
+
+    }  /* Fin de if fotos.length > 1 */
 
     const etiqueta = document.createElement('div');
     etiqueta.className = 'etiqueta-foto-zillow';
@@ -613,11 +597,9 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
     tarjeta.className = 'tarjeta-casa';
     tarjeta.setAttribute('data-id', prop.id);
 
-    // INYECCIÓN DEL CARRUSEL DE FOTOS CORREGIDO
     const contenedorVisualFoto = construirRielCarruselComponente(prop, false);
     tarjeta.appendChild(contenedorVisualFoto);
 
-    // MANEJADOR SPA CORREGIDO: Bloquea la redirección si tocas las flechas o el corazón
     const clickSPAHandler = (e) => {
         if (e.target.closest('.flecha-carrusel') || e.target.closest('.corazon-favorito')) {
             e.stopPropagation();
@@ -628,7 +610,6 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
         gestionarCortinaSPA('detalle', prop);
     };
 
-    // Cambiado de 'pointerdown' a 'click' controlado para evitar conflictos de arrastre en el mapa
     contenedorVisualFoto.addEventListener('click', clickSPAHandler);
 
     const datosCasa = document.createElement('div');
@@ -671,26 +652,21 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
-    // ==========================================================================
-    // INICIO DE ORDENAMIENTO POR COLUMNA NATIVA DESTACADO DE LA VISTA SRE
-    // ==========================================================================
     filtradas.sort((a, b) => {
         const destA = String(a.destacado || "no").toLowerCase().trim();
         const destB = String(b.destacado || "no").toLowerCase().trim();
         if (destA === "si" && destB !== "si") {
             return -1;
-        } // Fin de if destA
+        }
         if (destA !== "si" && destB === "si") {
             return 1;
-        } // Fin de if destB
+        }
         return 0;
-    }); // Fin de sort utilizando la columna nativa destacado
-    // ==========================================================================
-    // FIN DE ORDENAMIENTO POR COLUMNA NATIVA DESTACADO DE LA VISTA SRE
+    });
 
     const contador = document.getElementById('results-counter');
 
-    console.log(`?? [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas y ordenadas por destacado a pintar: ${filtradas.length}`);
+    console.log(`>> [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas y ordenadas por destacado a pintar: ${filtradas.length}`);
 
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
@@ -715,14 +691,12 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
 /**
  * FABRICANTE MODULAR DEL CONTENEDOR POPUP MASTER REPARADO PARA LEAFLET
- * Extrae la creación visual y sus escuchadores para resolver la advertencia 1550 de JSHint.
  */
 function construirContenedorPopupLeaflet(prop) {
     const contenedorPopupMaster = document.createElement('div');
     contenedorPopupMaster.className = 'tarjeta-casa popup-card';
     contenedorPopupMaster.style.width = '260px';
 
-    // Creamos el carrusel pasando el flag 'true' para indicar que es contexto Popup
     const carruselPopup = construirRielCarruselComponente(prop, true);
     contenedorPopupMaster.appendChild(carruselPopup);
 
@@ -747,37 +721,30 @@ function construirContenedorPopupLeaflet(prop) {
 
     contenedorPopupMaster.appendChild(datosPopup);
 
-    // ESCUDO DE SEGURIDAD LEAFLET: Evita que el evento 'click' y 'pointerdown' se propague al mapa base
     L.DomEvent.disableClickPropagation(contenedorPopupMaster);
     L.DomEvent.disableScrollPropagation(contenedorPopupMaster);
 
-    // Evento de redirección SPA seguro delegando el puntero sin romper Leaflet
     const ejecutarTransicionDetalle = (ev) => {
-
-    // { --- INICIO DEL REEMPLAZO QUIRÚRGICO DE ALINEACIÓN DE LLAVES SRE ---
         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
             ev.stopPropagation();
-            return; // Deja operar las flechas sin abrir el detalle de la casa
+            return;
         }
         if (window.map) window.map.closePopup();
         state.propiedadSeleccionadaId = prop.id;
-        
+
         if (typeof gestionarCortinaSPA === "function") {
             gestionarCortinaSPA('detalle', prop);
         }
-    }; // Fin correcto de la función ejecutarTransicionDetalle (Movido aquí para abrir el bloque)
+    }; // Fin de la función ejecutarTransicionDetalle
 
-    // Doble enlace seguro para interactividad en laptops y gestos fluidos en móviles/tabletas
     carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
 
-    // --- INICIO DE ENLACE TÁCTIL SEGURO PARA DETALLE SPA SRE ---
     carruselPopup.addEventListener('touchend', (ev) => {
         if (ev.target.closest('.flecha-carrusel') || ev.target.closest('.corazon-favorito')) {
-            return; // No interrumpe la navegación de las flechas
+            return;
         }
         ejecutarTransicionDetalle(ev);
     }, { passive: true });
-    // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE
 
     return contenedorPopupMaster;
 }
@@ -788,12 +755,10 @@ function construirContenedorPopupLeaflet(prop) {
 function renderizarMapaZillow() {
     if (!window.map || !document.getElementById('map-instance')) return;
 
-    // Fuerza a Leaflet a recalcular el ancho y alto del contenedor en el DOM antes de pintar
     window.map.invalidateSize({
         animate: false
     });
 
-    // 1. LIMPIEZA ATÓMICA Y VACIADO DE MARCADORES PREVIOS EN MEMORIA DE LEAFLET
     if (window.capaMarcadores) {
         window.capaMarcadores.clearLayers();
         window.map.removeLayer(window.capaMarcadores);
@@ -803,12 +768,10 @@ function renderizarMapaZillow() {
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
     const coordenadasValidas = [];
 
-    // 2. CREACIÓN Y AÑADIDO DE MARCADORES MEDIANTE BUCLE AISLADO
     filtradas.forEach(prop => {
         const parsedLat = parseFloat(prop.latitud);
         const parsedLng = parseFloat(prop.longitud);
 
-        // Filtrado estricto de coordenadas válidas provenientes de Supabase
         if (isNaN(parsedLat) || isNaN(parsedLng) || !isFinite(parsedLat) || !isFinite(parsedLng)) {
             return;
         }
@@ -829,7 +792,6 @@ function renderizarMapaZillow() {
             icon: iconoBurbuja
         });
 
-        // Inyección limpia delegada del Popup Constructor
         const contenedorPopupMaster = construirContenedorPopupLeaflet(prop);
 
         marcador.bindPopup(contenedorPopupMaster, {
@@ -840,23 +802,20 @@ function renderizarMapaZillow() {
             closeOnClick: false
         });
 
-        // Evento nativo del Marcador sobre el lienzo
         marcador.on('click', (e) => {
             L.DomEvent.stopPropagation(e);
             state.propiedadSeleccionadaId = prop.id;
 
             if (window.innerWidth <= 768) {
-                // Comportamiento elástico en móviles: Actualiza y muestra el overlay flotante inferior estilo Zillow
                 const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                 const targetContenido = document.getElementById("target-contenido-movil-sre");
 
                 if (cajaFlotanteMovil && targetContenido) {
-                    targetContenido.innerHTML = ''; // Vaciamos el contenedor estático
+                    targetContenido.innerHTML = '';
 
                     const contenedorEstructura = document.createElement('div');
                     contenedorEstructura.style.cssText = 'display:flex; flex-direction:column; gap:8px; font-family:sans-serif;';
 
-                    // Inyectamos el riel interactivo dinámico con flechas para celular
                     const carruselMovilActivo = construirRielCarruselComponente(prop, true);
                     contenedorEstructura.appendChild(carruselMovilActivo);
 
@@ -873,8 +832,7 @@ function renderizarMapaZillow() {
                             ev.stopPropagation();
                             return;
                         }
-                        
-                        // Asegurando el acceso de la función en el ámbito global mediante el objeto window
+
                         if (typeof window.gestionarCortinaSPA === "function") {
                             window.gestionarCortinaSPA('detalle', prop);
                         }
@@ -891,7 +849,6 @@ function renderizarMapaZillow() {
                     cajaFlotanteMovil.className = "tarjeta-movil-sre-visible";
                 }
             } else {
-                // Sincronización del scroll automático hacia el catálogo derecho en computadoras de escritorio
                 const tarjetaDesktop = document.querySelector(`.tarjeta-casa[data-id="${prop.id}"]`);
                 if (tarjetaDesktop) {
                     tarjetaDesktop.scrollIntoView({
@@ -910,7 +867,6 @@ function renderizarMapaZillow() {
         window.capaMarcadores.addLayer(marcador);
     });
 
-    // 3. ENCUADRE DINÁMICO GEOMÉTRICO PANORÁMICO SRE
     if (coordenadasValidas.length > 0) {
         try {
             if (coordenadasValidas.length === 1) {
@@ -926,7 +882,7 @@ function renderizarMapaZillow() {
                 });
             }
         } catch (errGeometrico) {
-            console.warn("?? [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
+            console.warn(">> [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
         }
     }
 }
@@ -935,18 +891,18 @@ function renderizarMapaZillow() {
 // ==========================================================================
 
 function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
-    console.group("?? [SRE ESPÍA INTERCEPTOR] Paquete crudo recibido desde el Motor");
+    console.group(">> [SRE ESPÍA INTERCEPTOR] Paquete crudo recibido desde el Motor");
     console.log("Estructura completa de la carga útil:", data);
 
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("? Formato de datos inválido o ausencia de la colección 'propiedades'.");
+        console.error("X Formato de datos inválido o ausencia de la colección 'propiedades'.");
         console.groupEnd();
         return;
     }
 
     state.propiedades = data.propiedades.map(normalizarPropiedad);
 
-    console.log("?? Data normalizada en el frontend (state.propiedades):");
+    console.log(">> Data normalizada en el frontend (state.propiedades):");
     console.table(state.propiedades.slice(0, 5), ["id", "precio_base", "tipo_propiedad", "tipo_anuncio", "estado_publicacion"]);
     console.groupEnd();
 
@@ -956,23 +912,18 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
     if (typeof interceptarFirewallSeguridadUsuario === "function") {
         interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
     } else {
-        console.log("? [SRE] Escudo pasivo interceptor operando en modo seguro.");
+        console.log("> [SRE] Escudo pasivo interceptor operando en modo seguro.");
     }
 } // Fin de la Function procesarDatosDelMotor
 
 function interceptarFirewallSeguridadUsuario(usuarios, email) {
-    // Actúa como un escudo de paso vacío exigido por el motor de renderizado para evitar rupturas
     return true;
 } // Fin de la Function interceptarFirewallSeguridadUsuario
 
 document.addEventListener("DOMContentLoaded", () => {
 // --- FIN DEL REEMPLAZO QUIRÚRGICO SRE
-    
-    
-            // ====================================================================================
-            // BLOQUE 1: INICIALIZACIÓN INMEDIATA DEL MOTOR CARTOGRÁFICO (PÚBLICO)
-            // Sirve para renderizar el lienzo de Leaflet en el contenedor DOM sin depender de sesiones.
-            // ====================================================================================
+
+
             if (typeof L !== 'undefined' && document.getElementById('map-instance')) { // Inicio Condicional Mapa
                 window.map = L.map('map-instance', {
                     zoomControl: true
@@ -983,17 +934,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             } // Fin Condicional Mapa
 
-            // ====================================================================================
-            // BLOQUE 2: DESPLIEGUE INMEDIATO DEL CATÁLOGO DE PROPIEDADES (PÚBLICO)
-            // Sirve para activar los filtros y leer la vista SQL de Supabase de manera atómica.
-            // ====================================================================================
             inicializarEventosDeFiltros();
             cargarDatosDesdeSupabase();
 
-            // ====================================================================================
-            // BLOQUE 3: NAVEGACIÓN CAPA MÓVIL
-            // Sirve para ocultar la tarjeta flotante en dispositivos móviles al presionar cerrar.
-            // ====================================================================================
             const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
             if (btnCerrarTarjetaMovil) { // Inicio Condicional Botón Móvil
                 btnCerrarTarjetaMovil.onclick = (e) => { // Inicio Evento Click Móvil
@@ -1003,32 +946,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 }; // Fin Evento Click Móvil
             } // Fin Condicional Botón Móvil
 
-            // ====================================================================================
-            // BLOQUE 4: CENTRALIZADOR ASÍNCRONO DE AUTENTICACIÓN, ENLACES Y CUENTAS SOCIALES
-            // Sirve para validar tokens, activar cuentas tradicionales y registrar perfiles de Google/Facebook blindando el flujo contra inserciones de llaves duplicadas (Evita Error 23505).
-            // ====================================================================================
-            // ====================================================================================
-            // PARTE 1 DE 3: CONFIGURACIÓN INICIAL, DESLOGUEO Y FORMATO DE FECHA POSTGRESQL
-            // ====================================================================================
             if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase SRE
                 supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
-                    console.log(`%c?? [SRE AUTH] Evento pasivo de sesión detectado: ${event}`, "color: #ffb91d; font-weight: bold;");
+                    console.log(`%c>> [SRE AUTH] Evento pasivo de sesión detectado: ${event}`, "color: #ffb91d; font-weight: bold;");
 
-                    // Diferir las llamadas a la base de datos para no bloquear el callback de autenticación de Supabase
                     setTimeout(async () => {
-                        //const user = session?.user;
                         const user = (session && session.user) ? session.user : null;
 
-                        // REGLA DE NEGOCIO: Si no hay sesión activa, limpiamos y detenemos el flujo de forma limpia
                         if (!user) {
                             state.usuarioActual = null;
                             window.usuarioLogueado = null;
                             actualizarBotonCuenta();
-                            console.log("? [SRE AUTH] Sesión inactiva o cerrada. Estado global de seguridad reseteado.");
+                            console.log("> [SRE AUTH] Sesión inactiva o cerrada. Estado global de seguridad reseteado.");
                             return;
                         }
 
-                        // Sincronización inmediata de la variable de ventana para componentes de UI
                         window.usuarioLogueado = user;
                         actualizarBotonCuenta();
 
@@ -1037,10 +969,8 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (!cliente) throw new Error("Instancia de cliente Supabase no disponible.");
 
                             const correo = String(user.email || '').trim().toLowerCase();
-                            // Detectar proveedor de manera robusta desde app_metadata o identities
                             const proveedor = user.app_metadata?.provider || (user.identities && user.identities?.provider);
 
-                            // CORRECCIÓN ATÓMICA: Formato estricto Postgres YYYY-MM-DD (ej: 2026-10-08)
                             const fActual = new Date();
                             const hoyFormatoIso = [
                                 fActual.getFullYear(),
@@ -1048,13 +978,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 String(fActual.getDate()).padStart(2, '0')
                             ].join('-');
 
-                            console.log(`? [SRE AUTH PROCESSING] Evaluando interesado: ${correo} | Proveedor: ${proveedor} | Fecha: ${hoyFormatoIso}`);
+                            console.log(`> [SRE AUTH PROCESSING] Evaluando interesado: ${correo} | Proveedor: ${proveedor} | Fecha: ${hoyFormatoIso}`);
 
-                    // ----------------------------------------------------------------------
-                    // CANAL AUTOMÁTICO: PROVEEDORES SOCIALES (GOOGLE / FACEBOOK) - CORREGIDO PARA EVITAR DUPLICADOS
-                    // ----------------------------------------------------------------------
                     if (proveedor === 'google' || proveedor === 'facebook') {
-                        // 1. Buscamos primero si ya existe por el UUID de Supabase Auth
                         let { data: perfilSocial, error: errorBusquedaSocial } = await cliente
                             .from('usuario_autenticado')
                             .select('usuario_id, estado_cuenta, verificado')
@@ -1063,9 +989,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (errorBusquedaSocial) throw errorBusquedaSocial;
 
-                        // 2. Si no existe por ID, hacemos el rastreo inteligente por CORREO para evitar conflictos 409
                         if (!perfilSocial) {
-                            console.log('? [SRE AUTH] Buscando vinculación existente por correo electrónico...');
+                            console.log('> [SRE AUTH] Buscando vinculación existente por correo electrónico...');
                             const { data: perfilPorCorreo, error: errorPorCorreo } = await cliente
                                 .from('usuario_autenticado')
                                 .select('usuario_id, estado_cuenta, verificado')
@@ -1075,12 +1000,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (errorPorCorreo) throw errorPorCorreo;
 
                             if (perfilPorCorreo) {
-                                console.log('?? [SRE AUTH] Correo preexistente detectado. Acoplando UUID de red social de forma atómica...');
-                                
-                                // Unificamos el registro existente reemplazando el ID temporal por el real de Supabase
+                                console.log('>> [SRE AUTH] Correo preexistente detectado. Acoplando UUID de red social de forma atómica...');
+
                                 const { error: errorSincronizacionOAuth } = await cliente
                                     .from('usuario_autenticado')
-                                    .update({ 
+                                    .update({
                                         usuario_id: user.id,
                                         ultimo_acceso: hoyFormatoIso,
                                         fecha_actualizacion: hoyFormatoIso
@@ -1088,18 +1012,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .eq('correo', correo);
 
                                 if (errorSincronizacionOAuth) throw errorSincronizacionOAuth;
-                                
-                                perfilSocial = { 
-                                    usuario_id: user.id, 
-                                    estado_cuenta: perfilPorCorreo.estado_cuenta 
+
+                                perfilSocial = {
+                                    usuario_id: user.id,
+                                    estado_cuenta: perfilPorCorreo.estado_cuenta
                                 };
                             }
                         }
 
-                        // 3. Si definitivamente es un usuario 100% nuevo (no hay ID ni correo previo en la BD)
                         if (!perfilSocial) {
-                            console.warn('?? [SRE AUTH] Creando registro autónomo nuevo para el interesado social...');
-                            
+                            console.warn('>> [SRE AUTH] Creando registro autónomo nuevo para el interesado social...');
+
                             const metadatos = user.user_metadata || {};
                             const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
                             const stringNombre = String(partesNombre[0] || "Interesado").trim();
@@ -1115,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     apellido: stringApellido,
                                     correo: correo,
                                     password_hash: "OAuth-No-Pass",
-                                    telefono: telefonoOAuth, 
+                                    telefono: telefonoOAuth,
                                     estado_cuenta: "activo",
                                     verificado: true,
                                     creado_por: `OAuth-${proveedor}`,
@@ -1127,30 +1050,24 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (insertSocialError) throw insertSocialError;
 
                             state.usuarioActual = { id: user.id, correo, estado_cuenta: "activo" };
-                            console.log("?? [SRE AUTH] Registro de cuenta social completado exitosamente como ACTIVO.");
+                            console.log(">> [SRE AUTH] Registro de cuenta social completado exitosamente como ACTIVO.");
                             return;
                         }
 
-                        // 4. Evaluar si el administrador suspendió la cuenta social vinculada
                         const estadoSocialReal = String(perfilSocial.estado_cuenta || '').toLowerCase().trim();
                         if (estadoSocialReal === "suspendido") {
-                            console.error("? ACL BLOQUEO SOCIAL: El interesado se encuentra SUSPENDIDO.");
+                            console.error("X ACL BLOQUEO SOCIAL: El interesado se encuentra SUSPENDIDO.");
                             state.usuarioActual = { id: user.id, correo, estado_cuenta: "suspendido" };
                             alert("Acceso Restringido: Su cuenta se encuentra SUSPENDIDA por el administrador.");
                             return;
                         }
 
-                        // Pase libre autorizado en memoria
                         state.usuarioActual = { id: user.id, correo, estado_cuenta: estadoSocialReal };
-                        console.log(`? [SRE AUTH] Acceso concedido a cuenta social existente. Estado: ${estadoSocialReal.toUpperCase()}`);
+                        console.log(`> [SRE AUTH] Acceso concedido a cuenta social existente. Estado: ${estadoSocialReal.toUpperCase()}`);
                         return;
                     }
 
 
-                            // ====================================================================================
-                            // PARTE 3 DE 3: CANAL TRADICIONAL (EMAIL) Y ENLAZADO DE UUID POSTGRESQL
-                            // ====================================================================================
-                            // Buscamos el registro de pre-registro utilizando el índice único del correo electrónico
                             const {
                                 data: perfilTradicional,
                                 error: errorBusquedaTradicional
@@ -1162,18 +1079,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             if (errorBusquedaTradicional) throw errorBusquedaTradicional;
 
-                            // Si no existe un registro previo en la tabla de negocio, es una anomalía
                             if (!perfilTradicional) {
-                                console.warn("? [SRE AUTH] Alerta: Autenticado en Supabase, pero no figura en la tabla mapeada.");
+                                console.warn("! [SRE AUTH] Alerta: Autenticado en Supabase, pero no figura en la tabla mapeada.");
                                 state.usuarioActual = null;
                                 return;
                             }
 
                             const estadoActual = String(perfilTradicional.estado_cuenta || '').toLowerCase().trim();
 
-                            // REGLA DE NEGOCIO CRÍTICA: Si el administrador lo suspendió, se bloquea el acceso de inmediato
                             if (estadoActual === "suspendido") {
-                                console.error("? ACL BLOQUEO TRADICIONAL: El interesado por correo se encuentra SUSPENDIDO.");
+                                console.error("X ACL BLOQUEO TRADICIONAL: El interesado por correo se encuentra SUSPENDIDO.");
                                 state.usuarioActual = {
                                     id: user.id,
                                     correo,
@@ -1183,20 +1098,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                 return;
                             }
 
-                            // Configuración dinámica de la carga útil de sincronización
                             const cambiosSincronizacion = {
-                                usuario_id: user.id, // Reemplaza permanentemente el UUID transitorio del frontend por el de Supabase Auth
-                                ultimo_acceso: hoyFormatoIso, // Guardado seguro YYYY-MM-DD
+                                usuario_id: user.id,
+                                ultimo_acceso: hoyFormatoIso,
                                 fecha_actualizacion: hoyFormatoIso
                             };
 
-                            // REGLA DE NEGOCIO: Si está 'pendiente', el usuario acaba de verificar su correo por primera vez
                             if (estadoActual === 'pendiente') {
                                 cambiosSincronizacion.estado_cuenta = 'activo';
                                 cambiosSincronizacion.verificado = true;
                             }
 
-                            // Ejecutar la actualización atómica en PostgreSQL afectando la fila correspondiente
                             const {
                                 error: updateTradicionalError
                             } = await cliente
@@ -1206,7 +1118,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             if (updateTradicionalError) throw updateTradicionalError;
 
-                            // Establecer estado de seguridad en la memoria reactiva de la aplicación
                             state.usuarioActual = {
                                 id: user.id,
                                 correo,
@@ -1215,13 +1126,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             if (estadoActual === 'pendiente') {
                                 alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
-                                console.log("?? [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
+                                console.log(">> [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
                             } else {
-                                console.log(`? [SRE AUTH] Sesión tradicional restaurada con éxito. Estado: ${estadoActual.toUpperCase()}`);
+                                console.log(`> [SRE AUTH] Sesión tradicional restaurada con éxito. Estado: ${estadoActual.toUpperCase()}`);
                             }
 
                         } catch (err) {
-                            console.error('? [SRE AUTH CRÍTICO] Excepción capturada en la tubería de sincronización:', err);
+                            console.error('X [SRE AUTH CRÍTICO] Excepción capturada en la tubería de sincronización:', err);
                             state.usuarioActual = null;
                         }
                     }, 0);
@@ -1234,21 +1145,16 @@ document.addEventListener("DOMContentLoaded", () => {
             // ==========================================================================
 
             function inicializarEventosDeFiltros() {
-                // 1. Gestión de desplegables (Dropdowns)
                 const wrappers = document.querySelectorAll('.filter-dropdown-wrapper');
                 wrappers.forEach(wrapper => {
                     const boton = wrapper.querySelector('.filter-btn');
                     const panel = wrapper.querySelector('.dropdown-content-panel');
                     if (!boton || !panel) return;
 
-                    // ==========================================================================
-                    // NUEVA FUNCIONALIDAD: FILTROS INTERACTIVOS OMNICANAL (MÓVIL, TABLETA Y LAPTOP)
-                    // ==========================================================================
                     const conmutarFiltroPanel = (e) => {
                         e.preventDefault();
                         e.stopPropagation();
 
-                        // Cerramos de forma limpia cualquier otro panel que esté abierto en la barra
                         document.querySelectorAll('.dropdown-content-panel').forEach(p => {
                             if (p !== panel) p.classList.remove('show');
                         });
@@ -1256,17 +1162,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (b !== boton) b.classList.remove('active');
                         });
 
-                        // Alternamos de forma reactiva el estado del panel seleccionado
                         panel.classList.toggle('show');
                         boton.classList.toggle('active');
                     };
 
-                    // Doble pasarela de eventos para garantizar respuesta instantánea con ratón o dedos
                     boton.addEventListener('click', conmutarFiltroPanel);
-                    //boton.addEventListener('touchend', conmutarFiltroPanel);
                 });
 
-                // Cierre inteligente y pasivo de desplegables al tocar cualquier zona libre de la pantalla
                 const cerrarPanelesResiduales = (e) => {
                     if (!e.target.closest('.filter-dropdown-wrapper')) {
                         document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
@@ -1277,14 +1179,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.addEventListener('click', cerrarPanelesResiduales);
                 document.addEventListener('touchend', cerrarPanelesResiduales);
 
-                // Detener la propagación de clics dentro del panel para evitar que se cierre solo
                 document.querySelectorAll('.dropdown-content-panel').forEach(panel => {
                     panel.addEventListener('click', (e) => e.stopPropagation());
                 });
 
-                // ==========================================================================
-                // INICIO DE MANEJADOR DE CAMBIOS FILTRO MAESTRO DE TRANSACCIÓN
-                // ==========================================================================
                 const radiosTransaccion = document.querySelectorAll('input[name="transaccion"]');
                 radiosTransaccion.forEach(radio => {
                     radio.addEventListener('change', (e) => {
@@ -1297,17 +1195,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                 btnStatus.textContent = "Para el alquiler";
                             } else if (e.target.value === "vendida") {
                                 btnStatus.textContent = "Vendidas";
-                            } // Fin de if de actualización de texto en botón
-                        } // Fin de if btnStatus
+                            }
+                        }
                         ejecutarTuberiaSincronizada();
-                    }); // Fin de Callback change
-                }); // Fin de forEach radiosTransaccion
-                // ==========================================================================
-                // FIN DE MANEJADOR DE CAMBIOS FILTRO MAESTRO DE TRANSACCIÓN
-                // ==========================================================================
+                    });
+                });
 
 
-                // 3. FILTRO PRECIO (Con botón Aplicar y Restablecer)
                 const inputMinPrecio = document.getElementById('price-min');
                 const inputMaxPrecio = document.getElementById('price-max');
                 const btnApplyPrice = document.getElementById('btn-apply-price');
@@ -1321,44 +1215,30 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
 
-                // --- INICIO DE REEMPLAZO PUNTUAL: CAPTURA PASIVA DE CAMAS Y BAÑOS SRE ---
-
-                // Variables locales para retener temporalmente los clics del usuario sin mover la interfaz
                 let temporalHabitaciones = state.filtros.habitaciones || 0;
                 let temporalBanos = state.filtros.banos || 0;
 
-                // Al cambiar de dormitorio, solo almacenamos el valor numérico en la variable local
                 configurarSegmentado('row-beds', (valor) => {
                     temporalHabitaciones = parseInt(valor, 10) || 0;
                 });
 
-                // Al cambiar de baño, almacenamos el valor numérico decimal en la variable local
                 configurarSegmentado('row-baths', (valor) => {
                     temporalBanos = parseFloat(valor) || 0;
                 });
 
-                // El botón Aplicar es el único punto de control que escribe el estado global y refresca el mapa y rejilla
                 const btnApplySpecs = document.getElementById('btn-apply-beds-baths');
                 if (btnApplySpecs) {
                     btnApplySpecs.addEventListener('click', (e) => {
                         if (e) e.preventDefault();
 
-                        // Traspasamos los valores almacenados temporalmente hacia el objeto global real
                         state.filtros.habitaciones = temporalHabitaciones;
                         state.filtros.banos = temporalBanos;
 
-                        // Invocamos la actualización síncrona visual del catálogo y marcadores del mapa
                         ejecutarTuberiaSincronizada();
-
-                        // Ocultamos los paneles desplegables abiertos
                         cerrarTodosLosPaneles();
-                    }); // Fin de EventListener click para btnApplySpecs
+                    });
                 }
 
-                // --- FIN DE REEMPLAZO PUNTUAL SRE ---
-
-
-                // 5. Tipo de Propiedad (Control Maestro Seleccionar / Deseleccionar Todo)
                 const checkboxesTipo = document.querySelectorAll('.type-cb');
                 const btnMasterType = document.getElementById('btn-type-master-toggle');
                 const btnAplicarTipo = document.getElementById('btn-aplicar-tipo-propiedad');
@@ -1385,7 +1265,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
 
-                // 6. Mas Filtros Avanzados (Control Maestro Seleccionar / Deseleccionar Todo)
                 const checkboxesListado = document.querySelectorAll('.more-filter-cb');
                 const btnMasterMore = document.getElementById('btn-more-master-toggle');
                 const btnAplicarMasFiltros = document.getElementById('btn-aplicar-mas-filtros');
@@ -1413,7 +1292,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
 
-                // 7. BUSCADOR DE DIRECCIÓN (Con Debounce de 600ms y Escape de Limpieza)
                 const inputDireccionGlobal = document.getElementById('search-address');
                 if (inputDireccionGlobal) {
                     let timerBusqueda = null;
@@ -1423,41 +1301,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         clearTimeout(timerBusqueda);
 
-                        // Si el usuario borra todo el texto, la tubería limpia la pantalla y el mapa regresa a la vista general
                         if (consulta === "") {
                             ejecutarTuberiaSincronizada();
                             return;
                         }
 
-                        // Si tiene texto pero es menor a 3 letras, no hacemos la consulta externa a Nominatim
                         if (consulta.length < 3) return;
 
-                        // Espera activa de 600ms para evitar saturar la API mientras el usuario escribe
                         timerBusqueda = setTimeout(async () => {
                             try {
                                 const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}`);
                                 const data = await res.json();
 
-                                // Leemos de forma estricta el índice cero del arreglo devuelto
                                 if (data && data.length > 0 && window.map) {
                                     const lat = parseFloat(data[0].lat);
                                     const lon = parseFloat(data[0].lon);
 
-                                    // Movemos la cámara del mapa hacia las coordenadas del distrito escrito
                                     window.map.setView([lat, lon], 14, {
                                         animate: true
                                     });
                                 }
                             } catch (errGeo) {
-                                console.error("❌ [SRE ERROR GEO] Fallo al geocodificar con OpenStreetMap:", errGeo);
+                                console.error("X [SRE ERROR GEO] Fallo al geocodificar con OpenStreetMap:", errGeo);
                             }
                         }, 600);
-                    }); // Fin del EventListener input controlado SRE
+                    });
                 }
             } // Fin definitivo de la función inicializarEventosDeFiltros
 
 
-            // Función auxiliar para cerrar paneles desplegables
             function cerrarTodosLosPaneles() {
 
                 document.querySelectorAll('.dropdown-content-panel').forEach(p => p.classList.remove('show'));
@@ -1472,7 +1344,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const contenedor = document.getElementById(idContenedor);
                 if (!contenedor) return;
 
-                // Escucha de forma nativa el cambio sobre los inputs radiales de la estructura Zillow
                 contenedor.addEventListener('change', (e) => {
                     const inputRadio = e.target.closest('input[type="radio"]');
                     if (inputRadio) {
@@ -1498,7 +1369,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } // Fin de Function ejecutarTuberiaSincronizada
 
-            // Activa las tres pasarelas de autenticación nativas de Supabase para cumplir las reglas de negocio de la plataforma
             function inicializacionModalEstadosVistaSRE(modoDestino) { // Inicia la Funcion de Control Visual de Sub-Pantallas SRE
                 const wrapperRegistro = document.getElementById('wrapper-campos-registro-sre');
                 const subtitulo = document.getElementById('auth-subtitulo-dinamico');
@@ -1506,12 +1376,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 const btnPrincipal = document.getElementById('btn-autenticar');
                 const lblEmail = document.getElementById('lbl-email-dinamico');
 
-                if (modoDestino === 'registro') { // Configura los elementos en modo Formulario de Datos Requeridos
+                if (modoDestino === 'registro') {
                     if (wrapperRegistro) wrapperRegistro.style.display = 'flex';
                     if (subtitulo) subtitulo.style.display = 'block';
                     if (lblEmail) lblEmail.innerText = "Dirección de correo para registrar cuenta *";
                     if (btnPrincipal) {
-                        btnPrincipal.innerText = "Confirmar Registro"; // Fuerza el cambio de texto real del boton
+                        btnPrincipal.innerText = "Confirmar Registro";
                         btnPrincipal.setAttribute('data-modo', 'registro');
                     }
                     if (linkConmutador) {
@@ -1521,12 +1391,12 @@ document.addEventListener("DOMContentLoaded", () => {
                             inicializacionModalEstadosVistaSRE('login');
                         });
                     }
-                } else { // Restablece los elementos al modo de Iniciar Sesión tradicional
+                } else {
                     if (wrapperRegistro) wrapperRegistro.style.display = 'none';
                     if (subtitulo) subtitulo.style.display = 'none';
                     if (lblEmail) lblEmail.innerText = "Dirección de correo electrónico *";
                     if (btnPrincipal) {
-                        btnPrincipal.innerText = "Continuar"; // Restablece el boton al modo Login
+                        btnPrincipal.innerText = "Continuar";
                         btnPrincipal.setAttribute('data-modo', 'login');
                     }
                     if (linkConmutador) {
@@ -1542,9 +1412,6 @@ document.addEventListener("DOMContentLoaded", () => {
             function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion inicializarAutenticacionTresCanalesSupabase SRE
                 const btnAutenticarEmail = document.getElementById('btn-autenticar');
 
-                // ====================================================================================
-                // PROCESADOR DEL FORMULARIO DE ALTA Y LOGUEO TRADICIONAL (EMAIL OTP)
-                // ====================================================================================
                 const procesarAutenticacionMagicaSRE = async (esRegistroNuevo) => { // Inicia Funcion procesarAutenticacionMagicaSRE
                     const emailInput = document.getElementById('login-email-input');
                     const emailValor = emailInput ? emailInput.value.trim().toLowerCase() : "";
@@ -1557,7 +1424,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     let apellidoValor = "Nuevo Registro";
                     let telefonoValor = "999999999";
 
-                    if (esRegistroNuevo) { // Validacion y Extraccion de los datos ingresados por el Interesado
+                    if (esRegistroNuevo) {
                         const inputN = document.getElementById('reg-nombre-input');
                         const inputA = document.getElementById('reg-apellido-input');
                         const inputT = document.getElementById('reg-telefono-input');
@@ -1573,14 +1440,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     if (btnAutenticarEmail) {
-                        btnAutenticarEmail.innerText = esRegistroNuevo ? "? Procesando Alta..." : "? Verificando registro...";
+                        btnAutenticarEmail.innerText = esRegistroNuevo ? "Procesando Alta..." : "Verificando registro...";
                         btnAutenticarEmail.disabled = true;
                     }
 
-                    try { // Inicia Bloque de Consulta y Verificacion Transaccional
+                    try {
                         const cliente = obtenerClienteSupabase();
 
-                        // Consultamos la existencia del correo en la tabla usuario_autenticado
                         const {
                             data: usuarioBD,
                             error: errorBD
@@ -1592,16 +1458,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (errorBD) throw new Error("Error al consultar la base de datos: " + errorBD.message);
 
-                        if (esRegistroNuevo) { // REQUERIMIENTO: Flujo de creacion con INSERT en estado PENDIENTE
+                        if (esRegistroNuevo) {
                             if (usuarioBD) {
                                 alert("Aviso: Este correo electrónico ya se encuentra registrado en el sistema. Use la opción de Iniciar Sesión tradicional.");
                                 inicializacionModalEstadosVistaSRE('login');
                                 return;
                             }
 
-                            console.log("? Validando y estructurando fecha limpia para PostgreSQL...");
+                            console.log("> Validando y estructurando fecha limpia para PostgreSQL...");
 
-                            // CORRECCIÓN ATÓMICA: Formato estricto Postgres YYYY-MM-DD (ej: 2026-10-08)
                             const fActual = new Date();
                             const hoyFormatoProduccion = [
                                 fActual.getFullYear(),
@@ -1609,14 +1474,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 String(fActual.getDate()).padStart(2, '0')
                             ].join('-');
 
-                            // Generación de un UUID temporal seguro para la inserción inicial (será sobreescrito por Supabase Auth en el primer login)
                             const uuidTemporalPostgres = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
                                 const r = Math.random() * 16 | 0;
                                 const v = c === 'x' ? r : (r & 0x3 | 0x8);
                                 return v.toString(16);
                             });
 
-                            // INSERT inicial estricto con estado_cuenta en 'pendiente' libre de tildes y con fecha ISO pura YYYY-MM-DD
                             const {
                                 error: insertError
                             } = await cliente
@@ -1628,7 +1491,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     apellido: apellidoValor,
                                     correo: emailValor,
                                     password_hash: "Email-OTP-Flow",
-                                    telefono: telefonoValor, // Nombre de columna limpio y corregido
+                                    telefono: telefonoValor,
                                     estado_cuenta: "pendiente",
                                     verificado: false,
                                     creado_por: emailValor,
@@ -1637,10 +1500,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }]);
 
                             if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
-                            console.log("?? Pre-registro exitoso en estado PENDIENTE.");
+                            console.log(">> Pre-registro exitoso en estado PENDIENTE.");
 
-                        } else { // Flujo Operativo para el Boton Continuar de Logueo Tradicional
-                            if (usuarioBD) { // Inicia Validacion de Estado para Registro Existente
+                        } else {
+                            if (usuarioBD) {
                                 const estado = String(usuarioBD.estado_cuenta).toLowerCase().trim();
                                 if (estado !== "activo" && estado !== "pendiente") {
                                     alert(`Acceso Restringido: Su cuenta se encuentra en estado ${estado.toUpperCase()}.`);
@@ -1653,7 +1516,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         }
 
-                        // Despacho del enlace mágico a la bandeja de entrada del interesado
                         const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname;
                         const {
                             error: errorOtp
@@ -1681,19 +1543,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 }; // Fin de Funcion procesarAutenticacionMagicaSRE
 
 
-                if (btnAutenticarEmail) { // Inicia Condicional de Existencia del Boton Email
-                    btnAutenticarEmail.addEventListener('click', async () => { // Inicia Evento Click para Email Tradicional
+                if (btnAutenticarEmail) {
+                    btnAutenticarEmail.addEventListener('click', async () => {
                         const modoActual = btnAutenticarEmail.getAttribute('data-modo') || 'login';
                         await procesarAutenticacionMagicaSRE(modoActual === 'registro');
-                    }); // Fin de Evento Click para Email Tradicional
-                } // Fin de Condicional de Existencia del Boton Email
+                    });
+                }
 
                 document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
                     e.preventDefault();
                     inicializacionModalEstadosVistaSRE('registro');
                 });
 
-                // Vinculación directa a los disparadores de redes sociales de la interfaz rediseñada
                 document.getElementById('btn-auth-google')?.addEventListener('click', async (e) => {
                     e.preventDefault();
                     try {
@@ -1725,17 +1586,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-            // Declaración perimetral pasiva para evitar la ruptura del hilo principal de ejecución en el catálogo
             function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
                 // Actúa como un escudo de paso vacío exigido por el motor de renderizado de la Parte 12
             } // Fin interceptarFirewallSeguridadUsuario
 
-            // Funciones nativas complementarias para los botones de redes sociales (OAuth)
             async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
 
                 try {
                     const cliente = obtenerClienteSupabase();
-                    // Canal 2: Proveedor oficial OAuth Google
                     await cliente.auth.signInWithOAuth({
                         provider: 'google'
                     });
@@ -1747,7 +1605,6 @@ document.addEventListener("DOMContentLoaded", () => {
             async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebookSupabase
                 try {
                     const cliente = obtenerClienteSupabase();
-                    // Canal 3: Proveedor oficial OAuth Facebook
                     await cliente.auth.signInWithOAuth({
                         provider: 'facebook'
                     });
@@ -1756,8 +1613,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } // Fin autenticarConFacebookSupabase
 
-            // Ejecución pasiva e inmediata del inicializador en el hilo principal
-            //setTimeout(() => { inicialisadorEjecucion = inicializarAutenticacionTresCanalesSupabase(); }, 150);
             function ejecutarCuandoDOMEsteListo(callback) {
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', callback, {
@@ -1774,17 +1629,15 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
 
-            // Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas con firewall ACL
             function inicializarEventosPopups() { // Inicia inicializarEventosPopups
                 document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', () => cerrarPopupAccion('modal-tour-comercial'));
                 document.getElementById('btn-navegacion-siguiente-tour')?.addEventListener('click', () => gestionarPasosModalTour(2));
 
-                // Vinculación directa y limpia al Guardia de Seguridad unificado sin clonaciones basura
                 const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
                 if (btnSolicitarTourSelector) {
                     btnSolicitarTourSelector.onclick = function(e) {
                         if (e) e.stopPropagation();
-                        if (!validarAccesoFuncionalidadPremium()) return; // Guardia Central
+                        if (!validarAccesoFuncionalidadPremium()) return;
 
                         mostrarPopupAccion("modal-tour-comercial");
                         calcularCalendarioTresCajas();
@@ -1806,10 +1659,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (n) n.style.display = "none";
             }
 
-            // Variable global para almacenar hasta 3 fechas seleccionadas por el usuario
             let fechasSeleccionadasTour = new Set();
 
-            // Calcula y renderiza las 3 cajas de fechas hábiles y las opciones de horas en el modal
             function calcularCalendarioTresCajas() { // Inicia calcularCalendarioTresCajas
                 const contenedorFechas = document.querySelector('.cajas-fechas-row');
                 const selectHora = document.getElementById('hora-principal');
@@ -1821,67 +1672,60 @@ document.addEventListener("DOMContentLoaded", () => {
                 let fechaBase = new Date();
                 fechaBase.setDate(fechaBase.getDate() + 1);
 
-                // Salta el fin de semana: si el día siguiente es domingo (0) o sábado (6), avanza al lunes
-                if (fechaBase.getDay() === 0) { // Inicia if domingo
+                if (fechaBase.getDay() === 0) {
                     fechaBase.setDate(fechaBase.getDate() + 1);
-                } // Fin if domingo
-                else if (fechaBase.getDay() === 6) { // Inicia else if sábado
+                }
+                else if (fechaBase.getDay() === 6) {
                     fechaBase.setDate(fechaBase.getDate() + 2);
-                } // Fin else if sábado
+                }
 
                 const diasSemana = ['DOM', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
                 const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-                // Bucle para construir las 3 cajas de fechas consecutivas
-                for (let i = 0; i < 3; i++) { // Inicia for de cajas
+                for (let i = 0; i < 3; i++) {
                     let fechaCaja = new Date(fechaBase);
                     fechaCaja.setDate(fechaBase.getDate() + i);
 
-                    // Evita que las cajas secundarias apunten a un día domingo
-                    if (fechaCaja.getDay() === 0) { // Inicia if control domingo
+                    if (fechaCaja.getDay() === 0) {
                         fechaCaja.setDate(fechaCaja.getDate() + 1);
-                    } // Fin if control domingo
+                    }
 
                     const diaTexto = diasSemana[fechaCaja.getDay()];
                     const fechaFormateada = `${fechaCaja.getDate()} de ${meses[fechaCaja.getMonth()]}`;
-                    //const valorDataIso = fechaCaja.toISOString().split('T')[0];
                     const valorDataIso = [
                         fechaCaja.getFullYear(),
                         String(fechaCaja.getMonth() + 1).padStart(2, '0'),
                         String(fechaCaja.getDate()).padStart(2, '0')
                     ].join('-');
 
-
                     const cajaNode = document.createElement('div');
                     cajaNode.className = 'caja-fecha-item';
                     cajaNode.style.cssText = 'flex: 1; text-align: center; border: 1px solid #ccd0d5; border-radius: 4px; padding: 10px 4px; cursor: pointer; font-size: 12px; font-weight: bold; color: #2a2a2a;';
                     cajaNode.innerHTML = `<div>${diaTexto}</div><div>${fechaFormateada}</div>`;
 
-                    // Control de selección múltiple interactiva (máximo 3 opciones)
-                    cajaNode.addEventListener('click', () => { // Inicia click cajaNode
-                        if (fechasSeleccionadasTour.has(valorDataIso)) { // Inicia if deseleccionar
+                    cajaNode.addEventListener('click', () => {
+                        if (fechasSeleccionadasTour.has(valorDataIso)) {
                             fechasSeleccionadasTour.delete(valorDataIso);
                             cajaNode.style.borderColor = '#ccd0d5';
                             cajaNode.style.color = '#2a2a2a';
                             cajaNode.style.backgroundColor = '#ffffff';
-                        } // Fin if deseleccionar
-                        else { // Inicia else seleccionar
-                            if (fechasSeleccionadasTour.size >= 3) { // Inicia if validación máximo
+                        }
+                        else {
+                            if (fechasSeleccionadasTour.size >= 3) {
                                 alert("Seleccione hasta 3 veces únicamente.");
                                 return;
-                            } // Fin if validación máximo
+                            }
                             fechasSeleccionadasTour.add(valorDataIso);
                             cajaNode.style.borderColor = '#006aff';
                             cajaNode.style.color = '#006aff';
                             cajaNode.style.backgroundColor = 'rgba(0, 106, 255, 0.05)';
-                        } // Fin else seleccionar
-                    }); // Fin click cajaNode
+                        }
+                    });
 
                     contenedorFechas.appendChild(cajaNode);
-                } // Fin for de cajas
+                }
 
-                // Inyecta las opciones de tiempo en formato de 12 horas tal como pide Zillow
-                if (selectHora) { // Inicia if selectHora
+                if (selectHora) {
                     selectHora.innerHTML = `
             <option value="09:00">9:00 am</option>
             <option value="09:30">9:30 am</option>
@@ -1895,41 +1739,39 @@ document.addEventListener("DOMContentLoaded", () => {
             <option value="13:30">1:30 pm</option>
             <option value="14:00">2:00 pm</option>
         `;
-                } // Fin if selectHora
+                }
             } // Fin calcularCalendarioTresCajas
 
-            // Alterna la visibilidad de los paneles internos del modal (Paso 1: Agenda, Paso 2: Formulario)
             function gestionarPasosModalTour(paso) { // Inicia gestionarPasosModalTour
                 const paso1 = document.getElementById('tour-paso-horarios');
                 const paso2 = document.getElementById('tour-paso-confirmacion');
                 const btnSiguiente = document.getElementById('btn-navegacion-siguiente-tour');
                 const btnEnviar = document.getElementById('btn-enviar-solicitud-tour');
 
-                if (paso === 1) { // Inicia if paso 1
+                if (paso === 1) {
                     if (paso1) paso1.style.display = 'block';
                     if (paso2) paso2.style.display = 'none';
                     if (btnSiguiente) btnSiguiente.style.display = 'block';
                     if (btnEnviar) btnEnviar.style.display = 'none';
-                } // Fin if paso 1
-                else if (paso === 2) { // Inicia else if paso 2
-                    if (fechasSeleccionadasTour.size === 0) { // Inicia if validación fechas vacías
+                }
+                else if (paso === 2) {
+                    if (fechasSeleccionadasTour.size === 0) {
                         alert("Por favor, seleccione al menos una fecha para su recorrido.");
                         return;
-                    } // Fin if validación fechas vacías
+                    }
                     if (paso1) paso1.style.display = 'none';
                     if (paso2) paso2.style.display = 'block';
                     if (btnSiguiente) btnSiguiente.style.display = 'none';
-                    if (btnEnviar) btnEnviar.style.display = 'block';
-                } // Fin else if paso 2
+                    if (btnEnviar) btnSiguiente.style.display = 'block';
+                }
             } // Fin gestionarPasosModalTour
 
-            // Inyecta dinámicamente el texto de interés comercial con la dirección exacta en el formulario del agente
             function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlMensaje
                 const campoMensaje = document.getElementById('agente-mensaje');
                 const propActual = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-                if (campoMensaje && propActual) { // Inicia if inyección mensaje
+                if (campoMensaje && propActual) {
                     campoMensaje.value = `I am interested in ${propActual.direccion || propActual.titulo}.`;
-                } // Fin if inyección mensaje
+                }
             } // Fin inyectarDatosPropiedadAlMensaje
 
 
@@ -1959,7 +1801,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     cortina.innerHTML = `
             <div style="width: 100%; background: #ffffff; font-family: sans-serif; min-height: 100vh; position: relative; z-index: 150000;">
-                
+
                  <div style="width: 100%; height: 620px; position: relative; background: #000000; overflow: hidden;">
 
         <div style="width: 100%; height: 100%; border-radius: 0; overflow: hidden; position: relative;">
@@ -1967,16 +1809,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
                     </div>
 
-                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 22px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">‹</button>
+                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 22px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">X</button>
 
                     <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 10;">
                         <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Guardar</button>
                         <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
-                        <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">••• Mas</button>
+                        <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">... Mas</button>
                     </div>
 
-                    <button style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">‹</button>
-                    <button style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">›</button>
+                    <button style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u2039</button>
+                    <button style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u203a</button>
 
                     <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">
                         ${miniaturasHtml}
@@ -1986,15 +1828,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 32px; box-sizing: border-box; align-items: start;">
-                    
+
                     <div style="flex: 1; min-width: 320px; overflow: hidden; display: block;">
 
-                        
+
                         <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
                             <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
                             <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd | 
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba | 
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd |
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba |
                                 <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
                             </p>
                             <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
@@ -2054,11 +1896,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
 
-                    // ==========================================================================
-                    // CONTROL DE EVENTOS UNIFICADO Y SECCIÓN VER TELEFONO PREMIUM (SRE)
-                    // ==========================================================================
-
-                    // Inyectar dinámicamente el botón de Ver Telefono en el panel comercial de la Cortina SPA
                     const contenedorFijoFicha = document.getElementById('btn-solicitar-tour-galeria') ? document.getElementById('btn-solicitar-tour-galeria').parentNode : null;
 
 
@@ -2068,115 +1905,105 @@ document.addEventListener("DOMContentLoaded", () => {
                         const divTel = document.createElement('div');
                         divTel.style.cssText = 'margin-top: 10px; width: 100%;';
                         divTel.innerHTML = `
-                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">📞 Ver Telefono del Vendedor</button>
+                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Ver Teléfono del Vendedor</button>
                 <div id="txt-telefono-desplegado" style="display: none; text-align: center; margin-top: 8px; font-size: 16px; font-weight: bold; color: #006aff;"></div>
             `;
                         contenedorFijoFicha.appendChild(divTel);
                     }
 
-// 1. Cierre de la ficha detallada
                     const botonCerrarCortinaSRE = document.getElementById('btn-cerrar-cortina');
-                    if (botonCerrarCortinaSRE) { // Inicia validación física del botón de cierre
-                        botonCerrarCortinaSRE.onclick = (e) => { // Inicia manejador onclick de cierre
+                    if (botonCerrarCortinaSRE) {
+                        botonCerrarCortinaSRE.onclick = (e) => {
                             e.stopPropagation();
                             gestionarCortinaSPA('cerrar');
-                        }; // [FIX SRE CRÍTICO]: CIERRE DE LA FUNCIÓN FLECHA
-                    } // [FIX SRE CRÍTICO]: CIERRE DEL IF CONDICIONAL
+                        };
+                    }
 
-                    // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
-                    /**
-                     * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
-                     */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c?? [SRE RADAR INTEGRAL] PROCESANDO DISPARO EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
-                        
-                        // PASA_RELA DE COMPATIBILIDAD CRÍTICA: Sincroniza state.usuarioActual si quedó vacío por el login de Google
-                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { // Inicia bloque de acoplamiento OAuth caliente
+                        console.group(`%c>> [SRE RADAR INTEGRAL] PROCESANDO DISPARO EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
+
+                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) {
                             console.log("[SRE AUTO-CORRECCIÓN] Sincronizando datos de usuario OAuth hacia el estado global...");
                             state.usuarioActual = {
                                 id: window.usuarioLogueado.id,
                                 correo: window.usuarioLogueado.email,
-                                estado_cuenta: "activo" // Concede pase libre inmediato al usuario autenticado activo
+                                estado_cuenta: "activo"
                             };
-                        } // Fin de bloque de acoplamiento OAuth caliente
+                        }
 
-                        // Extracción síncrona limpia para evaluar los permisos reales del cortafuegos central
                         const tieneAccesoValido = validarAccesoFuncionalidadPremium();
                         console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
 
-                        if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
-                            if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
+                        if (idBoton === 'btn-solicitar-tour-galeria') {
+                            if (tieneAccesoValido) {
                                 console.log("%c[SRE ESPÍA TOUR SUCCESS] Permisos aprobados. Poblando datos del inmueble en el modal...", "color: #10b981; font-weight: bold;");
-                                
-                                // Extraemos la propiedad seleccionada en tiempo real de la memoria reactiva del catálogo
+
                                 const propActualTour = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-                                if (propActualTour) { // Inicia inyección de metadatos al sub-bloque del modal
+                                if (propActualTour) {
                                     const imgMini = document.getElementById('modal-tour-mini-foto');
                                     const dirMini = document.getElementById('modal-tour-mini-direccion');
                                     const specsMini = document.getElementById('modal-tour-mini-specs');
-                                    
+
                                     if (imgMini) imgMini.src = propActualTour.fotos && propActualTour.fotos[0] ? propActualTour.fotos[0] : "";
                                     if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Dirección no disponible";
                                     if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m² AC`;
-                                } // Fin de inyección de metadatos al sub-bloque del modal
+                                }
 
                                 mostrarPopupAccion("modal-tour-comercial");
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
-                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
+                            } else {
                                 console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue.");
-                            } // Fin de bloque si el interesado cuenta con permisos activos para tours
-                        } // Fin de condición para el modal de visitas
-                        
+                            }
+                        }
 
-                        if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
-                            if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
-                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
+
+                        if (idBoton === 'btn-contactar-agente-galeria') {
+                            if (tieneAccesoValido) {
+                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
                                 mostrarPopupAccion("modal-agent-comercial");
                                 inyectarDatosPropiedadAlMensaje();
-                            } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
+                            } else {
                                 console.warn("[SRE ESPÍA AGENTE RECHAZADO] El cortafuegos central denegó el despliegue del modal de agentes.");
-                            } // Fin de bloque si el interesado cuenta con permisos activos para asesores
-                        } // Fin de condición para el modal de agentes
-                        
+                            }
+                        }
+
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
-                    // SOLUCIÓN ATÓMICA DE PRODUCCIÓN: Escucha delegada directa en el objeto local 'cortina' para vencer la duplicidad de IDs
                     const manejarPulsacionFichaInmuebleSRE = (e) => { // Inicia callback de intercepción elástica
                         const elementoTocado = e.target;
                         if (!elementoTocado) return;
 
-                        // Evaluamos de forma elástica si el clic se dio sobre el ID o sobre algún contenedor interno del botón
                         const idBotonEncontrado = elementoTocado.id || (elementoTocado.closest('button') ? elementoTocado.closest('button').id : '');
 
-                        if (idBotonEncontrado === 'btn-solicitar-tour-galeria' || idBotonEncontrado === 'btn-contactar-agente-galeria') { // Inicia condición de coincidencia exacta
+                        if (idBotonEncontrado === 'btn-solicitar-tour-galeria' || idBotonEncontrado === 'btn-contactar-agente-galeria') {
                             if (e.cancelable) e.preventDefault();
                             e.stopPropagation();
                             console.log(`[SRE CAPTURA DE DELEGACIÓN] Capturado clic real en pantalla. Botón detectado: ${idBotonEncontrado}`);
                             ejecutarFlujoModalProtegidoSRE(idBotonEncontrado);
-                        } // Fin de condición de coincidencia exacta
+                        }
                     }; // Fin de callback de intercepción elástica
 
-                    // Enlazamos directamente al contenedor local 'cortina' recién renderizado (Inmune a destrucciones por innerHTML)
                     cortina.addEventListener('click', manejarPulsacionFichaInmuebleSRE);
                     cortina.addEventListener('touchend', manejarPulsacionFichaInmuebleSRE, { passive: false });
                     console.log("%c-> [SRE INFRAESTRUCTURA] Escuchas elásticas enlazadas directamente a la Cortina SPA.", "color: #10b981; font-weight: bold;");
 
 
 
-                        
+                    // --- REPARACIÓN QUIRÚRGICA PUNTO 3: Separar por completo "Contactar un Agente" ---
+                    // El controlador del formulario formAgente.onsubmit se extrae como un handler independiente
+                    // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) { // Inicia bloque de control para la existencia de formAgente
                         formAgente.onsubmit = async (eventSubmit) => { // Inicia submit asíncrono para Contactar Agente
                             eventSubmit.preventDefault();
 
                             const btnEnviarAgente = document.getElementById('btn-enviar-contacto-agente');
-                            if (btnEnviarAgente) { // Inicia bloqueo táctico del botón de envío
+                            if (btnEnviarAgente) {
                                 btnEnviarAgente.innerText = "...Asignando Agente Experto...";
                                 btnEnviarAgente.disabled = true;
-                            } // Fin de bloqueo táctico del botón de envío
+                            }
 
                             const nombreAgenteInput = document.getElementById('agente-contacto-nombre').value.trim();
                             const emailAgenteInput = document.getElementById('agente-contacto-email').value.trim();
@@ -2187,104 +2014,106 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
 
-                                // Evento 1: Consulta de agentes registrados ordenada estrictamente por su nivel de prioridad
+                                // Consulta de agentes ordenados por prioridad ascendente
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
-                                    .select('id, prioridad, leads, leads_recibidos, email_agente')
+                                    .select('agente_id, prioridad, leads, leads_recibidos, correo')
                                     .order('prioridad', { ascending: true });
 
                                 if (errorAgentes) throw errorAgentes;
 
                                 let agenteAsignadoSRE = null;
-                                // Algoritmo secuencial indexado para evaluar la capacidad de carga del asesor
-                                for (let i = 0; i < listaAgentes.length; i++) { // Inicia ciclo de evaluación por prioridades de agentes
+                                // Algoritmo secuencial: compara leads_recibidos < leads
+                                for (let i = 0; i < listaAgentes.length; i++) {
                                     const agenteEvaluado = listaAgentes[i];
                                     const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
                                     const actualesLeads = parseInt(agenteEvaluado.leads_recibidos || 0, 10);
 
-                                    if (actualesLeads < maxLeads) { // Inicia validación de cupo de leads disponible
+                                    if (actualesLeads < maxLeads) {
                                         agenteAsignadoSRE = agenteEvaluado;
-                                        break; // Detiene el ciclo inmediatamente al encontrar al agente calificado de mayor prioridad
-                                    } // Fin de validación de cupo de leads disponible
-                                } // Fin de ciclo de evaluación por prioridades de agentes
+                                        break;
+                                    }
+                                }
 
-                                if (!agenteAsignadoSRE) { // Inicia control de desbordamiento de la infraestructura
+                                if (!agenteAsignadoSRE) {
                                     throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
-                                } // Fin de control de desbordamiento de la infraestructura
+                                }
 
-                                // Obtención del tiempo en formato estricto YYYY-MM-DD para la persistencia en PostgreSQL
-                                const fechaTransaccion = new Date();
-                                const fechaFormatoIsoSRE = [
-                                    fechaTransaccion.getFullYear(),
-                                    String(fechaTransaccion.getMonth() + 1).padStart(2, '0'),
-                                    String(fechaTransaccion.getDate()).padStart(2, '0')
-                                ].join('-');
+                                // Fecha de contacto en formato DD/MM/YYYY HH:mm
+                                const fechaContactoObj = new Date();
+                                const fechaContacte = [
+                                    String(fechaContactoObj.getDate()).padStart(2, '0'),
+                                    String(fechaContactoObj.getMonth() + 1).padStart(2, '0'),
+                                    fechaContactoObj.getFullYear()
+                                ].join('/') + ` ${String(fechaContactoObj.getHours()).padStart(2, '0')}:${String(fechaContactoObj.getMinutes()).padStart(2, '0')}`;
 
-                                // Evento 2: Registro del lead en la tabla de negocio contacte_agente con estado pendiente
+                                // Inserción adaptada a las columnas reales de la tabla contacte_agente
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
+                                        anuncio_id_fk: null,
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        agente_id_fk: agenteAsignadoSRE.id,
-                                        nombre_interesado: nombreAgenteInput,
+                                        agente_id_fk: agenteAsignadoSRE.agente_id,
+                                        nombre: nombreAgenteInput,
+                                        apellidos: '',
                                         email_interesado: emailAgenteInput,
-                                        telefono_interesado: telefonoAgenteInput,
-                                        mensaje: mensajeAgenteInput,
+                                        telefono: telefonoAgenteInput,
+                                        fecha_contacte: fechaContacte,
+                                        tipo_visita: 'presencial',
+                                        estado_visita: 'pendiente',
                                         estado_lead: 'pendiente',
-                                        fecha_registro: fechaFormatoIsoSRE
+                                        creado_por: emailAgenteInput
                                     }]);
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // Evento 3: Incremento reactivo del contador de leads recibidos en el perfil del agente
+                                // Incremento del contador leads_recibidos apuntando a la clave primaria nativa agente_id
                                 const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
                                 const { error: errorUpdateAgente } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .update({ leads_recibidos: nuevosLeadsRecibidos })
-                                    .eq('id', agenteAsignadoSRE.id);
+                                    .eq('agente_id', agenteAsignadoSRE.agente_id);
 
                                 if (errorUpdateAgente) throw errorUpdateAgente;
 
-                                // Evento 4: Disparo asíncrono de la notificación por correo al asesor asignado
-                                if (agenteAsignadoSRE.email_agente && typeof urlMiScriptGoogle !== "undefined") { // Inicia condición de envío de correo
+                                // Notificación asíncrona a la columna unificada correo del agente
+                                if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
                                     const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
                                     const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado en el portal inmobiliario.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}\n\nPor favor, actualiza el estado del lead a la brevedad.`);
-                                    
-                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.email_agente)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
+
+                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
                                         .then(resMail => resMail.json())
                                         .then(resData => console.log("Notificación SRE despachada al Agente:", resData))
                                         .catch(errMail => console.warn("Pasarela de correo en cola de procesamiento asíncrono pasivo.", errMail));
-                                } // Fin de condición de envío de correo
+                                }
 
                                 alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario de Prioridad ${agenteAsignadoSRE.prioridad} y se le notificó formalmente por correo electrónico.`);
                                 cerrarPopupAccion('modal-agent-comercial');
                                 formAgente.reset();
 
-                            } catch (errorTransaccionSRE) { // Inicia captura de excepciones de la tubería
+                            } catch (errorTransaccionSRE) {
                                 console.error("Error crítico en el flujo de asignación del agente:", errorTransaccionSRE.message);
                                 alert("Error en el sistema de asignación: " + errorTransaccionSRE.message);
-                            } finally { // Inicia restablecimiento seguro de interfaz de usuario
+                            } finally {
                                 if (btnEnviarAgente) {
                                     btnEnviarAgente.innerText = "Enviar Mensaje";
                                     btnEnviarAgente.disabled = false;
                                 }
-                            } // Fin de restablecimiento seguro de interfaz de usuario
+                            }
                         }; // Fin de submit asíncrono para Contactar Agente
                     } // Fin de bloque de control para la existencia de formAgente
 
-                    
+
                     const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
                     if (elementoBtnTelefono) {
                         elementoBtnTelefono.onclick = async (e) => {
                             e.stopPropagation();
-                            // if (!validarAccesoFuncionalidadPremium()) return; // Guardia Centralizado
                             if (!(await validarAccesoFuncionalidadPremium())) return;
 
-                            elementoBtnTelefono.innerText = "⏳ Consultando número...";
+                            elementoBtnTelefono.innerText = "Consultando número...";
                             try {
                                 const cliente = obtenerClienteSupabase();
 
-                                // Consultamos la tabla anuncio para conocer el origen del inmueble
                                 const {
                                     data: anuncioFiltro
                                 } = await cliente
@@ -2297,7 +2126,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (anuncioFiltro) {
                                     if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
-                                        // Si es Agente, extraemos el telefono de la tabla agente_inmobiliario
                                         const {
                                             data: datosAgente
                                         } = await cliente
@@ -2307,7 +2135,6 @@ document.addEventListener("DOMContentLoaded", () => {
                                             .single();
                                         if (datosAgente) telefonoObtenido = datosAgente.telefono_agente;
                                     } else {
-                                        // Si es Propietario, extraemos el telefono de la tabla usuario_autenticado
                                         const {
                                             data: datosUsuario
                                         } = await cliente
@@ -2326,13 +2153,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                     elementoBtnTelefono.style.display = "none";
                                 }
                             } catch (errTel) {
-                                console.error("Error al recuperar el telefono:", errTel);
-                                elementoBtnTelefono.innerText = "📞 Ver Telefono del Vendedor";
+                                console.error("Error al recuperar el teléfono:", errTel);
+                                elementoBtnTelefono.innerText = "Ver Teléfono del Vendedor";
                             }
                         };
                     }
 
-                    // Inicialización pasiva de la secuencia de imágenes
                     const imgAnimar = document.getElementById('foto-zillow-showcase-activa');
                     const fotosArregloSeguro = prop.fotos || [];
                     let indiceFotoSecuencia = 0;
@@ -2361,18 +2187,19 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
 
-                    // Captura el evento de envío del formulario de tour para conectarlo a las tablas de Supabase y disparar la notificación por correo
+                    // --- REPARACIÓN QUIRÚRGICA PUNTO 2: Independizar y Subsanar "Solicitar un Tour" ---
+                    // El flujo registra la visita de forma aislada y atómica en la tabla visita
+                    // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
                     const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) { // Inicia if validación formTour
-                        formTour.onsubmit = async (e) => { // Inicia submit asíncrono
+                        formTour.onsubmit = async (e) => { // Inicia submit asíncrono aislado
                             e.preventDefault();
 
                             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
-                            // Validación de expresión regular nativa para números de telefono puros de mínimo 9 dígitos
-                            if (!/^\d{9,}\$/.test(telefonoInput)) { 
-                                alert("Ingrese un número de telefono válido.");
+                            if (!/^\d{9,}$/.test(telefonoInput)) {
+                                alert("Ingrese un número de teléfono válido.");
                                 return;
-                            } 
+                            }
 
                             const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
                             const emailInput = document.getElementById('tour-contacto-email').value.trim();
@@ -2382,13 +2209,20 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Evento 1: Registro de la cita adaptando las fechas al formato exacto DD/MM/YYYY de tu tabla visita
+                                // Fecha seleccionada: convierte ISO (YYYY-MM-DD) a formato latino DD/MM/YYYY HH:mm
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
-                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || ""; 
-                                
-                                // Formateamos al estándar de tu tabla (ej: "25/07/2026 10:00")
-                                const timestampLatinoSRE = `${primeraFechaEscogidaSRE} ${horaSeleccionada}`;
-                                
+                                const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
+
+                                // Construye el timestamp latino string DD/MM/YYYY HH:mm requerido por la base de datos
+                                let timestampLatinoSRE = "";
+                                if (primeraFechaEscogidaSRE) {
+                                    const partesFecha = primeraFechaEscogidaSRE.split('-');
+                                    if (partesFecha.length === 3) {
+                                        timestampLatinoSRE = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]} ${horaSeleccionada}`;
+                                    }
+                                }
+
+                                // Marca de tiempo de creación en formato latino DD/MM/YYYY HH:mm:ss
                                 const fechaActualTransaccion = new Date();
                                 const fechaCreacionLatina = [
                                     String(fechaActualTransaccion.getDate()).padStart(2, '0'),
@@ -2396,6 +2230,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                     fechaActualTransaccion.getFullYear()
                                 ].join('/') + ` ${String(fechaActualTransaccion.getHours()).padStart(2, '0')}:${String(fechaActualTransaccion.getMinutes()).padStart(2, '0')}:${String(fechaActualTransaccion.getSeconds()).padStart(2, '0')}`;
 
+                                // Consulta la tabla anuncio para obtener anuncio_id y agente_id_fk dinámicamente
+                                const {
+                                    data: anuncioData,
+                                    error: errorAnuncioData
+                                } = await cliente
+                                    .from('anuncio')
+                                    .select('anuncio_id, usuario_id_fk, agente_id_fk')
+                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
+                                    .single();
+
+                                // Registra la visita de forma aislada y atómica en la tabla visita
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2403,11 +2248,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        anuncio_id_fk: 'ANUN-001', 
+                                        anuncio_id_fk: (anuncioData && !errorAnuncioData) ? anuncioData.anuncio_id : null,
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
-                                        fecha_visita: timestampLatinoSRE, 
+                                        fecha_visita: timestampLatinoSRE,
                                         tipo_visita: 'presencial',
                                         estado_visita: 'pendiente',
                                         estado_lead: 'nuevo',
@@ -2418,26 +2263,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorVisita) throw errorVisita;
 
-                                // Evento 2: Consulta relacional basada en la columna agente_id_fk de la tabla anuncio
-                                const {
-                                    data: anuncioFiltro,
-                                    error: errorAnuncio
-                                } = await cliente
-                                    .from('anuncio')
-                                    .select('usuario_id_fk, agente_id_fk')
-                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
-                                    .single();
-
+                                // Si hay agente_id_fk en la tabla anuncio, lee agente_inmobiliario para extraer correo
+                                // Si no hay agente, filtra en usuario_autenticado usando usuario_id_fk contra usuario_id
                                 let emailVendedorDestino = "";
+                                let agenteIdParaVisita = null;
 
-                                if (!errorAnuncio && anuncioFiltro) {
-                                    if (anuncioFiltro.agente_id_fk && String(anuncioFiltro.agente_id_fk).trim() !== "") {
-                                        const idAgenteAsignado = anuncioFiltro.agente_id_fk;
+                                if (!errorAnuncioData && anuncioData) {
+                                    if (anuncioData.agente_id_fk && String(anuncioData.agente_id_fk).trim() !== "") {
+                                        agenteIdParaVisita = anuncioData.agente_id_fk;
 
+                                        // Actualiza la columna agente_id_fk en la tabla visita con la referencia correspondiente
                                         await cliente
                                             .from('visita')
                                             .update({
-                                                agente_id_fk: idAgenteAsignado,
+                                                agente_id_fk: agenteIdParaVisita,
                                                 estado_visita: 'pendiente'
                                             })
                                             .eq('visita_id', nuevaVisita.visita_id);
@@ -2447,19 +2286,20 @@ document.addEventListener("DOMContentLoaded", () => {
                                         } = await cliente
                                             .from('agente_inmobiliario')
                                             .select('correo')
-                                            .eq('agente_id', idAgenteAsignado)
+                                            .eq('agente_id', agenteIdParaVisita)
                                             .single();
 
                                         if (datosAgente) {
                                             emailVendedorDestino = datosAgente.correo;
                                         }
                                     } else {
+                                        // Sin agente: filtra en usuario_autenticado usando usuario_id_fk contra la columna usuario_id
                                         const {
                                             data: datosUsuario
                                         } = await cliente
                                             .from('usuario_autenticado')
                                             .select('correo')
-                                            .eq('usuario_id', anuncioFiltro.usuario_id_fk)
+                                            .eq('usuario_id', anuncioData.usuario_id_fk)
                                             .single();
 
                                         if (datosUsuario) {
@@ -2468,10 +2308,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                     }
                                 }
 
-                                // Evento 3: Envío del correo de notificación mediante la pasarela de Google Apps Script
+                                // Despacha la notificación asíncrona al correo del vendedor o agente
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
                                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTelefono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
+                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
 
                                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                                         .then(res => res.json())
@@ -2486,25 +2326,20 @@ document.addEventListener("DOMContentLoaded", () => {
                             } catch (errTransaccion) {
                                 console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                                 alert("Error al procesar la agenda: " + errTransaccion.message);
-                            } 
-                        }; // Fin del formTour.onsubmit
-                    } // Fin del if (formTour)
+                            }
+                        }; // Fin del formTour.onsubmit — llave de cierre sellada correctamente
+                    } // Fin del if (formTour) — sella la llave de cierre del formulario para no mezclar con otros flujos
 
 
-                    // --- RESTABLECIMIENTO DEL MOTOR CRÍTICO DE CÁLCULOS ZILLOW SRE ---
                     if (prop && prop.propiedad_id) {
-                        // Despierta de forma nativa e inyecta los Zestimates, Gráficas e Hipoteca
                         inyectarSeccionesAdicionalesZillow(prop);
                     }
 
-                    // Ejecutar el carrusel cinematográfico infinito original
                     reproducirSecuenciaCinematografica();
 
-                    // Resetea el scroll de la cortina al tope superior
                     cortina.scrollTop = 0;
                 } // Fin del bloque if (tipoPantalla === 'detalle')
 
-                // Activa la clase visual en el contenedor nativo para abrir la segunda página
                 cortina.classList.add('cortina-activa');
 
             } // FIN DEFINITIVO DE LA FUNCIÓN gestionarCortinaSPA RESTABLECIDA
@@ -2520,29 +2355,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 const slotDinamico = document.getElementById('zillow-next-sections-slot');
                 if (!slotDinamico) return;
 
-                // --- BLOQUE DE CÁLCULOS MATEMÁTICOS FINANCIEROS DE MERCADO ---
                 const precioBase = parseFloat(prop.precio_base) || 0;
 
-                // 1. Zestimate de venta aproximado (+2.1% del precio base)
                 const zestimateVenta = precioBase > 0 ? precioBase * 1.021 : 0;
 
-                // 2. Rango de mercado estimado (Rango del -4% al +5% sobre el Zestimate)
                 const rangoMin = zestimateVenta * 0.96;
                 const rangoMax = zestimateVenta * 1.05;
 
-                // 3. Alquiler estimado mensual (Retorno anualizado basado en una tasa del 5.5% de rentabilidad)
                 const zestimateAlquiler = precioBase > 0 ? (precioBase * 0.055) / 12 : 0;
 
-                // --- FORMATEADORES MONETARIOS AUXILIARES ---
                 const fMoneda = (val) => val > 0 ? '$' + Math.round(val).toLocaleString('en-US') : 'No disponible';
 
                 slotDinamico.innerHTML = `
-        <!-- SECCIÓN 1: DATOS Y CARACTERÍSTICAS (INTERIOR Y EQUIPAMIENTO) -->
+        <!-- SECCIÓN 1: DATOS Y CARACTERÍSTICAS -->
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Datos y características del inmueble</h4>
-            
+
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                <!-- Sub-bloque Interior -->
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 8px;">
                     <h5 style="font-size: 15px; font-weight: 700; color: #006aff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Interior</h5>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
@@ -2567,32 +2396,28 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         </div>
 
-        <!-- SECCIÓN 2: PERSPECTIVA DE LA OFERTA Y VALOR DE MERCADO ESTIMADO -->
+        <!-- SECCIÓN 2: VALOR DE MERCADO ESTIMADO -->
         <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                 <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a;">Valor de mercado estimado</h4>
                 <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">ZESTIMATE</span>
             </div>
             <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Índice de valoración automatizado calculado en tiempo real con la data de la zona.</p>
-            
-            <!-- Rejilla de Tarjetas Financieras Calculadas -->
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                
-                <!-- Tarjeta Venta Real -->
+
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Precio de lista</span>
                     <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(precioBase)}</strong>
                     <span style="font-size: 11px; color: #10b981; font-weight: 600;">Valor base de tasación</span>
                 </div>
 
-                <!-- Tarjeta Zestimate Venta Estimado -->
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 4px solid #006aff;">
-                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Zestimate® Actual</span>
+                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Zestimate Actual</span>
                     <strong style="font-size: 20px; color: #006aff; display: block; margin: 4px 0;">${fMoneda(zestimateVenta)}</strong>
                     <span style="font-size: 11px; color: #475569;">Rango: ${fMoneda(rangoMin)} - ${fMoneda(rangoMax)}</span>
                 </div>
 
-                <!-- Tarjeta Zestimate Alquiler Estimado -->
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Alquiler estimado</span>
                     <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(zestimateAlquiler)}/mes</strong>
@@ -2601,12 +2426,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             </div>
         </div>
-        
-        <!-- CONTENEDOR EN BLANCO EN CADENA PARA LOS PRÓXIMAS COMPONENTES GRAFICOS E HISTORIALES -->
+
         <div id="zillow-graphs-and-history-slot"></div>
     `;
 
-                // Inyección automática en cadena del historial con Supabase y la calculadora hipotecaria
                 inyectarHistorialesYImpuestosZillow(prop);
             }
 
@@ -2645,7 +2468,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 };
 
                 try {
-                    // CORRECCIÓN DIRECTA: Usa la instancia correcta y activa 'supabase' definida en tu Parte 2
                     if (supabase) {
                         const {
                             data,
@@ -2706,10 +2528,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 slotHistorial.innerHTML = `
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate® (Últimos 3 años)</h4>
+                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate (Últimos 3 años)</h4>
                 <span style="font-size: 12px; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">Ubigeo: ${ubigeoPropiedad}</span>
             </div>
-            
+
             <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
                 <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 6px;">
                     <span>Techo: ${fM(maxValor)}</span>
@@ -2778,11 +2600,11 @@ document.addEventListener("DOMContentLoaded", () => {
             // ====================================================================================
 
             // ====================================================================================
-            // INICIO DE FUNCTION: inyectarCapacidadCompraZillow (VERSION DE MARCA COLOR METRICA)
+            // INICIO DE FUNCTION: inyectarCapacidadCompraZillow
             // ====================================================================================
             async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
                 if (!prop || !prop.propiedad_id || isNaN(parseFloat(prop.precio_base))) {
-                    console.log("?? [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
+                    console.log(">> [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
                     return;
                 }
 
@@ -2792,7 +2614,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const precioBase = parseFloat(prop.precio_base) || 0;
                 const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
 
-                // Inyección de la interfaz gráfica con tus colores corporativos #FFB91D y #002E50
                 slotBuyability.innerHTML = `
         <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -2834,8 +2655,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #002E50;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #002E50;">-</strong></div>
                 </div>
-                <!-- Botón con color Dorado #FFB91D y letras en Azul Acero #002E50 -->
-                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">?? Enviar mi cronograma de hipoteca a mi correo</button>
+                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">Enviar mi cronograma de hipoteca a mi correo</button>
             </div>
         </div>
         <div id="zillow-neighborhood-slot"></div>
@@ -2864,14 +2684,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     const totalMeses = anosPlazo * 12;
                     const tasaMensualTEM = Math.pow(1 + valorTea, 1 / 12) - 1;
 
-                    // Amortización con Sistema Francés SBS
                     const cuotaBase = montoPrestamo * (tasaMensualTEM * Math.pow(1 + tasaMensualTEM, totalMeses)) / (Math.pow(1 + tasaMensualTEM, totalMeses) - 1);
                     const costoDesgravamen = montoPrestamo * pctDesg;
                     const costoInmueble = precioBase * pctInm;
                     const cuotaTotal = cuotaBase + costoDesgravamen + costoInmueble;
                     const ratioLtv = montoPrestamo / precioBase;
 
-                    // Renderizado limpio de salida con formato monetario en Dólares ($)
                     document.getElementById('display-pago-total-hipoteca').innerText = `$${Math.round(cuotaTotal).toLocaleString('en-US')}/mes`;
                     document.getElementById('display-pago-total-hipoteca').style.color = '#002E50';
                     document.getElementById('txt-calc-prestamo').innerText = `$${Math.round(montoPrestamo).toLocaleString('en-US')}`;
@@ -2901,12 +2719,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
-                // Evento de disparo comercial y persistencia transaccional
                 btnGuardar.addEventListener('click', async () => {
                     if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
                     if (!calculosGlobales) return;
 
-                    btnGuardar.innerText = "? Generando cronograma PDF y enviando correo...";
+                    btnGuardar.innerText = "Generando cronograma PDF y enviando correo...";
                     btnGuardar.disabled = true;
 
                     try {
@@ -2940,25 +2757,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (error) throw error;
 
-                        alert("? ¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
-                        btnGuardar.innerText = "? Cronograma Enviado Exitosamente";
+                        alert("¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
+                        btnGuardar.innerText = "Cronograma Enviado Exitosamente";
                         btnGuardar.style.background = "#002E50";
                         btnGuardar.style.color = "#FFB91D";
 
                     } catch (err) {
                         console.error("Fallo guardando simulación:", err.message);
                         alert("Error procesando solicitud: " + err.message);
-                        btnGuardar.innerText = "?? Enviar mi cronograma de hipoteca a mi correo";
+                        btnGuardar.innerText = "Enviar mi cronograma de hipoteca a mi correo";
                         btnGuardar.disabled = false;
                     }
                 });
 
-                // Bloque asíncrono para poblar las opciones ordenadas de los combos (LOVs)
                 try {
                     const cliente = obtenerClienteSupabase();
                     if (cliente) {
-                        // Cargar listas desplegables base (LOVs)
-                        // CORRECCIÓN ATÓMICA: Eliminamos los ordenamientos fijos que causan el error 400 (Bad Request)
                         const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
                             cliente.from('LOV_hipoteca_cuota_inicial').select('*').order('cuota_inicial', {
                                 ascending: true
@@ -2969,7 +2783,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             cliente.from('LOV_hipoteca_seguro_inmueble').select('*')
                         ]);
 
-                        // CORRECCIÓN DE COLUMNAS: Mapea directamente 'cuota_inicial' y 'comentarios_sbs_mercado' de tu Supabase
                         if (rInicial.data && rInicial.data.length > 0) {
                             cInicial.innerHTML = rInicial.data.map(opt => {
                                 const pctValor = parseFloat(opt.cuota_inicial) || 0;
@@ -2977,11 +2790,9 @@ document.addEventListener("DOMContentLoaded", () => {
                                 return `<option value="${pctValor}" data-comment="${opt.comentarios_sbs_mercado || ''}">${textoPorcentaje}</option>`;
                             }).join('');
                         } else {
-
                             cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
                         }
 
-                        // REEMPLAZO TOLERANTE NATIVO: Lee las propiedades de forma dinámica basándose en la estructura real de tus registros
                         if (rPlazo.data && rPlazo.data.length > 0) {
                             cPlazo.innerHTML = rPlazo.data.map(opt => {
                                 const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
@@ -3018,7 +2829,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                         }
 
-                        // Realizar primer cálculo automático
                         ejecutarRecalculoHipoteca();
                     }
                 } catch (errLOV) {
@@ -3031,4 +2841,4 @@ document.addEventListener("DOMContentLoaded", () => {
                     ejecutarRecalculoHipoteca();
                 }
             }
-}); // <-- AGREGA ESTA LLAVE ABAJO (Cierra el DOMContentLoaded del archivo)
+}); // Cierra el DOMContentLoaded del archivo
