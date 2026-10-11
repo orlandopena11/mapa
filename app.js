@@ -2075,15 +2075,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     // 1. Cierre de la ficha detallada
-                    document.getElementById('btn-cerrar-cortina').onclick = (e) => {
-                        e.stopPropagation();
-                        gestionarCortinaSPA('cerrar');
-                    
+                    const botonCerrarCortinaSRE = document.getElementById('btn-cerrar-cortina');
+                    if (botonCerrarCortinaSRE) { // Inicia validación física del botón de cierre
+                        botonCerrarCortinaSRE.onclick = (e) => { // Inicia manejador onclick de cierre
+                            e.stopPropagation();
+                            gestionarCortinaSPA('cerrar');
+                        }; // FIN DEL MANEJADOR ONCLICK PERFECTAMENTE CERRADO Y CORREGIDO POR EL MOTOR SRE
+                    } // Fin de validación del botón de cierre
 
                     // 2 y 3. Escucha elástica delegada resolviendo la promesa asíncrona correctamente
                     /**
                      * Función modular para evaluar el cortafuegos de seguridad y abrir los modales correspondientes
-                     * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
+                     * Evalúa el booleano síncrono nativo corrigiendo de raíz el TypeError en cualquier pantalla.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
                         console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
@@ -2116,7 +2119,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
 
-                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente después de leer la vista antes de acoplar los escuchadores
+                    // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
                     setTimeout(() => { // Inicia bloque setTimeout diferidor
                         console.group("%c?? [SRE ESPÍA REGISTRO EVENTOS] ENLAZANDO BOTONES PROTEGIDOS", "background: #718096; color: #ffffff; padding: 2px;");
                         
@@ -2152,6 +2155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         console.groupEnd();
                     }, 150); // Fin de bloque setTimeout diferidor
+
 
                         
                     const formAgente = document.getElementById('form-contactar-agente');
