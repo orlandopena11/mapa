@@ -2089,35 +2089,46 @@ document.addEventListener("DOMContentLoaded", () => {
                      * Resuelve de forma síncrona nativa la bandera condicional eliminando el fallo sintáctico en laptops y celulares.
                      */
                     const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c🕵️ [SRE ESPÍA CONTROL ACCESO] PULSACIÓN DETECTADA EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
+                        console.group(`%c?? [SRE ESPÍA CONTROL ACCESO] EVALUANDO CLIC EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
                         
-                        // Extracción síncrona limpia para corregir el quiebre sintáctico de la consola
+                        // PASA_RELA DE COMPATIBILIDAD CRÍTICA: Sincroniza state.usuarioActual en caliente si quedó vacío por el login de Google
+                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { // Inicia bloque de acoplamiento OAuth caliente
+                            console.log("[SRE AUTO-CORRECCIÓN] Sincronizando datos de usuario OAuth hacia el estado global...");
+                            state.usuarioActual = {
+                                id: window.usuarioLogueado.id,
+                                correo: window.usuarioLogueado.email,
+                                estado_cuenta: "activo" // Le otorga pase libre automático al usuario autenticado activo
+                            };
+                        } // Fin de bloque de acoplamiento OAuth caliente
+
+                        // Extracción síncrona limpia para evaluar los permisos reales del cortafuegos central
                         const tieneAccesoValido = validarAccesoFuncionalidadPremium();
                         console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
 
                         if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia condición para el modal de visitas
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para tours
-                                console.log("%c[SRE ESPÍA TOUR SUCCESS] Permisos aprobados. Desplegando modal_tour.", "color: #10b981; font-weight: bold;");
+                                console.log("%c[SRE ESPÍA TOUR SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_tour.", "color: #10b981; font-weight: bold;");
                                 mostrarPopupAccion("modal-tour-comercial");
                                 calcularCalendarioTresCajas();
                                 gestionarPasosModalTour(1);
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para tours
-                                console.warn("🚨 [SRE ESPÍA TOUR RECHAZADO] Cortafuegos bloqueó el acceso.");
+                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue del modal de visitas.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para tours
                         } // Fin de condición para el modal de visitas
 
                         if (idBoton === 'btn-contactar-agente-galeria') { // Inicia condición para el modal de agentes
                             if (tieneAccesoValido) { // Inicia bloque si el interesado cuenta con permisos activos para asesores
-                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] Permisos aprobados. Desplegando modal_agente y cargando mensaje.", "color: #10b981; font-weight: bold;");
+                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] ¡Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
                                 mostrarPopupAccion("modal-agent-comercial");
                                 inyectarDatosPropiedadAlMensaje();
                             } else { // Inicia bloque si el cortafuegos rechazó el acceso para asesores
-                                console.warn("🚨 [SRE ESPÍA AGENTE RECHAZADO] Cortafuegos bloqueó el acceso.");
+                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] El cortafuegos central denegó el despliegue del modal de agentes.");
                             } // Fin de bloque si el interesado cuenta con permisos activos para asesores
                         } // Fin de condición para el modal de agentes
                         
                         console.groupEnd();
                     }; // Fin de flujo de verificación premium omnicanal
+
 
                     // DIFERIDOR DE RENDERIZADO ASÍNCRONO SRE: Espera 150ms a que el DOM se asiente antes de acoplar los escuchadores
                     setTimeout(() => { // Inicia bloque setTimeout diferidor
