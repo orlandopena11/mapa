@@ -2383,7 +2383,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Evento 1: Registro inicial de la cita de visita en la base de datos de Supabase
+                                // Evento 1: Registro inicial de la cita de visita con los nombres de columna correctos del esquema de Supabase
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2391,14 +2391,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        nombre_interesado: nombreInput,
-                                        email_interesado: emailInput,
-                                        telefono_interesado: telefonoInput,
+                                        nombre: nombreInput,       // Mapeado a la columna real 'nombre' en tu base de datos
+                                        correo: emailInput,       // Mapeado a la columna real 'correo' en tu base de datos
+                                        telefono: telefonoInput,   // Mapeado a la columna real 'telefono' en tu base de datos
                                         hora_visita: horaSeleccionada,
                                         fechas_propuestas: fechasArreglo,
                                         estado_visita: 'pendiente'
                                     }])
-                                    .select()
+                                   .select()
                                     .single();
 
                                 if (errorVisita) throw errorVisita;
