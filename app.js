@@ -2109,11 +2109,23 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // Inserción limpia mitigando de forma definitiva la restricción de valores nulos
+                                // Extraemos el anuncio_id real desde la vista activa mapeada en la memoria global
+                                const propiedadCatalogoActivaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
+                                const idAnuncioContactoDinamico = propiedadCatalogoActivaSRE ? propiedadCatalogoActivaSRE.anuncio_id : "ANUN-001";
+
+                                // Formateo del timestamp al estándar ISO internacional requerido por PostgreSQL
+                                const fContacto = new Date();
+                                const fechaContacteISO = [
+                                    fContacto.getFullYear(),
+                                    String(fContacto.getMonth() + 1).padStart(2, '0'),
+                                    String(fContacto.getDate()).padStart(2, '0')
+                                ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
+
+                                // Inserción limpia inyectando la relación obligatoria anuncio_id_fk de tu esquema
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: idAnuncioDinamicoLead, 
+                                        anuncio_id_fk: idAnuncioContactoDinamico, // Enlace relacional directo obligatorio unificado
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
@@ -2272,7 +2284,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // 1. Captura de la fecha seleccionada en formato nativo ISO (YYYY-MM-DD)
+                                // 1. Captura de la fecha y preparación del formato timestamptz estándar internacional unificado
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
 
@@ -2280,32 +2292,18 @@ document.addEventListener("DOMContentLoaded", () => {
                                     throw new Error("Por favor, seleccione una fecha válida en el calendario.");
                                 }
 
-                                // Construcción del formato estándar internacional YYYY-MM-DD HH:mm:00 compatible con PostgreSQL timestamp
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
-                                // Obtención de la fecha actual en formato ISO estándar para auditoría
-                                const fTransaccion = new Date();
-                                const fechaCreacionISO = [
-                                    fTransaccion.getFullYear(),
-                                    String(fTransaccion.getMonth() + 1).padStart(2, '0'),
-                                    String(fTransaccion.getDate()).padStart(2, '0')
-                                ].join('-') + ` ${String(fTransaccion.getHours()).padStart(2, '0')}:${String(fTransaccion.getMinutes()).padStart(2, '0')}:${String(fTransaccion.getSeconds()).padStart(2, '0')}`;
-
-                                // 2. Consulta dinámica de la tabla de anuncios para enlazar las llaves foráneas reales de forma atómica
-                                const {
-                                    data: anuncioData,
-                                    error: errorAnuncioData
-                                } = await cliente
-                                    .from('anuncio')
-                                    .select('anuncio_id, usuario_id_fk, agente_id_fk')
-                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
-                                    .single();
-
-                                if (errorAnuncioData || !anuncioData) {
-                                    throw new Error("No se pudo interceptar el anuncio asociado a este inmueble.");
+                                // 2. Recuperación caliente del objeto de datos real directo desde el estado global de la vista
+                                const propiedadActivaMemoria = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
+                                if (!propiedadaActivaMemoria || !propiedadActivaMemoria.anuncio_id) {
+                                    throw new Error("No se pudo localizar el identificador del anuncio en la vista activa del mapa.");
                                 }
 
-                                // 3. Inserción limpia con formatos internacionales unificados evitando el error out-of-range
+                                const idAnuncioRealVisita = propiedadActivaMemoria.anuncio_id;
+                                const idAgenteRealVisita = propiedadActivaMemoria.agente_id_fk || null;
+
+                                // 3. Registro atómico de la cita en la tabla visita vinculando la columna unificada anuncio_id_fk
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2313,66 +2311,42 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        anuncio_id_fk: anuncioData.anuncio_id,
+                                        anuncio_id_fk: idAnuncioRealVisita, 
+                                        agente_id_fk: idAgenteRealVisita,
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
                                         fecha_visita: timestampEstandarISO,
                                         tipo_visita: 'presencial',
                                         estado_visita: 'pendiente',
-                                        estado_lead: 'nuevo',
-                                        fecha_creacion: fechaCreacionISO
+                                        estado_lead: 'nuevo'
                                     }])
                                     .select()
                                     .single();
 
-
                                 if (errorVisita) throw errorVisita;
 
-                                // Si hay agente_id_fk en la tabla anuncio, lee agente_inmobiliario para extraer correo
-                                // Si no hay agente, filtra en usuario_autenticado usando usuario_id_fk contra usuario_id
+                                // 4. Resolución dinámica del correo de destino leyendo el estado real de la vista
                                 let emailVendedorDestino = "";
-                                let agenteIdParaVisita = null;
 
-                                if (!errorAnuncioData && anuncioData) {
-                                    if (anuncioData.agente_id_fk && String(anuncioData.agente_id_fk).trim() !== "") {
-                                        agenteIdParaVisita = anuncioData.agente_id_fk;
+                                if (idAgenteRealVisita && String(idAgenteRealVisita).trim() !== "") {
+                                    const { data: datosAgente } = await cliente
+                                        .from('agente_inmobiliario')
+                                        .select('correo')
+                                        .eq('agente_id', idAgenteRealVisita)
+                                        .single();
 
-                                        // Actualiza la columna agente_id_fk en la tabla visita con la referencia correspondiente
-                                        await cliente
-                                            .from('visita')
-                                            .update({
-                                                agente_id_fk: agenteIdParaVisita,
-                                                estado_visita: 'pendiente'
-                                            })
-                                            .eq('visita_id', nuevaVisita.visita_id);
+                                    if (datosAgente) emailVendedorDestino = datosAgente.correo;
+                                } else {
+                                    const { data: datosUsuario } = await cliente
+                                        .from('usuario_autenticado')
+                                        .select('correo')
+                                        .eq('usuario_id', propiedadActivaMemoria.usuario_id_fk)
+                                        .single();
 
-                                        const {
-                                            data: datosAgente
-                                        } = await cliente
-                                            .from('agente_inmobiliario')
-                                            .select('correo')
-                                            .eq('agente_id', agenteIdParaVisita)
-                                            .single();
-
-                                        if (datosAgente) {
-                                            emailVendedorDestino = datosAgente.correo;
-                                        }
-                                    } else {
-                                        // Sin agente: filtra en usuario_autenticado usando usuario_id_fk contra la columna usuario_id
-                                        const {
-                                            data: datosUsuario
-                                        } = await cliente
-                                            .from('usuario_autenticado')
-                                            .select('correo')
-                                            .eq('usuario_id', anuncioData.usuario_id_fk)
-                                            .single();
-
-                                        if (datosUsuario) {
-                                            emailVendedorDestino = datosUsuario.correo;
-                                        }
-                                    }
+                                    if (datosUsuario) emailVendedorDestino = datosUsuario.correo;
                                 }
+
 
                                 // Despacha la notificación asíncrona leyendo los datos del objeto activo de memoria reactiva 'anuncioData'
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
