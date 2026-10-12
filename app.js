@@ -1629,23 +1629,48 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
 
-            function inicializarEventosPopups() { // Inicia inicializarEventosPopups
-                document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', () => cerrarPopupAccion('modal-tour-comercial'));
-                document.getElementById('btn-navegacion-siguiente-tour')?.addEventListener('click', () => gestionarPasosModalTour(2));
+            // Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas con firewall ACL
+            function inicializarEventosPopups() { // Inicia inicializarEventosPopups SRE
+                document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', (e) => {
+                    if (e) e.stopPropagation();
+                    cerrarPopupAccion('modal-tour-comercial');
+                });
+                
+                document.getElementById('btn-cerrar-modal-agente')?.addEventListener('click', (e) => {
+                    if (e) e.stopPropagation();
+                    cerrarPopupAccion('modal-agent-comercial');
+                });
 
+                // Enlace táctil dual síncrono para forzar la navegación reactiva al Paso 2
+                const btnSiguienteTour = document.getElementById('btn-navegacion-siguiente-tour');
+                if (btnSiguienteTour) {
+                    const avanzarFaseTour = (e) => {
+                        if (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        console.log("[SRE INFRAESTRUCTURA] Avanzando de forma interactiva al Paso 2 del Tour");
+                        gestionarPasosModalTour(2);
+                    };
+                    btnSiguienteTour.onclick = avanzarFaseTour;
+                    btnSiguienteTour.addEventListener('touchend', avanzarFaseTour, { passive: false });
+                }
+
+                // Vinculación directa y limpia al Guardia de Seguridad unificado sin clonaciones basura
                 const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
                 if (btnSolicitarTourSelector) {
-                    btnSolicitarTourSelector.onclick = function(e) {
+                    btnSolicitarTourSelector.onclick = async function(e) {
                         if (e) e.stopPropagation();
-                        if (!validarAccesoFuncionalidadPremium()) return;
+                        const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
+                        if (!tieneAccesoValido) return;
 
                         mostrarPopupAccion("modal-tour-comercial");
                         calcularCalendarioTresCajas();
                         gestionarPasosModalTour(1);
                     };
                 }
+            } // Fin de la funcion modular inicializarEventosPopups SRE
 
-            } // Fin inicializarEventosPopups
 
 
 
