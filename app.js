@@ -1767,29 +1767,43 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } // Fin calcularCalendarioTresCajas
 
-            function gestionarPasosModalTour(paso) { // Inicia gestionarPasosModalTour
+            // Alterna la visibilidad de los paneles internos del modal con pre-selección automática elástica SRE
+            function gestionarPasosModalTour(paso) { // Inicia gestionarPasosModalTour SRE
                 const paso1 = document.getElementById('tour-paso-horarios');
                 const paso2 = document.getElementById('tour-paso-confirmacion');
                 const btnSiguiente = document.getElementById('btn-navegacion-siguiente-tour');
                 const btnEnviar = document.getElementById('btn-enviar-solicitud-tour');
 
-                if (paso === 1) {
+                if (paso === 1) { 
                     if (paso1) paso1.style.display = 'block';
                     if (paso2) paso2.style.display = 'none';
                     if (btnSiguiente) btnSiguiente.style.display = 'block';
                     if (btnEnviar) btnEnviar.style.display = 'none';
-                }
-                else if (paso === 2) {
-                    if (fechasSeleccionadasTour.size === 0) {
-                        alert("Por favor, seleccione al menos una fecha para su recorrido.");
-                        return;
+                } 
+                else if (paso === 2) { 
+                    // Si el interesado no hizo clic en ninguna caja, acoplamos de forma automática el primer día disponible
+                    if (fechasSeleccionadasTour.size === 0) { 
+                        console.log("[SRE CONTROL CALIENTE] No se detectó clic manual. Pre-seleccionando primera opción por defecto.");
+                        const primeraCajaDisponible = document.querySelector('.cajas-fechas-row .caja-fecha-item');
+                        if (primeraCajaDisponible) {
+                            // Simulamos la pulsación interactiva sobre el nodo para poblar el Set de fechas
+                            primeraCajaDisponible.click();
+                        }
                     }
+
+                    // Segunda verificación de salvaguarda relacional
+                    if (fechasSeleccionadasTour.size === 0) { 
+                        alert("Por favor, seleccione al menos una fecha para su recorrido en el calendario superior.");
+                        return;
+                    } 
+
                     if (paso1) paso1.style.display = 'none';
                     if (paso2) paso2.style.display = 'block';
                     if (btnSiguiente) btnSiguiente.style.display = 'none';
-                    if (btnEnviar) btnSiguiente.style.display = 'block';
-                }
-            } // Fin gestionarPasosModalTour
+                    if (btnEnviar) btnEnviar.style.display = 'block';
+                } 
+            } // Fin definitivo de la funcion gestionarPasosModalTour SRE
+
 
             function inyectarDatosPropiedadAlMensaje() { // Inicia inyectarDatosPropiedadAlMensaje
                 const campoMensaje = document.getElementById('agente-mensaje');
