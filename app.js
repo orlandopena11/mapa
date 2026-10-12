@@ -1919,57 +1919,54 @@ document.addEventListener("DOMContentLoaded", () => {
                         };
                     }
 
-                    const ejecutarFlujoModalProtegidoSRE = (idBoton) => { // Inicia flujo de verificación premium omnicanal
-                        console.group(`%c>> [SRE RADAR INTEGRAL] PROCESANDO DISPARO EN: ${idBoton}`, "background: #002e50; color: #ffb91d; padding: 3px; font-weight: bold;");
-
-                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) {
-                            console.log("[SRE AUTO-CORRECCIÓN] Sincronizando datos de usuario OAuth hacia el estado global...");
+                    const ejecutarFlujoModalProtegidoSRE = async (idBoton) => { // Inicia flujo asíncrono robusto unificado SRE
+                        console.group(`[SRE RADAR INTEGRAL] PROCESANDO DISPARO ASÍNCRONO EN: ${idBoton}`);
+                        
+                        // Sincronización caliente de sesión OAuth pasiva en caso de desbordamiento en memoria
+                        if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { 
                             state.usuarioActual = {
                                 id: window.usuarioLogueado.id,
                                 correo: window.usuarioLogueado.email,
                                 estado_cuenta: "activo"
                             };
+                        } // Fin de sincronización pasiva
+
+                        // Forzamos al hilo principal a esperar la resolución booleana del cortafuegos central
+                        const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
+                        console.log("[SRE ESPÍA FIREWALL RESUELTO] Permisos confirmados por el cortafuegos:", tieneAccesoValido);
+
+                        if (!tieneAccesoValido) {
+                            console.warn("[SRE ESPÍA RECHAZADO] Acceso denegado. Desplegando modal de autenticación.");
+                            mostrarPopupAccion("modal-autenticacion-supabase");
+                            console.groupEnd();
+                            return;
                         }
 
-                        const tieneAccesoValido = validarAccesoFuncionalidadPremium();
-                        console.log("[SRE ESPÍA FIREWALL] Resultado de permisos del cortafuegos central:", tieneAccesoValido);
+                        if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia lógica para tours aprobados
+                            const propActualTour = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
+                            if (propActualTour) { 
+                                const imgMini = document.getElementById('modal-tour-mini-foto');
+                                const dirMini = document.getElementById('modal-tour-mini-direccion');
+                                const specsMini = document.getElementById('modal-tour-mini-specs');
+                                
+                                if (imgMini) imgMini.src = propActualTour.fotos && propActualTour.fotos[0] ? propActualTour.fotos[0] : "";
+                                if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Dirección no disponible";
+                                if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m² AC`;
+                            } // Fin de inyección de metadatos
 
-                        if (idBoton === 'btn-solicitar-tour-galeria') {
-                            if (tieneAccesoValido) {
-                                console.log("%c[SRE ESPÍA TOUR SUCCESS] Permisos aprobados. Poblando datos del inmueble en el modal...", "color: #10b981; font-weight: bold;");
+                            mostrarPopupAccion("modal-tour-comercial");
+                            calcularCalendarioTresCajas();
+                            gestionarPasosModalTour(1);
+                        } // Fin de lógica para tours
 
-                                const propActualTour = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-                                if (propActualTour) {
-                                    const imgMini = document.getElementById('modal-tour-mini-foto');
-                                    const dirMini = document.getElementById('modal-tour-mini-direccion');
-                                    const specsMini = document.getElementById('modal-tour-mini-specs');
-
-                                    if (imgMini) imgMini.src = propActualTour.fotos && propActualTour.fotos[0] ? propActualTour.fotos[0] : "";
-                                    if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Dirección no disponible";
-                                    if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m² AC`;
-                                }
-
-                                mostrarPopupAccion("modal-tour-comercial");
-                                calcularCalendarioTresCajas();
-                                gestionarPasosModalTour(1);
-                            } else {
-                                console.warn("[SRE ESPÍA TOUR RECHAZADO] El cortafuegos central denegó el despliegue.");
-                            }
-                        }
-
-
-                        if (idBoton === 'btn-contactar-agente-galeria') {
-                            if (tieneAccesoValido) {
-                                console.log("%c[SRE ESPÍA AGENTE SUCCESS] Permisos aprobados con éxito! Abriendo modal_agente.", "color: #10b981; font-weight: bold;");
-                                mostrarPopupAccion("modal-agent-comercial");
-                                inyectarDatosPropiedadAlMensaje();
-                            } else {
-                                console.warn("[SRE ESPÍA AGENTE RECHAZADO] El cortafuegos central denegó el despliegue del modal de agentes.");
-                            }
-                        }
-
+                        if (idBoton === 'btn-contactar-agente-galeria') { // Inicia lógica para agentes aprobados
+                            mostrarPopupAccion("modal-agent-comercial");
+                            inyectarDatosPropiedadAlMensaje();
+                        } // Fin de lógica para agentes
+                        
                         console.groupEnd();
-                    }; // Fin de flujo de verificación premium omnicanal
+                    }; // Fin de la función asíncrona unificada SRE
+
 
                     const manejarPulsacionFichaInmuebleSRE = (e) => { // Inicia callback de intercepción elástica
                         const elementoTocado = e.target;
