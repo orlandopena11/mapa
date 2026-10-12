@@ -2254,18 +2254,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Fecha seleccionada: convierte ISO (YYYY-MM-DD) a formato latino DD/MM/YYYY HH:mm
+                                // Captura directa del arreglo de fechas en su formato nativo ISO (YYYY-MM-DD)
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
 
-                                // Construye el timestamp latino string DD/MM/YYYY HH:mm requerido por la base de datos
-                                let timestampLatinoSRE = "";
-                                if (primeraFechaEscogidaSRE) {
-                                    const partesFecha = primeraFechaEscogidaSRE.split('-');
-                                    if (partesFecha.length === 3) {
-                                        timestampLatinoSRE = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]} ${horaSeleccionada}`;
-                                    }
+                                if (!primeraFechaEscogidaSRE) {
+                                    throw new Error("Por favor, seleccione una fecha válida en el calendario.");
                                 }
+
+                                // Construcción del estándar internacional YYYY-MM-DD HH:mm:00 para la columna nativa timestamp de PostgreSQL
+                                const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
                                 // Marca de tiempo de creación en formato latino DD/MM/YYYY HH:mm:ss
                                 const fechaActualTransaccion = new Date();
@@ -2297,7 +2295,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
-                                        fecha_visita: timestampLatinoSRE,
+                                        fecha_visita: timestampEstandarISO, // Inyección del formato estándar internacional corregido
                                         tipo_visita: 'presencial',
                                         estado_visita: 'pendiente',
                                         estado_lead: 'nuevo',
