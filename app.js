@@ -2046,11 +2046,18 @@ document.addEventListener("DOMContentLoaded", () => {
                             const telefonoAgenteInput = document.getElementById('agente-contacto-telefono').value.trim();
                             const mensajeAgenteInput = document.getElementById('agente-mensaje').value.trim();
 
-                            try { // Inicia tubería transaccional SRE para asignación de Leads por Prioridad
+                            try { // Inicia tubería transaccional de asignación por prioridad basada en tus reglas de negocio
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
 
-                                // 1. Consulta de agentes ordenados por prioridad de forma ascendente
+                                // Evento 1: Extraemos el id del anuncio relacional directo desde el estado inmutable en memoria
+                                const propiedadEnPantallaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
+                                if (!propiedadEnPantallaSRE || !propiedadEnPantallaSRE.anuncio_id) {
+                                    throw new Error("No se pudo interceptar el identificador del anuncio asociado a este inmueble.");
+                                }
+                                const idAnuncioContacto = propiedadEnPantallaSRE.anuncio_id;
+
+                                // Evento 2: Consulta de asesores registrados ordenada estrictamente por nivel de prioridad ascendente
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2060,16 +2067,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 let agenteAsignadoSRE = null;
 
-                                // Algoritmo secuencial corregido: recorre la lista y extrae el objeto indexado i de forma individual
-                                for (let i = 0; i < listaAgentes.length; i++) {
-                                    const agenteEvaluado = listaAgentes[i];
-                                    
-                                    const maxLeads = parseInt(agenteEvaluado.leads, 10) || 0;
-                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos, 10) || 0;
+                                // Algoritmo secuencial indexado: Verifica prioridad 1 -> evalúa leads_recibidos < leads de manera estricta
+                                if (listaAgentes && listaAgentes.length > 0) {
+                                    for (let i = 0; i < listaAgentes.length; i++) {
+                                        const agenteEvaluado = listaAgentes[i];
+                                        const maxLeads = Number(agenteEvaluado.leads) || 0;
+                                        const actualesLeads = Number(agenteEvaluado.leads_recibidos) || 0;
 
-                                    if (actualesLeads < maxLeads) {
-                                        agenteAsignadoSRE = agenteEvaluado; // Asignación correcta del objeto individual del asesor
-                                        break; 
+                                        if (actualesLeads < maxLeads) {
+                                            agenteAsignadoSRE = agenteEvaluado; // Asignación correcta del objeto individual calificado
+                                            break; // Detiene el ciclo inmediatamente al encontrar cupo en el nivel de mayor prioridad
+                                        }
                                     }
                                 }
 
@@ -2077,7 +2085,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
                                 }
 
-                                // 2. Obtención de la fecha y hora actual en formato estándar internacional ISO
+                                // Obtención del tiempo en formato estricto internacional YYYY-MM-DD HH:mm:ss para PostgreSQL
                                 const fContacto = new Date();
                                 const fechaContacteISO = [
                                     fContacto.getFullYear(),
@@ -2085,15 +2093,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Extraemos el anuncio_id relacional real de la propiedad activa desde el estado en memoria
-                                const propiedadCatalogoActivaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                const idAnuncioContactoDinamico = propiedadCatalogoActivaSRE ? propiedadCatalogoActivaSRE.anuncio_id : "ANUN-001";
-
-                                // 4. Una única inserción limpia y atómica acoplada a las columnas nativas reales de contacte_agente
+                                // Evento 3: Registro atómico del lead en contacte_agente con estado_lead forzado a 'pendiente'
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: idAnuncioContactoDinamico, 
+                                        anuncio_id_fk: idAnuncioContacto,
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
@@ -2103,15 +2107,15 @@ document.addEventListener("DOMContentLoaded", () => {
                                         fecha_contacte: fechaContacteISO,
                                         tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
-                                        estado_lead: 'pendiente',
+                                        estado_lead: 'pendiente', // Sella el estado inicial requerido por la regla
                                         creado_por: emailAgenteInput,
                                         fecha_creacion: fechaContacteISO
                                     }]);
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // 5. Incremento reactivo del contador apuntando a la clave primaria nativa del asesor asignado
-                                const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
+                                // Evento 4: Incremento del contador reactivo leads_recibidos en el perfil del asesor calificado
+                                const nuevosLeadsRecibidos = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                 const { error: errorUpdateAgente } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .update({ leads_recibidos: nuevosLeadsRecibidos })
@@ -2119,16 +2123,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorUpdateAgente) throw errorUpdateAgente;
 
-                                // 6. Despacho asíncrono de la notificación por correo al asesor
+                                // Evento 5: Disparo de la notificación asíncrona al correo oficial del agente inmobiliario asignado
                                 if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
                                     const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
-                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}`);
+                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado en el portal inmobiliario.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}\n\nPor favor, actualiza el estado del lead a la brevedad.`);
 
                                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
                                         .then(resMail => resMail.json())
                                         .then(resData => console.log("Notificación SRE despachada al Agente con éxito:", resData))
-                                        .catch(errMail => console.warn("Pasarela de correo en cola de procesamiento asíncrono.", errMail));
+                                        .catch(errMail => console.warn("Pasarela de correo en procesamiento asíncrono pasivo.", errMail));
                                 }
+
 
                                 alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario de Prioridad ${agenteAsignadoSRE.prioridad} y se le notificó formalmente por correo electrónico.`);
                                 cerrarPopupAccion('modal-agent-comercial');
@@ -2253,7 +2258,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // 1. Captura de la fecha y preparación del formato timestamptz estándar internacional unificado
+                                 // 1. Captura de la fecha y preparación del formato timestamptz estándar internacional unificado para PostgreSQL
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
 
@@ -2263,16 +2268,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
-                                // 2. Recuperación caliente del objeto de datos real directo desde el estado global de la vista
+                                // 2. Recuperación del objeto de datos real directo desde el estado global de la vista
                                 const propiedadActivaMemoria = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadaActivaMemoria || !propiedadActivaMemoria.anuncio_id) {
+                                if (!propiedadActivaMemoria || !propiedadActivaMemoria.anuncio_id) {
                                     throw new Error("No se pudo localizar el identificador del anuncio en la vista activa del mapa.");
                                 }
 
                                 const idAnuncioRealVisita = propiedadActivaMemoria.anuncio_id;
                                 const idAgenteRealVisita = propiedadActivaMemoria.agente_id_fk || null;
 
-                                // 3. Registro atómico de la cita en la tabla visita vinculando la columna unificada anuncio_id_fk
+                                // 3. Registro atómico e independiente de la cita en la tabla visita vinculando la columna anuncio_id_fk
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2295,10 +2300,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorVisita) throw errorVisita;
 
-                                // 4. Resolución dinámica del correo de destino leyendo el estado real de la vista
+                                // 4. Regla de Negocio: Evaluación de canal oficial para despachar notificaciones de Tour
                                 let emailVendedorDestino = "";
 
                                 if (idAgenteRealVisita && String(idAgenteRealVisita).trim() !== "") {
+                                    // Regla 1: La propiedad es vendida por un Agente -> tomamos la columna correo de agente_inmobiliario
                                     const { data: datosAgente } = await cliente
                                         .from('agente_inmobiliario')
                                         .select('correo')
@@ -2307,6 +2313,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                     if (datosAgente) emailVendedorDestino = datosAgente.correo;
                                 } else {
+                                    // Regla 2: Vende un Propietario -> filtramos usuario_autenticado usando usuario_id_fk para tomar su correo
                                     const { data: datosUsuario } = await cliente
                                         .from('usuario_autenticado')
                                         .select('correo')
@@ -2316,14 +2323,13 @@ document.addEventListener("DOMContentLoaded", () => {
                                     if (datosUsuario) emailVendedorDestino = datosUsuario.correo;
                                 }
 
-
-                                // Despacha la notificación asíncrona leyendo los datos del objeto activo de memoria reactiva 'anuncioData'
+                                // 5. Despacho asíncrono formal de la notificación por correo al buzón correspondiente
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
-                                    const direccionInmueble = anuncioData ? (anuncioData.direccion || "Propiedad Seleccionada") : "Inmueble Surco";
+                                    const direccionInmueble = propiedadActivaMemoria.direccion || propiedadActivaMemoria.titulo || "Inmueble Surco";
                                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad. \n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
+                                    const cuerpoMensaje = encodeURIComponent(`Hola, se ha registrado una solicitud de recorrido para la propiedad ubicada en: ${direccionInmueble}.\n\nDetalles del interesado:\nNombre: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
 
-                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
+                                fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                                         .then(res => res.json())
                                         .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
                                         .catch(errEmail => console.warn("Aviso: Retraso en la pasarela, datos asegurados.", errEmail));
