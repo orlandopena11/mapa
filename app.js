@@ -2092,22 +2092,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 const idAnuncioContacto = datosAnuncioRelacional ? datosAnuncioRelacional.anuncio_id : "ANUN-001";
 
-                                // Inserción adaptada a las columnas reales de la tabla contacte_agente
+                                // Consulta dinámica en caliente para extraer el anuncio vinculante real de la propiedad
+                                const { data: datosAnuncioFiltroSRE } = await clienteSupabaseSRE
+                                    .from('anuncio')
+                                    .select('anuncio_id')
+                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
+                                    .single();
+
+                                const idAnuncioDinamicoLead = datosAnuncioFiltroSRE ? datosAnuncioFiltroSRE.anuncio_id : "ANUN-001";
+
+                                // Formateo estricto del timestamp de contacto al estándar ISO internacional
+                                const fContacto = new Date();
+                                const fechaContacteISO = [
+                                    fContacto.getFullYear(),
+                                    String(fContacto.getMonth() + 1).padStart(2, '0'),
+                                    String(fContacto.getDate()).padStart(2, '0')
+                                ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
+
+                                // Inserción limpia mitigando de forma definitiva la restricción de valores nulos
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: idAnuncioContacto, // Captura dinámica del identificador mitigando el error NOT-NULL
+                                        anuncio_id_fk: idAnuncioDinamicoLead, 
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
-                                        apellidos: '',
+                                        apellidos: ' ',
                                         email_interesado: emailAgenteInput,
                                         telefono: telefonoAgenteInput,
-                                        fecha_contacte: fechaContacte,
-                                        tipo_visita: 'presencial',
+                                        fecha_contacte: fechaContacteISO,
+                                        tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
                                         estado_lead: 'pendiente',
-                                        creado_por: emailAgenteInput
+                                        creado_por: emailAgenteInput,
+                                        fecha_creacion: fechaContacteISO
                                     }]);
 
                                 if (errorInsertLead) throw errorInsertLead;
@@ -2254,7 +2272,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                // Captura directa del arreglo de fechas en su formato nativo ISO (YYYY-MM-DD)
+                                // 1. Captura de la fecha seleccionada en formato nativo ISO (YYYY-MM-DD)
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
 
@@ -2262,18 +2280,18 @@ document.addEventListener("DOMContentLoaded", () => {
                                     throw new Error("Por favor, seleccione una fecha válida en el calendario.");
                                 }
 
-                                // Construcción del estándar internacional YYYY-MM-DD HH:mm:00 para la columna nativa timestamp de PostgreSQL
+                                // Construcción del formato estándar internacional YYYY-MM-DD HH:mm:00 compatible con PostgreSQL timestamp
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
-                                // Marca de tiempo de creación en formato latino DD/MM/YYYY HH:mm:ss
-                                const fechaActualTransaccion = new Date();
-                                const fechaCreacionLatina = [
-                                    String(fechaActualTransaccion.getDate()).padStart(2, '0'),
-                                    String(fechaActualTransaccion.getMonth() + 1).padStart(2, '0'),
-                                    fechaActualTransaccion.getFullYear()
-                                ].join('/') + ` ${String(fechaActualTransaccion.getHours()).padStart(2, '0')}:${String(fechaActualTransaccion.getMinutes()).padStart(2, '0')}:${String(fechaActualTransaccion.getSeconds()).padStart(2, '0')}`;
+                                // Obtención de la fecha actual en formato ISO estándar para auditoría
+                                const fTransaccion = new Date();
+                                const fechaCreacionISO = [
+                                    fTransaccion.getFullYear(),
+                                    String(fTransaccion.getMonth() + 1).padStart(2, '0'),
+                                    String(fTransaccion.getDate()).padStart(2, '0')
+                                ].join('-') + ` ${String(fTransaccion.getHours()).padStart(2, '0')}:${String(fTransaccion.getMinutes()).padStart(2, '0')}:${String(fTransaccion.getSeconds()).padStart(2, '0')}`;
 
-                                // Consulta la tabla anuncio para obtener anuncio_id y agente_id_fk dinámicamente
+                                // 2. Consulta dinámica de la tabla de anuncios para enlazar las llaves foráneas reales de forma atómica
                                 const {
                                     data: anuncioData,
                                     error: errorAnuncioData
@@ -2283,7 +2301,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
                                     .single();
 
-                                // Registra la visita de forma aislada y atómica en la tabla visita
+                                if (errorAnuncioData || !anuncioData) {
+                                    throw new Error("No se pudo interceptar el anuncio asociado a este inmueble.");
+                                }
+
+                                // 3. Inserción limpia con formatos internacionales unificados evitando el error out-of-range
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
@@ -2291,18 +2313,19 @@ document.addEventListener("DOMContentLoaded", () => {
                                     .from('visita')
                                     .insert([{
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        anuncio_id_fk: (anuncioData && !errorAnuncioData) ? anuncioData.anuncio_id : null,
+                                        anuncio_id_fk: anuncioData.anuncio_id,
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
                                         telefono: telefonoInput,
-                                        fecha_visita: timestampEstandarISO, // Inyección del formato estándar internacional corregido
+                                        fecha_visita: timestampEstandarISO,
                                         tipo_visita: 'presencial',
                                         estado_visita: 'pendiente',
                                         estado_lead: 'nuevo',
-                                        fecha_creacion: fechaCreacionLatina
+                                        fecha_creacion: fechaCreacionISO
                                     }])
                                     .select()
                                     .single();
+
 
                                 if (errorVisita) throw errorVisita;
 
