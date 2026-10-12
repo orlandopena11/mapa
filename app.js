@@ -2083,11 +2083,20 @@ document.addEventListener("DOMContentLoaded", () => {
                                     fechaContactoObj.getFullYear()
                                 ].join('/') + ` ${String(fechaContactoObj.getHours()).padStart(2, '0')}:${String(fechaContactoObj.getMinutes()).padStart(2, '0')}`;
 
+                                // Consulta la tabla de anuncios para capturar la llave foránea real antes de registrar el lead
+                                const { data: datosAnuncioRelacional } = await clienteSupabaseSRE
+                                    .from('anuncio')
+                                    .select('anuncio_id')
+                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
+                                    .single();
+
+                                const idAnuncioContacto = datosAnuncioRelacional ? datosAnuncioRelacional.anuncio_id : "ANUN-001";
+
                                 // Inserción adaptada a las columnas reales de la tabla contacte_agente
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: null,
+                                        anuncio_id_fk: idAnuncioContacto, // Captura dinámica del identificador mitigando el error NOT-NULL
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
@@ -2344,10 +2353,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     }
                                 }
 
-                                // Despacha la notificación asíncrona al correo del vendedor o agente
+                                // Despacha la notificación asíncrona leyendo los datos del objeto activo de memoria reactiva 'anuncioData'
                                 if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
+                                    const direccionInmueble = anuncioData ? (anuncioData.direccion || "Propiedad Seleccionada") : "Inmueble Surco";
                                     const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad ubicada en: ${prop.direccion || prop.titulo}.\n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
+                                    const cuerpoMensaje = encodeURIComponent(`Yo estoy interesado en la propiedad. \n\nDetalles del contacto:\nInteresado: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
 
                                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
                                         .then(res => res.json())
