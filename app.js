@@ -2050,7 +2050,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
 
-                                // Consulta de agentes ordenados por prioridad ascendente
+                                // 1. Consulta de agentes ordenados por prioridad de forma ascendente
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2059,7 +2059,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 if (errorAgentes) throw errorAgentes;
 
                                 let agenteAsignadoSRE = null;
-                                // Algoritmo secuencial: compara leads_recibidos < leads
+                                // Algoritmo secuencial indexado por capacidad de carga
                                 for (let i = 0; i < listaAgentes.length; i++) {
                                     const agenteEvaluado = listaAgentes[i];
                                     const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
@@ -2075,33 +2075,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
                                 }
 
-                                // Fecha de contacto en formato DD/MM/YYYY HH:mm
-                                const fechaContactoObj = new Date();
-                                const fechaContacte = [
-                                    String(fechaContactoObj.getDate()).padStart(2, '0'),
-                                    String(fechaContactoObj.getMonth() + 1).padStart(2, '0'),
-                                    fechaContactoObj.getFullYear()
-                                ].join('/') + ` ${String(fechaContactoObj.getHours()).padStart(2, '0')}:${String(fechaContactoObj.getMinutes()).padStart(2, '0')}`;
-
-                                // Consulta la tabla de anuncios para capturar la llave foránea real antes de registrar el lead
-                                const { data: datosAnuncioRelacional } = await clienteSupabaseSRE
-                                    .from('anuncio')
-                                    .select('anuncio_id')
-                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
-                                    .single();
-
-                                const idAnuncioContacto = datosAnuncioRelacional ? datosAnuncioRelacional.anuncio_id : "ANUN-001";
-
-                                // Consulta dinámica en caliente para extraer el anuncio vinculante real de la propiedad
-                                const { data: datosAnuncioFiltroSRE } = await clienteSupabaseSRE
-                                    .from('anuncio')
-                                    .select('anuncio_id')
-                                    .eq('propiedad_id_fk', state.propiedadSeleccionadaId)
-                                    .single();
-
-                                const idAnuncioDinamicoLead = datosAnuncioFiltroSRE ? datosAnuncioFiltroSRE.anuncio_id : "ANUN-001";
-
-                                // Formateo estricto del timestamp de contacto al estándar ISO internacional
+                                // 2. Obtención de la fecha y hora actual en formato estándar internacional ISO
                                 const fContacto = new Date();
                                 const fechaContacteISO = [
                                     fContacto.getFullYear(),
@@ -2109,23 +2083,15 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // Extraemos el anuncio_id real desde la vista activa mapeada en la memoria global
+                                // 3. Extraemos el anuncio_id relacional real de la propiedad activa desde el estado en memoria
                                 const propiedadCatalogoActivaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
                                 const idAnuncioContactoDinamico = propiedadCatalogoActivaSRE ? propiedadCatalogoActivaSRE.anuncio_id : "ANUN-001";
 
-                                // Formateo del timestamp al estándar ISO internacional requerido por PostgreSQL
-                                const fContacto = new Date();
-                                const fechaContacteISO = [
-                                    fContacto.getFullYear(),
-                                    String(fContacto.getMonth() + 1).padStart(2, '0'),
-                                    String(fContacto.getDate()).padStart(2, '0')
-                                ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
-
-                                // Inserción limpia inyectando la relación obligatoria anuncio_id_fk de tu esquema
+                                // 4. Una única inserción limpia y atómica acoplada a las columnas nativas reales de contacte_agente
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: idAnuncioContactoDinamico, // Enlace relacional directo obligatorio unificado
+                                        anuncio_id_fk: idAnuncioContactoDinamico, 
                                         propiedad_id_fk: state.propiedadSeleccionadaId,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
@@ -2142,7 +2108,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // Incremento del contador leads_recibidos apuntando a la clave primaria nativa agente_id
+                                // 5. Incremento reactivo del contador apuntando a la clave primaria nativa del asesor asignado
                                 const nuevosLeadsRecibidos = parseInt(agenteAsignadoSRE.leads_recibidos || 0, 10) + 1;
                                 const { error: errorUpdateAgente } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
@@ -2151,15 +2117,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorUpdateAgente) throw errorUpdateAgente;
 
-                                // Notificación asíncrona a la columna unificada correo del agente
+                                // 6. Despacho asíncrono de la notificación por correo al asesor
                                 if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
                                     const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
-                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado en el portal inmobiliario.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}\n\nPor favor, actualiza el estado del lead a la brevedad.`);
+                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}`);
 
                                     fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
                                         .then(resMail => resMail.json())
-                                        .then(resData => console.log("Notificación SRE despachada al Agente:", resData))
-                                        .catch(errMail => console.warn("Pasarela de correo en cola de procesamiento asíncrono pasivo.", errMail));
+                                        .then(resData => console.log("Notificación SRE despachada al Agente con éxito:", resData))
+                                        .catch(errMail => console.warn("Pasarela de correo en cola de procesamiento asíncrono.", errMail));
                                 }
 
                                 alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario de Prioridad ${agenteAsignadoSRE.prioridad} y se le notificó formalmente por correo electrónico.`);
@@ -2177,6 +2143,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             }
                         }; // Fin de submit asíncrono para Contactar Agente
                     } // Fin de bloque de control para la existencia de formAgente
+
 
 
                     const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
