@@ -2059,15 +2059,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                 if (errorAgentes) throw errorAgentes;
 
                                 let agenteAsignadoSRE = null;
-                                // Algoritmo secuencial indexado por capacidad de carga
+
+                                // Algoritmo secuencial corregido: recorre la lista y extrae el objeto indexado i de forma individual
                                 for (let i = 0; i < listaAgentes.length; i++) {
                                     const agenteEvaluado = listaAgentes[i];
-                                    const maxLeads = parseInt(agenteEvaluado.leads || 0, 10);
-                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos || 0, 10);
+                                    
+                                    const maxLeads = parseInt(agenteEvaluado.leads, 10) || 0;
+                                    const actualesLeads = parseInt(agenteEvaluado.leads_recibidos, 10) || 0;
 
                                     if (actualesLeads < maxLeads) {
-                                        agenteAsignadoSRE = agenteEvaluado;
-                                        break;
+                                        agenteAsignadoSRE = agenteEvaluado; // Asignación correcta del objeto individual del asesor
+                                        break; 
                                     }
                                 }
 
