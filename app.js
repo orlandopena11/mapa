@@ -2030,9 +2030,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     // --- REPARACIÓN QUIRÚRGICA PUNTO 3: Separar por completo "Contactar un Agente" ---
                     // El controlador del formulario formAgente.onsubmit se extrae como un handler independiente
                     // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
-                    const formAgente = document.getElementById('form-contactar-agente');
-                    if (formAgente) { // Inicia bloque de control para la existencia de formAgente
-                        formAgente.onsubmit = async (eventSubmit) => { // Inicia submit asíncrono para Contactar Agente
+const formAgente = document.getElementById('form-contactar-agente');
+                    if (formAgente) {
+                        formAgente.onsubmit = async (eventSubmit) => {
                             eventSubmit.preventDefault();
 
                             const btnEnviarAgente = document.getElementById('btn-enviar-contacto-agente');
@@ -2046,18 +2046,17 @@ document.addEventListener("DOMContentLoaded", () => {
                             const telefonoAgenteInput = document.getElementById('agente-contacto-telefono').value.trim();
                             const mensajeAgenteInput = document.getElementById('agente-mensaje').value.trim();
 
-                            try { // Inicia tubería transaccional de asignación por prioridad basada en tus reglas de negocio
+                            try {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
 
-                                // Evento 1: Extraemos el id del anuncio relacional directo desde el estado inmutable en memoria
                                 const propiedadEnPantallaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadEnPantallaSRE || !propiedadEnPantallaSRE.anuncio_id) {
-                                    throw new Error("No se pudo interceptar el identificador del anuncio asociado a este inmueble.");
+                                if (!propiedadEnPantallaSRE) {
+                                    throw new Error("No se pudo interceptar el inmueble asociado a esta vista.");
                                 }
-                                const idAnuncioContacto = propiedadEnPantallaSRE.anuncio_id;
+                                const idPropiedadReal = propiedadEnPantallaSRE.id || state.propiedadSeleccionadaId;
 
-                                // Evento 2: Consulta de asesores registrados ordenada estrictamente por nivel de prioridad ascendente
+                                // Consulta de agentes ordenada por prioridad ascendente (1, 2, 3...)
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2067,25 +2066,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 let agenteAsignadoSRE = null;
 
-                                // Algoritmo secuencial indexado: Verifica prioridad 1 -> evalúa leads_recibidos < leads de manera estricta
                                 if (listaAgentes && listaAgentes.length > 0) {
                                     for (let i = 0; i < listaAgentes.length; i++) {
                                         const agenteEvaluado = listaAgentes[i];
                                         const maxLeads = Number(agenteEvaluado.leads) || 0;
                                         const actualesLeads = Number(agenteEvaluado.leads_recibidos) || 0;
 
+                                        // Regla de negocio: leads_recibidos debe ser estrictamente menor que leads
                                         if (actualesLeads < maxLeads) {
-                                            agenteAsignadoSRE = agenteEvaluado; // Asignación correcta del objeto individual calificado
-                                            break; // Detiene el ciclo inmediatamente al encontrar cupo en el nivel de mayor prioridad
+                                            agenteAsignadoSRE = agenteEvaluado;
+                                            break;
                                         }
                                     }
                                 }
 
                                 if (!agenteAsignadoSRE) {
-                                    throw new Error("Todos nuestros agentes de alta prioridad se encuentran ocupados en este momento. Inténtelo más tarde.");
+                                    throw new Error("Todos nuestros agentes se encuentran ocupados en este momento. Inténtelo más tarde.");
                                 }
 
-                                // Obtención del tiempo en formato estricto internacional YYYY-MM-DD HH:mm:ss para PostgreSQL
                                 const fContacto = new Date();
                                 const fechaContacteISO = [
                                     fContacto.getFullYear(),
@@ -2093,12 +2091,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // Evento 3: Registro atómico del lead en contacte_agente con estado_lead forzado a 'pendiente'
+                                // Inserción en la tabla contacte_agente asegurando el estado 'pendiente' y el agente asignado
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        anuncio_id_fk: idAnuncioContacto,
-                                        propiedad_id_fk: state.propiedadSeleccionadaId,
+                                        propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
                                         apellidos: ' ',
@@ -2107,14 +2104,14 @@ document.addEventListener("DOMContentLoaded", () => {
                                         fecha_contacte: fechaContacteISO,
                                         tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
-                                        estado_lead: 'pendiente', // Sella el estado inicial requerido por la regla
+                                        estado_lead: 'pendiente',
                                         creado_por: emailAgenteInput,
                                         fecha_creacion: fechaContacteISO
                                     }]);
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // Evento 4: Incremento del contador reactivo leads_recibidos en el perfil del asesor calificado
+                                // Incremento de leads_recibidos en el perfil del agente asignado
                                 const nuevosLeadsRecibidos = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                 const { error: errorUpdateAgente } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
@@ -2123,19 +2120,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorUpdateAgente) throw errorUpdateAgente;
 
-                                // Evento 5: Disparo de la notificación asíncrona al correo oficial del agente inmobiliario asignado
-                                if (agenteAsignadoSRE.correo && typeof urlMiScriptGoogle !== "undefined") {
-                                    const asuntoAsesor = encodeURIComponent(`NUEVO LEAD ASIGNADO PENDIENTE - Prioridad ${agenteAsignadoSRE.prioridad}`);
-                                    const cuerpoAsesor = encodeURIComponent(`Hola Asesor,\n\nSe te ha asignado un nuevo cliente interesado en el portal inmobiliario.\n\nDetalles del Lead:\nNombre: ${nombreAgenteInput}\nCorreo: ${emailAgenteInput}\nTeléfono: ${telefonoAgenteInput}\nMensaje: ${mensajeAgenteInput}\n\nPor favor, actualiza el estado del lead a la brevedad.`);
-
-                                    fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(agenteAsignadoSRE.correo)}&asunto=${asuntoAsesor}&mensaje=${cuerpoAsesor}`)
-                                        .then(resMail => resMail.json())
-                                        .then(resData => console.log("Notificación SRE despachada al Agente con éxito:", resData))
-                                        .catch(errMail => console.warn("Pasarela de correo en procesamiento asíncrono pasivo.", errMail));
-                                }
-
-
-                                alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario de Prioridad ${agenteAsignadoSRE.prioridad} y se le notificó formalmente por correo electrónico.`);
+                                alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario (Prioridad ${agenteAsignadoSRE.prioridad}).`);
                                 cerrarPopupAccion('modal-agent-comercial');
                                 formAgente.reset();
 
@@ -2148,8 +2133,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     btnEnviarAgente.disabled = false;
                                 }
                             }
-                        }; // Fin de submit asíncrono para Contactar Agente
-                    } // Fin de bloque de control para la existencia de formAgente
+                        };
+                    }
 
 
 
@@ -2239,9 +2224,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     // --- REPARACIÓN QUIRÚRGICA PUNTO 2: Independizar y Subsanar "Solicitar un Tour" ---
                     // El flujo registra la visita de forma aislada y atómica en la tabla visita
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
-                    const formTour = document.getElementById('form-solicitar-tour-completo');
-                    if (formTour) { // Inicia if validación formTour
-                        formTour.onsubmit = async (e) => { // Inicia submit asíncrono aislado
+      const formTour = document.getElementById('form-solicitar-tour-completo');
+                    if (formTour) {
+                        formTour.onsubmit = async (e) => {
                             e.preventDefault();
 
                             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
@@ -2254,11 +2239,10 @@ document.addEventListener("DOMContentLoaded", () => {
                             const emailInput = document.getElementById('tour-contacto-email').value.trim();
                             const horaSeleccionada = document.getElementById('hora-principal').value;
 
-                            try { // Inicia bloque try transaccional
+                            try {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
-                                 // 1. Captura de la fecha y preparación del formato timestamptz estándar internacional unificado para PostgreSQL
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
 
@@ -2268,24 +2252,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
-                                // 2. Recuperación del objeto de datos real directo desde el estado global de la vista
                                 const propiedadActivaMemoria = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadActivaMemoria || !propiedadActivaMemoria.anuncio_id) {
-                                    throw new Error("No se pudo localizar el identificador del anuncio en la vista activa del mapa.");
+                                if (!propiedadActivaMemoria) {
+                                    throw new Error("No se pudo localizar la propiedad seleccionada en la vista activa del mapa.");
                                 }
 
-                                const idAnuncioRealVisita = propiedadActivaMemoria.anuncio_id;
+                                // Solución: Mapeamos el ID de la propiedad de forma segura
+                                const idPropiedadReal = propiedadActivaMemoria.id || state.propiedadSeleccionadaId;
                                 const idAgenteRealVisita = propiedadActivaMemoria.agente_id_fk || null;
 
-                                // 3. Registro atómico e independiente de la cita en la tabla visita vinculando la columna anuncio_id_fk
                                 const {
                                     data: nuevaVisita,
                                     error: errorVisita
                                 } = await cliente
                                     .from('visita')
                                     .insert([{
-                                        propiedad_id_fk: state.propiedadSeleccionadaId,
-                                        anuncio_id_fk: idAnuncioRealVisita, 
+                                        propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: idAgenteRealVisita,
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
@@ -2300,42 +2282,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorVisita) throw errorVisita;
 
-                                // 4. Regla de Negocio: Evaluación de canal oficial para despachar notificaciones de Tour
-                                let emailVendedorDestino = "";
-
-                                if (idAgenteRealVisita && String(idAgenteRealVisita).trim() !== "") {
-                                    // Regla 1: La propiedad es vendida por un Agente -> tomamos la columna correo de agente_inmobiliario
-                                    const { data: datosAgente } = await cliente
-                                        .from('agente_inmobiliario')
-                                        .select('correo')
-                                        .eq('agente_id', idAgenteRealVisita)
-                                        .single();
-
-                                    if (datosAgente) emailVendedorDestino = datosAgente.correo;
-                                } else {
-                                    // Regla 2: Vende un Propietario -> filtramos usuario_autenticado usando usuario_id_fk para tomar su correo
-                                    const { data: datosUsuario } = await cliente
-                                        .from('usuario_autenticado')
-                                        .select('correo')
-                                        .eq('usuario_id', propiedadActivaMemoria.usuario_id_fk)
-                                        .single();
-
-                                    if (datosUsuario) emailVendedorDestino = datosUsuario.correo;
-                                }
-
-                                // 5. Despacho asíncrono formal de la notificación por correo al buzón correspondiente
-                                if (emailVendedorDestino && typeof urlMiScriptGoogle !== "undefined") {
-                                    const direccionInmueble = propiedadActivaMemoria.direccion || propiedadActivaMemoria.titulo || "Inmueble Surco";
-                                    const asuntoCita = encodeURIComponent(`Nueva solicitud de Tour Pendiente - Inmobiliaria en Surco`);
-                                    const cuerpoMensaje = encodeURIComponent(`Hola, se ha registrado una solicitud de recorrido para la propiedad ubicada en: ${direccionInmueble}.\n\nDetalles del interesado:\nNombre: ${nombreInput}\nCorreo: ${emailInput}\nTeléfono: ${telefonoInput}\nHora propuesta: ${horaSeleccionada}\nFechas propuestas: ${fechaSeleccionadaArregloSRE.join(', ')}`);
-
-                                fetch(`${urlMiScriptGoogle}?accion=enviar_correo_notificacion&destinatario=${encodeURIComponent(emailVendedorDestino)}&asunto=${asuntoCita}&mensaje=${cuerpoMensaje}`)
-                                        .then(res => res.json())
-                                        .then(resultado => console.log("Notificación por correo enviada con éxito:", resultado))
-                                        .catch(errEmail => console.warn("Aviso: Retraso en la pasarela, datos asegurados.", errEmail));
-                                }
-
-                                alert("¡Tour agendado exitosamente! La solicitud se registró y se ha notificado por correo a quien vende la propiedad.");
+                                alert("¡Tour agendado exitosamente! La solicitud se registró correctamente.");
                                 cerrarPopupAccion('modal-tour-comercial');
                                 formTour.reset();
 
@@ -2343,8 +2290,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                 console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
                                 alert("Error al procesar la agenda: " + errTransaccion.message);
                             }
-                        }; // Fin del formTour.onsubmit — llave de cierre sellada correctamente
-                    } // Fin del if (formTour) — sella la llave de cierre del formulario para no mezclar con otros flujos
+                        };
+                    } 
 
 
                     if (prop && prop.propiedad_id) {
