@@ -2031,8 +2031,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     // El controlador del formulario formAgente.onsubmit se extrae como un handler independiente
                     // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
 
-  // ==========================================================================
-                    // CÓDIGO LIMPIO Y ROBUSTO PARA: "CONTACTAR UN AGENTE"
+// ==========================================================================
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE"
                     // ==========================================================================
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) {
@@ -2040,7 +2040,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             eventSubmit.preventDefault();
                             console.group("🕵️ [SRE CONTACTAR AGENTE] Iniciando flujo con validación centralizada...");
 
-                            // Validación centralizada obligatoria
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
                                 return;
@@ -2059,13 +2058,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Cliente Supabase no disponible.");
 
-                                // 1. Obtener datos directamente de la propiedad activa en memoria (que viene de la vista)
-                                const propiedadEnPantallaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadEnPantallaSRE) throw new Error("No se localizó la propiedad en memoria.");
+                                const idPropiedadReal = state.propiedadSeleccionadaId;
 
-                                const idPropiedadReal = propiedadEnPantallaSRE.id;
-                                const idAnuncioReal = propiedadEnPantallaSRE.anuncio_id || null;
-                                const agenteFallbackId = propiedadEnPantallaSRE.agente_id_fk || null;
+                                // 1. Consulta directa y segura a la tabla anuncio para obtener IDs relacionales
+                                const { data: anuncioData } = await clienteSupabaseSRE
+                                    .from('anuncio')
+                                    .select('anuncio_id, id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
+
+                                const idAnuncioReal = anuncioData ? (anuncioData.anuncio_id || anuncioData.id) : null;
+                                const agenteFallbackId = anuncioData ? anuncioData.agente_id_fk : null;
 
                                 // 2. Algoritmo de asignación por prioridad y leads en agente_inmobiliario
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
@@ -2098,10 +2101,11 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Insertar en contacte_agente
+                                // 3. Insertar en contacte_agente incluyendo usuario_id_fk para cumplir con RLS
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
+                                        usuario_id_fk: state.usuarioActual.id,
                                         anuncio_id_fk: idAnuncioReal,
                                         propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: idAgenteFinalFK,
@@ -2143,7 +2147,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         };
-                    }                  
+                    }                 
 
 
 
@@ -2235,7 +2239,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
 
 // ==========================================================================
-                    // CÓDIGO LIMPIO Y ROBUSTO PARA: "SOLICITAR UN TOUR"
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR"
                     // ==========================================================================
                     const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
@@ -2248,7 +2252,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             e.preventDefault();
                             console.group("🕵️ [SRE SOLICITAR TOUR] Iniciando flujo con validación centralizada...");
 
-                            // Validación centralizada obligatoria
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
                                 return;
@@ -2273,18 +2276,21 @@ document.addEventListener("DOMContentLoaded", () => {
                                 if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
 
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
+                                const idPropiedadReal = state.propiedadSeleccionadaId;
 
-                                // 1. Obtener datos directamente de la propiedad activa en memoria (que viene de la vista)
-                                const propiedadActivaMemoria = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadActivaMemoria) throw new Error("No se localizó la propiedad seleccionada en memoria.");
+                                // 1. Consulta directa y segura a la tabla anuncio para obtener IDs relacionales
+                                const { data: anuncioData } = await cliente
+                                    .from('anuncio')
+                                    .select('anuncio_id, id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
 
-                                const idPropiedadReal = propiedadActivaMemoria.id;
-                                const idAnuncioReal = propiedadActivaMemoria.anuncio_id || null;
-                                const idAgenteRealVisita = propiedadActivaMemoria.agente_id_fk || null;
+                                const idAnuncioReal = anuncioData ? (anuncioData.anuncio_id || anuncioData.id) : null;
+                                const idAgenteRealVisita = anuncioData ? anuncioData.agente_id_fk : null;
                                 const idUsuarioReal = state.usuarioActual.id;
 
                                 if (!idAnuncioReal) {
-                                    throw new Error("La propiedad seleccionada no cuenta con un anuncio válido asociado en la vista.");
+                                    throw new Error("La propiedad seleccionada no cuenta con un anuncio válido asociado en la base de datos.");
                                 }
 
                                 // 2. Insertar registro en la tabla visita
@@ -2317,7 +2323,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 console.groupEnd();
                             }
                         };
-                    }                    
+                    }                   
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
