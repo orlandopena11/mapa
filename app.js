@@ -2031,14 +2031,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     // El controlador del formulario formAgente.onsubmit se extrae como un handler independiente
                     // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
 
-// ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE" (LEYENDO DE LA VISTA)
+                    // ==========================================================================
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE" (CON RLS Y VISTA)
                     // ==========================================================================
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) {
                         formAgente.onsubmit = async (eventSubmit) => {
                             eventSubmit.preventDefault();
-                            console.group("🕵️ [SRE CONTACTAR AGENTE] Leyendo datos de la vista en memoria...");
+                            console.group("🕵️ [SRE CONTACTAR AGENTE] Leyendo datos de la vista y aplicando RLS...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2058,12 +2058,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Cliente Supabase no disponible.");
 
-                                // 1. Lectura directa de los atributos provenientes de la vista cargada en memoria (`prop`)
+                                // 1. Lectura directa de los atributos de la vista en memoria (`prop`)
                                 const idPropiedadReal = prop.id || state.propiedadSeleccionadaId;
                                 const idAnuncioReal = prop.propiedad_id || prop.id; 
                                 const agenteFallbackId = prop.agente_id_fk || 1;
 
-                                // 2. Consulta y algoritmo de asignación en agente_inmobiliario por prioridad y leads
+                                // 2. Algoritmo de asignación en agente_inmobiliario por prioridad y leads
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2094,17 +2094,18 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Insertar registro en la tabla contacte_agente
+                                // 3. Insertar registro incluyendo usuario_id_fk para cumplir estrictamente con RLS
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
+                                        usuario_id_fk: state.usuarioActual.id,
                                         anuncio_id_fk: idAnuncioReal,
                                         propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: idAgenteFinalFK,
                                         nombre: nombreAgenteInput,
                                         apellidos: ' ',
                                         email_interesado: state.usuarioActual.correo,
-                                        telefono: telefonoInput = telefonoAgenteInput,
+                                        telefono: telefonoAgenteInput,
                                         fecha_contacte: fechaContacteISO,
                                         tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
@@ -2115,7 +2116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // 4. Actualizar / Incrementar leads_recibidos del agente asignado
+                                // 4. Actualizar leads_recibidos del agente asignado
                                 if (agenteAsignadoSRE) {
                                     const nuevosLeads = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                     await clienteSupabaseSRE
@@ -2139,7 +2140,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         };
-                    }               
+                    }             
 
 
 
@@ -2230,8 +2231,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     // El flujo registra la visita de forma aislada y atómica en la tabla visita
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
 
-// ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR" (LEYENDO DE LA VISTA)
+                    // ==========================================================================
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR" (CON FORMATO Y VISTA)
                     // ==========================================================================
                     const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
@@ -2242,7 +2243,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         formTour.onsubmit = async (e) => {
                             e.preventDefault();
-                            console.group("🕵️ [SRE SOLICITAR TOUR] Leyendo datos de la vista en memoria...");
+                            console.group("🕵️ [SRE SOLICITAR TOUR] Leyendo datos de la vista y formato YYYY-MM-DD...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2265,8 +2266,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
-                                if (!firstFechaEscogidaSRE && !primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
+                                if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
 
+                                // Estándar estricto PostgreSQL YYYY-MM-DD HH:mm:ss
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
 
                                 // 1. Lectura directa de los atributos provenientes de la vista en memoria (`prop`)
