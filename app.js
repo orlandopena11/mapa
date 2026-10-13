@@ -2032,13 +2032,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
 
 // ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE"
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE" (LEYENDO DE LA VISTA)
                     // ==========================================================================
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) {
                         formAgente.onsubmit = async (eventSubmit) => {
                             eventSubmit.preventDefault();
-                            console.group("🕵️ [SRE CONTACTAR AGENTE] Iniciando flujo con validación centralizada...");
+                            console.group("🕵️ [SRE CONTACTAR AGENTE] Leyendo datos de la vista en memoria...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2058,19 +2058,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Cliente Supabase no disponible.");
 
-                                const idPropiedadReal = state.propiedadSeleccionadaId;
+                                // 1. Lectura directa de los atributos provenientes de la vista cargada en memoria (`prop`)
+                                const idPropiedadReal = prop.id || state.propiedadSeleccionadaId;
+                                const idAnuncioReal = prop.propiedad_id || prop.id; 
+                                const agenteFallbackId = prop.agente_id_fk || 1;
 
-                                // 1. Consulta directa y segura a la tabla anuncio para obtener IDs relacionales
-                                const { data: anuncioData } = await clienteSupabaseSRE
-                                    .from('anuncio')
-                                    .select('anuncio_id, id, agente_id_fk')
-                                    .eq('propiedad_id_fk', idPropiedadReal)
-                                    .maybeSingle();
-
-                                const idAnuncioReal = anuncioData ? (anuncioData.anuncio_id || anuncioData.id) : null;
-                                const agenteFallbackId = anuncioData ? anuncioData.agente_id_fk : null;
-
-                                // 2. Algoritmo de asignación por prioridad y leads en agente_inmobiliario
+                                // 2. Consulta y algoritmo de asignación en agente_inmobiliario por prioridad y leads
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2092,7 +2085,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     if (!agenteAsignadoSRE) agenteAsignadoSRE = listaAgentes[0];
                                 }
 
-                                const idAgenteFinalFK = agenteAsignadoSRE ? agenteAsignadoSRE.agente_id : (agenteFallbackId || 1);
+                                const idAgenteFinalFK = agenteAsignadoSRE ? agenteAsignadoSRE.agente_id : agenteFallbackId;
 
                                 const fContacto = new Date();
                                 const fechaContacteISO = [
@@ -2101,18 +2094,17 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Insertar en contacte_agente incluyendo usuario_id_fk para cumplir con RLS
+                                // 3. Insertar registro en la tabla contacte_agente
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        usuario_id_fk: state.usuarioActual.id,
                                         anuncio_id_fk: idAnuncioReal,
                                         propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: idAgenteFinalFK,
                                         nombre: nombreAgenteInput,
                                         apellidos: ' ',
                                         email_interesado: state.usuarioActual.correo,
-                                        telefono: telefonoAgenteInput,
+                                        telefono: telefonoInput = telefonoAgenteInput,
                                         fecha_contacte: fechaContacteISO,
                                         tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
@@ -2123,7 +2115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // 4. Incrementar leads_recibidos del agente asignado
+                                // 4. Actualizar / Incrementar leads_recibidos del agente asignado
                                 if (agenteAsignadoSRE) {
                                     const nuevosLeads = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                     await clienteSupabaseSRE
@@ -2147,7 +2139,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         };
-                    }                 
+                    }               
 
 
 
@@ -2239,7 +2231,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
 
 // ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR"
+                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR" (LEYENDO DE LA VISTA)
                     // ==========================================================================
                     const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
@@ -2250,7 +2242,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         formTour.onsubmit = async (e) => {
                             e.preventDefault();
-                            console.group("🕵️ [SRE SOLICITAR TOUR] Iniciando flujo con validación centralizada...");
+                            console.group("🕵️ [SRE SOLICITAR TOUR] Leyendo datos de la vista en memoria...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2273,24 +2265,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
-                                if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
+                                if (!firstFechaEscogidaSRE && !primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
 
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
-                                const idPropiedadReal = state.propiedadSeleccionadaId;
 
-                                // 1. Consulta directa y segura a la tabla anuncio para obtener IDs relacionales
-                                const { data: anuncioData } = await cliente
-                                    .from('anuncio')
-                                    .select('anuncio_id, id, agente_id_fk')
-                                    .eq('propiedad_id_fk', idPropiedadReal)
-                                    .maybeSingle();
-
-                                const idAnuncioReal = anuncioData ? (anuncioData.anuncio_id || anuncioData.id) : null;
-                                const idAgenteRealVisita = anuncioData ? anuncioData.agente_id_fk : null;
+                                // 1. Lectura directa de los atributos provenientes de la vista en memoria (`prop`)
+                                const idPropiedadReal = prop.id || state.propiedadSeleccionadaId;
+                                const idAnuncioReal = prop.propiedad_id || prop.id;
+                                const idAgenteRealVisita = prop.agente_id_fk || 1;
                                 const idUsuarioReal = state.usuarioActual.id;
 
                                 if (!idAnuncioReal) {
-                                    throw new Error("La propiedad seleccionada no cuenta con un anuncio válido asociado en la base de datos.");
+                                    throw new Error("La propiedad seleccionada no cuenta con una identificación válida asociada.");
                                 }
 
                                 // 2. Insertar registro en la tabla visita
@@ -2323,7 +2309,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 console.groupEnd();
                             }
                         };
-                    }                   
+                    }                  
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
