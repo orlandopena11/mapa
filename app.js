@@ -2056,7 +2056,18 @@ const formAgente = document.getElementById('form-contactar-agente');
                                 }
                                 const idPropiedadReal = propiedadEnPantallaSRE.id || state.propiedadSeleccionadaId;
 
-                                // Consulta de agentes ordenada por prioridad ascendente (1, 2, 3...)
+                                // 1. Obtener anuncio_id_fk obligatorio
+                                const { data: datosAnuncio, error: errorAnuncio } = await clienteSupabaseSRE
+                                    .from('anuncio')
+                                    .select('anuncio_id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
+
+                                if (errorAnuncio) throw errorAnuncio;
+
+                                const idAnuncioReal = datosAnuncio ? datosAnuncio.anuncio_id : null;
+
+                                // 2. Consultar agentes ordenados por prioridad (1 = Mayor prioridad)
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2072,7 +2083,7 @@ const formAgente = document.getElementById('form-contactar-agente');
                                         const maxLeads = Number(agenteEvaluado.leads) || 0;
                                         const actualesLeads = Number(agenteEvaluado.leads_recibidos) || 0;
 
-                                        // Regla de negocio: leads_recibidos debe ser estrictamente menor que leads
+                                        // Regla de negocio: leads_recibidos < leads
                                         if (actualesLeads < maxLeads) {
                                             agenteAsignadoSRE = agenteEvaluado;
                                             break;
@@ -2080,8 +2091,13 @@ const formAgente = document.getElementById('form-contactar-agente');
                                     }
                                 }
 
+                                // Respaldo de seguridad en caso de saturación total
+                                if (!agenteAsignadoSRE && listaAgentes && listaAgentes.length > 0) {
+                                    agenteAsignadoSRE = listaAgentes[0];
+                                }
+
                                 if (!agenteAsignadoSRE) {
-                                    throw new Error("Todos nuestros agentes se encuentran ocupados en este momento. Inténtelo más tarde.");
+                                    throw new Error("No hay agentes disponibles registrados en el sistema.");
                                 }
 
                                 const fContacto = new Date();
@@ -2091,10 +2107,11 @@ const formAgente = document.getElementById('form-contactar-agente');
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // Inserción en la tabla contacte_agente asegurando el estado 'pendiente' y el agente asignado
+                                // 3. Insertar registro en contacte_agente cumpliendo la estructura exacta
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
+                                        anuncio_id_fk: idAnuncioReal,
                                         propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: agenteAsignadoSRE.agente_id,
                                         nombre: nombreAgenteInput,
@@ -2111,14 +2128,12 @@ const formAgente = document.getElementById('form-contactar-agente');
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // Incremento de leads_recibidos en el perfil del agente asignado
+                                // 4. Incrementar leads_recibidos del agente asignado
                                 const nuevosLeadsRecibidos = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
-                                const { error: errorUpdateAgente } = await clienteSupabaseSRE
+                                await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .update({ leads_recibidos: nuevosLeadsRecibidos })
                                     .eq('agente_id', agenteAsignadoSRE.agente_id);
-
-                                if (errorUpdateAgente) throw errorUpdateAgente;
 
                                 alert(`¡Mensaje enviado con éxito! Se ha asignado su requerimiento al Agente Inmobiliario (Prioridad ${agenteAsignadoSRE.prioridad}).`);
                                 cerrarPopupAccion('modal-agent-comercial');
@@ -2224,7 +2239,7 @@ const formAgente = document.getElementById('form-contactar-agente');
                     // --- REPARACIÓN QUIRÚRGICA PUNTO 2: Independizar y Subsanar "Solicitar un Tour" ---
                     // El flujo registra la visita de forma aislada y atómica en la tabla visita
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
-      const formTour = document.getElementById('form-solicitar-tour-completo');
+const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
                         formTour.onsubmit = async (e) => {
                             e.preventDefault();
@@ -2257,17 +2272,28 @@ const formAgente = document.getElementById('form-contactar-agente');
                                     throw new Error("No se pudo localizar la propiedad seleccionada en la vista activa del mapa.");
                                 }
 
-                                // Solución: Mapeamos el ID de la propiedad de forma segura
                                 const idPropiedadReal = propiedadActivaMemoria.id || state.propiedadSeleccionadaId;
-                                const idAgenteRealVisita = propiedadActivaMemoria.agente_id_fk || null;
 
-                                const {
-                                    data: nuevaVisita,
-                                    error: errorVisita
-                                } = await cliente
+                                // Obtener los datos de anuncio y agente asociados a la propiedad
+                                const { data: datosAnuncio, error: errorAnuncio } = await cliente
+                                    .from('anuncio')
+                                    .select('anuncio_id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
+
+                                if (errorAnuncio) throw errorAnuncio;
+
+                                const idAnuncioReal = datosAnuncio ? datosAnuncio.anuncio_id : null;
+                                const idAgenteRealVisita = datosAnuncio ? datosAnuncio.agente_id_fk : (propiedadActivaMemoria.agente_id_fk || null);
+                                const idUsuarioReal = state.usuarioActual ? state.usuarioActual.id : null;
+
+                                // Inserción en la tabla visita enviando de forma explícita anuncio_id_fk
+                                const { data: nuevaVisita, error: errorVisita } = await cliente
                                     .from('visita')
                                     .insert([{
+                                        usuario_id_fk: idUsuarioReal,
                                         propiedad_id_fk: idPropiedadReal,
+                                        anuncio_id_fk: idAnuncioReal,
                                         agente_id_fk: idAgenteRealVisita,
                                         nombre_visita: nombreInput,
                                         creado_por: emailInput,
@@ -2291,7 +2317,7 @@ const formAgente = document.getElementById('form-contactar-agente');
                                 alert("Error al procesar la agenda: " + errTransaccion.message);
                             }
                         };
-                    } 
+                    }
 
 
                     if (prop && prop.propiedad_id) {
