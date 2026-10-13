@@ -2031,14 +2031,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     // El controlador del formulario formAgente.onsubmit se extrae como un handler independiente
                     // dentro de gestionarCortinaSPA('detalle', prop) adaptando las columnas reales de contacte_agente
 
-                    // ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "CONTACTAR UN AGENTE" (CON RLS Y VISTA)
+// ==========================================================================
+                    // CÓDIGO DEFINITIVO Y CORREGIDO PARA: "CONTACTAR UN AGENTE"
                     // ==========================================================================
                     const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) {
                         formAgente.onsubmit = async (eventSubmit) => {
                             eventSubmit.preventDefault();
-                            console.group("🕵️ [SRE CONTACTAR AGENTE] Leyendo datos de la vista y aplicando RLS...");
+                            console.group("🕵️ [SRE CONTACTAR AGENTE] Procesando asignación...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2058,12 +2058,19 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Cliente Supabase no disponible.");
 
-                                // 1. Lectura directa de los atributos de la vista en memoria (`prop`)
                                 const idPropiedadReal = prop.id || state.propiedadSeleccionadaId;
-                                const idAnuncioReal = prop.propiedad_id || prop.id; 
-                                const agenteFallbackId = prop.agente_id_fk || 1;
 
-                                // 2. Algoritmo de asignación en agente_inmobiliario por prioridad y leads
+                                // 1. Consultar UUIDs reales en la tabla anuncio
+                                const { data: anuncioData } = await clienteSupabaseSRE
+                                    .from('anuncio')
+                                    .select('id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
+
+                                const idAnuncioReal = anuncioData ? anuncioData.id : null;
+                                const agenteFallbackId = anuncioData ? anuncioData.agente_id_fk : null;
+
+                                // 2. Algoritmo de asignación por prioridad y leads
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2094,11 +2101,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Insertar registro incluyendo usuario_id_fk para cumplir estrictamente con RLS
+                                // 3. Insertar en contacte_agente con columnas reales (sin usuario_id_fk)
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
-                                        usuario_id_fk: state.usuarioActual.id,
                                         anuncio_id_fk: idAnuncioReal,
                                         propiedad_id_fk: idPropiedadReal,
                                         agente_id_fk: idAgenteFinalFK,
@@ -2116,7 +2122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // 4. Actualizar leads_recibidos del agente asignado
+                                // 4. Incrementar leads_recibidos
                                 if (agenteAsignadoSRE) {
                                     const nuevosLeads = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                     await clienteSupabaseSRE
@@ -2140,7 +2146,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }
                             }
                         };
-                    }             
+                    }           
 
 
 
@@ -2230,9 +2236,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     // --- REPARACIÓN QUIRÚRGICA PUNTO 2: Independizar y Subsanar "Solicitar un Tour" ---
                     // El flujo registra la visita de forma aislada y atómica en la tabla visita
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
-
-                    // ==========================================================================
-                    // CÓDIGO CORREGIDO Y ROBUSTO PARA: "SOLICITAR UN TOUR" (CON FORMATO Y VISTA)
+// ==========================================================================
+                    // CÓDIGO DEFINITIVO Y CORREGIDO PARA: "SOLICITAR UN TOUR"
                     // ==========================================================================
                     const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
@@ -2243,7 +2248,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         formTour.onsubmit = async (e) => {
                             e.preventDefault();
-                            console.group("🕵️ [SRE SOLICITAR TOUR] Leyendo datos de la vista y formato YYYY-MM-DD...");
+                            console.group("🕵️ [SRE SOLICITAR TOUR] Procesando agenda...");
 
                             if (!(await validarAccesoFuncionalidadPremium())) {
                                 console.groupEnd();
@@ -2268,17 +2273,22 @@ document.addEventListener("DOMContentLoaded", () => {
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
                                 if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
 
-                                // Estándar estricto PostgreSQL YYYY-MM-DD HH:mm:ss
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
-
-                                // 1. Lectura directa de los atributos provenientes de la vista en memoria (`prop`)
                                 const idPropiedadReal = prop.id || state.propiedadSeleccionadaId;
-                                const idAnuncioReal = prop.propiedad_id || prop.id;
-                                const idAgenteRealVisita = prop.agente_id_fk || 1;
+
+                                // 1. Consultar UUIDs reales en la tabla anuncio
+                                const { data: anuncioData } = await cliente
+                                    .from('anuncio')
+                                    .select('id, agente_id_fk')
+                                    .eq('propiedad_id_fk', idPropiedadReal)
+                                    .maybeSingle();
+
+                                const idAnuncioReal = anuncioData ? anuncioData.id : null;
+                                const idAgenteRealVisita = anuncioData ? anuncioData.agente_id_fk : null;
                                 const idUsuarioReal = state.usuarioActual.id;
 
                                 if (!idAnuncioReal) {
-                                    throw new Error("La propiedad seleccionada no cuenta con una identificación válida asociada.");
+                                    throw new Error("La propiedad seleccionada no cuenta con un anuncio válido en la base de datos.");
                                 }
 
                                 // 2. Insertar registro en la tabla visita
@@ -2311,7 +2321,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 console.groupEnd();
                             }
                         };
-                    }                  
+                    }                 
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
