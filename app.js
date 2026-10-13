@@ -2034,29 +2034,65 @@ const formAgente = document.getElementById('form-contactar-agente');
                     if (formAgente) {
                         formAgente.onsubmit = async (eventSubmit) => {
                             eventSubmit.preventDefault();
+                            console.group("🕵️ [ESPÍA CONTACTE AGENTE] Iniciando validación estricta de estado_cuenta...");
 
                             const btnEnviarAgente = document.getElementById('btn-enviar-contacto-agente');
                             if (btnEnviarAgente) {
-                                btnEnviarAgente.innerText = "...Asignando Agente Experto...";
+                                btnEnviarAgente.innerText = "...Validando Estado de Cuenta...";
                                 btnEnviarAgente.disabled = true;
                             }
 
+                            const emailAgenteInput = document.getElementById('agente-contacto-email').value.trim().toLowerCase();
                             const nombreAgenteInput = document.getElementById('agente-contacto-nombre').value.trim();
-                            const emailAgenteInput = document.getElementById('agente-contacto-email').value.trim();
                             const telefonoAgenteInput = document.getElementById('agente-contacto-telefono').value.trim();
-                            const mensajeAgenteInput = document.getElementById('agente-mensaje').value.trim();
 
                             try {
                                 const clienteSupabaseSRE = obtenerClienteSupabase();
                                 if (!clienteSupabaseSRE) throw new Error("Instancia del cliente Supabase no disponible.");
 
-                                const propiedadEnPantallaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
-                                if (!propiedadEnPantallaSRE) {
-                                    throw new Error("No se pudo interceptar el inmueble asociado a esta vista.");
+                                // REGLA CRÍTICA: Verificar obligatoriamente estado_cuenta en la tabla usuario_autenticado
+                                const uuidSesionActual = window.usuarioLogueado ? window.usuarioLogueado.id : null;
+                                const correoSesionActual = emailAgenteInput || (window.usuarioLogueado ? window.usuarioLogueado.email : "");
+
+                                console.log("🕵️ [ESPÍA ESTADO CUENTA] Verificando credenciales para:", correoSesionActual);
+
+                                let queryVerificacion = clienteSupabaseSRE
+                                    .from('usuario_autenticado')
+                                    .select('estado_cuenta, usuario_id, correo');
+
+                                if (uuidSesionActual) {
+                                    queryVerificacion = queryVerificacion.eq('usuario_id', uuidSesionActual);
+                                } else {
+                                    queryVerificacion = queryVerificacion.eq('correo', correoSesionActual);
                                 }
+
+                                const { data: perfilAuthBD, error: errPerfilAuth } = await queryVerificacion.maybeSingle();
+
+                                if (errPerfilAuth) throw new Error("Error al consultar el estado de cuenta: " + errPerfilAuth.message);
+
+                                if (!perfilAuthBD) {
+                                    alert("Acceso Restringido: Debe estar registrado y autenticado en la plataforma para contactar un agente.");
+                                    if (typeof mostrarPopupAccion === "function") mostrarPopupAccion("modal-autenticacion-supabase");
+                                    console.groupEnd();
+                                    return;
+                                }
+
+                                const estadoCuentaReal = String(perfilAuthBD.estado_cuenta || '').toLowerCase().trim();
+                                console.log(`🕵️ [ESPÍA ESTADO CUENTA] Estado obtenido de BD para '${perfilAuthBD.correo}': [${estadoCuentaReal.toUpperCase()}]`);
+
+                                if (estadoCuentaReal !== 'activo') {
+                                    alert(`Acceso Restringido: Su cuenta se encuentra en estado '${estadoCuentaReal.toUpperCase()}'. Debe estar ACTIVA para utilizar esta funcionalidad.`);
+                                    console.groupEnd();
+                                    return;
+                                }
+
+                                console.log("✅ [ESPÍA ESTADO CUENTA] Verificación aprobada. Cuenta ACTIVA.");
+
+                                const propiedadEnPantallaSRE = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
+                                if (!propiedadEnPantallaSRE) throw new Error("No se pudo interceptar el inmueble asociado a esta vista.");
                                 const idPropiedadReal = propiedadEnPantallaSRE.id || state.propiedadSeleccionadaId;
 
-                                // 1. Obtener anuncio_id_fk y agente por defecto de forma segura
+                                // 1. Obtener anuncio_id_fk y agente por defecto
                                 const { data: datosAnuncio } = await clienteSupabaseSRE
                                     .from('anuncio')
                                     .select('anuncio_id, agente_id_fk')
@@ -2066,7 +2102,7 @@ const formAgente = document.getElementById('form-contactar-agente');
                                 const idAnuncioReal = datosAnuncio ? datosAnuncio.anuncio_id : null;
                                 const agenteFallbackId = datosAnuncio ? datosAnuncio.agente_id_fk : null;
 
-                                // 2. Consultar agentes ordenados por prioridad
+                                // 2. Consultar agentes ordenados por prioridad y leads
                                 const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                                     .from('agente_inmobiliario')
                                     .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2075,27 +2111,23 @@ const formAgente = document.getElementById('form-contactar-agente');
                                 if (errorAgentes) throw errorAgentes;
 
                                 let agenteAsignadoSRE = null;
-
                                 if (listaAgentes && listaAgentes.length > 0) {
-                                    // Buscar por regla estricta leads_recibidos < leads
                                     for (let i = 0; i < listaAgentes.length; i++) {
                                         const agenteEvaluado = listaAgentes[i];
                                         const maxLeads = Number(agenteEvaluado.leads) || 10;
                                         const actualesLeads = Number(agenteEvaluado.leads_recibidos) || 0;
+                                        console.log(`🕵️ [ESPÍA ASIGNACIÓN] Agente ID ${agenteEvaluado.agente_id} (Prioridad ${agenteEvaluado.prioridad}): Recibidos=${actualesLeads}, Max=${maxLeads}`);
 
                                         if (actualesLeads < maxLeads) {
                                             agenteAsignadoSRE = agenteEvaluado;
                                             break;
                                         }
                                     }
-
-                                    // Si todos están saturados, tomamos el de mayor prioridad (el primero de la lista)
                                     if (!agenteAsignadoSRE) {
-                                        agenteAsignadoSRE = listaAgentes[0];
+                                        agenteAsignadoSRE = listaAgentes[0]; // Satura prioridades, toma la más alta (1)
                                     }
                                 }
 
-                                // Si por alguna razón la tabla agente_inmobiliario estuviera vacía, usamos el agente del anuncio o un valor por defecto
                                 const idAgenteFinalFK = agenteAsignadoSRE ? agenteAsignadoSRE.agente_id : (agenteFallbackId || 1);
 
                                 const fContacto = new Date();
@@ -2105,7 +2137,7 @@ const formAgente = document.getElementById('form-contactar-agente');
                                     String(fContacto.getDate()).padStart(2, '0')
                                 ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
-                                // 3. Insertar registro en contacte_agente
+                                // 3. Insertar en contacte_agente
                                 const { error: errorInsertLead } = await clienteSupabaseSRE
                                     .from('contacte_agente')
                                     .insert([{
@@ -2114,19 +2146,19 @@ const formAgente = document.getElementById('form-contactar-agente');
                                         agente_id_fk: idAgenteFinalFK,
                                         nombre: nombreAgenteInput,
                                         apellidos: ' ',
-                                        email_interesado: emailAgenteInput,
-                                        telefono: telefonoAgenteInput,
+                                        email_interesado: perfilAuthBD.correo,
+                                        telefono: telefonoInput,
                                         fecha_contacte: fechaContacteISO,
                                         tipo_visita: 'agente',
                                         estado_visita: 'pendiente',
                                         estado_lead: 'pendiente',
-                                        creado_por: emailAgenteInput,
+                                        creado_por: perfilAuthBD.correo,
                                         fecha_creacion: fechaContacteISO
                                     }]);
 
                                 if (errorInsertLead) throw errorInsertLead;
 
-                                // 4. Incrementar leads_recibidos si encontramos un agente en la tabla
+                                // 4. Actualizar leads_recibidos
                                 if (agenteAsignadoSRE) {
                                     const nuevosLeadsRecibidos = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
                                     await clienteSupabaseSRE
@@ -2140,9 +2172,10 @@ const formAgente = document.getElementById('form-contactar-agente');
                                 formAgente.reset();
 
                             } catch (errorTransaccionSRE) {
-                                console.error("Error crítico en el flujo de asignación del agente:", errorTransaccionSRE.message);
+                                console.error("❌ [ESPÍA ERROR CRÍTICO] Error en flujo de agente:", errorTransaccionSRE.message);
                                 alert("Error en el sistema de asignación: " + errorTransaccionSRE.message);
                             } finally {
+                                console.groupEnd();
                                 if (btnEnviarAgente) {
                                     btnEnviarAgente.innerText = "Enviar Mensaje";
                                     btnEnviarAgente.disabled = false;
@@ -2241,7 +2274,6 @@ const formAgente = document.getElementById('form-contactar-agente');
                     // Formatea las marcas de tiempo al estándar latino DD/MM/YYYY HH:mm
 const formTour = document.getElementById('form-solicitar-tour-completo');
                     if (formTour) {
-                        // Actualizar la etiqueta del input en el DOM del modal a "Nombre completo"
                         const labelNombreTour = formTour.querySelector('label[for="tour-contacto-nombre"]') || formTour.querySelector('label');
                         if (labelNombreTour && labelNombreTour.textContent.includes("Nombre")) {
                             labelNombreTour.innerHTML = 'Nombre completo *';
@@ -2249,20 +2281,58 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
 
                         formTour.onsubmit = async (e) => {
                             e.preventDefault();
+                            console.group("🕵️ [ESPÍA SOLICITAR TOUR] Iniciando validación estricta de estado_cuenta...");
 
                             const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
                             if (!/^\d{9,}$/.test(telefonoInput)) {
                                 alert("Ingrese un número de teléfono válido.");
+                                console.groupEnd();
                                 return;
                             }
 
+                            const emailInput = document.getElementById('tour-contacto-email').value.trim().toLowerCase();
                             const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
-                            const emailInput = document.getElementById('tour-contacto-email').value.trim();
                             const horaSeleccionada = document.getElementById('hora-principal').value;
 
                             try {
                                 const cliente = obtenerClienteSupabase();
                                 if (!cliente) throw new Error("Cliente Supabase inaccesible.");
+
+                                // REGLA CRÍTICA: Validar obligatoriamente estado_cuenta en usuario_autenticado
+                                const uuidSesionActual = window.usuarioLogueado ? window.usuarioLogueado.id : null;
+                                const correoSesionActual = emailInput || (window.usuarioLogueado ? window.usuarioLogueado.email : "");
+
+                                let queryVerifTour = cliente
+                                    .from('usuario_autenticado')
+                                    .select('estado_cuenta, usuario_id, correo');
+
+                                if (uuidSesionActual) {
+                                    queryVerifTour = queryVerifTour.eq('usuario_id', uuidSesionActual);
+                                } else {
+                                    queryVerifTour = queryVerifTour.eq('correo', correoSesionActual);
+                                }
+
+                                const { data: perfilAuthTour, error: errPerfilTour } = await queryVerifTour.maybeSingle();
+
+                                if (errPerfilTour) throw new Error("Error consultando estado de cuenta: " + errPerfilTour.message);
+
+                                if (!perfilAuthTour) {
+                                    alert("Acceso Restringido: Debe registrarse e iniciar sesión para solicitar un tour.");
+                                    if (typeof mostrarPopupAccion === "function") mostrarPopupAccion("modal-autenticacion-supabase");
+                                    console.groupEnd();
+                                    return;
+                                }
+
+                                const estadoCuentaRealTour = String(perfilAuthTour.estado_cuenta || '').toLowerCase().trim();
+                                console.log(`🕵️ [ESPÍA ESTADO TOUR] Estado detectado para '${perfilAuthTour.correo}': [${estadoCuentaRealTour.toUpperCase()}]`);
+
+                                if (estadoCuentaRealTour !== 'activo') {
+                                    alert(`Acceso Restringido: Su cuenta se encuentra en estado '${estadoCuentaRealTour.toUpperCase()}'. Debe estar ACTIVA para agendar un tour.`);
+                                    console.groupEnd();
+                                    return;
+                                }
+
+                                console.log("✅ [ESPÍA ESTADO TOUR] Cuenta ACTIVA confirmada. Continuando con la transacción...");
 
                                 const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
                                 const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
@@ -2272,7 +2342,6 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
                                 }
 
                                 const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
-
                                 const propiedadActivaMemoria = state.propiedades.find(p => String(p.id) === String(state.propiedadSeleccionadaId));
                                 if (!propiedadActivaMemoria) {
                                     throw new Error("No se pudo localizar la propiedad seleccionada en la vista activa del mapa.");
@@ -2280,7 +2349,7 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
 
                                 const idPropiedadReal = propiedadActivaMemoria.id || state.propiedadSeleccionadaId;
 
-                                // Obtener los datos de anuncio y agente asociados a la propiedad
+                                // Obtener datos de anuncio y agente
                                 const { data: datosAnuncio } = await cliente
                                     .from('anuncio')
                                     .select('anuncio_id, agente_id_fk')
@@ -2289,7 +2358,6 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
 
                                 let idAnuncioReal = datosAnuncio ? datosAnuncio.anuncio_id : null;
 
-                                // SALVAGUARDA CRÍTICA: Si la propiedad no tiene anuncio asociado, creamos uno temporal o autogeneramos un ID para evitar el error de not-null constraint
                                 if (!idAnuncioReal) {
                                     const { data: nuevoAnuncioCreado, error: errCreaAnuncio } = await cliente
                                         .from('anuncio')
@@ -2297,7 +2365,7 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
                                             propiedad_id_fk: idPropiedadReal,
                                             tipo_anuncio: propiedadActivaMemoria.tipo_anuncio || 'Venta',
                                             estado_publicacion: 'disponible',
-                                            creado_por: emailInput
+                                            creado_por: perfilAuthTour.correo
                                         }])
                                         .select('anuncio_id, agente_id_fk')
                                         .single();
@@ -2305,13 +2373,12 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
                                     if (!errCreaAnuncio && nuevoAnuncioCreado) {
                                         idAnuncioReal = nuevoAnuncioCreado.anuncio_id;
                                     } else {
-                                        // Fallback por si la tabla de anuncios requiere otro campo obligatorio
-                                        idAnuncioReal = 1; 
+                                        idAnuncioReal = null; // Si no hay anuncio obligatorio UUID estricto que cumpla, dejamos rastro en consola
                                     }
                                 }
 
-                                const idAgenteRealVisita = datosAnuncio ? datosAnuncio.agente_id_fk : (propiedadActivaMemoria.agente_id_fk || 1);
-                                const idUsuarioReal = state.usuarioActual ? state.usuarioActual.id : null;
+                                const idAgenteRealVisita = datosAnuncio ? datosAnuncio.agente_id_fk : (propiedadActivaMemoria.agente_id_fk || null);
+                                const idUsuarioReal = perfilAuthTour.usuario_id;
 
                                 // Inserción limpia en la tabla visita
                                 const { error: errorVisita } = await cliente
@@ -2322,7 +2389,7 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
                                         anuncio_id_fk: idAnuncioReal,
                                         agente_id_fk: idAgenteRealVisita,
                                         nombre_visita: nombreInput,
-                                        creado_por: emailInput,
+                                        creado_por: perfilAuthTour.correo,
                                         telefono: telefonoInput,
                                         fecha_visita: timestampEstandarISO,
                                         tipo_visita: 'presencial',
@@ -2337,12 +2404,13 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
                                 formTour.reset();
 
                             } catch (errTransaccion) {
-                                console.error("Error en flujo transaccional del Tour:", errTransaccion.message);
+                                console.error("❌ [ESPÍA TOUR CRÍTICO] Error al procesar agenda:", errTransaccion.message);
                                 alert("Error al procesar la agenda: " + errTransaccion.message);
+                            } finally {
+                                console.groupEnd();
                             }
                         };
                     }
-
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
