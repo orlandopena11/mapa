@@ -1671,6 +1671,29 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } // Fin de la funcion modular inicializarEventosPopups SRE
 
+    // ==========================================================================
+// FUNCIÓN CENTRALIZADA: Invocador de Edge Function Supabase (enviar-correo)
+// Descripción: Envía de forma segura los parámetros a la Edge Function de Supabase.
+// ==========================================================================
+async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje) { // [INICIO DE LLAVE]: Abre dispararCorreoNotificacionSRE
+    if (!destinatario || String(destinatario).trim() === "") return false;
+    try { // [INICIO DE LLAVE]: Bloque Try
+        const clienteSupabase = obtenerClienteSupabase();
+        if (!clienteSupabase) return false;
+
+        const { error } = await clienteSupabase.functions.invoke('enviar-correo', {
+            body: { destinatario, asunto, mensaje: cuerpoMensaje }
+        });
+
+        if (error) throw error;
+        console.log(`📧 [SRE EMAIL] Correo enviado exitosamente a: [${destinatario}]`);
+        return true;
+    } catch (err) { // [INICIO DE LLAVE]: Bloque Catch
+        console.error("❌ [SRE EMAIL ERROR]:", err.message);
+        return false;
+    } // [FIN DE LLAVE]: Cierra Try/Catch
+} // [FIN DE LLAVE]: Cierra dispararCorreoNotificacionSRE
+
 
 
 
@@ -2166,12 +2189,17 @@ if (formAgente) {
             const correoAgenteNotificar = agenteAsignadoSRE ? agenteAsignadoSRE.correo : null;
             console.log(`8. [ESPÍA VALOR CORREO] Correo del agente capturado para notificar: [${correoAgenteNotificar || 'No asignado'}]`);
 
-            // 6. ESTADO DEL ENVÍO DE CORREO
-            if (correoAgenteNotificar) {
-                console.log(`✉️ 9. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente al agente: ${correoAgenteNotificar}`);
+            // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
+            if (correoAgenteNotificar) { // [INICIO DE LLAVE]: Evalúa si existe correo del agente
+                const asuntoAgente = "Nuevo lead asignado: Interesado requiere agente";
+                const cuerpoAgente = `Estimado Agente,\n\nUn interesado (${nombreAgenteInput}, Correo: ${state.usuarioActual.correo}, Tel: ${telefonoInput}) desea comunicarse con usted para definir una oportunidad de negocio.\n\nPor favor, contacte al cliente a la brevedad.`;
+
+                await dispararCorreoNotificacionSRE(correoAgenteNotificar, asuntoAgente, cuerpoAgente);
+                console.log(`📧 9. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente al agente: ${correoAgenteNotificar}`);
             } else {
                 console.warn("⚠️ 9. [ESPÍA ENVÍO CORREO: NO] No se envió correo al agente por falta de dirección.");
-            }
+            } // [FIN DE LLAVE]: Cierra evaluación de correo del agente
+            
 
             alert("¡Mensaje enviado con éxito! Su requerimiento fue asignado al agente inmobiliario.");
             cerrarPopupAccion('modal-agent-comercial');
@@ -2397,12 +2425,17 @@ if (formTour) {
             // 5. VALOR PARA ENVIAR EL CORREO
             console.log(`6. [ESPÍA VALOR CORREO] Correo capturado para notificar: [${correoVendedor || 'No registrado'}] (Tipo: ${tipoVendedor})`);
 
-            // 6. ESTADO DEL ENVÍO DE CORREO
-            if (correoVendedor) {
-                console.log(`✉️ 7. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour para el ${timestampEstandarISO}`);
+            // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
+            if (correoVendedor) { // [INICIO DE LLAVE]: Evalúa si existe correo del vendedor
+                const asuntoTour = "Nueva solicitud de Tour para su propiedad";
+                const cuerpoTour = `Estimado(a) ${tipoVendedor},\n\nUn interesado ha solicitado agendar un Tour presencial para su propiedad.\n\nDetalles:\n- Fecha y Hora: ${timestampEstandarISO}\n- Interesado: ${nombreInput}\n- Correo: ${state.usuarioActual.correo}\n- Teléfono: ${telefonoInput}\n\nPor favor, gestione la visita.`;
+
+                await dispararCorreoNotificacionSRE(correoVendedor, asuntoTour, cuerpoTour);
+                console.log(`📧 7. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour.`);
             } else {
-                console.warn("⚠️ 7. [ESPÍA ENVÍO CORREO: NO] No se envió el correo debido a que el vendedor no tiene una dirección de correo registrada.");
-            }
+                console.warn("⚠️ 7. [ESPÍA ENVÍO CORREO: NO] No se envió el correo debido a que el vendedor no tiene una dirección registrada.");
+            } // [FIN DE LLAVE]: Cierra evaluación de correo del vendedor
+            
 
             alert("¡Tour agendado exitosamente! Se ha notificado al vendedor.");
             cerrarPopupAccion('modal-tour-comercial');
