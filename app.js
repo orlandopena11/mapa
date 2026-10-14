@@ -2028,12 +2028,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ==========================================================================
-// FUNCIÓN: Asignación de Agente y Registro de Leads con Traza Espía SRE
+// FUNCIÓN: Asignación de Agente y Registro con Traza Espía Detallada
 // ==========================================================================
 /**
  * Descripción: Gestiona el envío del formulario para contactar a un agente inmobiliario.
- * Lee los datos de la vista, evalúa las prioridades y leads de los agentes disponibles,
- * realiza la inserción en contacte_agente incluyendo usuario_id_fk e incrementa los leads.
+ * Lee de la vista en memoria, compara con la tabla anuncio, lee prioridades de la 
+ * tabla agente_inmobiliario, hace INSERT en contacte_agente e UPDATE en agente_inmobiliario.
  */
 // [INICIO DE LLAVES]: Abre el bloque condicional del formulario de agente
 const formAgente = document.getElementById('form-contactar-agente');
@@ -2042,9 +2042,10 @@ if (formAgente) {
         eventSubmit.preventDefault();
         console.group("🕵️‍♂️ [SRE ESPÍA AGENTE] === INICIO DE TRAZA: CONTACTAR UN AGENTE ===");
 
-        console.log("1. [ESPÍA] Leyendo ID de propiedad seleccionado en memoria:", state.propiedadSeleccionadaId);
+        // 1. Lectura desde la vista en memoria (vista_catalogo_mapa)
+        console.log("1. [ESPÍA VISTA] Leyendo ID de la propiedad desde la vista en memoria (vista_catalogo_mapa):", state.propiedadSeleccionadaId);
         const propActualAgente = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-        console.log("2. [ESPÍA] Objeto leído de la vista para el agente:", propActualAgente);
+        console.log("2. [ESPÍA VISTA] Objeto extraído de la vista para agente:", propActualAgente);
 
         if (!(await validarAccesoFuncionalidadPremium())) {
             console.warn("❌ [ESPÍA AGENTE] Cortafuegos bloqueó la ejecución.");
@@ -2060,26 +2061,30 @@ if (formAgente) {
 
         const nombreAgenteInput = document.getElementById('agente-contacto-nombre').value.trim();
         const telefonoAgenteInput = document.getElementById('agente-contacto-telefono').value.trim();
-        console.log("3. [ESPÍA] Datos ingresados -> Nombre:", nombreAgenteInput, "| Teléfono:", telefonoInput);
+        console.log("3. [ESPÍA FORM] Datos ingresados -> Nombre:", nombreAgenteInput, "| Teléfono:", telefonoInput);
 
         try {
             const clienteSupabaseSRE = obtenerClienteSupabase();
             if (!clienteSupabaseSRE) throw new Error("Cliente Supabase no disponible.");
 
             const idPropiedadReal = String(propActualAgente ? propActualAgente.id : state.propiedadSeleccionadaId).trim();
-            console.log("4. [ESPÍA] ID de propiedad normalizado para consultar anuncio:", idPropiedadReal);
+            
+            // 2. Comparación contra la tabla 'anuncio' y columna 'propiedad_id_fk'
+            console.log(`4. [ESPÍA COMPARACIÓN] Comparando ID [${idPropiedadReal}] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
 
             const { data: anuncioData } = await clienteSupabaseSRE
                 .from('anuncio')
-                .select('id, agente_id_fk')
+                .select('anuncio_id, agente_id_fk')
                 .eq('propiedad_id_fk', idPropiedadReal)
                 .maybeSingle();
 
-            const idAnuncioReal = anuncioData ? anuncioData.id : null;
+            const idAnuncioReal = anuncioData ? anuncioData.anuncio_id : null;
             const agenteFallbackId = anuncioData ? anuncioData.agente_id_fk : null;
-            console.log("5. [ESPÍA] Anuncio obtenido -> Anuncio ID:", idAnuncioReal, "| Fallback Agente ID:", agenteFallbackId);
+            console.log("5. [ESPÍA RESULTADO COMPARACIÓN] Anuncio localizado -> Anuncio ID:", idAnuncioReal, "| Fallback Agente ID:", agenteFallbackId);
 
-            console.log("6. [ESPÍA] Consultando tabla 'agente_inmobiliario' ordenado por prioridad ascendente...");
+            // 3. Lectura de la tabla 'agente_inmobiliario' para evaluar prioridades y leads
+            console.log("6. [ESPÍA LECTURA TABLA] Consultando TABLA 'agente_inmobiliario' evaluando columnas 'prioridad', 'leads' y 'leads_recibidos'...");
+            
             const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                 .from('agente_inmobiliario')
                 .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -2090,7 +2095,7 @@ if (formAgente) {
                 throw errorAgentes;
             }
 
-            console.log("7. [ESPÍA] Lista de agentes recuperada:", listaAgentes);
+            console.log("7. [ESPÍA DATOS LEÍDOS] Registros de agentes obtenidos:", listaAgentes);
 
             let agenteAsignadoSRE = null;
             if (listaAgentes && listaAgentes.length > 0) {
@@ -2098,22 +2103,22 @@ if (formAgente) {
                     const ag = listaAgentes[i];
                     const maxLeads = Number(ag.leads) || 10;
                     const actualLeads = Number(ag.leads_recibidos) || 0;
-                    console.log(`Evaluando Agente [${i}] -> ID: ${ag.agente_id} | Prioridad: ${ag.prioridad} | Recibidos: ${actualLeads} / Máx: ${maxLeads}`);
+                    console.log(`-> Evaluando [Agente ${i}] ID: ${ag.agente_id} | Prioridad: ${ag.prioridad} | Leads Recibidos: ${actualLeads} / Límite Máx: ${maxLeads}`);
 
                     if (actualLeads < maxLeads) {
                         agenteAsignadoSRE = ag;
-                        console.log("-> ¡Agente seleccionado por disponibilidad de leads!", ag.agente_id);
+                        console.log("   ✅ ¡Asignado! Cumple con la condición de leads disponibles.");
                         break;
                     }
                 }
                 if (!agenteAsignadoSRE) {
                     agenteAsignadoSRE = listaAgentes[0];
-                    console.log("-> Todos al límite. Asignando por defecto al primer agente de prioridad:", agenteAsignadoSRE.agente_id);
+                    console.log("   ⚠️ Límite alcanzado en todos. Asignando por defecto al primer agente de prioridad.");
                 }
             }
 
             const idAgenteFinalFK = agenteAsignadoSRE ? agenteAsignadoSRE.agente_id : agenteFallbackId;
-            console.log("8. [ESPÍA] ID del agente seleccionado para la asignación final:", idAgenteFinalFK);
+            console.log("8. [ESPÍA CÁLCULO] ID del agente seleccionado para la asignación final:", idAgenteFinalFK);
 
             const fContacto = new Date();
             const fechaContacteISO = [
@@ -2122,6 +2127,7 @@ if (formAgente) {
                 String(fContacto.getDate()).padStart(2, '0')
             ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
 
+            // 4. Preparación del INSERT en la tabla destino 'contacte_agente'
             const payloadContacteAgente = {
                 usuario_id_fk: state.usuarioActual.id,
                 anuncio_id_fk: idAnuncioReal,
@@ -2139,7 +2145,8 @@ if (formAgente) {
                 fecha_creacion: fechaContacteISO
             };
 
-            console.log("9. [ESPÍA] Ejecutando INSERT en tabla 'contacte_agente' con payload:", payloadContacteAgente);
+            console.log("9. [ESPÍA INSERT] Ejecutando INSERT en la TABLA DESTINO 'contacte_agente' con las columnas y valores:", payloadContacteAgente);
+
             const { error: errorInsertLead } = await clienteSupabaseSRE
                 .from('contacte_agente')
                 .insert([payloadContacteAgente]);
@@ -2149,11 +2156,12 @@ if (formAgente) {
                 throw errorInsertLead;
             }
 
-            console.log("✅ [ESPÍA AGENTE] ¡INSERT en 'contacte_agente' realizado con éxito!");
+            console.log("✅ [ESPÍA ÉXITO] ¡INSERT en la tabla 'contacte_agente' ejecutado con éxito!");
 
+            // 5. Preparación del UPDATE en la tabla 'agente_inmobiliario'
             if (agenteAsignadoSRE) {
                 const nuevosLeads = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
-                console.log(`10. [ESPÍA] Actualizando 'leads_recibidos' en 'agente_inmobiliario' a: ${nuevosLeads} para el agente ID: ${agenteAsignadoSRE.agente_id}`);
+                console.log(`10. [ESPÍA UPDATE] Ejecutando UPDATE en la TABLA 'agente_inmobiliario' -> Incrementando 'leads_recibidos' a [${nuevosLeads}] para el agente_id = ${agenteAsignadoSRE.agente_id}`);
 
                 const { error: errorUpdateLead } = await clienteSupabaseSRE
                     .from('agente_inmobiliario')
@@ -2161,9 +2169,9 @@ if (formAgente) {
                     .eq('agente_id', agenteAsignadoSRE.agente_id);
 
                 if (errorUpdateLead) {
-                    console.error("⚠️ [ESPÍA ADVERTENCIA] No se pudo actualizar el contador de leads:", errorUpdateLead.message);
+                    console.error("⚠️ [ESPÍA ADVERTENCIA UPDATE] No se pudo actualizar el contador de leads:", errorUpdateLead.message);
                 } else {
-                    console.log("✅ [ESPÍA AGENTE] Contador de leads actualizado correctamente.");
+                    console.log("✅ [ESPÍA ÉXITO UPDATE] ¡UPDATE en la tabla 'agente_inmobiliario' ejecutado con éxito!");
                 }
             }
 
@@ -2184,7 +2192,7 @@ if (formAgente) {
         }
     };
 } 
-// [FIN DE LLAVES]: Cierra el bloque condicional del formulario de agente          
+// [FIN DE LLAVES]: Cierra el bloque condicional del formulario de agente       
 
 
 
@@ -2273,12 +2281,13 @@ if (formAgente) {
 
 
 // ==========================================================================
-// FUNCIÓN: Procesamiento y Agenda de Tour con Traza Espía SRE
+// FUNCIÓN: Procesamiento y Agenda de Tour con Traza Espía Detallada
 // ==========================================================================
 /**
  * Descripción: Maneja el envío del formulario de solicitud de un tour. 
- * Lee el ID de la propiedad desde la vista en memoria, valida su existencia 
- * en la tabla anuncio y registra los datos de la visita en la tabla visita.
+ * Lee el identificador desde la vista en memoria (vista_catalogo_mapa),
+ * lo compara contra la columna propiedad_id_fk de la tabla anuncio, 
+ * y realiza el INSERT en la tabla visita registrando todos sus campos.
  */
 // [INICIO DE LLAVES]: Abre el bloque condicional del formulario de tour
 const formTour = document.getElementById('form-solicitar-tour-completo');
@@ -2287,9 +2296,10 @@ if (formTour) {
         e.preventDefault();
         console.group("🕵️‍♂️ [SRE ESPÍA TOUR] === INICIO DE TRAZA: SOLICITAR UN TOUR ===");
 
-        console.log("1. [ESPÍA] Leyendo ID de propiedad seleccionado en memoria:", state.propiedadSeleccionadaId);
+        // 1. Lectura desde la vista en memoria (vista_catalogo_mapa normalizada en state.propiedades)
+        console.log("1. [ESPÍA VISTA] Leyendo ID de la propiedad desde la vista en memoria (vista_catalogo_mapa):", state.propiedadSeleccionadaId);
         const propActual = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
-        console.log("2. [ESPÍA] Objeto completo leído de la vista (vista_catalogo_mapa):", propActual);
+        console.log("2. [ESPÍA VISTA] Objeto completo extraído de la vista:", propActual);
 
         if (!(await validarAccesoFuncionalidadPremium())) {
             console.warn("❌ [ESPÍA TOUR] Cortafuegos bloqueó la ejecución.");
@@ -2301,7 +2311,7 @@ if (formTour) {
         const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
         const horaSeleccionada = document.getElementById('hora-principal').value;
 
-        console.log("3. [ESPÍA] Datos de entrada -> Nombre:", nombreInput, "| Teléfono:", telefonoInput, "| Hora:", horaSeleccionada);
+        console.log("3. [ESPÍA FORM] Datos leídos del formulario -> Nombre:", nombreInput, "| Teléfono:", telefonoInput, "| Hora:", horaSeleccionada);
 
         try {
             const cliente = obtenerClienteSupabase();
@@ -2309,37 +2319,39 @@ if (formTour) {
 
             const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
             const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
-            console.log("4. [ESPÍA] Fecha seleccionada del carrusel:", primeraFechaEscogidaSRE);
+            console.log("4. [ESPÍA CALENDARIO] Fecha seleccionada del carrusel:", primeraFechaEscogidaSRE);
 
             if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
 
             const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
             const idPropiedadReal = String(propActual ? propActual.id : state.propiedadSeleccionadaId).trim();
-            console.log("5. [ESPÍA] ID de propiedad normalizado (.trim()) para comparar con tabla 'anuncio':", idPropiedadReal);
-
-            console.log("6. [ESPÍA] Consultando tabla 'anuncio' con filtro propiedad_id_fk...");
+            
+            // 2. Comparación contra la tabla 'anuncio' y columna 'propiedad_id_fk'
+            console.log(`5. [ESPÍA COMPARACIÓN] Comparando el valor de la vista [${idPropiedadReal}] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
+            
             const { data: anuncioData, error: errAnuncio } = await cliente
                 .from('anuncio')
-                .select('id, agente_id_fk')
+                .select('anuncio_id, agente_id_fk')
                 .eq('propiedad_id_fk', idPropiedadReal)
                 .maybeSingle();
 
             if (errAnuncio) {
-                console.error("❌ [ESPÍA ERROR SQL] Error al consultar 'anuncio':", errAnuncio.message);
+                console.error("❌ [ESPÍA ERROR SQL] Error al consultar la tabla 'anuncio':", errAnuncio.message);
                 throw errAnuncio;
             }
 
             if (!anuncioData) {
-                console.error("❌ [ESPÍA ERROR] No se ubicó registro en la tabla 'anuncio' para el ID:", idPropiedadReal);
+                console.error(`❌ [ESPÍA ERROR] No se encontró coincidencia en la tabla 'anuncio' para propiedad_id_fk = ${idPropiedadReal}`);
                 throw new Error("La propiedad seleccionada no cuenta con un anuncio válido en la base de datos.");
             }
 
-            console.log("7. [ESPÍA] Registro de anuncio localizado con éxito:", anuncioData);
+            console.log("6. [ESPÍA RESULTADO COMPARACIÓN] Registro encontrado en tabla 'anuncio':", anuncioData);
 
+            // 3. Preparación del INSERT en la tabla destino 'visita'
             const payloadVisita = {
                 usuario_id_fk: state.usuarioActual.id,
                 propiedad_id_fk: idPropiedadReal,
-                anuncio_id_fk: anuncioData.id,
+                anuncio_id_fk: anuncioData.anuncio_id,
                 agente_id_fk: anuncioData.agente_id_fk,
                 nombre_visita: nombreInput,
                 creado_por: state.usuarioActual.correo,
@@ -2350,15 +2362,16 @@ if (formTour) {
                 estado_lead: 'nuevo'
             };
 
-            console.log("8. [ESPÍA] Ejecutando INSERT en la tabla 'visita' con el payload:", payloadVisita);
+            console.log("7. [ESPÍA INSERT] Ejecutando INSERT en la TABLA DESTINO 'visita' con las siguientes columnas y valores:", payloadVisita);
+            
             const { error: errorVisita } = await cliente.from('visita').insert([payloadVisita]);
 
             if (errorVisita) {
-                console.error("❌ [ESPÍA ERROR INSERT] Falló la inserción en 'visita':", errorVisita.message);
+                console.error("❌ [ESPÍA ERROR INSERT] Falló la inserción en la tabla 'visita':", errorVisita.message);
                 throw errorVisita;
             }
 
-            console.log("✅ [ESPÍA TOUR] ¡INSERT en 'visita' ejecutado exitosamente!");
+            console.log("✅ [ESPÍA ÉXITO] ¡INSERT en la tabla 'visita' ejecutado y confirmado correctamente!");
             alert("¡Tour agendado exitosamente!");
             cerrarPopupAccion('modal-tour-comercial');
             formTour.reset();
@@ -2372,7 +2385,7 @@ if (formTour) {
         }
     };
 } 
-// [FIN DE LLAVES]: Cierra el bloque condicional del formulario de tour             
+// [FIN DE LLAVES]: Cierra el bloque condicional del formulario de tour        
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
