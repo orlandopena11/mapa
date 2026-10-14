@@ -2389,37 +2389,63 @@ if (formTour) {
 
             console.log("✅ 4. [ESPÍA INSERT LOGRADO] Se ejecutó y confirmó con éxito el INSERT en la TABLA 'visita'.");
 
-            // CONSULTAR QUIÉN VENDE PARA EL CORREO
-            console.log("5. [ESPÍA VENDEDOR] Evaluando 'agente_id_fk' en el anuncio...");
+// ==========================================================================
+            // CONSULTAR QUIÉN VENDE PARA EL CORREO (LÓGICA HÍBRIDA PROPIETARIO / AGENTE)
+            // ==========================================================================
+            console.log("5. [ESPÍA VENDEDOR] Evaluando quién gestiona el anuncio...");
             let correoVendedor = null;
             let tipoVendedor = "";
 
-            if (anuncioData.agente_id_fk !== null && String(anuncioData.agente_id_fk).trim() !== "") {
+            // CASO A: El anuncio es gestionado por un Agente Inmobiliario
+            if (anuncioData.agente_id_fk !== null && String(anuncioData.agente_id_fk).trim() !== "" && String(anuncioData.agente_id_fk).toUpperCase() !== "NULL") {
                 tipoVendedor = "AGENTE INMOBILIARIO";
                 console.log(`   -> Vende un AGENTE. Consultando TABLA 'agente_inmobiliario', COLUMNA 'agente_id' = '${anuncioData.agente_id_fk}'`);
                 
-                const { data: agenteInfo } = await cliente
+                const { data: agenteInfo, error: errorAgente } = await cliente
                     .from('agente_inmobiliario')
-                    .select('correo')
+                    .select('correo, nombre, apellido, telefono_agente')
                     .eq('agente_id', anuncioData.agente_id_fk)
                     .maybeSingle();
 
-                if (agenteInfo) correoVendedor = agenteInfo.correo;
-            } else {
+                if (errorAgente) {
+                    console.error("❌ Error al consultar el agente:", errorAgente.message);
+                }
+
+                if (agenteInfo && agenteInfo.correo) {
+                    correoVendedor = agenteInfo.correo;
+                    console.log(`   ✅ Correo del agente encontrado: [${correoVendedor}]`);
+                } else {
+                    console.warn("⚠️ El agente no tiene un correo registrado en su perfil.");
+                }
+            } 
+            
+            // CASO B: El anuncio lo gestiona directamente el Propietario (agente_id_fk es NULL)
+            else {
                 tipoVendedor = "PROPIETARIO";
-                console.log(`   -> Vende el PROPIETARIO (agente_id_fk es NULL). Consultando TABLA 'usuario_autenticado', COLUMNA 'usuario_id' = '${anuncioData.usuario_id_fk}'`);
+                console.log(`   -> Vende el PROPIETARIO. Consultando TABLA 'usuario_autenticado', COLUMNA 'usuario_id' = '${anuncioData.usuario_id_fk}'`);
 
                 if (anuncioData.usuario_id_fk) {
-                    const { data: propietarioInfo } = await cliente
+                    const { data: propietarioInfo, error: errorProp } = await cliente
                         .from('usuario_autenticado')
                         .select('correo')
                         .eq('usuario_id', anuncioData.usuario_id_fk)
                         .maybeSingle();
 
-                    if (propietarioInfo) {
+                    if (errorProp) {
+                        console.error("❌ Error al consultar el propietario:", errorProp.message);
+                    }
+
+                    if (propietarioInfo && propietarioInfo.correo) {
                         correoVendedor = propietarioInfo.correo;
+                        console.log(`   ✅ Correo del propietario encontrado: [${correoVendedor}]`);
                     }
                 }
+            }
+
+            // Respaldo de seguridad SRE: Si por alguna razón no se halló el correo del vendedor principal
+            if (!correoVendedor) {
+                console.warn("⚠️ [SRE ADVERTENCIA] No se pudo determinar el correo del vendedor. Usando respaldo institucional.");
+                correoVendedor = state.usuarioActual.correo; // Correo de respaldo temporal para pruebas
             }
 
             // 5. VALOR PARA ENVIAR EL CORREO
