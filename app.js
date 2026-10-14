@@ -2115,9 +2115,9 @@ if (formAgente) {
                 fContacto.getFullYear(),
                 String(fContacto.getMonth() + 1).padStart(2, '0'),
                 String(fContacto.getDate()).padStart(2, '0')
-            ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:00`;
+            ].join('-') + ` ${String(fContacto.getHours()).padStart(2, '0')}:${String(fContacto.getMinutes()).padStart(2, '0')}:${String(fContacto.getSeconds()).padStart(2, '0')}`;
 
-            // 3. VALORES LISTOS PARA EL INSERT (Sin usuario_id_fk)
+            // 3. VALORES LISTOS PARA EL INSERT
             const payloadContacteAgente = {
                 anuncio_id_fk: idAnuncioReal,
                 propiedad_id_fk: idPropiedadReal,
@@ -2190,9 +2190,7 @@ if (formAgente) {
         }
     };
 } 
-// [FIN DE LLAVES]: Cierra el bloque del formulario de agente   
-
-
+// [FIN DE LLAVES]: Cierra el bloque del formulario de agente
 
                     const elementoBtnTelefono = document.getElementById('btn-ver-telefono-premium');
                     if (elementoBtnTelefono) {
@@ -2282,10 +2280,10 @@ if (formAgente) {
 // ==========================================================================
 /**
  * Descripción: Gestiona el envío del formulario de solicitud de un tour. 
- * Audita la lectura de la vista, la comparación con la tabla anuncio, la consulta 
- * del vendedor (propietario o agente), el INSERT en visita y el envío del correo.
+ * Asigna la fecha de hoy a fecha_creacion, consulta el correo del propietario 
+ * en usuario_autenticado si no hay agente, y audita todo el proceso por consola.
  */
-// [INICIO DE LLAVES]: Abre el bloque del formulario de tour
+// [INICIO DE LLAVES]: Abre el bloque condicional del formulario de tour
 const formTour = document.getElementById('form-solicitar-tour-completo');
 if (formTour) {
     formTour.onsubmit = async (e) => {
@@ -2295,8 +2293,7 @@ if (formTour) {
         // 1. VALOR LEÍDO DE LA VISTA
         const idVista = state.propiedadSeleccionadaId;
         const propActual = state.propiedades.find(p => p.id === idVista);
-        console.log("1. [ESPÍA VISTA] Valor leído de 'vista_catalogo_mapa' (columna 'propiedad_id' / id):", idVista);
-        console.log("   -> Objeto recuperado de memoria:", propActual);
+        console.log("1. [ESPÍA VISTA] Valor leído de 'vista_catalogo_mapa' (columna 'propiedad_id'):", idVista);
 
         if (!(await validarAccesoFuncionalidadPremium())) {
             console.warn("❌ [ESPÍA TOUR] Cortafuegos bloqueó la ejecución.");
@@ -2320,7 +2317,7 @@ if (formTour) {
             const idPropiedadReal = String(propActual ? propActual.id : idVista).trim();
             
             // 2. COMPARACIÓN CON TABLA Y COLUMNA
-            console.log(`2. [ESPÍA COMPARACIÓN] Comparando el valor de la vista ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
+            console.log(`2. [ESPÍA COMPARACIÓN] Comparando ID ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
             
             const { data: anuncioData, error: errAnuncio } = await cliente
                 .from('anuncio')
@@ -2333,7 +2330,15 @@ if (formTour) {
 
             console.log("   -> Coincidencia hallada en TABLA 'anuncio':", anuncioData);
 
-            // 3. VALORES LISTOS PARA EL INSERT
+            // Generar la marca de tiempo de HOY para fecha_creacion
+            const fActual = new Date();
+            const fechaCreacionHoyISO = [
+                fActual.getFullYear(),
+                String(fActual.getMonth() + 1).padStart(2, '0'),
+                String(fActual.getDate()).padStart(2, '0')
+            ].join('-') + ` ${String(fActual.getHours()).padStart(2, '0')}:${String(fActual.getMinutes()).padStart(2, '0')}:${String(fActual.getSeconds()).padStart(2, '0')}`;
+
+            // 3. VALORES LISTOS PARA EL INSERT (fecha_creacion con fecha de hoy)
             const payloadVisita = {
                 usuario_id_fk: state.usuarioActual.id,
                 propiedad_id_fk: idPropiedadReal,
@@ -2343,6 +2348,7 @@ if (formTour) {
                 creado_por: state.usuarioActual.correo,
                 telefono: telefonoInput,
                 fecha_visita: timestampEstandarISO,
+                fecha_creacion: fechaCreacionHoyISO, // Fecha de HOY exigida por regla de negocio
                 tipo_visita: 'presencial',
                 estado_visita: 'pendiente',
                 estado_lead: 'nuevo'
@@ -2353,7 +2359,6 @@ if (formTour) {
             const { error: errorVisita } = await cliente.from('visita').insert([payloadVisita]);
             if (errorVisita) throw errorVisita;
 
-            // 4. LOGRO DEL INSERT
             console.log("✅ 4. [ESPÍA INSERT LOGRADO] Se ejecutó y confirmó con éxito el INSERT en la TABLA 'visita'.");
 
             // CONSULTAR QUIÉN VENDE PARA EL CORREO
@@ -2374,7 +2379,7 @@ if (formTour) {
                 if (agenteInfo) correoVendedor = agenteInfo.correo;
             } else {
                 tipoVendedor = "PROPIETARIO";
-                console.log(`   -> Vende el PROPIETARIO. Consultando TABLA 'usuario_autenticado', COLUMNA 'usuario_id' = '${anuncioData.usuario_id_fk}'`);
+                console.log(`   -> Vende el PROPIETARIO (agente_id_fk es NULL). Consultando TABLA 'usuario_autenticado', COLUMNA 'usuario_id' = '${anuncioData.usuario_id_fk}'`);
 
                 if (anuncioData.usuario_id_fk) {
                     const { data: propietarioInfo } = await cliente
@@ -2383,7 +2388,9 @@ if (formTour) {
                         .eq('usuario_id', anuncioData.usuario_id_fk)
                         .maybeSingle();
 
-                    if (propietarioInfo) correoVendedor = propietarioInfo.correo;
+                    if (propietarioInfo) {
+                        correoVendedor = propietarioInfo.correo;
+                    }
                 }
             }
 
@@ -2394,7 +2401,7 @@ if (formTour) {
             if (correoVendedor) {
                 console.log(`✉️ 7. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour para el ${timestampEstandarISO}`);
             } else {
-                console.warn("⚠️ 7. [ESPÍA ENVÍO CORREO: NO] No se envió el correo debido a que el vendedor no tiene un correo registrado.");
+                console.warn("⚠️ 7. [ESPÍA ENVÍO CORREO: NO] No se envió el correo debido a que el vendedor no tiene una dirección de correo registrada.");
             }
 
             alert("¡Tour agendado exitosamente! Se ha notificado al vendedor.");
@@ -2410,7 +2417,7 @@ if (formTour) {
         }
     };
 } 
-// [FIN DE LLAVES]: Cierra el bloque del formulario de tour  
+// [FIN DE LLAVES]: Cierra el bloque del formulario de tour
 
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
