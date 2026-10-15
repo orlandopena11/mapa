@@ -1684,7 +1684,8 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabaseAnonKey}`
+                'Authorization': `Bearer ${supabaseAnonKey}`,
+                'apikey': supabaseAnonKey
             },
             body: JSON.stringify({
                 destinatario: destinatario,
@@ -2203,9 +2204,9 @@ if (formAgente) {
 
             // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
             if (correoAgenteNotificar) { // [INICIO DE LLAVE]: Evalúa si existe correo del agente
-                const asuntoAgente = "Nuevo lead asignado: Interesado requiere agente";
-                const cuerpoAgente = `Estimado Agente,\n\nUn interesado (${nombreAgenteInput}, Correo: ${state.usuarioActual.correo}, Tel: ${telefonoInput}) desea comunicarse con usted para definir una oportunidad de negocio.\n\nPor favor, contacte al cliente a la brevedad.`;
-
+                const asuntoAgente = "Nuevo lead asignado: Interesado requiere agente";          
+                const cuerpoAgente = `Estimado Agente,\n\nUn interesado (${nombreAgenteInput}, Correo: ${state.usuarioActual.correo}, Tel: ${telefonoAgenteInput}) desea comunicarse con usted para definir una oportunidad de negocio.\n\nPor favor, contacte al cliente a la brevedad.`;
+                
                 await dispararCorreoNotificacionSRE(correoAgenteNotificar, asuntoAgente, cuerpoAgente);
                 console.log(`📧 9. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente al agente: ${correoAgenteNotificar}`);
             } else {
@@ -2386,7 +2387,7 @@ if (formTour) {
                 agente_id_fk: anuncioData.agente_id_fk,
                 nombre_visita: nombreInput,
                 creado_por: state.usuarioActual.correo,
-                telefono: telefonoInput,
+                telefono: telefonoTourInput,
                 fecha_visita: timestampEstandarISO,
                 fecha_creacion: fechaCreacionHoyISO, // Fecha de HOY exigida por regla de negocio
                 tipo_visita: 'presencial',
@@ -2466,8 +2467,7 @@ if (formTour) {
             // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
             if (correoVendedor) { // [INICIO DE LLAVE]: Evalúa si existe correo del vendedor
                 const asuntoTour = "Nueva solicitud de Tour para su propiedad";
-                const cuerpoTour = `Estimado(a) ${tipoVendedor},\n\nUn interesado ha solicitado agendar un Tour presencial para su propiedad.\n\nDetalles:\n- Fecha y Hora: ${timestampEstandarISO}\n- Interesado: ${nombreInput}\n- Correo: ${state.usuarioActual.correo}\n- Teléfono: ${telefonoInput}\n\nPor favor, gestione la visita.`;
-
+                const cuerpoTour = `Estimado(a) ${tipoVendedor},\n\nUn interesado ha solicitado agendar un Tour presencial para su propiedad.\n\nDetalles:\n- Fecha y Hora: ${timestampEstandarISO}\n- Interesado: ${nombreInput}\n- Correo: ${state.usuarioActual.correo}\n- Teléfono: ${telefonoTourInput}\n\nPor favor, gestione la visita.`;
                 await dispararCorreoNotificacionSRE(correoVendedor, asuntoTour, cuerpoTour);
                 console.log(`📧 7. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour.`);
             } else {
