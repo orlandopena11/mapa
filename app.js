@@ -1671,25 +1671,37 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } // Fin de la funcion modular inicializarEventosPopups SRE
 
-    // ==========================================================================
+// ==========================================================================
 // FUNCIÓN CENTRALIZADA: Invocador de Edge Function Supabase (enviar-correo)
 // Descripción: Envía de forma segura los parámetros a la Edge Function de Supabase.
 // ==========================================================================
 async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje) { // [INICIO DE LLAVE]: Abre dispararCorreoNotificacionSRE
     if (!destinatario || String(destinatario).trim() === "") return false;
     try { // [INICIO DE LLAVE]: Bloque Try
-        const clienteSupabase = obtenerClienteSupabase();
-        if (!clienteSupabase) return false;
-
-        const { error } = await clienteSupabase.functions.invoke('enviar-correo', {
-            body: { destinatario, asunto, mensaje: cuerpoMensaje }
+        const urlEdgeFunction = 'https://aohizylvnnrjhgplsods.supabase.co/functions/v1/enviar-correo';
+        
+        const respuesta = await fetch(urlEdgeFunction, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseAnonKey}`
+            },
+            body: JSON.stringify({
+                destinatario: destinatario,
+                asunto: asunto,
+                mensaje: cuerpoMensaje
+            })
         });
 
-        if (error) throw error;
-        console.log(`📧 [SRE EMAIL] Correo enviado exitosamente a: [${destinatario}]`);
+        const resultado = await respuesta.json();
+        if (!respuesta.ok) {
+            throw new Error(resultado.error || "Error al invocar la función de correo");
+        }
+
+        console.log(`>> [SRE EMAIL] Correo enviado exitosamente a: [${destinatario}]`);
         return true;
     } catch (err) { // [INICIO DE LLAVE]: Bloque Catch
-        console.error("❌ [SRE EMAIL ERROR]:", err.message);
+        console.error("X [SRE EMAIL ERROR]:", err.message);
         return false;
     } // [FIN DE LLAVE]: Cierra Try/Catch
 } // [FIN DE LLAVE]: Cierra dispararCorreoNotificacionSRE
@@ -2329,7 +2341,7 @@ if (formTour) {
             return;
         }
 
-        const telefonoInput = document.getElementById('tour-contacto-telefono').value.trim();
+        const telefonoTourInput = document.getElementById('tour-contacto-telefono').value.trim();
         const nombreInput = document.getElementById('tour-contacto-nombre').value.trim();
         const horaSeleccionada = document.getElementById('hora-principal').value;
 
