@@ -1430,8 +1430,24 @@ function interceptarFirewallSeguridadUsuario(usuarios, email) {
 } // Fin de la Function interceptarFirewallSeguridadUsuario
 
 document.addEventListener("DOMContentLoaded", () => {
-// --- FIN DEL REEMPLAZO QUIRÚRGICO SRE
-
+    // --- CONTROLADOR DINÁMICO DE LAYOUT MÓVIL (INYECTADO DESDE APP.JS) ---
+    const ajustarLayoutMovilDinamico = () => {
+        if (window.innerWidth <= 768) {
+            const mapaContenedor = document.getElementById('map-instance');
+            if (mapaContenedor) {
+                mapaContenedor.style.width = '100%';
+                mapaContenedor.style.height = '45vh';
+            }
+            const gridTarjetas = document.getElementById('properties-grid-target');
+            if (gridTarjetas) {
+                gridTarjetas.style.width = '100%';
+                gridTarjetas.style.height = 'auto';
+            }
+        }
+    };
+    window.addEventListener('resize', ajustarLayoutMovilDinamico);
+    ajustarLayoutMovilDinamico();
+    // ---------------------------------------------------------------------
 
             if (typeof L !== 'undefined' && document.getElementById('map-instance')) { // Inicio Condicional Mapa
                 window.map = L.map('map-instance', {
