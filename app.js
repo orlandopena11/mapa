@@ -34,21 +34,98 @@ const state = {
 }; // Fin de asignación del objeto global state
 
 
-function actualizarBotonCuenta() {
+// ==========================================================================
+// CONTROLADOR DINÁMICO DE SESIÓN Y ROLES MEDIANTE RPC
+// ==========================================================================
+// [INICIO DE LLAVES]: Abre la función asíncrona actualizarBotonCuenta
+async function actualizarBotonCuenta() { 
     const navbar = document.querySelector('header.navbar-global');
     if (!navbar) return;
+
     let indicador = document.getElementById('user-session-badge');
+    
     if (!indicador && window.usuarioLogueado) {
-        indicador = document.createElement('span');
+        indicador = document.createElement('div');
         indicador.id = 'user-session-badge';
-        indicador.style.cssText = 'margin-left: auto; padding: 6px 14px; background: #002e50; color: #ffffff; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ffffff;';
+        indicador.style.cssText = `
+            margin-left: auto; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            padding: 6px 12px; 
+            background: #002e50; 
+            color: #ffffff; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            border: 1px solid #ffffff;
+            box-sizing: border-box;
+            max-width: 100%;
+        `;
         navbar.appendChild(indicador);
     }
+
     if (indicador) {
-        indicador.textContent = window.usuarioLogueado ? `▶ ${window.usuarioLogueado.email}` : '';
-        indicador.style.display = window.usuarioLogueado ? 'inline-block' : 'none';
+        // [INICIO DE LLAVES]: Verifica si el usuario se encuentra logueado
+        if (window.usuarioLogueado) {
+            let rolTexto = "Usuario";
+            let puedeCrud = false;
+
+            try {
+                const cliente = obtenerClienteSupabase();
+                if (cliente) {
+                    // Invocación a la función RPC para extraer roles y permisos de seguridad
+                    const { data, error } = await cliente.rpc('obtener_permisos_usuario', { 
+                        p_usuario_id: window.usuarioLogueado.id 
+                    });
+                    
+                    if (!error && data && data.length > 0) {
+                        rolTexto = data[0].nombres_rol || "Usuario";
+                        puedeCrud = data[0].permiso_insertar || data[0].permiso_modificar;
+                        state.usuarioPermisos = data[0];
+                    }
+                }
+            } catch (errRol) {
+                console.warn("Error al consultar permisos de rol:", errRol);
+            }
+
+            const esMovil = window.innerWidth <= 768;
+            const correoCorto = window.usuarioLogueado.email.length > 18 && esMovil 
+                ? window.usuarioLogueado.email.substring(0, 15) + '...' 
+                : window.usuarioLogueado.email;
+
+            let htmlContenido = `
+                <span title="${window.usuarioLogueado.email}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    👤 ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
+                </span>
+            `;
+
+            // Validación de privilegios para habilitar el acceso al CRUD en la interfaz
+            if (puedeCrud) {
+                htmlContenido += `
+                    <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
+                        ⚙️ Mantenimiento
+                    </a>
+                `;
+            }
+
+            indicador.innerHTML = htmlContenido;
+            indicador.style.display = 'flex';
+
+            const btnCrud = document.getElementById('link-crud-propiedades');
+            // [INICIO DE LLAVES]: Configura el evento de clic para el botón de mantenimiento
+            if (btnCrud) {
+                btnCrud.onclick = (e) => {
+                    e.preventDefault();
+                    ejecutarPanelMantenimientoCrud(rolTexto);
+                };
+            } // [FIN DE LLAVES]: Cierra el evento de clic del botón CRUD
+
+        } else {
+            indicador.style.display = 'none';
+        } // [FIN DE LLAVES]: Cierra la condición de usuario logueado
     }
-}
+} // [FIN DE LLAVES]: Cierra la función asíncrona actualizarBotonCuenta
 
 
 
