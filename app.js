@@ -1738,72 +1738,85 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
 
-
+<!-- [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR] -->
 /**
- * Descripción de la función: inicializarEventosPopups registra todos los 
- * escuchadores de eventos táctiles y de clic de la interfaz para controlar la 
- * apertura de la pasarela de autenticación (Supabase) desde la barra superior 
- * y el cierre de los modales comerciales de tours y agentes.
+ * Descripción de la función: inicializarEventosPopups unifica y registra todos los 
+ * escuchadores de eventos de la interfaz, incluyendo el botón de inicio de sesión superior, 
+ * los cierres de modales comerciales, la navegación por pasos del tour y la validación de seguridad.
  */
-// [INICIO DE LLAVES]: Abre la función principal inicializarEventosPopups
+// [INICIO DE LLAVES]: Abre la función principal unificada inicializarEventosPopups
 function inicializarEventosPopups() {
-    const btnOpenLogin = document.getElementById('btn-open-login');
     
-    // [INICIO DE LLAVES]: Condicional que valida la existencia del botón de inicio de sesión
+    // 1. Vinculación del botón de inicio de sesión en la barra superior
+    const btnOpenLogin = document.getElementById('btn-open-login');
+    // [INICIO DE LLAVES]: Valida existencia del botón superior de login
     if (btnOpenLogin) {
         btnOpenLogin.addEventListener('click', (e) => {
-            // [INICIO DE LLAVES]: Callback para prevenir el comportamiento por defecto y desplegar el modal
+            // [INICIO DE LLAVES]: Callback de apertura del modal de autenticación
             if (e) e.preventDefault();
             console.log("[SRE AUTH] Desplegando modal de autenticación desde la barra superior");
             mostrarPopupAccion('modal-autenticacion-supabase');
-        }); // [FIN DE LLAVES]: Cierra la función callback del evento click de login
-    } // [FIN DE LLAVES]: Cierra el bloque condicional del botón de login
+        }); // [FIN DE LLAVES]: Cierra callback de login
+    } // [FIN DE LLAVES]: Cierra condición del botón de login
 
-    // [INICIO DE LLAVES]: Vincula el evento de clic para cerrar el modal de tour comercial
+    // 2. Cierre de modales comerciales de tour y agente
+    // [INICIO DE LLAVES]: Vincula evento para cerrar el modal de tour
     document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', (e) => {
-        // [INICIO DE LLAVES]: Valida la propagación y ejecuta el cierre del modal de tour
         if (e) e.stopPropagation();
         cerrarPopupAccion('modal-tour-comercial');
-    }); // [FIN DE LLAVES]: Cierra la función callback del botón cerrar tour
-
-    // [INICIO DE LLAVES]: Vincula el evento de clic para cerrar el modal de agente comercial
+    }); // [FIN DE LLAVES]: Cierra evento de cierre de tour
+    
+    // [INICIO DE LLAVES]: Vincula evento para cerrar el modal de agente
     document.getElementById('btn-cerrar-modal-agente')?.addEventListener('click', (e) => {
-        // [INICIO DE LLAVES]: Valida la propagación y ejecuta el cierre del modal de agente
         if (e) e.stopPropagation();
         cerrarPopupAccion('modal-agent-comercial');
-    }); // [FIN DE LLAVES]: Cierra la función callback del botón cerrar agente
-} // [FIN DE LLAVES]: Cierra la función principal inicializarEventosPopups
+    }); // [FIN DE LLAVES]: Cierra evento de cierre de agente
 
-    
-                // Enlace táctil dual síncrono para forzar la navegación reactiva al Paso 2
-                const btnSiguienteTour = document.getElementById('btn-navegacion-siguiente-tour');
-                if (btnSiguienteTour) {
-                    const avanzarFaseTour = (e) => {
-                        if (e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                        }
-                        console.log("[SRE INFRAESTRUCTURA] Avanzando de forma interactiva al Paso 2 del Tour");
-                        gestionarPasosModalTour(2);
-                    };
-                    btnSiguienteTour.onclick = avanzarFaseTour;
-                    btnSiguienteTour.addEventListener('touchend', avanzarFaseTour, { passive: false });
-                }
+    // 3. Enlace táctil dual síncrono para la navegación reactiva al Paso 2 del Tour
+    const btnSiguienteTour = document.getElementById('btn-navegacion-siguiente-tour');
+    // [INICIO DE LLAVES]: Valida existencia del botón siguiente en el tour
+    if (btnSiguienteTour) {
+        const avanzarFaseTour = (e) => {
+            // [INICIO DE LLAVES]: Callback para avanzar de fase en el tour
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            console.log("[SRE INFRAESTRUCTURA] Avanzando de forma interactiva al Paso 2 del Tour");
+            gestionarPasosModalTour(2);
+        }; // [FIN DE LLAVES]: Cierra la función avanzarFaseTour
+        btnSiguienteTour.onclick = avanzarFaseTour;
+        btnSiguienteTour.addEventListener('touchend', avanzarFaseTour, { passive: false });
+    } // [FIN DE LLAVES]: Cierra la condición del botón siguiente tour
 
-                // Vinculación directa y limpia al Guardia de Seguridad unificado sin clonaciones basura
-                const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
-                if (btnSolicitarTourSelector) {
-                    btnSolicitarTourSelector.onclick = async function(e) {
-                        if (e) e.stopPropagation();
-                        const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
-                        if (!tieneAccesoValido) return;
+    // 4. Vinculación directa y limpia al Guardia de Seguridad unificado para solicitar tour
+    const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
+    // [INICIO DE LLAVES]: Valida existencia del botón para solicitar tour en la galería
+    if (btnSolicitarTourSelector) {
+        btnSolicitarTourSelector.onclick = async function(e) {
+            // [INICIO DE LLAVES]: Callback asíncrono protegido por el cortafuegos premium
+            if (e) e.stopPropagation();
+            const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
+            if (!tieneAccesoValido) return;
 
-                        mostrarPopupAccion("modal-tour-comercial");
-                        calcularCalendarioTresCajas();
-                        gestionarPasosModalTour(1);
-                    };
-                }
-            } // Fin de la funcion modular inicializarEventosPopups SRE
+            mostrarPopupAccion("modal-tour-comercial");
+            calcularCalendarioTresCajas();
+            gestionarPasosModalTour(1);
+        }; // [FIN DE LLAVES]: Cierra el callback asíncrono
+    } // [FIN DE LLAVES]: Cierra la condición del botón de tour en galería
+
+} // [FIN DE LLAVES]: Cierra la función principal unificada inicializarEventosPopups
+
+
+// [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR]
+/**
+ * Descripción de la función: Bloque limpio de cierre de inicializaciones secundarias 
+ * dentro del ámbito principal del DOMContentLoaded.
+ */
+// [INICIO DE LLAVES]: Abre el bloque de cierre de eventos globales en DOMContentLoaded
+    console.log(">> [SRE] Eventos del DOM principal inicializados correctamente.");
+} // [FIN DE LLAVES]: Cierra el evento DOMContentLoaded general del archivo                          
+
 
 // ==========================================================================
 // FUNCIÓN CENTRALIZADA: Invocador de Edge Function Supabase (enviar-correo)
