@@ -128,6 +128,35 @@ async function actualizarBotonCuenta() {
 } // [FIN DE LLAVES]: Cierra la función asíncrona actualizarBotonCuenta
 
 
+// ==========================================================================
+// CONTROLADOR DEL PANEL CRUD PARA LAS 7 TABLAS SEGÚN ROLES
+// ==========================================================================
+/**
+ * Descripción: Valida los permisos del usuario logueado según su rol y despliega 
+ * el panel de mantenimiento CRUD para gestionar las tablas del sistema inmobiliario.
+ */
+// [INICIO DE LLAVES]: Abre la función ejecutarPanelMantenimientoCrud
+function ejecutarPanelMantenimientoCrud(rol) {
+    const permisos = state.usuarioPermisos || {};
+    
+    console.group(`[SRE CRUD MASTER] Abriendo panel de administración`);
+    console.log(`Rol actual: ${rol}`);
+    console.log(`Permisos - Insertar: ${permisos.permiso_insertar} | Modificar: ${permisos.permiso_modificar} | Eliminar: ${permisos.permiso_eliminar} | Aprobar: ${permisos.permiso_aprobar}`);
+    console.groupEnd();
+
+    // [INICIO DE LLAVES]: Valida si el usuario cuenta con permisos de escritura o modificación
+    if (!permisos.permiso_insertar && !permisos.permiso_modificar) {
+        alert("Su rol actual no cuenta con privilegios de escritura o modificación sobre las tablas del sistema.");
+        return;
+    } // [FIN DE LLAVES]: Cierra la condición de bloqueo por falta de permisos
+
+    alert(`Bienvenido al panel de Mantenimiento CRUD. Rango autorizado: ${rol.toUpperCase()}`);
+    
+    // [INICIO DE LLAVES]: Comprueba privilegios especiales de aprobación para administradores o cerraduría
+    if (permisos.permiso_aprobar) {
+        console.log("[SRE] Privilegio de aprobación habilitado (Administrador/Cerraduría).");
+    } // [FIN DE LLAVES]: Cierra la condición de privilegios de aprobación
+} // [FIN DE LLAVES]: Cierra la función ejecutarPanelMantenimientoCrud
 
 
 // ==========================================================================
