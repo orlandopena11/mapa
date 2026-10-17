@@ -548,20 +548,59 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
  */
 // [INICIO DE LLAVES]: Abre guardarRegistroCrud
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
-    // [INICIO DE LLAVES]: Try/catch persistencia
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
+        // Extracción y separación inteligente si es la tabla propiedad
+        let payloadPropiedad = { ...payload };
+        let listaFotosExtras = [];
+
+        if (nombreTabla === 'propiedad') {
+            for (let i = 1; i <= 30; i++) {
+                let claveExtra = `foto_extra_${i}`;
+                if (payloadPropiedad[claveExtra]) {
+                    if (String(payloadPropiedad[claveExtra]).trim() !== "") {
+                        listaFotosExtras.push(String(payloadPropiedad[claveExtra]).trim());
+                    }
+                    delete payloadPropiedad[claveExtra]; // Se limpia para que la tabla propiedad solo reciba su esquema exacto
+                }
+            }
+        }
+
         let res;
-        // [INICIO DE LLAVES]: Condicional update/insert
+        let idPropiedadGenerada = pkValor;
+
         if (esEdicion) {
-            res = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
+            res = await cliente.from(nombreTabla).update(payloadPropiedad).eq(pkColumna, pkValor);
         } else {
-            res = await cliente.from(nombreTabla).insert([payload]);
-        } // [FIN DE LLAVES]: Cierra condicional
+            if (nombreTabla === 'propiedad') {
+                const { data: dataInsert, error: errInsert } = await cliente.from(nombreTabla).insert([payloadPropiedad]).select();
+                res = { error: errInsert };
+                if (dataInsert && dataInsert.length > 0) {
+                    idPropiedadGenerada = dataInsert[0][pkColumna];
+                }
+            } else {
+                res = await cliente.from(nombreTabla).insert([payloadPropiedad]);
+            }
+        }
 
         if (res.error) throw res.error;
+
+        // Inserción masiva de las fotos secundarias en la tabla IMAGEN_PROPIEDAD
+        if (nombreTabla === 'propiedad' && listaFotosExtras.length > 0 && idPropiedadGenerada) {
+            const filasImagenes = listaFotosExtras.map((urlFoto, index) => ({
+                propiedad_id_fk: idPropiedadGenerada,
+                url_imagen: urlFoto,
+                orden: index + 1
+            }));
+
+            const { error: errImgs } = await cliente.from('imagen_propiedad').insert(filasImagenes);
+            if (errImgs) {
+                console.warn("Aviso: La propiedad se creó, pero hubo un detalle al insertar las fotos secundarias:", errImgs.message);
+            }
+        }
+        
 
         alert(`¡Registro ${esEdicion ? 'actualizado' : 'creado'} exitosamente en ${nombreTabla}!`);
         await cargarDatosTablaCrud(nombreTabla);
