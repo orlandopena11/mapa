@@ -132,28 +132,66 @@ async function actualizarBotonCuenta() {
 
 
 // ==========================================================================
-// CONTROLADOR COMPLETO Y MODULAR DEL PANEL CRUD (7 TABLAS) CON UI/UX ESTÁNDAR
+// CONTROLADOR COMPLETO Y MODULAR DEL PANEL CRUD (CON ESQUEMA REAL DE PROPIEDADES)
 // ==========================================================================
 
 /**
- * Mapeo completo de configuración para las 7 tablas principales del sistema.
+ * Mapeo completo de configuración para las 7 tablas del sistema,
+ * reflejando fielmente las columnas exactas de la base de datos en Supabase.
  */
 const CONFIGURACION_TABLAS_CRUD = {
     propiedad: {
-        titulo: "Propiedades",
+        titulo: "Propiedades (Esquema Completo)",
         pk: "propiedad_id",
         campos: [
-            { nombre: "titulo", label: "Título", tipo: "text", requerido: true },
-            { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
+            { nombre: "propiedad_id", label: "ID Propiedad", tipo: "text", requerido: true },
+            { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "tipo_propiedad", label: "Tipo Propiedad", tipo: "select", opciones: ['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote'] },
-            { nombre: "tipo_anuncio", label: "Transacción", tipo: "select", opciones: ['Venta', 'Alquiler'] },
-            { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
-            { nombre: "habitaciones", label: "Habitaciones", tipo: "number" },
-            { nombre: "banos", label: "Baños", tipo: "number" },
+            { nombre: "subtipo_propiedad", label: "Subtipo Propiedad", tipo: "text" },
+            { nombre: "titulo", label: "Título de Anuncio", tipo: "text", requerido: true },
+            { nombre: "codigo_ubigeo_id_fk", label: "Código Ubigeo FK", tipo: "text" },
+            { nombre: "pais", label: "País", tipo: "text" },
+            { nombre: "estado", label: "Estado/Región", tipo: "text" },
+            { nombre: "ciudad", label: "Ciudad", tipo: "text" },
+            { nombre: "departamento", label: "Departamento", tipo: "text" },
+            { nombre: "provincia", label: "Provincia", tipo: "text" },
+            { nombre: "distrito", label: "Distrito", tipo: "text" },
+            { nombre: "codigo_postal", label: "Código Postal", tipo: "text" },
+            { nombre: "latitud", label: "Latitud", tipo: "number" },
+            { nombre: "longitud", label: "Longitud", tipo: "number" },
+            { nombre: "geocode_precision", label: "Precisión Geocode", tipo: "text" },
+            { nombre: "referencia_mapa", label: "Referencia Mapa", tipo: "text" },
+            { nombre: "enlace_mapa", label: "Enlace Mapa", tipo: "text" },
+            { nombre: "direccion", label: "Dirección", tipo: "text" },
+            { nombre: "descripcion", label: "Descripción", tipo: "text" },
             { nombre: "area_terreno", label: "Área Terreno (m²)", tipo: "number" },
             { nombre: "area_construida", label: "Área Construida (m²)", tipo: "number" },
-            { nombre: "direccion", label: "Dirección", tipo: "text" },
-            { nombre: "distrito", label: "Distrito", tipo: "text" }
+            { nombre: "habitaciones", label: "Habitaciones", tipo: "number" },
+            { nombre: "banos", label: "Baños", tipo: "number" },
+            { nombre: "estacionamientos", label: "Estacionamientos", tipo: "number" },
+            { nombre: "ano_construccion", label: "Año Construcción", tipo: "number" },
+            { nombre: "estado_propiedad", label: "Estado Propiedad", tipo: "select", opciones: ['nueva', 'usada', 'en_construccion', 'remodelada'] },
+            { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
+            { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
+            { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
+            { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
+            { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
+            { nombre: "situacion_propiedad", label: "Situación Propiedad", tipo: "text" },
+            { nombre: "sotano", label: "Sótano", tipo: "select", opciones: ['Sí', 'No'] },
+            { nombre: "almacen", label: "Almacén", tipo: "select", opciones: ['Sí', 'No'] },
+            { nombre: "vista", label: "Vista", tipo: "text" }
+        ]
+    },
+    caracteristica_propiedad: {
+        titulo: "Características de Propiedad",
+        pk: "caracteristica_id",
+        campos: [
+            { nombre: "caracteristica_id", label: "ID Característica", tipo: "text", requerido: true },
+            { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
+            { nombre: "nombre_caracteristica", label: "Nombre (Ej: Piscina, Parrilla)", tipo: "text", requerido: true },
+            { nombre: "valor_caracteristica", label: "Valor", tipo: "text" },
+            { nombre: "unidad", label: "Unidad", tipo: "text" },
+            { nombre: "tipo_data", label: "Tipo de Dato", tipo: "text" }
         ]
     },
     anuncio: {
@@ -204,18 +242,6 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "estado_lead", label: "Estado Lead", tipo: "select", opciones: ['nuevo', 'contactado', 'en_proceso', 'cerrado'] }
         ]
     },
-    contacte_agente: {
-        titulo: "Contactos a Agentes",
-        pk: "contacte_id",
-        campos: [
-            { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
-            { nombre: "agente_id_fk", label: "ID Agente FK", tipo: "text" },
-            { nombre: "nombre", label: "Nombre Interesado", tipo: "text", requerido: true },
-            { nombre: "email_interesado", label: "Correo Interesado", tipo: "email", requerido: true },
-            { nombre: "telefono", label: "Teléfono", tipo: "text" },
-            { nombre: "estado_lead", label: "Estado Lead", tipo: "select", opciones: ['pendiente', 'contactado', 'atendido'] }
-        ]
-    },
     simulacion_hipotecaria: {
         titulo: "Simulaciones Hipotecarias",
         pk: "simulacion_id",
@@ -233,22 +259,20 @@ const CONFIGURACION_TABLAS_CRUD = {
 let tablaCrudActiva = "propiedad";
 
 /**
- * Descripción de la función: ejecutarPanelMantenimientoCrud valida los permisos de escritura del usuario
- * mediante el rol activo, construye la interfaz modal principal con pestañas para las 7 tablas,
- * el botón de alta y carga la vista tabular inicial de registros.
+ * Descripción de la función: ejecutarPanelMantenimientoCrud valida permisos e inicializa la interfaz CRUD.
  */
-// [INICIO DE LLAVES]: Abre la función principal asíncrona ejecutarPanelMantenimientoCrud
+// [INICIO DE LLAVES]: Abre la función principal ejecutarPanelMantenimientoCrud
 async function ejecutarPanelMantenimientoCrud(rol) {
     const permisos = state.usuarioPermisos || {};
     
-    // [INICIO DE LLAVES]: Valida si el usuario posee privilegios de inserción o modificación
+    // [INICIO DE LLAVES]: Valida permisos de escritura
     if (!permisos.permiso_insertar && !permisos.permiso_modificar) {
         alert("Su rol actual no cuenta con privilegios de escritura sobre las tablas del sistema.");
         return;
-    } // [FIN DE LLAVES]: Cierra la condición de bloqueo por falta de permisos
+    } // [FIN DE LLAVES]: Cierra validación de permisos
 
     let modalCrud = document.getElementById('modal-mantenimiento-crud-sre');
-    // [INICIO DE LLAVES]: Condicional que crea el contenedor modal si no existe en el DOM
+    // [INICIO DE LLAVES]: Crea el contenedor modal si no existe
     if (!modalCrud) {
         modalCrud = document.createElement('div');
         modalCrud.id = 'modal-mantenimiento-crud-sre';
@@ -258,7 +282,7 @@ async function ejecutarPanelMantenimientoCrud(rol) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(modalCrud);
-    } // [FIN DE LLAVES]: Cierra la creación del modal CRUD
+    } // [FIN DE LLAVES]: Cierra creación del modal
 
     modalCrud.innerHTML = `
         <div style="background: #ffffff; width: 94%; max-width: 1240px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
@@ -300,10 +324,10 @@ async function ejecutarPanelMantenimientoCrud(rol) {
         modalCrud.style.display = 'none';
     };
 
-    // [INICIO DE LLAVES]: Asigna el evento click a los botones de navegación entre pestañas
+    // [INICIO DE LLAVES]: Asigna eventos a pestañas
     modalCrud.querySelectorAll('.btn-tab-crud').forEach(btn => {
         btn.onclick = (e) => {
-            // [INICIO DE LLAVES]: Callback de cambio de tabla activa
+            // [INICIO DE LLAVES]: Cambia la tabla activa
             tablaCrudActiva = e.target.getAttribute('data-tabla');
             modalCrud.querySelectorAll('.btn-tab-crud').forEach(b => {
                 b.style.background = '#ffffff';
@@ -313,30 +337,29 @@ async function ejecutarPanelMantenimientoCrud(rol) {
             e.target.style.color = '#ffffff';
             document.getElementById('titulo-tabla-crud').innerText = CONFIGURACION_TABLAS_CRUD[tablaCrudActiva].titulo;
             cargarDatosTablaCrud(tablaCrudActiva);
-        }; // [FIN DE LLAVES]: Cierra el callback de pestaña
-    }); // [FIN DE LLAVES]: Cierra el bucle de pestañas
+        }; // [FIN DE LLAVES]: Cierra callback
+    }); // [FIN DE LLAVES]: Cierra bucle de pestañas
 
     const btnNuevo = document.getElementById('btn-nuevo-registro-crud');
-    // [INICIO DE LLAVES]: Valida existencia del botón de nuevo registro
+    // [INICIO DE LLAVES]: Valida botón nuevo
     if (btnNuevo) {
         btnNuevo.onclick = () => abrirFormularioEdicionCrud(tablaCrudActiva, null);
-    } // [FIN DE LLAVES]: Cierra condición de botón nuevo
+    } // [FIN DE LLAVES]: Cierra validación
 
     await cargarDatosTablaCrud(tablaCrudActiva);
-} // [FIN DE LLAVES]: Cierra la función principal ejecutarPanelMantenimientoCrud
+} // [FIN DE LLAVES]: Cierra ejecutarPanelMantenimientoCrud
 
 /**
- * Descripción de la función: cargarDatosTablaCrud realiza la petición directa a Supabase REST API 
- * para consultar todos los registros de la entidad activa y renderizarlos en un Data Grid limpio.
+ * Descripción de la función: cargarDatosTablaCrud consulta y renderiza la tabla en pantalla.
  */
-// [INICIO DE LLAVES]: Abre la función asíncrona cargarDatosTablaCrud
+// [INICIO DE LLAVES]: Abre cargarDatosTablaCrud
 async function cargarDatosTablaCrud(nombreTabla) {
     const contenedor = document.getElementById('contenedor-tabla-datos-crud');
     if (!contenedor) return;
 
     contenedor.innerHTML = `<p style="text-align: center; color: #006aff; font-weight: 600; padding: 40px;">Consultando la base de datos para ${nombreTabla}...</p>`;
 
-    // [INICIO DE LLAVES]: Bloque try/catch para manejo de errores en red y base de datos
+    // [INICIO DE LLAVES]: Try/catch de consulta
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase inaccesible.");
@@ -346,11 +369,11 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
         if (error) throw error;
 
-        // [INICIO DE LLAVES]: Valida si la colección está vacía
+        // [INICIO DE LLAVES]: Valida datos vacíos
         if (!data || data.length === 0) {
             contenedor.innerHTML = `<p style="text-align: center; color: #64748b; padding: 40px;">No existen registros registrados en esta tabla actualmente.</p>`;
             return;
-        } // [FIN DE LLAVES]: Cierra validación de datos vacíos
+        } // [FIN DE LLAVES]: Cierra validación
 
         const permisos = state.usuarioPermisos || {};
 
@@ -373,7 +396,7 @@ async function cargarDatosTablaCrud(nombreTabla) {
                                     <button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>
                                 ` : ''}
                             </td>
-                            ${conf.campos.map(c => `<td style="padding: 10px; color: #334155;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
+                            ${conf.campos.map(c => `<td style="padding: 10px; color: #334155; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
@@ -382,42 +405,41 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
         contenedor.innerHTML = htmlTabla;
 
-        // [INICIO DE LLAVES]: Asigna eventos a los botones de edición de cada fila
+        // [INICIO DE LLAVES]: Asigna eventos a botones de editar fila
         contenedor.querySelectorAll('.btn-edit-crud').forEach(btn => {
             btn.onclick = () => {
                 const idRegistro = btn.getAttribute('data-id');
                 const objetoFila = data.find(item => String(item[conf.pk]) === String(idRegistro));
                 abrirFormularioEdicionCrud(nombreTabla, objetoFila);
             };
-        }); // [FIN DE LLAVES]: Cierra asignación de botones editar
+        }); // [FIN DE LLAVES]: Cierra eventos editar
 
-        // [INICIO DE LLAVES]: Asigna eventos a los botones de eliminación de cada fila
+        // [INICIO DE LLAVES]: Asigna eventos a botones de eliminar fila
         contenedor.querySelectorAll('.btn-delete-crud').forEach(btn => {
             btn.onclick = async () => {
-                // [INICIO DE LLAVES]: Callback de confirmación y eliminación
+                // [INICIO DE LLAVES]: Confirma eliminación
                 const idRegistro = btn.getAttribute('data-id');
                 if (confirm(`¿Confirma eliminar el registro con ID: ${idRegistro} de la tabla ${nombreTabla}?`)) {
                     await eliminarRegistroCrud(nombreTabla, conf.pk, idRegistro);
                 }
-            }; // [FIN DE LLAVES]: Cierra callback de eliminación
-        }); // [FIN DE LLAVES]: Cierra asignación de botones eliminar
+            }; // [FIN DE LLAVES]: Cierra callback
+        }); // [FIN DE LLAVES]: Cierra eventos eliminar
 
     } catch (err) {
         contenedor.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 30px;">Error al cargar registros: ${err.message}</p>`;
-    } // [FIN DE LLAVES]: Cierra bloque try/catch
-} // [FIN DE LLAVES]: Cierra la función cargarDatosTablaCrud
+    } // [FIN DE LLAVES]: Cierra try/catch
+} // [FIN DE LLAVES]: Cierra cargarDatosTablaCrud
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud despliega un sub-modal flotante 
- * con inputs dinámicos orientados a crear (INSERT) o modificar (UPDATE) un registro.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el submodal para creación/edición.
  */
-// [INICIO DE LLAVES]: Abre la función abrirFormularioEdicionCrud
+// [INICIO DE LLAVES]: Abre abrirFormularioEdicionCrud
 function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
     let subModal = document.getElementById('submodal-formulario-crud');
-    // [INICIO DE LLAVES]: Valida existencia del sub-modal flotante
+    // [INICIO DE LLAVES]: Crea submodal si no existe
     if (!subModal) {
         subModal = document.createElement('div');
         subModal.id = 'submodal-formulario-crud';
@@ -427,10 +449,10 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    } // [FIN DE LLAVES]: Cierra la creación del sub-modal
+    } // [FIN DE LLAVES]: Cierra creación submodal
 
     subModal.innerHTML = `
-        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 620px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
                 <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">✕</button>
@@ -473,9 +495,9 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     document.getElementById('btn-cancelar-submodal').onclick = cerrarSubModal;
     document.getElementById('btn-cerrar-submodal-x').onclick = cerrarSubModal;
 
-    // [INICIO DE LLAVES]: Asigna el evento submit al formulario dinámico del CRUD
+    // [INICIO DE LLAVES]: Asigna submit al formulario
     document.getElementById('form-generico-crud').onsubmit = async (e) => {
-        // [INICIO DE LLAVES]: Callback asíncrono para procesar el guardado
+        // [INICIO DE LLAVES]: Callback asíncrono
         e.preventDefault();
         const btnSubmit = document.getElementById('btn-guardar-crud-submit');
         btnSubmit.innerText = "Guardando...";
@@ -487,27 +509,26 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
         await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
         subModal.style.display = 'none';
-    }; // [FIN DE LLAVES]: Cierra el evento onsubmit del formulario
-} // [FIN DE LLAVES]: Cierra la función abrirFormularioEdicionCrud
+    }; // [FIN DE LLAVES]: Cierra onsubmit
+} // [FIN DE LLAVES]: Cierra abrirFormularioEdicionCrud
 
 /**
- * Descripción de la función: guardarRegistroCrud ejecuta la operación de inserción (INSERT)
- * o actualización (UPDATE) directamente en la base de datos de Supabase.
+ * Descripción de la función: guardarRegistroCrud realiza la persistencia en Supabase.
  */
-// [INICIO DE LLAVES]: Abre la función asíncrona guardarRegistroCrud
+// [INICIO DE LLAVES]: Abre guardarRegistroCrud
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
-    // [INICIO DE LLAVES]: Bloque try/catch para persistencia de datos
+    // [INICIO DE LLAVES]: Try/catch persistencia
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
         let res;
-        // [INICIO DE LLAVES]: Condicional que diferencia entre actualizar o insertar
+        // [INICIO DE LLAVES]: Condicional update/insert
         if (esEdicion) {
             res = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
         } else {
             res = await cliente.from(nombreTabla).insert([payload]);
-        } // [FIN DE LLAVES]: Cierra condición de guardado
+        } // [FIN DE LLAVES]: Cierra condicional
 
         if (res.error) throw res.error;
 
@@ -516,16 +537,15 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
 
     } catch (err) {
         alert("Error al guardar en la base de datos: " + err.message);
-    } // [FIN DE LLAVES]: Cierra bloque try/catch
-} // [FIN DE LLAVES]: Cierra la función guardarRegistroCrud
+    } // [FIN DE LLAVES]: Cierra try/catch
+} // [FIN DE LLAVES]: Cierra guardarRegistroCrud
 
 /**
- * Descripción de la función: eliminarRegistroCrud borra de manera definitiva un registro 
- * seleccionado de la tabla en Supabase tras una confirmación previa.
+ * Descripción de la función: eliminarRegistroCrud borra un registro de Supabase.
  */
-// [INICIO DE LLAVES]: Abre la función asíncrona eliminarRegistroCrud
+// [INICIO DE LLAVES]: Abre eliminarRegistroCrud
 async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
-    // [INICIO DE LLAVES]: Bloque try/catch para eliminación segura
+    // [INICIO DE LLAVES]: Try/catch eliminación
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
@@ -538,8 +558,8 @@ async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
 
     } catch (err) {
         alert("Error al eliminar registro: " + err.message);
-    } // [FIN DE LLAVES]: Cierra bloque try/catch
-} // [FIN DE LLAVES]: Cierra la función eliminarRegistroCrud
+    } // [FIN DE LLAVES]: Cierra try/catch
+} // [FIN DE LLAVES]: Cierra eliminarRegistroCrud
 
 
 // ==========================================================================
