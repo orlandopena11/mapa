@@ -174,6 +174,37 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
             { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
+            { nombre: "galeria_fotos", label: "Galería de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
+            { nombre: "foto_extra_1", label: "Foto Extra 1", tipo: "text" },
+            { nombre: "foto_extra_2", label: "Foto Extra 2", tipo: "text" },
+            { nombre: "foto_extra_3", label: "Foto Extra 3", tipo: "text" },
+            { nombre: "foto_extra_4", label: "Foto Extra 4", tipo: "text" },
+            { nombre: "foto_extra_5", label: "Foto Extra 5", tipo: "text" },
+            { nombre: "foto_extra_6", label: "Foto Extra 6", tipo: "text" },
+            { nombre: "foto_extra_7", label: "Foto Extra 7", tipo: "text" },
+            { nombre: "foto_extra_8", label: "Foto Extra 8", tipo: "text" },
+            { nombre: "foto_extra_9", label: "Foto Extra 9", tipo: "text" },
+            { nombre: "foto_extra_10", label: "Foto Extra 10", tipo: "text" },
+            { nombre: "foto_extra_11", label: "Foto Extra 11", tipo: "text" },
+            { nombre: "foto_extra_12", label: "Foto Extra 12", tipo: "text" },
+            { nombre: "foto_extra_13", label: "Foto Extra 13", tipo: "text" },
+            { nombre: "foto_extra_14", label: "Foto Extra 14", tipo: "text" },
+            { nombre: "foto_extra_15", label: "Foto Extra 15", tipo: "text" },
+            { nombre: "foto_extra_16", label: "Foto Extra 16", tipo: "text" },
+            { nombre: "foto_extra_17", label: "Foto Extra 17", tipo: "text" },
+            { nombre: "foto_extra_18", label: "Foto Extra 18", tipo: "text" },
+            { nombre: "foto_extra_19", label: "Foto Extra 19", tipo: "text" },
+            { nombre: "foto_extra_20", label: "Foto Extra 20", tipo: "text" },
+            { nombre: "foto_extra_21", label: "Foto Extra 21", tipo: "text" },
+            { nombre: "foto_extra_22", label: "Foto Extra 22", tipo: "text" },
+            { nombre: "foto_extra_23", label: "Foto Extra 23", tipo: "text" },
+            { nombre: "foto_extra_24", label: "Foto Extra 24", tipo: "text" },
+            { nombre: "foto_extra_25", label: "Foto Extra 25", tipo: "text" },
+            { nombre: "foto_extra_26", label: "Foto Extra 26", tipo: "text" },
+            { nombre: "foto_extra_27", label: "Foto Extra 27", tipo: "text" },
+            { nombre: "foto_extra_28", label: "Foto Extra 28", tipo: "text" },
+            { nombre: "foto_extra_29", label: "Foto Extra 29", tipo: "text" },
+            { nombre: "foto_extra_30", label: "Foto Extra 30", tipo: "text" },
             { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
             { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
             { nombre: "situacion_propiedad", label: "Situación Propiedad", tipo: "text" },
@@ -1431,20 +1462,24 @@ function interceptarFirewallSeguridadUsuario(usuarios, email) {
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- CONTROLADOR DINÁMICO DE LAYOUT MÓVIL (INYECTADO DESDE APP.JS) ---
-    const ajustarLayoutMovilDinamico = () => {
+const ajustarLayoutMovilDinamico = () => {
         if (window.innerWidth <= 768) {
             const mapaContenedor = document.getElementById('map-instance');
             if (mapaContenedor) {
-                mapaContenedor.style.width = '100%';
-                mapaContenedor.style.height = '45vh';
+                mapaContenedor.style.width = '100vw';
+                mapaContenedor.style.height = '100vh';
+                mapaContenedor.style.position = 'absolute';
+                mapaContenedor.style.top = '0';
+                mapaContenedor.style.left = '0';
+                mapaContenedor.style.zIndex = '100';
             }
             const gridTarjetas = document.getElementById('properties-grid-target');
             if (gridTarjetas) {
-                gridTarjetas.style.width = '100%';
-                gridTarjetas.style.height = 'auto';
+                gridTarjetas.style.display = 'none'; // Oculta por completo las tarjetas de etiquetas en celular
             }
         }
     };
+    
     window.addEventListener('resize', ajustarLayoutMovilDinamico);
     ajustarLayoutMovilDinamico();
     // ---------------------------------------------------------------------
