@@ -1807,15 +1807,7 @@ function inicializarEventosPopups() {
 
 } // [FIN DE LLAVES]: Cierra la función principal unificada inicializarEventosPopups
 
-
-// [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR]
-/**
- * Descripción de la función: Bloque limpio de cierre de inicializaciones secundarias 
- * dentro del ámbito principal del DOMContentLoaded.
- */
-// [INICIO DE LLAVES]: Abre el bloque de cierre de eventos globales en DOMContentLoaded
-    console.log(">> [SRE] Eventos del DOM principal inicializados correctamente.");
-} // [FIN DE LLAVES]: Cierra el evento DOMContentLoaded general del archivo                          
+                      
 
 
 // ==========================================================================
