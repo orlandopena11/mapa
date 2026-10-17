@@ -1520,8 +1520,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion inicializarAutenticacionTresCanalesSupabase SRE
                 const btnAutenticarEmail = document.getElementById('btn-autenticar');
-
-                const procesarAutenticacionMagicaSRE = async (esRegistroNuevo) => { // Inicia Funcion procesarAutenticacionMagicaSRE
+            // [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR]
+            /**
+             * Descripción: Valida si el usuario ya está registrado en 'usuario_autenticado'. 
+             * Si es un usuario existente (como orlandopena11@yahoo.com), valida su estado y evita 
+             * enviar correos OTP innecesarios, permitiendo su acceso directo o vinculación limpia.
+             */
+            // [INICIO DE LLAVES]: Abre la función procesarAutenticacionMagicaSRE optimizada
+                const procesarAutenticacionMagicaSRE = async (esRegistroNuevo) => { 
                     const emailInput = document.getElementById('login-email-input');
                     const emailValor = emailInput ? emailInput.value.trim().toLowerCase() : "";
                     if (!emailValor) {
@@ -1556,25 +1562,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     try {
                         const cliente = obtenerClienteSupabase();
 
+                        // 1. Validar existencia directa en la tabla usuario_autenticado
                         const {
                             data: usuarioBD,
                             error: errorBD
                         } = await cliente
                             .from('usuario_autenticado')
-                            .select('estado_cuenta')
+                            .select('usuario_id, estado_cuenta, correo')
                             .eq('correo', emailValor)
                             .maybeSingle();
 
                         if (errorBD) throw new Error("Error al consultar la base de datos: " + errorBD.message);
 
+                        // 2. Si intenta registrarse pero ya existe en la BD
                         if (esRegistroNuevo) {
                             if (usuarioBD) {
-                                alert("Aviso: Este correo electrónico ya se encuentra registrado en el sistema. Use la opción de Iniciar Sesión tradicional.");
+                                alert("Aviso: Este correo electrónico ya se encuentra registrado en el sistema. Por favor, inicie sesión directamente.");
                                 inicializacionModalEstadosVistaSRE('login');
                                 return;
                             }
-
-                            console.log("> Validando y estructurando fecha limpia para PostgreSQL...");
 
                             const fActual = new Date();
                             const hoyFormatoProduccion = [
@@ -1609,22 +1615,23 @@ document.addEventListener("DOMContentLoaded", () => {
                                 }]);
 
                             if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
-                            console.log(">> Pre-registro exitoso en estado PENDIENTE.");
 
                         } else {
-                            if (usuarioBD) {
-                                const estado = String(usuarioBD.estado_cuenta).toLowerCase().trim();
-                                if (estado !== "activo" && estado !== "pendiente") {
-                                    alert(`Acceso Restringido: Su cuenta se encuentra en estado ${estado.toUpperCase()}.`);
-                                    return;
-                                }
-                            } else {
+                            // Si es inicio de sesión tradicional y NO existe en la tabla usuario_autenticado
+                            if (!usuarioBD) {
                                 alert("Acceso Restringido: El correo ingresado no figura en nuestro sistema. Si es nuevo, use la opción 'Crear cuenta'.");
                                 inicializacionModalEstadosVistaSRE('registro');
                                 return;
                             }
+
+                            const estado = String(usuarioBD.estado_cuenta || '').toLowerCase().trim();
+                            if (estado !== "activo" && estado !== "pendiente") {
+                                alert(`Acceso Restringido: Su cuenta se encuentra en estado ${estado.toUpperCase()}.`);
+                                return;
+                            }
                         }
 
+                        // 3. Envío seguro del enlace OTP solo tras validar que el usuario es legítimo en el sistema
                         const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname;
                         const {
                             error: errorOtp
@@ -1637,9 +1644,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                         if (errorOtp) throw new Error("Fallo de conexión con Supabase Auth: " + errorOtp.message);
 
-                        alert(esRegistroNuevo ? "¡Cuenta pre-registrada con éxito en estado PENDIENTE! Le hemos enviado un enlace de confirmación a su correo." : "¡Enlace de acceso enviado! Revise su bandeja de entrada para ingresar.");
+                        alert(esRegistroNuevo ? "¡Cuenta pre-registrada con éxito! Le hemos enviado un enlace de confirmación a su correo." : "¡Enlace de acceso verificado! Revise su bandeja de entrada para ingresar a su sesión.");
                         cerrarPopupAccion('modal-autenticacion-supabase');
                         inicializacionModalEstadosVistaSRE('login');
+
                     } catch (errAuth) {
                         alert("Error en el proceso: " + errAuth.message);
                     } finally {
@@ -1649,7 +1657,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             btnAutenticarEmail.disabled = false;
                         }
                     }
-                }; // Fin de Funcion procesarAutenticacionMagicaSRE
+                }; // [FIN DE LLAVES]: Cierra la función procesarAutenticacionMagicaSRE
 
 
                 if (btnAutenticarEmail) {
