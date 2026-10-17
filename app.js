@@ -35,7 +35,7 @@ const state = {
 
 
 // ==========================================================================
-// CONTROLADOR DINÁMICO DE SESIÓN Y ROLES MEDIANTE RPC
+// CONTROLADOR DINÁMICO DE SESIÓN, BOTÓN LOGUEO Y ROLES MEDIANTE RPC
 // ==========================================================================
 // [INICIO DE LLAVES]: Abre la función asíncrona actualizarBotonCuenta
 async function actualizarBotonCuenta() { 
@@ -43,88 +43,91 @@ async function actualizarBotonCuenta() {
     if (!navbar) return;
 
     let indicador = document.getElementById('user-session-badge');
-    
-    if (!indicador && window.usuarioLogueado) {
-        indicador = document.createElement('div');
-        indicador.id = 'user-session-badge';
-        indicador.style.cssText = `
-            margin-left: auto; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            padding: 6px 12px; 
-            background: #002e50; 
-            color: #ffffff; 
-            border-radius: 20px; 
-            font-size: 12px; 
-            font-weight: 600; 
-            border: 1px solid #ffffff;
-            box-sizing: border-box;
-            max-width: 100%;
-        `;
-        navbar.appendChild(indicador);
-    }
+    const btnOpenLogin = document.getElementById('btn-open-login');
 
-    if (indicador) {
-        // [INICIO DE LLAVES]: Verifica si el usuario se encuentra logueado
-        if (window.usuarioLogueado) {
-            let rolTexto = "Usuario";
-            let puedeCrud = false;
+    // [INICIO DE LLAVES]: Control condicional de visibilidad según estado de autenticación
+    if (window.usuarioLogueado) {
+        if (btnOpenLogin) btnOpenLogin.style.display = 'none';
 
-            try {
-                const cliente = obtenerClienteSupabase();
-                if (cliente) {
-                    // Invocación a la función RPC para extraer roles y permisos de seguridad
-                    const { data, error } = await cliente.rpc('obtener_permisos_usuario', { 
-                        p_usuario_id: window.usuarioLogueado.id 
-                    });
-                    
-                    if (!error && data && data.length > 0) {
-                        rolTexto = data[0].nombres_rol || "Usuario";
-                        puedeCrud = data[0].permiso_insertar || data[0].permiso_modificar;
-                        state.usuarioPermisos = data[0];
-                    }
-                }
-            } catch (errRol) {
-                console.warn("Error al consultar permisos de rol:", errRol);
-            }
-
-            const esMovil = window.innerWidth <= 768;
-            const correoCorto = window.usuarioLogueado.email.length > 18 && esMovil 
-                ? window.usuarioLogueado.email.substring(0, 15) + '...' 
-                : window.usuarioLogueado.email;
-
-            let htmlContenido = `
-                <span title="${window.usuarioLogueado.email}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                    👤 ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
-                </span>
+        if (!indicador) {
+            indicador = document.createElement('div');
+            indicador.id = 'user-session-badge';
+            indicador.style.cssText = `
+                margin-left: auto; 
+                display: flex; 
+                align-items: center; 
+                gap: 10px; 
+                padding: 6px 12px; 
+                background: #002e50; 
+                color: #ffffff; 
+                border-radius: 20px; 
+                font-size: 12px; 
+                font-weight: 600; 
+                border: 1px solid #ffffff;
+                box-sizing: border-box;
+                max-width: 100%;
             `;
+            navbar.appendChild(indicador);
+        }
+    } else {
+        if (indicador) indicador.style.display = 'none';
+        if (btnOpenLogin) btnOpenLogin.style.display = 'block';
+    } // [FIN DE LLAVES]: Cierra el bloque condicional de autenticación visual
 
-            // Validación de privilegios para habilitar el acceso al CRUD en la interfaz
-            if (puedeCrud) {
-                htmlContenido += `
-                    <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
-                        ⚙️ Mantenimiento
-                    </a>
-                `;
+    if (indicador && window.usuarioLogueado) {
+        // [INICIO DE LLAVES]: Bloque de procesamiento de datos y llamada RPC de permisos
+        let rolTexto = "Usuario";
+        let puedeCrud = false;
+
+        try {
+            const cliente = obtenerClienteSupabase();
+            if (cliente) {
+                const { data, error } = await cliente.rpc('obtener_permisos_usuario', { 
+                    p_usuario_id: window.usuarioLogueado.id 
+                });
+                
+                if (!error && data && data.length > 0) {
+                    rolTexto = data[0].nombres_rol || "Usuario";
+                    puedeCrud = data[0].permiso_insertar || data[0].permiso_modificar;
+                    state.usuarioPermisos = data[0];
+                }
             }
+        } catch (errRol) {
+            console.warn("Error al consultar permisos de rol:", errRol);
+        }
 
-            indicador.innerHTML = htmlContenido;
-            indicador.style.display = 'flex';
+        const esMovil = window.innerWidth <= 768;
+        const correoCorto = window.usuarioLogueado.email.length > 18 && esMovil 
+            ? window.usuarioLogueado.email.substring(0, 15) + '...' 
+            : window.usuarioLogueado.email;
 
-            const btnCrud = document.getElementById('link-crud-propiedades');
-            // [INICIO DE LLAVES]: Configura el evento de clic para el botón de mantenimiento
-            if (btnCrud) {
-                btnCrud.onclick = (e) => {
-                    e.preventDefault();
-                    ejecutarPanelMantenimientoCrud(rolTexto);
-                };
-            } // [FIN DE LLAVES]: Cierra el evento de clic del botón CRUD
+        let htmlContenido = `
+            <span title="${window.usuarioLogueado.email}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                👤 ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
+            </span>
+        `;
 
-        } else {
-            indicador.style.display = 'none';
-        } // [FIN DE LLAVES]: Cierra la condición de usuario logueado
-    }
+        // [INICIO DE LLAVES]: Condición para inyectar acceso al panel de mantenimiento si tiene permisos
+        if (puedeCrud) {
+            htmlContenido += `
+                <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
+                    ⚙️ Mantenimiento
+                </a>
+            `;
+        } // [FIN DE LLAVES]: Cierra la condición de inyección del enlace CRUD
+
+        indicador.innerHTML = htmlContenido;
+        indicador.style.display = 'flex';
+
+        const btnCrud = document.getElementById('link-crud-propiedades');
+        // [INICIO DE LLAVES]: Asignación de evento de clic al botón de mantenimiento CRUD
+        if (btnCrud) {
+            btnCrud.onclick = (e) => {
+                e.preventDefault();
+                ejecutarPanelMantenimientoCrud(rolTexto);
+            };
+        } // [FIN DE LLAVES]: Cierra la asignación del evento onclick
+    } // [FIN DE LLAVES]: Cierra la condición principal de indicador con usuario activo
 } // [FIN DE LLAVES]: Cierra la función asíncrona actualizarBotonCuenta
 
 
