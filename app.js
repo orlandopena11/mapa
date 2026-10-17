@@ -461,16 +461,41 @@ async function cargarDatosTablaCrud(nombreTabla) {
     } // [FIN DE LLAVES]: Cierra try/catch
 } // [FIN DE LLAVES]: Cierra cargarDatosTablaCrud
 
+
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal para creación/edición.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el submodal para la creación o 
+ * edición de registros, consultando y precargando de manera asíncrona las fotos secundarias 
+ * desde la tabla relacional 'imagen_propiedad' en Supabase.
  */
-// [INICIO DE LLAVES]: Abre abrirFormularioEdicionCrud
-function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
+// [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
+async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
+    // [INICIO DE LLAVES]: Bloque de inicialización de configuración y lectura de imágenes
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
+    let fotosSecundariasObtenidas = [];
+
+    if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
+        try {
+            const cliente = obtenerClienteSupabase();
+            if (cliente) {
+                const { data: imgsBD } = await cliente
+                    .from('imagen_propiedad')
+                    .select('ruta_imagen, orden')
+                    .eq('propiedad_id_fk', datosFila[conf.pk])
+                    .order('orden', { ascending: true });
+
+                if (imgsBD && imgsBD.length > 0) {
+                    fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
+                }
+            }
+        } catch (errFoto) {
+            console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
+        }
+    } // [FIN DE LLAVES]: Cierra bloque de consulta de imágenes
+
     let subModal = document.getElementById('submodal-formulario-crud');
-    // [INICIO DE LLAVES]: Crea submodal si no existe
+    // [INICIO DE LLAVES]: Condicional para crear el contenedor del submodal si no existe
     if (!subModal) {
         subModal = document.createElement('div');
         subModal.id = 'submodal-formulario-crud';
@@ -480,19 +505,19 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    } // [FIN DE LLAVES]: Cierra creación submodal
+    } // [FIN DE LLAVES]: Cierra creación del submodal
 
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
-                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">✕</button>
+                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
             </div>
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
                     const valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
-if (c.tipo === 'select') {
+                    if (c.tipo === 'select') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
@@ -503,13 +528,11 @@ if (c.tipo === 'select') {
                         `;
                     }
                     
-                    // Lógica inteligente para rellenar las cajitas de fotos secundarias (foto_extra_1 al 30) en modo edición
                     let valorInputFinal = valorActual;
-                    if (esEdicion && c.nombre.startsWith('foto_extra_') && datosFila.fotos) {
-                        let indiceExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
-                        // Las fotos secundarias empiezan desde el índice 1 del arreglo de fotos
-                        if (datosFila.fotos[indiceExtra]) {
-                            valorInputFinal = datosFila.fotos[indiceExtra];
+                    if (esEdicion && c.nombre.startsWith('foto_extra_')) {
+                        let indiceExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10) - 1;
+                        if (fotosSecundariasObtenidas[indiceExtra]) {
+                            valorInputFinal = fotosSecundariasObtenidas[indiceExtra];
                         }
                     }
 
@@ -537,9 +560,9 @@ if (c.tipo === 'select') {
     document.getElementById('btn-cancelar-submodal').onclick = cerrarSubModal;
     document.getElementById('btn-cerrar-submodal-x').onclick = cerrarSubModal;
 
-    // [INICIO DE LLAVES]: Asigna submit al formulario
+    // [INICIO DE LLAVES]: Asigna el evento submit al formulario genérico del CRUD
     document.getElementById('form-generico-crud').onsubmit = async (e) => {
-        // [INICIO DE LLAVES]: Callback asíncrono
+        // [INICIO DE LLAVES]: Callback asíncrono para recolectar datos y ejecutar la persistencia
         e.preventDefault();
         const btnSubmit = document.getElementById('btn-guardar-crud-submit');
         btnSubmit.innerText = "Guardando...";
@@ -551,8 +574,10 @@ if (c.tipo === 'select') {
 
         await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
         subModal.style.display = 'none';
-    }; // [FIN DE LLAVES]: Cierra onsubmit
-} // [FIN DE LLAVES]: Cierra abrirFormularioEdicionCrud
+    }; // [FIN DE LLAVES]: Cierra callback submit
+} // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
+
+
 
 /**
  * Descripción de la función: guardarRegistroCrud realiza la persistencia en Supabase.
