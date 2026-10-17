@@ -1738,18 +1738,43 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
 
-            // Inicializa los escuchadores de los elementos de cierre y navegación del modal de visitas con firewall ACL
-            function inicializarEventosPopups() { // Inicia inicializarEventosPopups SRE
-                document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', (e) => {
-                    if (e) e.stopPropagation();
-                    cerrarPopupAccion('modal-tour-comercial');
-                });
-                
-                document.getElementById('btn-cerrar-modal-agente')?.addEventListener('click', (e) => {
-                    if (e) e.stopPropagation();
-                    cerrarPopupAccion('modal-agent-comercial');
-                });
 
+/**
+ * Descripción de la función: inicializarEventosPopups registra todos los 
+ * escuchadores de eventos táctiles y de clic de la interfaz para controlar la 
+ * apertura de la pasarela de autenticación (Supabase) desde la barra superior 
+ * y el cierre de los modales comerciales de tours y agentes.
+ */
+// [INICIO DE LLAVES]: Abre la función principal inicializarEventosPopups
+function inicializarEventosPopups() {
+    const btnOpenLogin = document.getElementById('btn-open-login');
+    
+    // [INICIO DE LLAVES]: Condicional que valida la existencia del botón de inicio de sesión
+    if (btnOpenLogin) {
+        btnOpenLogin.addEventListener('click', (e) => {
+            // [INICIO DE LLAVES]: Callback para prevenir el comportamiento por defecto y desplegar el modal
+            if (e) e.preventDefault();
+            console.log("[SRE AUTH] Desplegando modal de autenticación desde la barra superior");
+            mostrarPopupAccion('modal-autenticacion-supabase');
+        }); // [FIN DE LLAVES]: Cierra la función callback del evento click de login
+    } // [FIN DE LLAVES]: Cierra el bloque condicional del botón de login
+
+    // [INICIO DE LLAVES]: Vincula el evento de clic para cerrar el modal de tour comercial
+    document.getElementById('btn-cerrar-modal-tour')?.addEventListener('click', (e) => {
+        // [INICIO DE LLAVES]: Valida la propagación y ejecuta el cierre del modal de tour
+        if (e) e.stopPropagation();
+        cerrarPopupAccion('modal-tour-comercial');
+    }); // [FIN DE LLAVES]: Cierra la función callback del botón cerrar tour
+
+    // [INICIO DE LLAVES]: Vincula el evento de clic para cerrar el modal de agente comercial
+    document.getElementById('btn-cerrar-modal-agente')?.addEventListener('click', (e) => {
+        // [INICIO DE LLAVES]: Valida la propagación y ejecuta el cierre del modal de agente
+        if (e) e.stopPropagation();
+        cerrarPopupAccion('modal-agent-comercial');
+    }); // [FIN DE LLAVES]: Cierra la función callback del botón cerrar agente
+} // [FIN DE LLAVES]: Cierra la función principal inicializarEventosPopups
+
+    
                 // Enlace táctil dual síncrono para forzar la navegación reactiva al Paso 2
                 const btnSiguienteTour = document.getElementById('btn-navegacion-siguiente-tour');
                 if (btnSiguienteTour) {
