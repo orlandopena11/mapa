@@ -492,7 +492,7 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
                     const valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
-                    if (c.tipo === 'select') {
+if (c.tipo === 'select') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
@@ -502,10 +502,21 @@ function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     }
+                    
+                    // Lógica inteligente para rellenar las cajitas de fotos secundarias (foto_extra_1 al 30) en modo edición
+                    let valorInputFinal = valorActual;
+                    if (esEdicion && c.nombre.startsWith('foto_extra_') && datosFila.fotos) {
+                        let indiceExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
+                        // Las fotos secundarias empiezan desde el índice 1 del arreglo de fotos
+                        if (datosFila.fotos[indiceExtra]) {
+                            valorInputFinal = datosFila.fotos[indiceExtra];
+                        }
+                    }
+
                     return `
                         <div>
                             <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                            <input type="${c.tipo}" name="${c.nombre}" value="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ${c.requerido ? 'required' : ''} />
+                            <input type="${c.tipo}" name="${c.nombre}" value="${valorInputFinal}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ${c.requerido ? 'required' : ''} />
                         </div>
                     `;
                 }).join('')}
