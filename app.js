@@ -534,10 +534,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         `;
                     }
                     
-                    let valorInputFinal = valorActual;
+                     let valorInputFinal = valorActual;
+                    // Tarea 2: Forzar el ID del usuario logueado en modo inserción
+                    if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
+                        valorInputFinal = window.usuarioLogueado.id;
+                    }
                     if (esEdicion && c.nombre.startsWith('foto_extra_')) {
                         let indiceExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10) - 1;
-                        if (fotosSecundariasObtenidas[indiceExtra]) {
+
+                    if (fotosSecundariasObtenidas[indiceExtra]) {
                             valorInputFinal = fotosSecundariasObtenidas[indiceExtra];
                         }
                     }
