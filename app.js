@@ -578,7 +578,38 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
+    // Captura del evento blur en dirección y distrito para el cálculo automático SRE
+    if (nombreTabla === 'propiedad') {
+        const formNode = document.getElementById('form-generico-crud');
+        const dispararGeocodeSRE = async () => {
+            const direccion = formNode.querySelector('[name="direccion"]')?.value.trim();
+            const distrito = formNode.querySelector('[name="distrito"]')?.value.trim();
+            if (!direccion || !distrito) return;
+            try {
+                const res = await fetch(`https://openstreetmap.org{encodeURIComponent(direccion + ", " + distrito + ", Lima, Peru")}`);
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    const loc = data[0];
+                    const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
+                    if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
+                    if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
+                    if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
+                    if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
+                    if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}`;
+                    if (formNode.querySelector('[name="codigo_postal"]')) formNode.querySelector('[name="codigo_postal"]').value = '150140';
+                    if (formNode.querySelector('[name="departamento"]')) formNode.querySelector('[name="departamento"]').value = 'Lima';
+                    if (formNode.querySelector('[name="provincia"]')) formNode.querySelector('[name="provincia"]').value = 'Lima';
+                    if (formNode.querySelector('[name="estado"]')) formNode.querySelector('[name="estado"]').value = 'Lima';
+                    if (formNode.querySelector('[name="ciudad"]')) formNode.querySelector('[name="ciudad"]').value = 'Lima';
+                }
+            } catch (err) { console.error("Error Autopoblado Geocode:", err); }
+        };
+        formNode.querySelector('[name="direccion"]')?.addEventListener('blur', dispararGeocodeSRE);
+        formNode.querySelector('[name="distrito"]')?.addEventListener('blur', dispararGeocodeSRE);
+    }
+
     const cerrarSubModal = () => { subModal.style.display = 'none'; };
+
     document.getElementById('btn-cancelar-submodal').onclick = cerrarSubModal;
     document.getElementById('btn-cerrar-submodal-x').onclick = cerrarSubModal;
 
