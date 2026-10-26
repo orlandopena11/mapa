@@ -565,13 +565,20 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         `;
                     } // [FIN DE LLAVE]: Cierra lov_pais
 
+                    // [INICIO DE LLAVE]: Mutación a selectores interactivos para la jerarquía relacional de la tabla ubigeo
+                    if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
+                        return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-situacion-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                                <select name="${c.nombre}" class="lov-ubigeo-cascada" id="sel-ubigeo-${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
+                                    <option value="">-- Seleccione ${c.label} --</option>
+                                </select>
                             </div>
                         `;
-                    }
+                    } // [FIN DE LLAVE]: Cierra la inyección de combos políticos en cascada
+
                     // [INICIO DE LLAVE]: Renderizado estándar para tipos select normales de la configuración
+
                     if (c.tipo === 'select') {
                         return `
                             <div>
@@ -640,40 +647,83 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         }
     })(); // [FIN DE LLAVE]: Cierra la carga asíncrona de lov_pais
 
-    // Captura del evento blur en dirección y distrito para el cálculo automático SRE
-
+    // [INICIO DE LLAVE]: Motor dinámico interactivo para la tabla de ubigeo y geocodificación
     if (nombreTabla === 'propiedad') {
-        const formNode = document.getElementById('form-generico-crud');
-        const dispararGeocodeSRE = async () => {
-            const direccion = formNode.querySelector('[name="direccion"]')?.value.trim();
-            const distrito = formNode.querySelector('[name="distrito"]')?.value.trim();
-            if (!direccion || !distrito) return;
-            // [INICIO DE LLAVE]: Bloque de consulta segura al API de OpenStreetMap
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion + ", " + distrito + ", Lima, Peru")}`);
-                const data = await res.json();
-            // [FIN DE LLAVE]: Cierra la captura de respuestas JSON
+        (async () => {
+            const clienteSupabase = obtenerClienteSupabase();
+            if (!clienteSupabase) return;
 
-                if (data && data.length > 0) {
-                    const loc = data[0];
-                    const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
-                    if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
-                    if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
-                    if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
-                    if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
-                    if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}`;
-                    if (formNode.querySelector('[name="codigo_postal"]')) formNode.querySelector('[name="codigo_postal"]').value = '150140';
-                    if (formNode.querySelector('[name="departamento"]')) formNode.querySelector('[name="departamento"]').value = 'Lima';
-                    if (formNode.querySelector('[name="provincia"]')) formNode.querySelector('[name="provincia"]').value = 'Lima';
-                    if (formNode.querySelector('[name="estado"]')) formNode.querySelector('[name="estado"]').value = 'Lima';
-                    if (formNode.querySelector('[name="ciudad"]')) formNode.querySelector('[name="ciudad"]').value = 'Lima';
+            const formNode = document.getElementById('form-generico-crud');
+            const selDep = formNode.querySelector('#sel-ubigeo-departamento');
+            const selProv = formNode.querySelector('#sel-ubigeo-provincia');
+            const selDist = formNode.querySelector('#sel-ubigeo-distrito');
+
+            // Descarga atómica de la tabla pública de ubigeos
+            const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
+            if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
+
+            // Poblado inicial del combobox de Departamentos
+            const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+            if (selDep) {
+                selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+                    departamentosUnicos.map(d => `<option value="${d}">${d}</option>`).join('');
+            }
+
+            // Filtrado reactivo en cascada al cambiar de Departamento
+            selDep.onchange = () => {
+                selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+                selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                if (formNode.querySelector('[name="codigo_ubigeo_id_fk"]')) formNode.querySelector('[name="codigo_ubigeo_id_fk"]').value = '';
+                
+                const provinciasFiltradas = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
+                selProv.innerHTML += provinciasFiltradas.map(p => `<option value="${p}">${p}</option>`).join('');
+            };
+
+            // Filtrado reactivo en cascada al cambiar de Provincia
+            selProv.onchange = () => {
+                selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                if (formNode.querySelector('[name="codigo_ubigeo_id_fk"]')) formNode.querySelector('[name="codigo_ubigeo_id_fk"]').value = '';
+
+                const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
+                selDist.innerHTML += distritosFiltrados.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
+            };
+
+            // Al elegir el Distrito se calcula el ID relacional y se dispara el fetch geográfico autónomo
+            selDist.onchange = async () => {
+                const opcionElegida = selDist.options[selDist.selectedIndex];
+                const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                
+                const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                if (inputUbigeoFk) {
+                    inputUbigeoFk.value = codigoUbigeoIdDetectado;
+                    inputUbigeoFk.readOnly = true;
+                    inputUbigeoFk.style.background = '#f1f5f9';
                 }
-            } catch (err) { console.error("Error Autopoblado Geocode:", err); }
-        };
-        formNode.querySelector('[name="direccion"]')?.addEventListener('blur', dispararGeocodeSRE);
-        formNode.querySelector('[name="distrito"]')?.addEventListener('blur', dispararGeocodeSRE);
-    }
 
+                const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
+                if (!direccionValor || !selDist.value) return;
+
+                try {
+                    const resGeo = await fetch(`https://openstreetmap.org{encodeURIComponent(direccionValor + ", " + selDist.value + ", " + selDep.value + ", Peru")}`);
+                    const dataGeo = await resGeo.json();
+                    if (dataGeo && dataGeo.length > 0) {
+                        const loc = dataGeo[0];
+                        const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
+                        if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
+                        if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
+                        if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
+                        if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
+                        if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}`;
+                    }
+                } catch (eGeo) { console.warn("Error calculando coordenadas dinámicas:", eGeo); }
+            };
+
+            formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { if(selDist.value) selDist.onchange(); });
+
+        })();
+    } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo
+
+    
     const cerrarSubModal = () => { subModal.style.display = 'none'; };
 
     document.getElementById('btn-cancelar-submodal').onclick = cerrarSubModal;
