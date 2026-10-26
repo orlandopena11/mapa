@@ -516,8 +516,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
-                    const valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
+                    let valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
+                    
+                    // Tarea 1: Autogeneración del ID secuencial al crear una nueva propiedad
+                    if (nombreTabla === 'propiedad' && c.nombre === 'propiedad_id' && !esEdicion) {
+                        valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
+                    }
                     if (c.tipo === 'select') {
+
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
