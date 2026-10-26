@@ -571,18 +571,29 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     }
+                    // [INICIO DE LLAVE]: Renderizado estándar para tipos select normales de la configuración
                     if (c.tipo === 'select') {
-
                         return `
                             <div>
-
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
                                 <select name="${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;" ${c.requerido ? 'required' : ''}>
                                     ${c.opciones.map(op => `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`).join('')}
                                 </select>
                             </div>
                         `;
-                    }
+                    } // [FIN DE LLAVE]: Cierra renderizado estándar select
+
+                    // [INICIO DE LLAVE]: Mutación a selectores interactivos para la jerarquía de la tabla ubigeo
+                    if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" class="lov-ubigeo-cascada" id="sel-ubigeo-${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
+                                    <option value="">-- Seleccione ${c.label} --</option>
+                                </select>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVE]: Cierra inyección de selectores políticos en cascada
                     
                      let valorInputFinal = valorActual;
                     // Tarea 2: Forzar el ID del usuario logueado en modo inserción
