@@ -545,9 +545,26 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     }
-                    // Renderizado de lista LOV para situacion_propiedad
+                    // [INICIO DE LLAVE]: Abre la validación de situacion_propiedad
                     if (nombreTabla === 'propiedad' && c.nombre === 'situacion_propiedad') {
                         return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" class="lov-situacion-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVE]: Cierra situacion_propiedad
+
+                    // [INICIO DE LLAVE]: Abre la validación de la lista desplegable lov_pais
+                    if (nombreTabla === 'propiedad' && c.nombre === 'pais') {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" class="lov-pais-dinamico" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVE]: Cierra lov_pais
+
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
                                 <select name="${c.nombre}" class="lov-situacion-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
@@ -600,7 +617,20 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
+    // [INICIO DE LLAVE]: Abre la función autoejecutable asíncrona para cargar lov_pais
+    (async () => {
+        const clienteSupabase = obtenerClienteSupabase();
+        if (!clienteSupabase || nombreTabla !== 'propiedad') return;
+        const formElement = document.getElementById('form-generico-crud');
+        const selPais = formElement.querySelector('.lov-pais-dinamico');
+        if (selPais) {
+            const { data } = await clienteSupabase.from('lov_pais').select('*');
+            if (data) selPais.innerHTML = data.map(o => `<option value="${o.nombre}" ${selPais.dataset.actual === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
+        }
+    })(); // [FIN DE LLAVE]: Cierra la carga asíncrona de lov_pais
+
     // Captura del evento blur en dirección y distrito para el cálculo automático SRE
+
     if (nombreTabla === 'propiedad') {
         const formNode = document.getElementById('form-generico-crud');
         const dispararGeocodeSRE = async () => {
