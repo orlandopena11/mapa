@@ -532,11 +532,20 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     }
+                    // Renderizado de lista LOV para situacion_propiedad
+                    if (nombreTabla === 'propiedad' && c.nombre === 'situacion_propiedad') {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" class="lov-situacion-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    }
                     if (c.tipo === 'select') {
-
 
                         return `
                             <div>
+
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
                                 <select name="${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;" ${c.requerido ? 'required' : ''}>
                                     ${c.opciones.map(op => `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`).join('')}
