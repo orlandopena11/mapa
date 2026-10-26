@@ -396,9 +396,40 @@ async function cargarDatosTablaCrud(nombreTabla) {
         if (!cliente) throw new Error("Cliente Supabase inaccesible.");
 
         const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
-        const { data, error } = await cliente.from(nombreTabla).select('*').limit(100);
+        let { data, error } = await cliente.from(nombreTabla).select('*').limit(100);
 
         if (error) throw error;
+
+        // [INICIO DE LLAVE]: Tubería asíncrona para inyectar fotos extras en la rejilla principal del CRUD
+        if (nombreTabla === 'propiedad' && data && data.length > 0) {
+            try {
+                // Consultamos de golpe todas las fotos de las propiedades cargadas en la rejilla
+                const listaIds = data.map(p => p.propiedad_id);
+                const { data: todasLasFotos } = await cliente
+                    .from('imagen_propiedad')
+                    .select('propiedad_id_fk, ruta_imagen, orden')
+                    .in('propiedad_id_fk', listaIds)
+                    .order('orden', { ascending: true });
+
+                if (todasLasFotos && todasLasFotos.length > 0) {
+                    // Mapeamos e inyectamos las rutas correspondientes en caliente sobre el array data
+                    data = data.map(prop => {
+                        const fotosDeEstaProp = todasLasFotos.filter(f => String(f.propiedad_id_fk) === String(prop.propiedad_id));
+                        const copiaProp = { ...prop };
+                        
+                        fotosDeEstaProp.forEach(fotoObj => {
+                            const numOrden = fotoObj.orden;
+                            // Sincronizamos con el nombre exacto de la columna foto_extra_X
+                            copiaProp[`foto_extra_${numOrden}`] = fotoObj.ruta_imagen;
+                        });
+                        return copiaProp;
+                    });
+                }
+            } catch (errGridFotos) {
+                console.warn("No se pudieron pre-cargar las fotos secundarias para la rejilla:", errGridFotos);
+            }
+        } // [FIN DE LLAVE]: Cierra la inyección multimedia para la tabla principal
+
 
         // [INICIO DE LLAVES]: Valida datos vacíos
         if (!data || data.length === 0) {
