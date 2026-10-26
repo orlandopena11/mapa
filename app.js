@@ -607,13 +607,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
                         valorInputFinal = window.usuarioLogueado.id;
                     }
-                    if (esEdicion && c.nombre.startsWith('foto_extra_')) {
-                        let indiceExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10) - 1;
-
-                    if (fotosSecundariasObtenidas[indiceExtra]) {
-                            valorInputFinal = fotosSecundariasObtenidas[indiceExtra];
+                    
+                    // [INICIO DE LLAVE]: Sincronización atómica con la tabla relacional public.imagen_propiedad
+                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) {
+                        const numeroFotoExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
+                        // Como la primera foto extra en el formulario corresponde a la segunda imagen real de la propiedad, leemos el índice correlativo directo
+                        if (fotosSecundariasObtenidas[numeroFotoExtra] !== undefined) {
+                            valorInputFinal = fotosSecundariasObtenidas[numeroFotoExtra];
                         }
-                    }
+                    } // [FIN DE LLAVE]: Cierra el mapeo relacional multimedia
 
                 return `
                     <div>
