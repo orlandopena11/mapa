@@ -516,6 +516,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
+                    // Arquitectura limpia: Ignoramos por completo la columna redundante galeria_fotos
+                    if (c.nombre === 'galeria_fotos') return '';
+
                     let valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
                     
                     // Tarea 1: Autogeneración del ID secuencial al crear una nueva propiedad
@@ -655,8 +658,12 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
         let listaFotosExtras = [];
 
         if (nombreTabla === 'propiedad') {
+            // Remoción de la propiedad huérfana galeria_fotos para sanar el payload de guardado
+            if (payloadPropiedad.hasOwnProperty('galeria_fotos')) delete payloadPropiedad['galeria_fotos'];
+
             for (let i = 1; i <= 30; i++) {
                 let claveExtra = `foto_extra_${i}`;
+
                 if (payloadPropiedad[claveExtra]) {
                     if (String(payloadPropiedad[claveExtra]).trim() !== "") {
                         listaFotosExtras.push(String(payloadPropiedad[claveExtra]).trim());
