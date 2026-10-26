@@ -637,9 +637,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             const direccion = formNode.querySelector('[name="direccion"]')?.value.trim();
             const distrito = formNode.querySelector('[name="distrito"]')?.value.trim();
             if (!direccion || !distrito) return;
+            // [INICIO DE LLAVE]: Bloque de consulta segura al API de OpenStreetMap
             try {
-                const res = await fetch(`https://openstreetmap.org{encodeURIComponent(direccion + ", " + distrito + ", Lima, Peru")}`);
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(direccion + ", " + distrito + ", Lima, Peru")}`);
                 const data = await res.json();
+            // [FIN DE LLAVE]: Cierra la captura de respuestas JSON
+
                 if (data && data.length > 0) {
                     const loc = data[0];
                     const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
