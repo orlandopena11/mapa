@@ -577,15 +577,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         `;
                     } // [FIN DE LLAVE]: Cierra situacion_propiedad
 
-                    // [INICIO DE LLAVE]: Abre la validación de la lista desplegable lov_pais
+                    // [INICIO DE LLAVE]: Abre el control condicional para inyectar el select dinámico de país vinculando su ID único
                     if (nombreTabla === 'propiedad' && c.nombre === 'pais') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-pais-dinamico" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                                <select name="${c.nombre}" id="sel-lov-pais" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                             </div>
                         `;
-                    } // [FIN DE LLAVE]: Cierra lov_pais
+                    } // [FIN DE LLAVE]: Cierra la inyección del elemento select para país
 
                     // [INICIO DE LLAVE]: Mutación a selectores interactivos para la jerarquía relacional de la tabla ubigeo
                     if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
