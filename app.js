@@ -525,6 +525,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     if (nombreTabla === 'propiedad' && c.nombre === 'propiedad_id' && !esEdicion) {
                         valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
                     }
+
+                    // Tarea 3: Componente select dinámico para subtipo_propiedad
+                    if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" class="lov-subtipo-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    }
                     
                     // Renderizado de la lista LOV para subtipo_propiedad
                     if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
