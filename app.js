@@ -557,16 +557,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
                     }
 
-                    // Tarea 3: Componente select dinámico para subtipo_propiedad
+                     // Tarea 3: Componente select dinámico para subtipo_propiedad con persistencia de edición
                     if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-subtipo-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                                <select name="${c.nombre}" class="lov-subtipo-dinamico" id="sel-lov-subtipo_propiedad" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                             </div>
                         `;
                     }
-                    
+                   
                     // Renderizado de la lista LOV para subtipo_propiedad
                     if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
                         return `
@@ -680,7 +680,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         }
     })(); // [FIN DE LLAVE]: Cierra la carga asíncrona de lov_pais
 
-    // [INICIO DE LLAVE]: Motor dinámico interactivo para la tabla de ubigeo y geocodificación
+    // [INICIO DE LLAVE]: Motor dinámico interactivo para la tabla de ubigeo, geocodificación y acoplamiento de edición
     if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
@@ -690,6 +690,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             const selDep = formNode.querySelector('#sel-ubigeo-departamento');
             const selProv = formNode.querySelector('#sel-ubigeo-provincia');
             const selDist = formNode.querySelector('#sel-ubigeo-distrito');
+            const selSub = formNode.querySelector('#sel-lov-subtipo_propiedad');
+
+            // Descarga y poblamiento de las LOV dinámicas básicas de subtipo
+            if (selSub) {
+                const { data: dataSub } = await clienteSupabase.from('lov_sub_tipo_propiedad').select('*');
+                if (dataSub) selSub.innerHTML = dataSub.map(o => `<option value="${o.nombre}" ${selSub.dataset.actual === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
+            }
 
             // Descarga atómica de la tabla pública de ubigeos
             const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
@@ -703,23 +710,34 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             }
 
             // Filtrado reactivo en cascada al cambiar de Departamento
-            selDep.onchange = () => {
+            selDep.onchange = (valorForzadoProv = null) => {
                 selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
                 selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                if (formNode.querySelector('[name="codigo_ubigeo_id_fk"]')) formNode.querySelector('[name="codigo_ubigeo_id_fk"]').value = '';
                 
                 const provinciasFiltradas = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
                 selProv.innerHTML += provinciasFiltradas.map(p => `<option value="${p}">${p}</option>`).join('');
+                if (valorForzadoProv) selProv.value = valorForzadoProv;
             };
 
             // Filtrado reactivo en cascada al cambiar de Provincia
-            selProv.onchange = () => {
+            selProv.onchange = (valorForzadoDist = null) => {
                 selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                if (formNode.querySelector('[name="codigo_ubigeo_id_fk"]')) formNode.querySelector('[name="codigo_ubigeo_id_fk"]').value = '';
 
                 const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
                 selDist.innerHTML += distritosFiltrados.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
+                if (valorForzadoDist) selDist.value = valorForzadoDist;
             };
+
+            // Auto-poblado elástico en modo EDICIÓN si la fila cuenta con datos previos guardados
+            if (esEdicion && datosFila) {
+                if (datosFila.departamento) {
+                    selDep.value = datosFila.departamento;
+                    selDep.onchange(datosFila.provincia);
+                }
+                if (datosFila.provincia) {
+                    selProv.onchange(datosFila.distrito);
+                }
+            }
 
             // Al elegir el Distrito se calcula el ID relacional y se dispara el fetch geográfico autónomo
             selDist.onchange = async () => {
