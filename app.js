@@ -557,7 +557,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
                     }
 
-                    // [INICIO DE LLAVE]: Control condicional estricto para inyectar el elemento select de subtipo_propiedad
+                    // [INICIO DE LLAVE]: Inyección del elemento select de subtipo_propiedad con ID unificado
                     if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
                         return `
                             <div>
@@ -565,39 +565,51 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 <select name="${c.nombre}" id="sel-lov-subtipo_propiedad" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                             </div>
                         `;
-                    } // [FIN DE LLAVE]: Cierra el control condicional de subtipo_propiedad
+                    } // [FIN DE LLAVE]: Cierra subtipo_propiedad
 
-                    // [INICIO DE LLAVE]: Abre la validación de situacion_propiedad
+                    // [INICIO DE LLAVE]: Inyección de situacion_propiedad con ID unificado
                     if (nombreTabla === 'propiedad' && c.nombre === 'situacion_propiedad') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-situacion-dinamico" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                                <select name="${c.nombre}" id="sel-lov-situacion" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
                             </div>
                         `;
                     } // [FIN DE LLAVE]: Cierra situacion_propiedad
 
-                    // [INICIO DE LLAVE]: Abre el control condicional para inyectar el select dinámico de país vinculando su ID único
+                    // [INICIO DE LLAVE]: Inyección del elemento select de País
                     if (nombreTabla === 'propiedad' && c.nombre === 'pais') {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-pais" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                                <select name="${c.nombre}" id="sel-lov-pais" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
+                                    <option value="">-- Seleccione País --</option>
+                                </select>
                             </div>
                         `;
-                    } // [FIN DE LLAVE]: Cierra la inyección del elemento select para país
+                    } // [FIN DE LLAVE]: Cierra el País
 
-                    // [INICIO DE LLAVE]: Mutación a selectores interactivos para la jerarquía relacional de la tabla ubigeo
+                    // [INICIO DE LLAVE]: Inyección de componentes select para la jerarquía territorial de Ubigeo
                     if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-ubigeo-cascada" id="sel-ubigeo-${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
+                                <select name="${c.nombre}" id="sel-ubigeo-${c.nombre}" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
                                     <option value="">-- Seleccione ${c.label} --</option>
                                 </select>
                             </div>
                         `;
-                    } // [FIN DE LLAVE]: Cierra la inyección de combos políticos en cascada
+                    } // [FIN DE LLAVE]: Cierra Ubigeo
+
+                    // [INICIO DE LLAVE]: Inyección condicional estructurada para transformar el campo vista en select dinámico
+                    if (nombreTabla === 'propiedad' && c.nombre === 'vista') {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" id="sel-lov-vista" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVE]: Cierra el campo vista
 
                     // [INICIO DE LLAVE]: Renderizado estándar para tipos select normales de la configuración
 
