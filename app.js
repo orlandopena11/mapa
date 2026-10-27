@@ -651,12 +651,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
                     } // [FIN DE LLAVE]: Cierra el mapeo relacional multimedia
 
-                return `
-                    <div>
-                        <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                        <input type="${c.tipo}" name="${c.nombre}" value="${valorInputFinal}" ${['latitud', 'longitud'].includes(c.nombre) ? 'step="any"' : ''} style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ${c.requerido ? 'required' : ''} />
-                    </div>
-                `;
+                    // [INICIO DE LLAVE]: Componente select de opción única para el campo vista alineado a las buenas prácticas
+                    if (nombreTabla === 'propiedad' && c.nombre === 'vista') {
+                        return `
+                            <div>
+                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
+                                <select name="${c.nombre}" id="sel-lov-vista" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVE]: Cierra la inyección estructural del combo vista
+
                 }).join('')}
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
