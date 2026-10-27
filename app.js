@@ -932,7 +932,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
         await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
         subModal.style.display = 'none';
-         })(); // [FIN DE LLAVE]: Cierra de forma limpia la declaración de la función asíncrona anónima del motor relacional de ubicación
+
     }; // [FIN DE LLAVES]: Cierra callback submit
 } // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
 
