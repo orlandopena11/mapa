@@ -4038,4 +4038,5 @@ if (formTour) {
                     ejecutarRecalculoHipoteca();
                 }
             
-}); // Cierra el DOMContentLoaded del archivo
+// }); // Cierra el DOMContentLoaded del archivo
+}; // Cierra el DOMContentLoaded del archivo
