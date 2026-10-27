@@ -806,7 +806,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                         try { // [INICIO DE LLAVE]: Intento de consulta HTTP a la API de mapas
                             const consultaOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
-                            const resGeo = await fetch(`https://openstreetmap.org{encodeURIComponent(consultaOSM)}`);
+                            const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(consultaOSM)}`); 
                             const dataGeo = await resGeo.json();
                             
                             if (dataGeo && dataGeo.length > 0) {
