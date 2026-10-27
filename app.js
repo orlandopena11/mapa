@@ -840,13 +840,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                 } // [FIN DE LLAVE]: Cierra validación estructural de edición
 
-            } catch (errTubería) { // [INICIO DE LLAVE]: Captura de errores de red
+            } catch (errTubería) { // [INICIO DE LLAVE]: Abre bloque catch para captura de excepciones de red
                 console.error("Error crítico procesando motor relacional de ubicación:", errTubería);
             } // [FIN DE LLAVE]: Cierra el bloque catch de excepciones de red
             
             // Sincronización atómica y elástica de la cascada jerárquica territorial en modo EDICIÓN
-            // Al ejecutarse aquí adentro, garantizamos que selDep y el resto de selectores estén definidos en el ámbito asíncrono.
-            if (esEdicion && datosFila) { // [INICIO DE LLAVE]: Abre validación estructural de edición
+            // Al ejecutarse aquí adentro, garantizamos que selDep y todos los selectores dependientes se encuentren dentro del ámbito (scope) asíncrono válido.
+            if (esEdicion && datosFila) { // [INICIO DE LLAVE]: Abre validación estructural para el modo edición
                 if (selSub && datosFila.subtipo_propiedad) selSub.value = datosFila.subtipo_propiedad;
                 if (selSituacion && datosFila.situacion_propiedad) selSituacion.value = datosFila.situacion_propiedad;
                 if (selVista && datosFila.vista) selVista.value = datosFila.vista;
@@ -857,6 +857,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selPais.value = 'Perú';
                 }
                 
+                // Disparar en cadena interactiva el poblado de los departamentos relacionales
                 evaluarActivacionDepartamentos();
 
                 if (datosFila.departamento && selDep) {
@@ -879,8 +880,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         inputUbigeoFk.style.background = '#f1f5f9';
                     }
                 }
-            } // [FIN DE LLAVE]: Cierra la asignación secuencial de edición en caliente
-        })();
+            } // [FIN DE LLAVE]: Cierra la asignación secuencial y reactiva de los campos en el modo edición
+        })(); // [FIN DE LLAVE]: Cierra la declaración de la función asíncrona anónima e invoca su ejecución inmediata
     } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo de la fila
   
                         // [INICIO DE LLAVE]: Tubería asíncrona elástica para forzar el poblado secuencial de datos guardados en modo edición
