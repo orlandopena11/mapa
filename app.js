@@ -881,62 +881,41 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     }
                 }
             } // [FIN DE LLAVE]: Cierra la asignación secuencial y reactiva de los campos en el modo edición
-        })(); // [FIN DE LLAVE]: Cierra la declaración de la función asíncrona anónima e invoca su ejecución inmediata
-    } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo de la fila
-  
-                        // [INICIO DE LLAVE]: Tubería asíncrona elástica para forzar el poblado secuencial de datos guardados en modo edición
-                    // Esta rutina asigna los valores en orden estricto de jerarquía y dispara los callbacks interactivos para renderizar las opciones dependientes.
-                    if (datosFila.departamento && selDep) {
-                        selDep.value = datosFila.departamento;
-                        selDep.onchange(datosFila.provincia);
-                    }
-                    if (datosFila.provincia && selProv) {
-                        selProv.value = datosFila.provincia;
-                        selProv.onchange(datosFila.distrito);
-                    }
-                    if (datosFila.distrito && selDist) {
-                        selDist.value = datosFila.distrito;
-                        
-                        const opcionElegida = selDist.options[selDist.selectedIndex];
-                        const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
-                        const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
-                        if (inputUbigeoFk) {
-                            inputUbigeoFk.value = codigoUbigeoIdDetectado || datosFila.codigo_ubigeo_id_fk || '';
-                            inputUbigeoFk.readOnly = true;
-                            inputUbigeoFk.style.background = '#f1f5f9';
-                        }
-                    } // [FIN DE LLAVE]: Cierra la asignación secuencial y atómica del modo edición
+        })(); // [FIN DE LLAVE]: Cierra de forma limpia la declaración de la función asíncrona anónima del motor relacional de ubicación
+    } // [FIN DE LLAVE]: Cierra el control condicional principal para la tabla propiedad
 
-    } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo de la fila
+    // [INICIO DE LLAVE]: Función constructora modular para ocultar la ventana emergente submodal del CRUD
+    const cerrarSubModal = () => { 
+        if (subModal) subModal.style.display = 'none'; 
+    }; // [FIN DE LLAVE]: Cierra la declaración de la rutina cerrarSubModal
 
+    // Vinculación condicional segura de eventos para el cierre del submodal previniendo quiebres de token nulo
+    const btnCancelarCrud = document.getElementById('btn-cancelar-submodal');
+    const btnCerrarCrudX = document.getElementById('btn-cerrar-submodal-x');
+    if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
+    if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
+    // Asignación estructurada del evento submit para la persistencia atómica de datos en Supabase
+    const formularioCrudDOM = document.getElementById('form-generico-crud');
+    if (formularioCrudDOM) {
+        formularioCrudDOM.onsubmit = async (e) => {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btn-guardar-crud-submit');
+            if (btnSubmit) {
+                btnSubmit.innerText = "Guardando...";
+                btnSubmit.disabled = true;
+            }
 
-            
-    
-    const cerrarSubModal = () => { subModal.style.display = 'none'; };
+            const formData = new FormData(e.target);
+            const payload = {};
+            formData.forEach((val, key) => { payload[key] = val; });
 
-    document.getElementById('btn-cancelar-submodal').onclick = cerrarSubModal;
-    document.getElementById('btn-cerrar-submodal-x').onclick = cerrarSubModal;
+            await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
+            cerrarSubModal();
+        }; // [FIN DE LLAVE]: Cierra callback onsubmit del formulario genérico del CRUD
+    } 
+} // [FIN DE LLAVES]: Cierra de forma balanceada la estructura completa de la función abrirFormularioEdicionCrud
 
-    // [INICIO DE LLAVES]: Asigna el evento submit al formulario genérico del CRUD
-    document.getElementById('form-generico-crud').onsubmit = async (e) => {
-        // [INICIO DE LLAVES]: Callback asíncrono para recolectar datos y ejecutar la persistencia
-        e.preventDefault();
-        const btnSubmit = document.getElementById('btn-guardar-crud-submit');
-        btnSubmit.innerText = "Guardando...";
-        btnSubmit.disabled = true;
-
-        const formData = new FormData(e.target);
-        const payload = {};
-        formData.forEach((val, key) => { payload[key] = val; });
-
-        await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
-        subModal.style.display = 'none';
-
-       //             } // [FIN DE LLAVE]: Cierra la asignación secuencial y reactiva de los campos en el modo edición
-       // })(); // [FIN DE LLAVE]: Cierra de forma limpia la declaración de la función asíncrona anónima del motor relacional de ubicación
-    }; // [FIN DE LLAVES]: Cierra callback submit
-//} // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
 
  
 
