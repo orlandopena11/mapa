@@ -936,7 +936,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     }; // [FIN DE LLAVES]: Cierra callback submit
 } // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
 
-
+ 
 
 /**
  * Descripción de la función: guardarRegistroCrud realiza la persistencia en Supabase.
