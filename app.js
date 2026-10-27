@@ -4034,5 +4034,5 @@ if (formTour) {
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
                 }
-            }
+            
 }); // Cierra el DOMContentLoaded del archivo
