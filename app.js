@@ -840,10 +840,48 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                 } // [FIN DE LLAVE]: Cierra validación estructural de edición
 
-            } catch (errTubería) {
+            } catch (errTubería) { // [INICIO DE LLAVE]: Captura de errores de red
                 console.error("Error crítico procesando motor relacional de ubicación:", errTubería);
             } // [FIN DE LLAVE]: Cierra el bloque catch de excepciones de red
+            
+            // Sincronización atómica y elástica de la cascada jerárquica territorial en modo EDICIÓN
+            // Al ejecutarse aquí adentro, garantizamos que selDep y el resto de selectores estén definidos en el ámbito asíncrono.
+            if (esEdicion && datosFila) { // [INICIO DE LLAVE]: Abre validación estructural de edición
+                if (selSub && datosFila.subtipo_propiedad) selSub.value = datosFila.subtipo_propiedad;
+                if (selSituacion && datosFila.situacion_propiedad) selSituacion.value = datosFila.situacion_propiedad;
+                if (selVista && datosFila.vista) selVista.value = datosFila.vista;
+
+                if (selPais && datosFila.pais) {
+                    selPais.value = datosFila.pais;
+                } else if (selPais) {
+                    selPais.value = 'Perú';
+                }
+                
+                evaluarActivacionDepartamentos();
+
+                if (datosFila.departamento && selDep) {
+                    selDep.value = datosFila.departamento;
+                    selDep.onchange(datosFila.provincia);
+                }
+                if (datosFila.provincia && selProv) {
+                    selProv.value = datosFila.provincia;
+                    selProv.onchange(datosFila.distrito);
+                }
+                if (datosFila.distrito && selDist) {
+                    selDist.value = datosFila.distrito;
+                    
+                    const opcionElegida = selDist.options[selDist.selectedIndex];
+                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                    if (inputUbigeoFk) {
+                        inputUbigeoFk.value = codigoUbigeoIdDetectado || datosFila.codigo_ubigeo_id_fk || '';
+                        inputUbigeoFk.readOnly = true;
+                        inputUbigeoFk.style.background = '#f1f5f9';
+                    }
+                }
+            } // [FIN DE LLAVE]: Cierra la asignación secuencial de edición en caliente
         })();
+    } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo de la fila
   
                         // [INICIO DE LLAVE]: Tubería asíncrona elástica para forzar el poblado secuencial de datos guardados en modo edición
                     // Esta rutina asigna los valores en orden estricto de jerarquía y dispara los callbacks interactivos para renderizar las opciones dependientes.
