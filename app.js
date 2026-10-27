@@ -671,112 +671,179 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
-    // [INICIO DE LLAVE]: Abre la función autoejecutable asíncrona para cargar lov_pais
-    (async () => {
-        const clienteSupabase = obtenerClienteSupabase();
-        if (!clienteSupabase || nombreTabla !== 'propiedad') return;
-        const formElement = document.getElementById('form-generico-crud');
-        const selPais = formElement.querySelector('.lov-pais-dinamico');
-        if (selPais) {
-            const { data } = await clienteSupabase.from('lov_pais').select('*');
-            if (data) selPais.innerHTML = data.map(o => `<option value="${o.nombre}" ${selPais.dataset.actual === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
-        }
-    })(); // [FIN DE LLAVE]: Cierra la carga asíncrona de lov_pais
-
-    // [INICIO DE LLAVE]: Motor dinámico interactivo para la tabla de ubigeo, geocodificación y acoplamiento de edición
+    // [INICIO DE LLAVE]: Inicialización del motor interactivo secuencial (País -> Ubigeo Cascadas -> Seteo ID -> Geocodificación)
     if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
             if (!clienteSupabase) return;
 
             const formNode = document.getElementById('form-generico-crud');
+            if (!formNode) return;
+
+            const selSub = formNode.querySelector('#sel-lov-subtipo_propiedad');
+            const selSituacion = formNode.querySelector('#sel-lov-situacion');
+            const selPais = formNode.querySelector('#sel-lov-pais');
+            const selVista = formNode.querySelector('#sel-lov-vista');
             const selDep = formNode.querySelector('#sel-ubigeo-departamento');
             const selProv = formNode.querySelector('#sel-ubigeo-provincia');
             const selDist = formNode.querySelector('#sel-ubigeo-distrito');
-            const selSub = formNode.querySelector('#sel-lov-subtipo_propiedad');
 
-            // Descarga y poblamiento de las LOV dinámicas básicas de subtipo
+            // Bloqueo inicial preventivo de selectores dependientes territoriales
+            if (selDep) selDep.disabled = true;
+            if (selProv) selProv.disabled = true;
+            if (selDist) selDist.disabled = true;
+
+            // A. Cargar select de subtipo_propiedad
             if (selSub) {
-                const { data: dataSub } = await clienteSupabase.from('lov_sub_tipo_propiedad').select('*');
-                if (dataSub) selSub.innerHTML = dataSub.map(o => `<option value="${o.nombre}" ${selSub.dataset.actual === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
+                const { data } = await clienteSupabase.from('lov_sub_tipo_propiedad').select('*');
+                if (data) selSub.innerHTML = data.map(o => `<option value="${o.nombre}" ${String(selSub.dataset.actual) === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
             }
 
-            // Descarga atómica de la tabla pública de ubigeos
+            // B. Cargar select de situacion_propiedad
+            if (selSituacion) {
+                const { data } = await clienteSupabase.from('lov_situacion_propiedad').select('*');
+                if (data) selSituacion.innerHTML = data.map(o => `<option value="${o.nombre}" ${String(selSituacion.dataset.actual) === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
+            }
+
+            // C. Cargar select de la tabla normalizada lov_vista (Columna única)
+            if (selVista) {
+                const { data } = await clienteSupabase.from('lov_vista').select('vista');
+                if (data) selVista.innerHTML = '<option value="">-- Seleccione Vista --</option>' + data.map(o => `<option value="${o.vista}" ${String(selVista.dataset.actual) === String(o.vista) ? 'selected' : ''}>${o.vista}</option>`).join('');
+            }
+
+            // D. Cargar select inicial de País
+            if (selPais) {
+                const { data } = await clienteSupabase.from('lov_pais').select('*');
+                if (data) {
+                    selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + data.map(o => `<option value="${o.nombre}" ${String(selPais.dataset.actual || 'Perú') === String(o.nombre) ? 'selected' : ''}>${o.nombre}</option>`).join('');
+                }
+            }
+            // E. Carga en memoria de la tabla Ubigeo
             const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
             if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
 
-            // Poblado inicial del combobox de Departamentos
-            const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+            // Flujo secuencial 1: Selección de País habilita o limpia Departamentos
+            const evaluarActivacionDepartamentos = () => {
+                if (!selDep) return;
+                if (selPais && selPais.value === "Perú") {
+                    selDep.disabled = false;
+                    const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + departamentosUnicos.map(d => `<option value="${d}">${d}</option>`).join('');
+                } else {
+                    selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
+                    if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
+                    if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+                }
+            };
+
+            if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
+
+            // Flujo secuencial 2: Cambio en Departamento activa Provincias
             if (selDep) {
-                selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-                    departamentosUnicos.map(d => `<option value="${d}">${d}</option>`).join('');
+                selDep.onchange = (valorForzadoProv = null) => {
+                    if (!selProv || !selDist) return;
+                    if (!selDep.value) {
+                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                        return;
+                    }
+                    selProv.disabled = false;
+                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+
+                    const provinciasFiltradas = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
+                    selProv.innerHTML += provinciasFiltradas.map(p => `<option value="${p}">${p}</option>`).join('');
+                    if (valorForzadoProv) selProv.value = valorForzadoProv;
+                };
             }
 
-            // Filtrado reactivo en cascada al cambiar de Departamento
-            selDep.onchange = (valorForzadoProv = null) => {
-                selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
-                selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                
-                const provinciasFiltradas = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
-                selProv.innerHTML += provinciasFiltradas.map(p => `<option value="${p}">${p}</option>`).join('');
-                if (valorForzadoProv) selProv.value = valorForzadoProv;
-            };
+            // Flujo secuencial 3: Cambio en Provincia activa Distritos
+            if (selProv) {
+                selProv.onchange = (valorForzadoDist = null) => {
+                    if (!selDist) return;
+                    if (!selProv.value) {
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                        return;
+                    }
+                    selDist.disabled = false;
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
 
-            // Filtrado reactivo en cascada al cambiar de Provincia
-            selProv.onchange = (valorForzadoDist = null) => {
-                selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                    const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
+                    selDist.innerHTML += distritosFiltrados.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
+                    if (valorForzadoDist) selDist.value = valorForzadoDist;
+                };
+            }
 
-                const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
-                selDist.innerHTML += distritosFiltrados.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
-                if (valorForzadoDist) selDist.value = valorForzadoDist;
-            };
+            // Flujo secuencial 4: Selección de Distrito extrae ID automático y ejecuta Geocodificación
+            if (selDist) {
+                selDist.onchange = async () => {
+                    const opcionElegida = selDist.options[selDist.selectedIndex];
+                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                    
+                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                    if (inputUbigeoFk) {
+                        inputUbigeoFk.value = codigoUbigeoIdDetectado;
+                        inputUbigeoFk.readOnly = true;
+                        inputUbigeoFk.style.background = '#f1f5f9';
+                    }
 
-            // Auto-poblado elástico en modo EDICIÓN si la fila cuenta con datos previos guardados
+                    const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
+                    if (!direccionValor || !selDist.value) return;
+
+                    try {
+                        const consultaEstandarOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
+                        const resGeo = await fetch(`https://openstreetmap.org{encodeURIComponent(consultaEstandarOSM)}`);
+                        const dataGeo = await resGeo.json();
+                        
+                        if (dataGeo && dataGeo.length > 0) {
+                            const loc = dataGeo[0];
+                            const lat = parseFloat(loc.lat);
+                            const lon = parseFloat(loc.lon);
+
+                            if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
+                            if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
+                            if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
+                            if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
+                            if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                        }
+                    } catch (eGeo) { 
+                        console.warn("!! Error en el cálculo geográfico dinámico:", eGeo); 
+                    }
+                };
+            }
+
+            formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { 
+                if (selDist && selDist.value) selDist.onchange(); 
+            });
+
+            // Flujo secuencial 5: Inicialización inmediata en caliente si es modo EDICIÓN
             if (esEdicion && datosFila) {
-                if (datosFila.departamento) {
+                if (selPais && datosFila.pais) selPais.value = datosFila.pais;
+                evaluarActivacionDepartamentos();
+                
+                if (datosFila.departamento && selDep) {
                     selDep.value = datosFila.departamento;
                     selDep.onchange(datosFila.provincia);
                 }
-                if (datosFila.provincia) {
+                if (datosFila.provincia && selProv) {
                     selProv.onchange(datosFila.distrito);
                 }
-            }
-
-            // Al elegir el Distrito se calcula el ID relacional y se dispara el fetch geográfico autónomo
-            selDist.onchange = async () => {
-                const opcionElegida = selDist.options[selDist.selectedIndex];
-                const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
-                
-                const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
-                if (inputUbigeoFk) {
-                    inputUbigeoFk.value = codigoUbigeoIdDetectado;
-                    inputUbigeoFk.readOnly = true;
-                    inputUbigeoFk.style.background = '#f1f5f9';
-                }
-
-                const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
-                if (!direccionValor || !selDist.value) return;
-
-                try {
-                    const resGeo = await fetch(`https://openstreetmap.org{encodeURIComponent(direccionValor + ", " + selDist.value + ", " + selDep.value + ", Peru")}`);
-                    const dataGeo = await resGeo.json();
-                    if (dataGeo && dataGeo.length > 0) {
-                        const loc = dataGeo[0];
-                        const lat = parseFloat(loc.lat), lon = parseFloat(loc.lon);
-                        if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
-                        if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
-                        if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
-                        if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
-                        if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}`;
+                if (datosFila.distrito && selDist) {
+                    selDist.value = datosFila.distrito;
+                    const opcionElegida = selDist.options[selDist.selectedIndex];
+                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                    if (inputUbigeoFk) {
+                        inputUbigeoFk.value = codigoUbigeoIdDetectado || datosFila.codigo_ubigeo_id_fk || '';
+                        inputUbigeoFk.readOnly = true;
+                        inputUbigeoFk.style.background = '#f1f5f9';
                     }
-                } catch (eGeo) { console.warn("Error calculando coordenadas dinámicas:", eGeo); }
-            };
-
-            formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { if(selDist.value) selDist.onchange(); });
-
+                }
+            }
         })();
-    } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo
+    } // [FIN DE LLAVE]: Cierra el bloque interactivo secuencial
 
+            
     
     const cerrarSubModal = () => { subModal.style.display = 'none'; };
 
