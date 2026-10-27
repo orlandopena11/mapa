@@ -818,7 +818,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
                                 if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
                                 if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
-                                if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org{lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                                if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
                             }
                         } catch (eGeo) { console.warn("!! Error en geocodificación elástica:", eGeo); } // [FIN DE LLAVE]: Cierra captura de error de la API
                     }; // [FIN DE LLAVE]: Cierra callback de distrito
