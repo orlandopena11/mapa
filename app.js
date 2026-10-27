@@ -838,11 +838,21 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     
                     evaluarActivacionDepartamentos();
 
+                } // [FIN DE LLAVE]: Cierra validación estructural de edición
+
+            } catch (errTubería) {
+                console.error("Error crítico procesando motor relacional de ubicación:", errTubería);
+            } // [FIN DE LLAVE]: Cierra el bloque catch de excepciones de red
+        })();
+  
+                        // [INICIO DE LLAVE]: Tubería asíncrona elástica para forzar el poblado secuencial de datos guardados en modo edición
+                    // Esta rutina asigna los valores en orden estricto de jerarquía y dispara los callbacks interactivos para renderizar las opciones dependientes.
                     if (datosFila.departamento && selDep) {
                         selDep.value = datosFila.departamento;
                         selDep.onchange(datosFila.provincia);
                     }
                     if (datosFila.provincia && selProv) {
+                        selProv.value = datosFila.provincia;
                         selProv.onchange(datosFila.distrito);
                     }
                     if (datosFila.distrito && selDist) {
@@ -856,13 +866,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             inputUbigeoFk.readOnly = true;
                             inputUbigeoFk.style.background = '#f1f5f9';
                         }
-                    }
-                } // [FIN DE LLAVE]: Cierra validación estructural de edición
+                    } // [FIN DE LLAVE]: Cierra la asignación secuencial y atómica del modo edición
 
-            } catch (errTubería) {
-                console.error("Error crítico procesando motor relacional de ubicación:", errTubería);
-            } // [FIN DE LLAVE]: Cierra el bloque catch de excepciones de red
-        })();
     } // [FIN DE LLAVE]: Cierra el motor interactivo relacional de ubigeo de la fila
 
 
