@@ -737,10 +737,6 @@ try {
         }
     } // [FIN DE LLAVES]: Cierra bloque país
 
-} catch (errLov) {
-    console.error("Error al poblar los selectores LOV:", errLov.message);
-} // [FIN DE LLAVES]: Cierra el bloque try/catch general de catálogos
-
             
                 // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
                 const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
