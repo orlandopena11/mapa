@@ -700,26 +700,44 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             
 // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
-            const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
-            if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
+let { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
+if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
 
-            // FLUJO 1: Evalúa el valor del País seleccionado. Si es 'Perú', habilita y extrae los departamentos únicos ordenados alfabéticamente.
-            const evaluarActivacionDepartamentos = () => { // [INICIO DE LLAVE]: Abre la subfunción reactiva de control de departamentos
-                if (!selDep) return;
-                if (selPais && selPais.value === "Perú") {
-                    selDep.disabled = false;
-                    const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
-                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-                        depts.map(d => `<option value="${d}">${d}</option>`).join('');
-                } else {
-                    selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
-                    if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
-                    if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
-                }
-            }; // [FIN DE LLAVE]: Termina la lógica de control del combo departamentos
+// FLUJO 1: Evalúa el valor del País seleccionado. Si es 'Perú', habilita y extrae los departamentos únicos ordenados alfabéticamente.
+const evaluarActivacionDepartamentos = () => { // [INICIO DE LLAVE]: Abre la subfunción reactiva de control de departamentos
+    if (!selDep) return;
+    if (selPais && selPais.value === "Perú") {
+        selDep.disabled = false;
+        const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+        selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+            depts.map(d => `<option value="${d}">${d}</option>`).join('');
+    } else {
+        selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
+        if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
+        if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+    }
+}; // [FIN DE LLAVE]: Termina la lógica de control del combo departamentos
 
-            if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
-            
+if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
+
+// FLUJO 2: Escucha el cambio de departamento para renderizar dinámicamente sus provincias correlativas y activar el componente select de provincias.
+if (selDep) {
+    selDep.onchange = (valorForzadoProv = null) => { // [INICIO DE LLAVE]: Abre callback reactivo onchange para provincias
+        if (!selProv || !selDist) return;
+        if (!selDep.value) {
+            selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
+            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+            return;
+        }
+        selProv.disabled = false;
+        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+
+        const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
+        selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
+        if (valorForzadoProv) selProv.value = valorForzadoProv;
+    }; // [FIN DE LLAVE]: Cierra callback reactivo de provincias
+}            
             
             // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
                 const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
