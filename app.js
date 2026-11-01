@@ -675,8 +675,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
-    // [INICIO DE LLAVE]: Inicialización del motor interactivo secuencial (País -> Ubigeo Cascadas -> Seteo ID -> Geocodificación)
-    if (nombreTabla === 'propiedad') {
+if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
             if (!clienteSupabase) return;
@@ -692,169 +691,108 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             const selProv = formNode.querySelector('#sel-ubigeo-provincia');
             const selDist = formNode.querySelector('#sel-ubigeo-distrito');
 
-            // Bloqueo inicial preventivo de selectores dependientes territoriales
             if (selDep) selDep.disabled = true;
             if (selProv) selProv.disabled = true;
             if (selDist) selDist.disabled = true;
 
+            // Caché inteligente en memoria: evita consultas repetidas a Supabase
+            if (!state.ubigeosCache) {
+                const { data, error } = await clienteSupabase.from('ubigeo').select('*');
+                if (error || !data) return;
+                state.ubigeosCache = data;
+            }
+            const coleccionUbigeo = state.ubigeosCache;
 
-            
-// BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
-let { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
-if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
+            const evaluarActivacionDepartamentos = () => {
+                if (!selDep) return;
+                if (selPais && selPais.value === "Perú") {
+                    selDep.disabled = false;
+                    const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+                        depts.map(d => `<option value="${d}">${d}</option>`).join('');
+                } else {
+                    selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
+                    if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
+                    if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+                }
+            };
 
-// FLUJO 1: Evalúa el valor del País seleccionado. Si es 'Perú', habilita y extrae los departamentos únicos ordenados alfabéticamente.
-const evaluarActivacionDepartamentos = () => { // [INICIO DE LLAVE]: Abre la subfunción reactiva de control de departamentos
-    if (!selDep) return;
-    if (selPais && selPais.value === "Perú") {
-        selDep.disabled = false;
-        const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
-        selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-            depts.map(d => `<option value="${d}">${d}</option>`).join('');
-    } else {
-        selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
-        if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
-        if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
-    }
-}; // [FIN DE LLAVE]: Termina la lógica de control del combo departamentos
+            if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
 
-if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
-
-// FLUJO 2: Escucha el cambio de departamento para renderizar dinámicamente sus provincias correlativas y activar el componente select de provincias.
-if (selDep) {
-    selDep.onchange = (valorForzadoProv = null) => { // [INICIO DE LLAVE]: Abre callback reactivo onchange para provincias
-        if (!selProv || !selDist) return;
-        if (!selDep.value) {
-            selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
-            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-            return;
-        }
-        selProv.disabled = false;
-        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
-        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-
-        const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
-        selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
-        if (valorForzadoProv) selProv.value = valorForzadoProv;
-    }; // [FIN DE LLAVE]: Cierra callback reactivo de provincias
-}            
-            
-            // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
-                const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
-                if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
-
-                // FLUJO 1: Evalúa el valor del País seleccionado. Si es 'Perú', habilita y extrae los departamentos únicos ordenados alfabéticamente.
-                const evaluarActivacionDepartamentos = () => { // [INICIO DE LLAVE]: Abre la subfunción reactiva de control de departamentos
-                    if (!selDep) return;
-                    if (selPais && selPais.value === "Perú") {
-                        selDep.disabled = false;
-                        const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
-                        selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-                            depts.map(d => `<option value="${d}">${d}</option>`).join('');
-                    } else {
-                        selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
-                        if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
-                        if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
-                    }
-                }; // [FIN DE LLAVE]: Termina la lógica de control del combo departamentos
-
-                if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
-
-                // FLUJO 2: Escucha el cambio de departamento para renderizar dinámicamente sus provincias correlativas y activar el componente select de provincias.
-                if (selDep) {
-                    selDep.onchange = (valorForzadoProv = null) => { // [INICIO DE LLAVE]: Abre callback reactivo onchange para provincias
-                        if (!selProv || !selDist) return;
-                        if (!selDep.value) {
-                            selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
-                            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-                            return;
-                        }
-                        selProv.disabled = false;
-                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+            if (selDep) {
+                selDep.onchange = (valorForzadoProv = null) => {
+                    if (!selProv || !selDist) return;
+                    if (!selDep.value) {
+                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-
-                        const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
-                        selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
-                        if (valorForzadoProv) selProv.value = valorForzadoProv;
-                    }; // [FIN DE LLAVE]: Cierra callback reactivo de provincias
-                }
-
-                // FLUJO 3: Escucha el cambio de provincia para renderizar los distritos vinculados inyectando el código de ubigeo real como atributo de datos.
-                if (selProv) {
-                    selProv.onchange = (valorForzadoDist = null) => { // [INICIO DE LLAVE]: Abre callback reactivo onchange para distritos
-                        if (!selDist) return;
-                        if (!selProv.value) {
-                            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-                            return;
-                        }
-                        selDist.disabled = false;
-                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-
-                        const dists = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
-                        selDist.innerHTML += dists.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
-                        if (valorForzadoDist) selDist.value = valorForzadoDist;
-                    }; // [FIN DE LLAVE]: Cierra callback reactivo de distritos
-                }
-
-                // FLUJO 4: Al seleccionar el distrito, captura su clave foránea para asignarla al input, y ejecuta el motor de geocodificación Nominatim.
-                if (selDist) {
-                    selDist.onchange = async () => { // [INICIO DE LLAVE]: Abre la función asíncrona de geocodificación elástica
-                        const opcionElegida = selDist.options[selDist.selectedIndex];
-                        const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
-                        
-                        const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
-                        if (inputUbigeoFk) {
-                            inputUbigeoFk.value = codigoUbigeoIdDetectado;
-                            inputUbigeoFk.readOnly = true;
-                            inputUbigeoFk.style.background = '#f1f5f9';
-                        }
-
-                        const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
-                        if (!direccionValor || !selDist.value) return;
-
-                        try { // [INICIO DE LLAVE]: Intento de consulta HTTP a la API de mapas
-                            const consultaOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
-                            const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(consultaOSM)}`); 
-                            const dataGeo = await resGeo.json();
-                            
-                            if (dataGeo && dataGeo.length > 0) {
-                                const loc = dataGeo[0];
-                                const lat = parseFloat(loc.lat);
-                                const lon = parseFloat(loc.lon);
-
-                                if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
-                                if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
-                                if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
-                                if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
-                                if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
-                            }
-                        } catch (eGeo) { console.warn("!! Error en geocodificación elástica:", eGeo); } // [FIN DE LLAVE]: Cierra captura de error de la API
-                    }; // [FIN DE LLAVE]: Cierra callback de distrito
-                }
-
-                formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { 
-                    if (selDist && selDist.value) selDist.onchange(); 
-                });
-
-                // FLUJO 5: Sincroniza y fuerza de forma elástica las opciones guardadas en la base de datos si el modal se abre en modo EDICIÓN.
-                if (esEdicion && datosFila) { // [INICIO DE LLAVE]: Abre validación estructural de edición
-                    if (selPais && datosFila.pais) {
-                        selPais.value = datosFila.pais;
-                    } else if (selPais) {
-                        selPais.value = 'Perú';
+                        return;
                     }
+                    selProv.disabled = false;
+                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+
+                    const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
+                    selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
+                    if (valorForzadoProv) selProv.value = valorForzadoProv;
+                };
+            }
+
+            if (selProv) {
+                selProv.onchange = (valorForzadoDist = null) => {
+                    if (!selDist) return;
+                    if (!selProv.value) {
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                        return;
+                    }
+                    selDist.disabled = false;
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+
+                    const dists = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
+                    selDist.innerHTML += dists.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
+                    if (valorForzadoDist) selDist.value = valorForzadoDist;
+                };
+            }
+
+            if (selDist) {
+                selDist.onchange = async () => {
+                    const opcionElegida = selDist.options[selDist.selectedIndex];
+                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
                     
-                    evaluarActivacionDepartamentos();
+                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                    if (inputUbigeoFk) {
+                        inputUbigeoFk.value = codigoUbigeoIdDetectado;
+                        inputUbigeoFk.readOnly = true;
+                        inputUbigeoFk.style.background = '#f1f5f9';
+                    }
 
-                } // [FIN DE LLAVE]: Cierra validación estructural de edición
+                    const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
+                    if (!direccionValor || !selDist.value) return;
 
-            } catch (errTubería) { // [INICIO DE LLAVE]: Abre bloque catch para captura de excepciones de red
-                console.error("Error crítico procesando motor relacional de ubicación:", errTubería);
-            } // [FIN DE LLAVE]: Cierra el bloque catch de excepciones de red
-            
-            // Sincronización atómica y elástica de la cascada jerárquica territorial en modo EDICIÓN
-            // Al ejecutarse aquí adentro, garantizamos que selDep y todos los selectores dependientes se encuentren dentro del ámbito (scope) asíncrono válido.
-            if (esEdicion && datosFila) { // [INICIO DE LLAVE]: Abre validación estructural para el modo edición
+                    try {
+                        const consultaOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
+                        const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(consultaOSM)}`); 
+                        const dataGeo = await resGeo.json();
+                        
+                        if (dataGeo && dataGeo.length > 0) {
+                            const loc = dataGeo[0];
+                            const lat = parseFloat(loc.lat);
+                            const lon = parseFloat(loc.lon);
+
+                            if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
+                            if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
+                            if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
+                            if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
+                            if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                        }
+                    } catch (eGeo) { console.warn("Error en geocodificación elástica:", eGeo); }
+                };
+            }
+
+            formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { 
+                if (selDist && selDist.value) selDist.onchange(); 
+            });
+
+            if (esEdicion && datosFila) {
                 if (selSub && datosFila.subtipo_propiedad) selSub.value = datosFila.subtipo_propiedad;
                 if (selSituacion && datosFila.situacion_propiedad) selSituacion.value = datosFila.situacion_propiedad;
                 if (selVista && datosFila.vista) selVista.value = datosFila.vista;
@@ -865,7 +803,6 @@ if (selDep) {
                     selPais.value = 'Perú';
                 }
                 
-                // Disparar en cadena interactiva el poblado de los departamentos relacionales
                 evaluarActivacionDepartamentos();
 
                 if (datosFila.departamento && selDep) {
@@ -888,9 +825,9 @@ if (selDep) {
                         inputUbigeoFk.style.background = '#f1f5f9';
                     }
                 }
-            } // [FIN DE LLAVE]: Cierra la asignación secuencial y reactiva de los campos en el modo edición
-        })(); // [FIN DE LLAVE]: Cierra de forma limpia la declaración de la función asíncrona anónima del motor relacional de ubicación
-    } // [FIN DE LLAVE]: Cierra el control condicional principal para la tabla propiedad
+            }
+        })();
+    }
 
     // [INICIO DE LLAVE]: Función constructora modular para ocultar la ventana emergente submodal del CRUD
     const cerrarSubModal = () => { 
