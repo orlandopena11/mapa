@@ -699,44 +699,27 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
 
             
-/**
- * Descripción de la función: Carga dinámica, generalizada y modular de todas las listas de valores (LOV) 
- * desde Supabase para los selectores del formulario CRUD de manera nativa y eficiente.
- */
-// [INICIO DE LLAVES]: Abre el bloque try/catch para la carga dinámica general de catálogos LOV
-try {
-    const camposLov = ['tipo_propiedad', 'subtipo_propiedad', 'situacion_propiedad', 'estado_propiedad', 'moneda', 'vista', 'pais'];
+// BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
+            const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
+            if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
 
-    // [INICIO DE LLAVES]: Bucle iterativo para recorrer y poblar cada catálogo LOV dinámicamente
-    for (const campoNombre of camposLov) {
-        const selectNode = formNode.querySelector(`#sel-lov-${campoNombre}`) || document.getElementById(`sel-lov-${campoNombre}`);
-        
-        // [INICIO DE LLAVES]: Valida la existencia física del elemento select en el DOM del formulario
-        if (selectNode) {
-            const nombreTablaLov = `lov_${campoNombre}`;
-            const { data: datosLov, error: errorLov } = await clienteSupabase
-                .from(nombreTablaLov)
-                .select(campoNombre);
+            // FLUJO 1: Evalúa el valor del País seleccionado. Si es 'Perú', habilita y extrae los departamentos únicos ordenados alfabéticamente.
+            const evaluarActivacionDepartamentos = () => { // [INICIO DE LLAVE]: Abre la subfunción reactiva de control de departamentos
+                if (!selDep) return;
+                if (selPais && selPais.value === "Perú") {
+                    selDep.disabled = false;
+                    const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+                        depts.map(d => `<option value="${d}">${d}</option>`).join('');
+                } else {
+                    selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
+                    if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
+                    if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+                }
+            }; // [FIN DE LLAVE]: Termina la lógica de control del combo departamentos
 
-            // [INICIO DE LLAVES]: Condicional de éxito en la consulta REST hacia Supabase
-            if (!errorLov && datosLov) {
-                const valorActualGuardado = String(selectNode.dataset.actual || '').trim();
-                const etiquetaLabel = campoNombre.replace(/_/g, ' ');
-                
-                selectNode.innerHTML = `<option value="">-- Seleccione ${etiquetaLabel.charAt(0).toUpperCase() + etiquetaLabel.slice(1)} --</option>` + 
-                    datosLov.map(item => {
-                        const valItem = String(item[campoNombre]);
-                        const esSeleccionado = valorActualGuardado === valItem ? 'selected' : '';
-                        return `<option value="${valItem}" ${esSeleccionado}>${valItem}</option>`;
-                    }).join('');
-            } // [FIN DE LLAVES]: Cierra condicional de éxito de datos LOV
-        } // [FIN DE LLAVES]: Cierra validación del nodo select
-    } // [FIN DE LLAVES]: Cierra bucle iterativo de catálogos LOV
-
-} catch (errLovGen) {
-    console.warn("Aviso al cargar catálogos dinámicos LOV:", errLovGen.message);
-} // [FIN DE LLAVES]: Cierra el bloque try/catch principal de carga LOV            
- 
+            if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
+            
             
             // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
                 const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
