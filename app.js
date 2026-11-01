@@ -493,188 +493,6 @@ async function cargarDatosTablaCrud(nombreTabla) {
 } // [FIN DE LLAVES]: Cierra cargarDatosTablaCrud
 
 
-/**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal para la creación o 
- * edición de registros, consultando y precargando de manera asíncrona las fotos secundarias 
- * desde la tabla relacional 'imagen_propiedad' en Supabase.
- */
-// [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
-async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
-    // [INICIO DE LLAVES]: Bloque de inicialización de configuración y lectura de imágenes
-    const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
-    const esEdicion = datosFila !== null;
-
-    let fotosSecundariasObtenidas = [];
-
-    if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
-        try {
-            const cliente = obtenerClienteSupabase();
-            if (cliente) {
-                const { data: imgsBD } = await cliente
-                    .from('imagen_propiedad')
-                    .select('ruta_imagen, orden')
-                    .eq('propiedad_id_fk', datosFila[conf.pk])
-                    .order('orden', { ascending: true });
-
-                if (imgsBD && imgsBD.length > 0) {
-                    fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
-                }
-            }
-        } catch (errFoto) {
-            console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
-        }
-    } // [FIN DE LLAVES]: Cierra bloque de consulta de imágenes
-
-    let subModal = document.getElementById('submodal-formulario-crud');
-    // [INICIO DE LLAVES]: Condicional para crear el contenedor del submodal si no existe
-    if (!subModal) {
-        subModal = document.createElement('div');
-        subModal.id = 'submodal-formulario-crud';
-        subModal.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0,0,0,0.65); z-index: 1000000; display: flex;
-            align-items: center; justify-content: center; font-family: sans-serif;
-        `;
-        document.body.appendChild(subModal);
-    } // [FIN DE LLAVES]: Cierra creación del submodal
-
-    subModal.innerHTML = `
-        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-                <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
-                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
-            </div>
-
-            <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
-                ${conf.campos.map(c => {
-                    // Arquitectura limpia: Ignoramos por completo la columna redundante galeria_fotos
-                    if (c.nombre === 'galeria_fotos') return '';
-
-                    let valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
-                    
-                    // Tarea 1: Autogeneración del ID secuencial al crear una nueva propiedad
-                    if (nombreTabla === 'propiedad' && c.nombre === 'propiedad_id' && !esEdicion) {
-                        valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
-                    }
-
-                    // [INICIO DE LLAVE]: Inyección del elemento select de subtipo_propiedad con ID unificado
-                    if (nombreTabla === 'propiedad' && c.nombre === 'subtipo_propiedad') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-subtipo_propiedad" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra subtipo_propiedad
-
-                    // [INICIO DE LLAVE]: Inyección de situacion_propiedad con ID unificado
-                    if (nombreTabla === 'propiedad' && c.nombre === 'situacion_propiedad') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-situacion" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra situacion_propiedad
-
-                    // [INICIO DE LLAVE]: Inyección del elemento select de País
-                    if (nombreTabla === 'propiedad' && c.nombre === 'pais') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-pais" data-actual="${valorActual || 'Perú'}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
-                                    <option value="">-- Seleccione País --</option>
-                                </select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra el País
-
-                    // [INICIO DE LLAVE]: Inyección de componentes select para la jerarquía territorial de Ubigeo
-                    if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-ubigeo-${c.nombre}" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
-                                    <option value="">-- Seleccione ${c.label} --</option>
-                                </select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra Ubigeo
-
-                    // [INICIO DE LLAVE]: Inyección condicional estructurada para transformar el campo vista en select dinámico
-                    if (nombreTabla === 'propiedad' && c.nombre === 'vista') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-vista" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra el campo vista
-
-                    // [INICIO DE LLAVE]: Renderizado estándar para tipos select normales de la configuración
-
-                    if (c.tipo === 'select') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;" ${c.requerido ? 'required' : ''}>
-                                    ${c.opciones.map(op => `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`).join('')}
-                                </select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra renderizado estándar select
-
-                    // [INICIO DE LLAVE]: Mutación a selectores interactivos para la jerarquía de la tabla ubigeo
-                    if (nombreTabla === 'propiedad' && ['departamento', 'provincia', 'distrito'].includes(c.nombre)) {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" class="lov-ubigeo-cascada" id="sel-ubigeo-${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
-                                    <option value="">-- Seleccione ${c.label} --</option>
-                                </select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra inyección de selectores políticos en cascada
-                    
-                     let valorInputFinal = valorActual;
-                    // Tarea 2: Forzar el ID del usuario logueado en modo inserción
-                    if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
-                        valorInputFinal = window.usuarioLogueado.id;
-                    }
-                    
-                    // [INICIO DE LLAVE]: Sincronización atómica con la tabla relacional public.imagen_propiedad
-                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) {
-                        const numeroFotoExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
-                        // Como la primera foto extra en el formulario corresponde a la segunda imagen real de la propiedad, leemos el índice correlativo directo
-                        if (fotosSecundariasObtenidas[numeroFotoExtra] !== undefined) {
-                            valorInputFinal = fotosSecundariasObtenidas[numeroFotoExtra];
-                        }
-                    } // [FIN DE LLAVE]: Cierra el mapeo relacional multimedia
-
-                    // [INICIO DE LLAVE]: Componente select de opción única para el campo vista alineado a las buenas prácticas
-                    if (nombreTabla === 'propiedad' && c.nombre === 'vista') {
-                        return `
-                            <div>
-                                <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" id="sel-lov-vista" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;"></select>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVE]: Cierra la inyección estructural del combo vista
-
-                }).join('')}
-
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                    <button type="button" id="btn-cancelar-submodal" style="background: #94a3b8; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
-                    <button type="submit" id="btn-guardar-crud-submit" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700;">
-                        ${esEdicion ? 'Guardar Cambios' : 'Crear Registro'}
-                    </button>
-                </div>
-            </form>
-        </div>
-    `;
-
-    subModal.style.display = 'flex';
-
 if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
@@ -691,175 +509,249 @@ if (nombreTabla === 'propiedad') {
             const selProv = formNode.querySelector('#sel-ubigeo-provincia');
             const selDist = formNode.querySelector('#sel-ubigeo-distrito');
 
+            // Selectores adicionales basados en tablas lov_ si aplican en el formulario
+            const selEstadoProp = formNode.querySelector('[name="estado_propiedad"]');
+            const selMoneda = formNode.querySelector('[name="moneda"]');
+            const selEstadoPub = formNode.querySelector('[name="estado_publicacion"]');
+            const selSotano = formNode.querySelector('[name="sotano"]');
+            const selAlmacen = formNode.querySelector('[name="almacen"]');
+
             if (selDep) selDep.disabled = true;
             if (selProv) selProv.disabled = true;
             if (selDist) selDist.disabled = true;
 
-            // Caché inteligente en memoria: evita consultas repetidas a Supabase
-            if (!state.ubigeosCache) {
-                const { data, error } = await clienteSupabase.from('ubigeo').select('*');
-                if (error || !data) return;
-                state.ubigeosCache = data;
-            }
-            const coleccionUbigeo = state.ubigeosCache;
+            try {
+                // Consultas paralelas y dinámicas a todas las tablas LOV y Ubigeo necesarias desde Supabase
+                const [
+                    resUbigeo, 
+                    resSubtipo, 
+                    resSituacion, 
+                    resVista, 
+                    resEstadoProp, 
+                    resMoneda, 
+                    resEstadoPub, 
+                    resBinario
+                ] = await Promise.all([
+                    clienteSupabase.from('ubigeo').select('*'),
+                    clienteSupabase.from('lov_subtipo_propiedad').select('*'),
+                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
+                    clienteSupabase.from('lov_vista').select('*'),
+                    clienteSupabase.from('lov_estado_propiedad').select('*'),
+                    clienteSupabase.from('lov_moneda').select('*'),
+                    clienteSupabase.from('lov_estado_publicacion').select('*'),
+                    clienteSupabase.from('lov_sino').select('*') // O tabla equivalente para Sí/No
+                ]);
 
-            const evaluarActivacionDepartamentos = () => {
-                if (!selDep) return;
-                if (selPais && selPais.value === "Perú") {
-                    selDep.disabled = false;
-                    const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
-                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-                        depts.map(d => `<option value="${d}">${d}</option>`).join('');
-                } else {
-                    selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
-                    if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
-                    if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+                // 1. Poblar Ubigeos de forma dinámica
+                const coleccionUbigeo = resUbigeo.data || [];
+                state.ubigeosCache = coleccionUbigeo;
+
+                // 2. Poblar País dinámicamente desde catálogo o ubigeo
+                if (selPais) {
+                    const paisesUnicos = [...new Set(coleccionUbigeo.map(u => u.pais || 'Perú'))];
+                    selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
+                        paisesUnicos.map(p => `<option value="${p}">${p}</option>`).join('');
+                    selPais.value = datosFila && datosFila.pais ? datosFila.pais : 'Perú';
                 }
-            };
 
-            if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
+                // 3. Poblar Subtipo de Propiedad dinámicamente desde 'lov_subtipo_propiedad'
+                if (selSub && resSubtipo.data) {
+                    selSub.innerHTML = '<option value="">-- Seleccione Subtipo --</option>' + 
+                        resSubtipo.data.map(item => {
+                            const val = item.subtipo_propiedad || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
 
-            if (selDep) {
-                selDep.onchange = (valorForzadoProv = null) => {
-                    if (!selProv || !selDist) return;
-                    if (!selDep.value) {
-                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
-                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-                        return;
+                // 4. Poblar Situación de Propiedad dinámicamente desde 'lov_situacion_propiedad'
+                if (selSituacion && resSituacion.data) {
+                    selSituacion.innerHTML = '<option value="">-- Seleccione Situación --</option>' + 
+                        resSituacion.data.map(item => {
+                            const val = item.situacion_propiedad || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
+
+                // 5. Poblar Vista dinámicamente desde 'lov_vista'
+                if (selVista && resVista.data) {
+                    selVista.innerHTML = '<option value="">-- Seleccione Vista --</option>' + 
+                        resVista.data.map(item => {
+                            const val = item.vista || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
+
+                // 6. Poblar Estado Propiedad dinámicamente desde 'lov_estado_propiedad'
+                if (selEstadoProp && resEstadoProp.data) {
+                    selEstadoProp.innerHTML = '<option value="">-- Seleccione Estado --</option>' + 
+                        resEstadoProp.data.map(item => {
+                            const val = item.estado_propiedad || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
+
+                // 7. Poblar Moneda dinámicamente desde 'lov_moneda'
+                if (selMoneda && resMoneda.data) {
+                    selMoneda.innerHTML = '<option value="">-- Seleccione Moneda --</option>' + 
+                        resMoneda.data.map(item => {
+                            const val = item.moneda || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
+
+                // 8. Poblar Estado Publicación dinámicamente desde 'lov_estado_publicacion'
+                if (selEstadoPub && resEstadoPub.data) {
+                    selEstadoPub.innerHTML = '<option value="">-- Seleccione Publicación --</option>' + 
+                        resEstadoPub.data.map(item => {
+                            const val = item.estado_publicacion || item.nombre || item.valor;
+                            return `<option value="${val}">${val}</option>`;
+                        }).join('');
+                }
+
+                // 9. Poblar campos binarios (Sótano / Almacén) dinámicamente si existen
+                [selSotano, selAlmacen].forEach(sel => {
+                    if (sel && resBinario.data) {
+                        sel.innerHTML = '<option value="">-- Seleccione --</option>' + 
+                            resBinario.data.map(item => {
+                                const val = item.valor || item.nombre || Object.values(item)[0];
+                                return `<option value="${val}">${val}</option>`;
+                            }).join('');
                     }
-                    selProv.disabled = false;
-                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
-                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                });
 
-                    const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
-                    selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
-                    if (valorForzadoProv) selProv.value = valorForzadoProv;
+                const evaluarActivacionDepartamentos = () => {
+                    if (!selDep) return;
+                    if (selPais && selPais.value) {
+                        selDep.disabled = false;
+                        const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+                        selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+                            depts.map(d => `<option value="${d}">${d}</option>`).join('');
+                    } else {
+                        selDep.innerHTML = '<option value="">-- No aplica --</option>'; selDep.disabled = true;
+                        if (selProv) { selProv.innerHTML = '<option value="">-- No aplica --</option>'; selProv.disabled = true; }
+                        if (selDist) { selDist.innerHTML = '<option value="">-- No aplica --</option>'; selDist.disabled = true; }
+                    }
                 };
-            }
 
-            if (selProv) {
-                selProv.onchange = (valorForzadoDist = null) => {
-                    if (!selDist) return;
-                    if (!selProv.value) {
-                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
-                        return;
-                    }
-                    selDist.disabled = false;
-                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
 
-                    const dists = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
-                    selDist.innerHTML += dists.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
-                    if (valorForzadoDist) selDist.value = valorForzadoDist;
-                };
-            }
-
-            if (selDist) {
-                selDist.onchange = async () => {
-                    const opcionElegida = selDist.options[selDist.selectedIndex];
-                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
-                    
-                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
-                    if (inputUbigeoFk) {
-                        inputUbigeoFk.value = codigoUbigeoIdDetectado;
-                        inputUbigeoFk.readOnly = true;
-                        inputUbigeoFk.style.background = '#f1f5f9';
-                    }
-
-                    const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
-                    if (!direccionValor || !selDist.value) return;
-
-                    try {
-                        const consultaOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
-                        const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(consultaOSM)}`); 
-                        const dataGeo = await resGeo.json();
-                        
-                        if (dataGeo && dataGeo.length > 0) {
-                            const loc = dataGeo[0];
-                            const lat = parseFloat(loc.lat);
-                            const lon = parseFloat(loc.lon);
-
-                            if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
-                            if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
-                            if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
-                            if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
-                            if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                if (selDep) {
+                    selDep.onchange = (valorForzadoProv = null) => {
+                        if (!selProv || !selDist) return;
+                        if (!selDep.value) {
+                            selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>'; selProv.disabled = true;
+                            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                            return;
                         }
-                    } catch (eGeo) { console.warn("Error en geocodificación elástica:", eGeo); }
-                };
-            }
+                        selProv.disabled = false;
+                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
 
-            formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { 
-                if (selDist && selDist.value) selDist.onchange(); 
-            });
-
-            if (esEdicion && datosFila) {
-                if (selSub && datosFila.subtipo_propiedad) selSub.value = datosFila.subtipo_propiedad;
-                if (selSituacion && datosFila.situacion_propiedad) selSituacion.value = datosFila.situacion_propiedad;
-                if (selVista && datosFila.vista) selVista.value = datosFila.vista;
-
-                if (selPais && datosFila.pais) {
-                    selPais.value = datosFila.pais;
-                } else if (selPais) {
-                    selPais.value = 'Perú';
+                        const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia))].sort();
+                        selProv.innerHTML += provs.map(p => `<option value="${p}">${p}</option>`).join('');
+                        if (valorForzadoProv) selProv.value = valorForzadoProv;
+                    };
                 }
-                
-                evaluarActivacionDepartamentos();
 
-                if (datosFila.departamento && selDep) {
-                    selDep.value = datosFila.departamento;
-                    selDep.onchange(datosFila.provincia);
+                if (selProv) {
+                    selProv.onchange = (valorForzadoDist = null) => {
+                        if (!selDist) return;
+                        if (!selProv.value) {
+                            selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>'; selDist.disabled = true;
+                            return;
+                        }
+                        selDist.disabled = false;
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+
+                        const dists = coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value);
+                        selDist.innerHTML += dists.map(u => `<option value="${u.distrito}" data-id="${u.codigo_ubigeo_id}">${u.distrito}</option>`).join('');
+                        if (valorForzadoDist) selDist.value = valorForzadoDist;
+                    };
                 }
-                if (datosFila.provincia && selProv) {
-                    selProv.value = datosFila.provincia;
-                    selProv.onchange(datosFila.distrito);
+
+                if (selDist) {
+                    selDist.onchange = async () => {
+                        const opcionElegida = selDist.options[selDist.selectedIndex];
+                        const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                        
+                        const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                        if (inputUbigeoFk) {
+                            inputUbigeoFk.value = codigoUbigeoIdDetectado;
+                            inputUbigeoFk.readOnly = true;
+                            inputUbigeoFk.style.background = '#f1f5f9';
+                        }
+
+                        const direccionValor = formNode.querySelector('[name="direccion"]')?.value.trim();
+                        if (!direccionValor || !selDist.value) return;
+
+                        try {
+                            const consultaOSM = `${direccionValor}, ${selDist.value}, ${selDep.value}, ${selPais.value}`;
+                            const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(consultaOSM)}`); 
+                            const dataGeo = await resGeo.json();
+                            
+                            if (dataGeo && dataGeo.length > 0) {
+                                const loc = dataGeo[0];
+                                const lat = parseFloat(loc.lat);
+                                const lon = parseFloat(loc.lon);
+
+                                if (formNode.querySelector('[name="latitud"]')) formNode.querySelector('[name="latitud"]').value = lat;
+                                if (formNode.querySelector('[name="longitud"]')) formNode.querySelector('[name="longitud"]').value = lon;
+                                if (formNode.querySelector('[name="geocode_precision"]')) formNode.querySelector('[name="geocode_precision"]').value = loc.type || 'residential';
+                                if (formNode.querySelector('[name="referencia_mapa"]')) formNode.querySelector('[name="referencia_mapa"]').value = loc.display_name.substring(0, 70);
+                                if (formNode.querySelector('[name="enlace_mapa"]')) formNode.querySelector('[name="enlace_mapa"]').value = `https://openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                            }
+                        } catch (eGeo) { console.warn("Error en geocodificación elástica:", eGeo); }
+                    };
                 }
-                if (datosFila.distrito && selDist) {
-                    selDist.value = datosFila.distrito;
+
+                formNode.querySelector('[name="direccion"]')?.addEventListener('blur', () => { 
+                    if (selDist && selDist.value) selDist.onchange(); 
+                });
+
+                // Si estamos en modo edición, seleccionamos los valores actuales correspondientes cargados desde la base de datos
+                if (esEdicion && datosFila) {
+                    if (selSub && datosFila.subtipo_propiedad) selSub.value = datosFila.subtipo_propiedad;
+                    if (selSituacion && datosFila.situacion_propiedad) selSituacion.value = datosFila.situacion_propiedad;
+                    if (selVista && datosFila.vista) selVista.value = datosFila.vista;
+                    if (selEstadoProp && datosFila.estado_propiedad) selEstadoProp.value = datosFila.estado_propiedad;
+                    if (selMoneda && datosFila.moneda) selMoneda.value = datosFila.moneda;
+                    if (selEstadoPub && datosFila.estado_publicacion) selEstadoPub.value = datosFila.estado_publicacion;
+                    if (selSotano && datosFila.sotano) selSotano.value = datosFila.sotano;
+                    if (selAlmacen && datosFila.almacen) selAlmacen.value = datosFila.almacen;
+
+                    if (selPais && datosFila.pais) {
+                        selPais.value = datosFila.pais;
+                    }
                     
-                    const opcionElegida = selDist.options[selDist.selectedIndex];
-                    const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
-                    const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
-                    if (inputUbigeoFk) {
-                        inputUbigeoFk.value = codigoUbigeoIdDetectado || datosFila.codigo_ubigeo_id_fk || '';
-                        inputUbigeoFk.readOnly = true;
-                        inputUbigeoFk.style.background = '#f1f5f9';
+                    evaluarActivacionDepartamentos();
+
+                    if (datosFila.departamento && selDep) {
+                        selDep.value = datosFila.departamento;
+                        selDep.onchange(datosFila.provincia);
+                    }
+                    if (datosFila.provincia && selProv) {
+                        selProv.value = datosFila.provincia;
+                        selProv.onchange(datosFila.distrito);
+                    }
+                    if (datosFila.distrito && selDist) {
+                        selDist.value = datosFila.distrito;
+                        
+                        const opcionElegida = selDist.options[selDist.selectedIndex];
+                        const codigoUbigeoIdDetectado = opcionElegida ? opcionElegida.getAttribute('data-id') : '';
+                        const inputUbigeoFk = formNode.querySelector('[name="codigo_ubigeo_id_fk"]');
+                        if (inputUbigeoFk) {
+                            inputUbigeoFk.value = codigoUbigeoIdDetectado || datosFila.codigo_ubigeo_id_fk || '';
+                            inputUbigeoFk.readOnly = true;
+                            inputUbigeoFk.style.background = '#f1f5f9';
+                        }
                     }
                 }
+
+            } catch (errLovCarga) {
+                console.error("Error crítico cargando catálogos LOV desde Supabase:", errLovCarga);
             }
         })();
     }
-
-    // [INICIO DE LLAVE]: Función constructora modular para ocultar la ventana emergente submodal del CRUD
-    const cerrarSubModal = () => { 
-        if (subModal) subModal.style.display = 'none'; 
-    }; // [FIN DE LLAVE]: Cierra la declaración de la rutina cerrarSubModal
-
-    // Vinculación condicional segura de eventos para el cierre del submodal previniendo quiebres de token nulo
-    const btnCancelarCrud = document.getElementById('btn-cancelar-submodal');
-    const btnCerrarCrudX = document.getElementById('btn-cerrar-submodal-x');
-    if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
-    if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
-
-    // Asignación estructurada del evento submit para la persistencia atómica de datos en Supabase
-    const formularioCrudDOM = document.getElementById('form-generico-crud');
-    if (formularioCrudDOM) {
-        formularioCrudDOM.onsubmit = async (e) => {
-            e.preventDefault();
-            const btnSubmit = document.getElementById('btn-guardar-crud-submit');
-            if (btnSubmit) {
-                btnSubmit.innerText = "Guardando...";
-                btnSubmit.disabled = true;
-            }
-
-            const formData = new FormData(e.target);
-            const payload = {};
-            formData.forEach((val, key) => { payload[key] = val; });
-
-            await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
-            cerrarSubModal();
-        }; // [FIN DE LLAVE]: Cierra callback onsubmit del formulario genérico del CRUD
-    } 
-} // [FIN DE LLAVES]: Cierra de forma balanceada la estructura completa de la función abrirFormularioEdicionCrud
 
 
  
