@@ -699,46 +699,46 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
 
             
-// [INICIO DE LLAVES]: Abre el bloque try/catch para la carga dinámica de listas de valores (LOV)
+/**
+ * Descripción de la función: Carga dinámica, generalizada y modular de todas las listas de valores (LOV) 
+ * desde Supabase para los selectores del formulario CRUD de manera nativa y eficiente.
+ */
+// [INICIO DE LLAVES]: Abre el bloque try/catch para la carga dinámica general de catálogos LOV
 try {
-    // 1. Carga de lov_subtipo_propiedad (Columna: subtipo_propiedad)
-    if (selSub) {
-        const { data: dataSub } = await clienteSupabase.from('lov_subtipo_propiedad').select('subtipo_propiedad');
-        if (dataSub) {
-            selSub.innerHTML = '<option value="">-- Seleccione Subtipo --</option>' + 
-                dataSub.map(o => `<option value="${o.subtipo_propiedad}" ${String(selSub.dataset.actual).trim() === String(o.subtipo_propiedad).trim() ? 'selected' : ''}>${o.subtipo_propiedad}</option>`).join('');
-        }
-    } // [FIN DE LLAVES]: Cierra bloque sub-tipo
+    const camposLov = ['tipo_propiedad', 'subtipo_propiedad', 'situacion_propiedad', 'estado_propiedad', 'moneda', 'vista', 'pais'];
 
-    // 2. Carga de lov_situacion_propiedad (Columna: situacion_propiedad)
-    if (selSituacion) {
-        const { data: dataSituacion } = await clienteSupabase.from('lov_situacion_propiedad').select('situacion_propiedad');
-        if (dataSituacion) {
-            selSituacion.innerHTML = '<option value="">-- Seleccione Situación --</option>' + 
-                dataSituacion.map(o => `<option value="${o.situacion_propiedad}" ${String(selSituacion.dataset.actual).trim() === String(o.situacion_propiedad).trim() ? 'selected' : ''}>${o.situacion_propiedad}</option>`).join('');
-        }
-    } // [FIN DE LLAVES]: Cierra bloque situación
+    // [INICIO DE LLAVES]: Bucle iterativo para recorrer y poblar cada catálogo LOV dinámicamente
+    for (const campoNombre of camposLov) {
+        const selectNode = formNode.querySelector(`#sel-lov-${campoNombre}`) || document.getElementById(`sel-lov-${campoNombre}`);
+        
+        // [INICIO DE LLAVES]: Valida la existencia física del elemento select en el DOM del formulario
+        if (selectNode) {
+            const nombreTablaLov = `lov_${campoNombre}`;
+            const { data: datosLov, error: errorLov } = await clienteSupabase
+                .from(nombreTablaLov)
+                .select(campoNombre);
 
-    // 3. Carga de lov_vista (Columna: vista)
-    if (selVista) {
-        const { data: dataVista } = await clienteSupabase.from('lov_vista').select('vista');
-        if (dataVista) {
-            selVista.innerHTML = '<option value="">-- Seleccione Vista --</option>' + 
-                dataVista.map(o => `<option value="${o.vista}" ${String(selVista.dataset.actual).trim() === String(o.vista).trim() ? 'selected' : ''}>${o.vista}</option>`).join('');
-        }
-    } // [FIN DE LLAVES]: Cierra bloque vista
+            // [INICIO DE LLAVES]: Condicional de éxito en la consulta REST hacia Supabase
+            if (!errorLov && datosLov) {
+                const valorActualGuardado = String(selectNode.dataset.actual || '').trim();
+                const etiquetaLabel = campoNombre.replace(/_/g, ' ');
+                
+                selectNode.innerHTML = `<option value="">-- Seleccione ${etiquetaLabel.charAt(0).toUpperCase() + etiquetaLabel.slice(1)} --</option>` + 
+                    datosLov.map(item => {
+                        const valItem = String(item[campoNombre]);
+                        const esSeleccionado = valorActualGuardado === valItem ? 'selected' : '';
+                        return `<option value="${valItem}" ${esSeleccionado}>${valItem}</option>`;
+                    }).join('');
+            } // [FIN DE LLAVES]: Cierra condicional de éxito de datos LOV
+        } // [FIN DE LLAVES]: Cierra validación del nodo select
+    } // [FIN DE LLAVES]: Cierra bucle iterativo de catálogos LOV
 
-    // 4. Carga de lov_pais (Columna: pais)
-    if (selPais) {
-        const { data: dataPais } = await clienteSupabase.from('lov_pais').select('pais');
-        if (dataPais) {
-            selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
-                dataPais.map(o => `<option value="${o.pais}" ${String(selPais.dataset.actual || 'Perú').trim() === String(o.pais).trim() ? 'selected' : ''}>${o.pais}</option>`).join('');
-        }
-    } // [FIN DE LLAVES]: Cierra bloque país
-
+} catch (errLovGen) {
+    console.warn("Aviso al cargar catálogos dinámicos LOV:", errLovGen.message);
+} // [FIN DE LLAVES]: Cierra el bloque try/catch principal de carga LOV            
+ 
             
-                // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
+            // BLOQUE E: Realiza la descarga atómica de la tabla global de ubigeos para su procesamiento indexado en memoria.
                 const { data: coleccionUbigeo } = await clienteSupabase.from('ubigeo').select('*');
                 if (!coleccionUbigeo || coleccionUbigeo.length === 0) return;
 
