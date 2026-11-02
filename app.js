@@ -495,8 +495,7 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD de manera 
- * 100% dinámica, cargando y mostrando los valores actuales del registro seleccionado, 
- * y poblando los desplegables con los catálogos y tablas de ubigeo obtenidos desde Supabase.
+ * 100% dinámica, precargando los valores actuales en los selectores y poblando los catálogos desde Supabase.
  */
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
@@ -573,12 +572,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) {
                         let idSelect = esUbigeoCasada ? 'sel-ubigeo-' + c.nombre : 'sel-lov-' + c.nombre;
 
-                        console.log(`[ESPÍA RENDER] Campo catálogo detectado: '${c.nombre}' | Valor actual leído: [${valorActual}]`);
-
                         return '<div>' +
                             '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
                             '<select name="' + c.nombre + '" id="' + idSelect + '" data-actual="' + valorActual + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">' +
-                                '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Actual)' : '-- Seleccione --') + '</option>' +
+                                '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Cargando catálogo...)' : '-- Seleccione --') + '</option>' +
                             '</select>' +
                         '</div>';
                     }
@@ -622,8 +619,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (!formNode) return;
 
             try {
-                console.log("📡 [SRE ESPÍA RED] Consultando catálogos y ubigeos en Supabase...");
-
                 const [
                     resUbigeo, 
                     resTipoProp, 
@@ -665,6 +660,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selectNode.innerHTML = optionsHtml;
                 };
 
+                // Poblar catálogos estándar asegurando marcar el valor actual
                 poblarSelectDinamico('sel-lov-tipo_propiedad', resTipoProp.data, 'tipo_propiedad');
                 poblarSelectDinamico('sel-lov-subtipo_propiedad', resSubtipo.data, 'subtipo_propiedad');
                 poblarSelectDinamico('sel-lov-estado_propiedad', resEstadoProp.data, 'estado_propiedad');
@@ -675,7 +671,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamico('sel-lov-sotano', resSino.data, 'si_no');
                 poblarSelectDinamico('sel-lov-almacen', resSino.data, 'si_no');
 
-                // Poblar selectores de Ubigeo y su clave foránea codigo_ubigeo_id_fk
+                // Poblar código de ubigeo y campos territoriales
                 const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
                 if (selCodigoUbigeo) {
                     const valorActualUbigeo = selCodigoUbigeo.getAttribute('data-actual') || '';
@@ -695,9 +691,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamico('sel-ubigeo-pais', coleccionUbigeo, 'pais');
 
             } catch (errLov) {
-                console.error("❌ [SRE ESPÍA ERROR] Fallo al cargar catálogos desde Supabase:", errLov);
-            } finally {
-                console.groupEnd();
+                console.error("❌ [SRE ESPÍA ERROR] Fallo al cargar catálogos:", errLov);
             }
         })();
     }
