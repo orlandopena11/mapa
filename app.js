@@ -615,8 +615,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                     return '<div>' +
                         '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
-                     //   '<input type="' + (c.tipo || 'text') + '" name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
-                        '<input type="${c.nombre === 'latitud' || c.nombre === 'longitud' ? 'text' : (c.tipo || 'text')}" inputmode="decimal" name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>
+                        let tipoInputHtml = (c.nombre === 'latitud' || c.nombre === 'longitud') ? 'text' : (c.tipo || 'text');
+                        let inputmodeHtml = (c.nombre === 'latitud' || c.nombre === 'longitud') ? 'inputmode="decimal"' : '';
+                        '<input type="' + tipoInputHtml + '" ' + inputmodeHtml + ' name="' + c.nombre + '" ... >'
                         botonGeocodificarHtml +
                     '</div>';
                 }).join('')}
