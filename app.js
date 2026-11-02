@@ -494,12 +494,13 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal de forma 100% dinámica,
- * mapeando columnas y consultando las tablas lov_ y ubigeo directamente desde Supabase.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD de manera 
+ * 100% dinámica, transformando los campos con catálogos lov_ en selectores alimentados 
+ * directamente desde Supabase respetando la regla de nombres de columna.
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
-    // [INICIO DE LLAVES]: Bloque de inicialización y consulta de fotos secundarias
+    // [INICIO DE LLAVES]: Inicialización de configuración y lectura de fotos secundarias
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
@@ -525,7 +526,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     } // [FIN DE LLAVES]: Cierra consulta de fotos secundarias
 
     let subModal = document.getElementById('submodal-formulario-crud');
-    // [INICIO DE LLAVES]: Condicional para crear el submodal si no existe
+    // [INICIO DE LLAVES]: Creación condicional del submodal
     if (!subModal) {
         subModal = document.createElement('div');
         subModal.id = 'submodal-formulario-crud';
@@ -546,7 +547,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
-                    // [INICIO DE LLAVES]: Mapeo de campos dinámicos
+                    // [INICIO DE LLAVES]: Mapeo dinámico de campos y conversión a selectores LOV
                     if (c.nombre === 'galeria_fotos') return '';
 
                     let valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
@@ -555,25 +556,34 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
                     }
 
-                    const esTablaLov = ['subtipo_propiedad', 'situacion_propiedad', 'vista', 'estado_propiedad', 'moneda', 'estado_publicacion', 'sotano', 'almacen'].includes(c.nombre);
+                    // Lista exacta de campos que se alimentan de tablas lov_
+                    const camposLovSistema = [
+                        'tipo_propiedad', 
+                        'subtipo_propiedad', 
+                        'estado_propiedad', 
+                        'moneda', 
+                        'estado_publicacion', 
+                        'situacion_propiedad', 
+                        'vista', 
+                        'sotano', 
+                        'almacen'
+                    ];
+                    
                     const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'pais'].includes(c.nombre);
 
-                    // [INICIO DE LLAVES]: Inyección de selectores dinámicos para tablas LOV
-                    if (nombreTabla === 'propiedad' && (esTablaLov || esUbigeoCasada)) {
+                    // [INICIO DE LLAVES]: Inyección inteligente de elementos <select> para catálogos
+                    if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) {
                         let idSelect = esUbigeoCasada ? `sel-ubigeo-${c.nombre}` : `sel-lov-${c.nombre}`;
-                        if (c.nombre === 'pais') idSelect = 'sel-lov-pais';
-                        if (c.nombre === 'subtipo_propiedad') idSelect = 'sel-lov-subtipo_propiedad';
-                        if (c.nombre === 'situacion_propiedad') idSelect = 'sel-lov-situacion_propiedad';
 
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
                                 <select name="${c.nombre}" id="${idSelect}" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
-                                    <option value="${valorActual}">${valorActual || '-- Cargando desde Supabase --'}</option>
+                                    <option value="${valorActual}">${valorActual || '-- Seleccione --'}</option>
                                 </select>
                             </div>
                         `;
-                    } // [FIN DE LLAVES]: Cierra inyección LOV
+                    } // [FIN DE LLAVES]: Cierra inyección de selectores
 
                     let valorInputFinal = valorActual;
                     if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
@@ -593,7 +603,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             <input type="${c.tipo || 'text'}" name="${c.nombre}" value="${valorInputFinal}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ${c.requerido ? 'required' : ''}>
                         </div>
                     `;
-                    // [FIN DE LLAVES]: Fin del mapeo de campos
+                    // [FIN DE LLAVES]: Cierra mapeo de campos
                 }).join('')}
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
@@ -608,7 +618,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
-    // [INICIO DE LLAVES]: Bloque asíncrono para poblar los selectores con las tablas lov_
+    // [INICIO DE LLAVES]: Consulta paralela y llenado dinámico desde las tablas lov_
     if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
@@ -618,32 +628,34 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (!formNode) return;
 
             try {
-                // [INICIO DE LLAVES]: Consulta en paralelo a Supabase
+                // [INICIO DE LLAVES]: Promise.all con todas las tablas lov_ respetando la regla exacta de nombres
                 const [
                     resUbigeo, 
+                    resTipoProp, 
                     resSubtipo, 
-                    resSituacion, 
-                    resVista, 
                     resEstadoProp, 
                     resMoneda, 
                     resEstadoPub, 
-                    resBinario
+                    resSituacion, 
+                    resVista, 
+                    resSino
                 ] = await Promise.all([
                     clienteSupabase.from('ubigeo').select('*'),
+                    clienteSupabase.from('lov_tipo_propiedad').select('*'),
                     clienteSupabase.from('lov_subtipo_propiedad').select('*'),
-                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
-                    clienteSupabase.from('lov_vista').select('*'),
                     clienteSupabase.from('lov_estado_propiedad').select('*'),
                     clienteSupabase.from('lov_moneda').select('*'),
                     clienteSupabase.from('lov_estado_publicacion').select('*'),
-                    clienteSupabase.from('lov_sino').select('*')
+                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
+                    clienteSupabase.from('lov_vista').select('*'),
+                    clienteSupabase.from('lov_si_no').select('*')
                 ]); // [FIN DE LLAVES]: Cierra Promise.all
 
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
-                // [INICIO DE LLAVES]: Función auxiliar para llenar dinámicamente los selectores
-                const poblarSelectDinamico = (selectorId, dataRegistros, nombreColumna) => {
+                // [INICIO DE LLAVES]: Función robusta para poblar selectores extrayendo el valor según la columna de la tabla lov_
+                const poblarSelectDinamico = (selectorId, dataRegistros, nombreColumnaReal) => {
                     const selectNode = formNode.querySelector(`#${selectorId}`);
                     if (!selectNode || !dataRegistros) return;
 
@@ -651,23 +663,25 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     
                     let optionsHtml = '<option value="">-- Seleccione --</option>';
                     dataRegistros.forEach(row => {
-                        const valReal = row[nombreColumna] || row.nombre || row.valor || Object.values(row)[0];
+                        const valReal = row[nombreColumnaReal] || row.nombre || row.valor || Object.values(row)[0];
                         const seleccionado = String(valReal).trim() === String(valorActualPre).trim() ? 'selected' : '';
                         optionsHtml += `<option value="${valReal}" ${seleccionado}>${valReal}</option>`;
                     });
                     selectNode.innerHTML = optionsHtml;
-                }; // [FIN DE LLAVES]: Cierra función auxiliar
+                }; // [FIN DE LLAVES]: Cierra función poblarSelectDinamico
 
+                // Poblando cada selector aplicando estrictamente la regla: nombre de tabla sin "lov_"
+                poblarSelectDinamico('sel-lov-tipo_propiedad', resTipoProp.data, 'tipo_propiedad');
                 poblarSelectDinamico('sel-lov-subtipo_propiedad', resSubtipo.data, 'subtipo_propiedad');
-                poblarSelectDinamico('sel-lov-situacion_propiedad', resSituacion.data, 'situacion_propiedad');
-                poblarSelectDinamico('sel-lov-vista', resVista.data, 'vista');
                 poblarSelectDinamico('sel-lov-estado_propiedad', resEstadoProp.data, 'estado_propiedad');
                 poblarSelectDinamico('sel-lov-moneda', resMoneda.data, 'moneda');
                 poblarSelectDinamico('sel-lov-estado_publicacion', resEstadoPub.data, 'estado_publicacion');
-                poblarSelectDinamico('sel-lov-sotano', resBinario.data, 'valor');
-                poblarSelectDinamico('sel-lov-almacen', resBinario.data, 'valor');
+                poblarSelectDinamico('sel-lov-situacion_propiedad', resSituacion.data, 'situacion_propiedad');
+                poblarSelectDinamico('sel-lov-vista', resVista.data, 'vista');
+                poblarSelectDinamico('sel-lov-sotano', resSino.data, 'si_no');
+                poblarSelectDinasom = poblarSelectDinamico('sel-lov-almacen', resSino.data, 'si_no');
 
-                // [INICIO DE LLAVES]: Cascada de Ubigeo
+                // [INICIO DE LLAVES]: Cascada territorial para Ubigeo y País
                 const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
                 const selProv = formNode.querySelector('#sel-ubigeo-provincia');
@@ -697,11 +711,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             } catch (errLov) {
                 console.error("Error al cargar catálogos dinámicos desde Supabase:", errLov);
-            } // [FIN DE LLAVES]: Cierra try/catch LOV
+            } // [FIN DE LLAVES]: Cierra try/catch
         })();
     } // [FIN DE LLAVES]: Cierra condición nombreTabla === 'propiedad'
 
-    // [INICIO DE LLAVES]: Función constructora para cerrar el submodal
+    // [INICIO DE LLAVES]: Función para cerrar el submodal
     const cerrarSubModal = () => { 
         if (subModal) subModal.style.display = 'none'; 
     }; // [FIN DE LLAVES]: Cierra cerrarSubModal
@@ -711,7 +725,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
     if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
-    // [INICIO DE LLAVES]: Asignación de evento submit para guardar registros
+    // [INICIO DE LLAVES]: Envío y persistencia de datos en el CRUD
     const formularioCrudDOM = document.getElementById('form-generico-crud');
     if (formularioCrudDOM) {
         formularioCrudDOM.onsubmit = async (e) => {
@@ -728,9 +742,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
-        }; // [FIN DE LLAVES]: Cierra callback onsubmit
+        }; // [FIN DE LLAVES]: Cierra onsubmit
     } // [FIN DE LLAVES]: Cierra validación formularioCrudDOM
-} // [FIN DE LLAVES]: Cierra de forma balanceada la función completa abrirFormularioEdicionCrud
+} // [FIN DE LLAVES]: Cierra función abrirFormularioEdicionCrud
 
 
  
