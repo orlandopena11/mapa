@@ -494,8 +494,9 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD de manera 
- * 100% dinámica, con catálogos en cascada territorial (Ubigeo) y geocodificación automática.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el formulario del CRUD, 
+ * con orden jerárquico estricto (País -> Departamento -> Provincia -> Distrito -> Dirección) 
+ * y autocompletado automático de coordenadas y geocodificación.
  */
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
@@ -595,7 +596,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                     let botonGeocodificarHtml = '';
                     if (nombreTabla === 'propiedad' && c.nombre === 'direccion') {
-                        botonGeocodificarHtml = '<button type="button" id="btn-auto-geocodificar" style="margin-top: 6px; background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 Autocompletar Coordenadas y Mapa desde Dirección</button>';
+                        botonGeocodificarHtml = '<button type="button" id="btn-auto-geocodificar" style="margin-top: 6px; background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>';
                     }
 
                     return '<div>' +
@@ -679,7 +680,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selectNode.innerHTML = optionsHtml;
                 };
 
-                // Poblar catálogos estándar
+                // Poblar catálogos estándar y país
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
@@ -691,11 +692,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-                // Lógica territorial en cascada a partir de la tabla ubigeo
+                // Cascada Territorial Estricta: País -> Departamento -> Provincia -> Distrito -> Código Ubigeo
+                const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
                 const selProv = formNode.querySelector('#sel-ubigeo-provincia');
                 const selDist = formNode.querySelector('#sel-ubigeo-distrito');
                 const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
+
+                if (selPais && !selPais.value && resPais.data && resPais.data.length > 0) {
+                    selPais.value = resPais.data[0].pais || 'Perú';
+                }
 
                 const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort();
                 if (selDep) {
@@ -747,17 +753,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
                     };
 
-                    selCodigoUbigeo.onchange = () => {
-                        const match = coleccionUbigeo.find(u => String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.value));
-                        if (match) {
-                            selDep.value = match.departamento;
-                            actualizarProvincias();
-                            selProv.value = match.provincia;
-                            actualizarDistritosYUbigeo();
-                            selDist.value = match.distrito;
-                        }
-                    };
-
                     if (selDep.value) {
                         actualizarProvincias();
                         if (selProv.value) {
@@ -766,7 +761,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     }
                 }
 
-                // Autocompletado de Coordenadas Geográficas
+                // Autocompletado inteligente de Ubigeo por Dirección y Geocodificación
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
                 if (btnGeo) {
                     btnGeo.onclick = async () => {
@@ -774,9 +769,21 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const dist = selDist?.value || '';
                         const prov = selProv?.value || '';
                         const dep = selDep?.value || '';
+                        const pais = selPais?.value || 'Perú';
 
-                        const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, Perú`;
-                        btnGeo.innerText = "Buscando coordenadas...";
+                        if (!dist || !prov || !dep) {
+                            alert("Por favor seleccione primero el Departamento, Provincia y Distrito.");
+                            return;
+                        }
+
+                        // Sincronizar automáticamente el código de ubigeo si falta
+                        const matchUbigeo = coleccionUbigeo.find(u => u.departamento === dep && u.provincia === prov && u.distrito === dist);
+                        if (matchUbigeo && selCodigoUbigeo) {
+                            selCodigoUbigeo.value = matchUbigeo.codigo_ubigeo_id;
+                        }
+
+                        const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
+                        btnGeo.innerText = "Calculando ubicación y mapa...";
                         
                         try {
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
@@ -799,21 +806,21 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
-                                alert("¡Coordenadas y datos de mapa autocompletados exitosamente!");
+                                alert("¡Ubigeo, coordenadas y datos de mapa autocompletados con éxito!");
                             } else {
-                                alert("No se encontró la ubicación exacta en el mapa. Pruebe ajustando la dirección.");
+                                alert("No se hallaron coordenadas exactas para esta dirección, pero el Ubigeo ha sido sincronizado.");
                             }
                         } catch (errGeo) {
                             console.error("Error en geocodificación:", errGeo);
-                            alert("Error al conectar con el servicio de geolocalización.");
+                            alert("Error al conectar con el servicio de mapas.");
                         } finally {
-                            btnGeo.innerText = "📍 Autocompletar Coordenadas y Mapa desde Dirección";
+                            btnGeo.innerText = "📍 Autocompletar Ubigeo, Coordenadas y Mapa";
                         }
                     };
                 }
 
             } catch (errLov) {
-                console.error("❌ Error cargando catálogos de ubigeo y país:", errLov);
+                console.error("❌ Error cargando catálogos territoriales:", errLov);
             } finally {
                 console.groupEnd();
             }
