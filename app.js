@@ -494,10 +494,12 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal para la creación o 
- * edición de registros, consultando de forma dinámica las tablas de catálogo LOV en Supabase.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el submodal de forma 100% dinámica,
+ * mapeando columnas y consultando las tablas lov_ y ubigeo directamente desde Supabase.
  */
+// [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
+    // [INICIO DE LLAVES]: Bloque de inicialización y consulta de fotos secundarias
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
@@ -520,9 +522,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         } catch (errFoto) {
             console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
         }
-    }
+    } // [FIN DE LLAVES]: Cierra consulta de fotos secundarias
 
     let subModal = document.getElementById('submodal-formulario-crud');
+    // [INICIO DE LLAVES]: Condicional para crear el submodal si no existe
     if (!subModal) {
         subModal = document.createElement('div');
         subModal.id = 'submodal-formulario-crud';
@@ -532,7 +535,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    }
+    } // [FIN DE LLAVES]: Cierra creación del submodal
 
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
@@ -543,6 +546,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${conf.campos.map(c => {
+                    // [INICIO DE LLAVES]: Mapeo de campos dinámicos
                     if (c.nombre === 'galeria_fotos') return '';
 
                     let valorActual = esEdicion && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
@@ -551,20 +555,36 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
                     }
 
-                    if (c.tipo === 'select') {
+                    const esTablaLov = ['subtipo_propiedad', 'situacion_propiedad', 'vista', 'estado_propiedad', 'moneda', 'estado_publicacion', 'sotano', 'almacen'].includes(c.nombre);
+                    const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'pais'].includes(c.nombre);
+
+                    // [INICIO DE LLAVES]: Inyección de selectores dinámicos para tablas LOV
+                    if (nombreTabla === 'propiedad' && (esTablaLov || esUbigeoCasada)) {
+                        let idSelect = esUbigeoCasada ? `sel-ubigeo-${c.nombre}` : `sel-lov-${c.nombre}`;
+                        if (c.nombre === 'pais') idSelect = 'sel-lov-pais';
+                        if (c.nombre === 'subtipo_propiedad') idSelect = 'sel-lov-subtipo_propiedad';
+                        if (c.nombre === 'situacion_propiedad') idSelect = 'sel-lov-situacion_propiedad';
+
                         return `
                             <div>
                                 <label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">${c.label}:</label>
-                                <select name="${c.nombre}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;" ${c.requerido ? 'required' : ''}>
-                                    ${c.opciones.map(op => `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`).join('')}
+                                <select name="${c.nombre}" id="${idSelect}" data-actual="${valorActual}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">
+                                    <option value="${valorActual}">${valorActual || '-- Cargando desde Supabase --'}</option>
                                 </select>
                             </div>
                         `;
-                    }
+                    } // [FIN DE LLAVES]: Cierra inyección LOV
 
                     let valorInputFinal = valorActual;
                     if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
                         valorInputFinal = window.usuarioLogueado.id;
+                    }
+
+                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) {
+                        const numeroFotoExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
+                        if (fotosSecundariasObtenidas[numeroFotoExtra] !== undefined) {
+                            valorInputFinal = fotosSecundariasObtenidas[numeroFotoExtra];
+                        }
                     }
 
                     return `
@@ -573,6 +593,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             <input type="${c.tipo || 'text'}" name="${c.nombre}" value="${valorInputFinal}" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ${c.requerido ? 'required' : ''}>
                         </div>
                     `;
+                    // [FIN DE LLAVES]: Fin del mapeo de campos
                 }).join('')}
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
@@ -587,15 +608,110 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
+    // [INICIO DE LLAVES]: Bloque asíncrono para poblar los selectores con las tablas lov_
+    if (nombreTabla === 'propiedad') {
+        (async () => {
+            const clienteSupabase = obtenerClienteSupabase();
+            if (!clienteSupabase) return;
+
+            const formNode = document.getElementById('form-generico-crud');
+            if (!formNode) return;
+
+            try {
+                // [INICIO DE LLAVES]: Consulta en paralelo a Supabase
+                const [
+                    resUbigeo, 
+                    resSubtipo, 
+                    resSituacion, 
+                    resVista, 
+                    resEstadoProp, 
+                    resMoneda, 
+                    resEstadoPub, 
+                    resBinario
+                ] = await Promise.all([
+                    clienteSupabase.from('ubigeo').select('*'),
+                    clienteSupabase.from('lov_subtipo_propiedad').select('*'),
+                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
+                    clienteSupabase.from('lov_vista').select('*'),
+                    clienteSupabase.from('lov_estado_propiedad').select('*'),
+                    clienteSupabase.from('lov_moneda').select('*'),
+                    clienteSupabase.from('lov_estado_publicacion').select('*'),
+                    clienteSupabase.from('lov_sino').select('*')
+                ]); // [FIN DE LLAVES]: Cierra Promise.all
+
+                const coleccionUbigeo = resUbigeo.data || [];
+                state.ubigeosCache = coleccionUbigeo;
+
+                // [INICIO DE LLAVES]: Función auxiliar para llenar dinámicamente los selectores
+                const poblarSelectDinamico = (selectorId, dataRegistros, nombreColumna) => {
+                    const selectNode = formNode.querySelector(`#${selectorId}`);
+                    if (!selectNode || !dataRegistros) return;
+
+                    const valorActualPre = selectNode.getAttribute('data-actual') || '';
+                    
+                    let optionsHtml = '<option value="">-- Seleccione --</option>';
+                    dataRegistros.forEach(row => {
+                        const valReal = row[nombreColumna] || row.nombre || row.valor || Object.values(row)[0];
+                        const seleccionado = String(valReal).trim() === String(valorActualPre).trim() ? 'selected' : '';
+                        optionsHtml += `<option value="${valReal}" ${seleccionado}>${valReal}</option>`;
+                    });
+                    selectNode.innerHTML = optionsHtml;
+                }; // [FIN DE LLAVES]: Cierra función auxiliar
+
+                poblarSelectDinamico('sel-lov-subtipo_propiedad', resSubtipo.data, 'subtipo_propiedad');
+                poblarSelectDinamico('sel-lov-situacion_propiedad', resSituacion.data, 'situacion_propiedad');
+                poblarSelectDinamico('sel-lov-vista', resVista.data, 'vista');
+                poblarSelectDinamico('sel-lov-estado_propiedad', resEstadoProp.data, 'estado_propiedad');
+                poblarSelectDinamico('sel-lov-moneda', resMoneda.data, 'moneda');
+                poblarSelectDinamico('sel-lov-estado_publicacion', resEstadoPub.data, 'estado_publicacion');
+                poblarSelectDinamico('sel-lov-sotano', resBinario.data, 'valor');
+                poblarSelectDinamico('sel-lov-almacen', resBinario.data, 'valor');
+
+                // [INICIO DE LLAVES]: Cascada de Ubigeo
+                const selPais = formNode.querySelector('#sel-lov-pais');
+                const selDep = formNode.querySelector('#sel-ubigeo-departamento');
+                const selProv = formNode.querySelector('#sel-ubigeo-provincia');
+                const selDist = formNode.querySelector('#sel-ubigeo-distrito');
+
+                if (selPais) {
+                    const paisesUnicos = [...new Set(coleccionUbigeo.map(u => u.pais || 'Perú'))];
+                    selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + paisesUnicos.map(p => `<option value="${p}" ${p === (datosFila?.pais || 'Perú') ? 'selected' : ''}>${p}</option>`).join('');
+                }
+
+                const evaluarActivacionDepartamentos = () => {
+                    if (!selDep) return;
+                    if (selPais && selPais.value) {
+                        selDep.disabled = false;
+                        const depts = [...new Set(coleccionUbigeo.map(u => u.departamento))].sort();
+                        selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + depts.map(d => `<option value="${d}" ${d === datosFila?.departamento ? 'selected' : ''}>${d}</option>`).join('');
+                    }
+                }; // [FIN DE LLAVES]: Cierra evaluarActivacionDepartamentos
+
+                if (selPais) selPais.onchange = evaluarActivacionDepartamentos;
+                evaluarActivacionDepartamentos();
+
+                if (selDep && datosFila?.departamento) selDep.value = datosFila.departamento;
+                if (selProv && datosFila?.provincia) selProv.value = datosFila.provincia;
+                if (selDist && datosFila?.distrito) selDist.value = datosFila.distrito;
+                // [FIN DE LLAVES]: Cierra cascada de Ubigeo
+
+            } catch (errLov) {
+                console.error("Error al cargar catálogos dinámicos desde Supabase:", errLov);
+            } // [FIN DE LLAVES]: Cierra try/catch LOV
+        })();
+    } // [FIN DE LLAVES]: Cierra condición nombreTabla === 'propiedad'
+
+    // [INICIO DE LLAVES]: Función constructora para cerrar el submodal
     const cerrarSubModal = () => { 
         if (subModal) subModal.style.display = 'none'; 
-    };
+    }; // [FIN DE LLAVES]: Cierra cerrarSubModal
 
     const btnCancelarCrud = document.getElementById('btn-cancelar-submodal');
     const btnCerrarCrudX = document.getElementById('btn-cerrar-submodal-x');
     if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
     if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
+    // [INICIO DE LLAVES]: Asignación de evento submit para guardar registros
     const formularioCrudDOM = document.getElementById('form-generico-crud');
     if (formularioCrudDOM) {
         formularioCrudDOM.onsubmit = async (e) => {
@@ -612,9 +728,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
-        };
-    } 
-}
+        }; // [FIN DE LLAVES]: Cierra callback onsubmit
+    } // [FIN DE LLAVES]: Cierra validación formularioCrudDOM
+} // [FIN DE LLAVES]: Cierra de forma balanceada la función completa abrirFormularioEdicionCrud
 
 
  
