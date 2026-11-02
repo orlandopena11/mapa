@@ -495,13 +495,13 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD de manera 
- * 100% dinámica, precargando los valores actuales en los selectores y poblando los catálogos desde Supabase.
+ * 100% dinámica, con catálogos en cascada territorial (Ubigeo) y geocodificación automática.
  */
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
-    console.group(`🔍 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
+    console.group(`🔍 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO INTELIGENTE (${nombreTabla.toUpperCase()}) ===`);
     console.log("Modo Edición:", esEdicion);
     console.log("Datos de la Fila recibidos (datosFila):", datosFila);
 
@@ -539,7 +539,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     }
 
     subModal.innerHTML = `
-        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 650px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
                 <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
@@ -564,10 +564,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         'situacion_propiedad', 
                         'vista', 
                         'sotano', 
-                        'almacen'
+                        'almacen',
+                        'pais'
                     ];
                     
-                    const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'pais', 'codigo_ubigeo_id_fk'].includes(c.nombre);
+                    const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'codigo_ubigeo_id_fk'].includes(c.nombre);
 
                     if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) {
                         let idSelect = esUbigeoCasada ? 'sel-ubigeo-' + c.nombre : 'sel-lov-' + c.nombre;
@@ -575,7 +576,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         return '<div>' +
                             '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
                             '<select name="' + c.nombre + '" id="' + idSelect + '" data-actual="' + valorActual + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">' +
-                                '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Cargando catálogo...)' : '-- Seleccione --') + '</option>' +
+                                '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Cargando...)' : '-- Seleccione --') + '</option>' +
                             '</select>' +
                         '</div>';
                     }
@@ -592,9 +593,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
                     }
 
+                    let botonGeocodificarHtml = '';
+                    if (nombreTabla === 'propiedad' && c.nombre === 'direccion') {
+                        botonGeocodificarHtml = '<button type="button" id="btn-auto-geocodificar" style="margin-top: 6px; background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 Autocompletar Coordenadas y Mapa desde Dirección</button>';
+                    }
+
                     return '<div>' +
                         '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
-                        '<input type="' + (c.tipo || 'text') + '" name="' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
+                        '<input type="' + (c.tipo || 'text') + '" name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
+                        botonGeocodificarHtml +
                     '</div>';
                 }).join('')}
 
@@ -628,7 +635,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     resEstadoPub, 
                     resSituacion, 
                     resVista, 
-                    resSino
+                    resSino,
+                    resPais
                 ] = await Promise.all([
                     clienteSupabase.from('ubigeo').select('*'),
                     clienteSupabase.from('lov_tipo_propiedad').select('*'),
@@ -638,60 +646,176 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     clienteSupabase.from('lov_estado_publicacion').select('*'),
                     clienteSupabase.from('lov_situacion_propiedad').select('*'),
                     clienteSupabase.from('lov_vista').select('*'),
-                    clienteSupabase.from('lov_si_no').select('*')
+                    clienteSupabase.from('lov_si_no').select('*'),
+                    clienteSupabase.from('lov_pais').select('*')
                 ]);
 
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
-                const poblarSelectDinamico = (selectorId, dataRegistros, nombreColumnaReal) => {
+                const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
                     const selectNode = formNode.querySelector('#' + selectorId);
                     if (!selectNode || !dataRegistros) return;
 
-                    const valorActualPre = selectNode.getAttribute('data-actual') || '';
+                    const valorActualPre = String(selectNode.getAttribute('data-actual') || '').trim();
                     let optionsHtml = '<option value="">-- Seleccione --</option>';
                     
                     dataRegistros.forEach(row => {
-                        const valReal = row[nombreColumnaReal] || row.nombre || row.valor || Object.values(row)[0];
-                        const coincide = String(valReal).trim().toLowerCase() === String(valorActualPre).trim().toLowerCase();
-                        const seleccionado = coincide ? 'selected' : '';
-                        optionsHtml += '<option value="' + valReal + '" ' + seleccionado + '>' + valReal + '</option>';
+                        let valReal = '';
+                        for (let col of posiblesColumnas) {
+                            if (row[col] !== undefined && row[col] !== null) {
+                                valReal = row[col];
+                                break;
+                            }
+                        }
+                        if (!valReal) {
+                            const keys = Object.keys(row);
+                            valReal = row[keys[0]] || '';
+                        }
+
+                        const coincide = String(valReal).trim().toLowerCase() === valorActualPre.toLowerCase();
+                        optionsHtml += `<option value="${valReal}" ${coincide ? 'selected' : ''}>${valReal}</option>`;
                     });
                     selectNode.innerHTML = optionsHtml;
                 };
 
-                // Poblar catálogos estándar asegurando marcar el valor actual
-                poblarSelectDinamico('sel-lov-tipo_propiedad', resTipoProp.data, 'tipo_propiedad');
-                poblarSelectDinamico('sel-lov-subtipo_propiedad', resSubtipo.data, 'subtipo_propiedad');
-                poblarSelectDinamico('sel-lov-estado_propiedad', resEstadoProp.data, 'estado_propiedad');
-                poblarSelectDinamico('sel-lov-moneda', resMoneda.data, 'moneda');
-                poblarSelectDinamico('sel-lov-estado_publicacion', resEstadoPub.data, 'estado_publicacion');
-                poblarSelectDinamico('sel-lov-situacion_propiedad', resSituacion.data, 'situacion_propiedad');
-                poblarSelectDinamico('sel-lov-vista', resVista.data, 'vista');
-                poblarSelectDinamico('sel-lov-sotano', resSino.data, 'si_no');
-                poblarSelectDinamico('sel-lov-almacen', resSino.data, 'si_no');
+                // Poblar catálogos estándar
+                poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
+                poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
+                poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
+                poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda', 'nombre', 'simbolo']);
+                poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-                // Poblar código de ubigeo y campos territoriales
+                // Lógica territorial en cascada a partir de la tabla ubigeo
+                const selDep = formNode.querySelector('#sel-ubigeo-departamento');
+                const selProv = formNode.querySelector('#sel-ubigeo-provincia');
+                const selDist = formNode.querySelector('#sel-ubigeo-distrito');
                 const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
-                if (selCodigoUbigeo) {
-                    const valorActualUbigeo = selCodigoUbigeo.getAttribute('data-actual') || '';
-                    let optsUbigeo = '<option value="">-- Seleccione Código Ubigeo --</option>';
-                    coleccionUbigeo.forEach(u => {
-                        const codigo = u.codigo_ubigeo_id;
-                        const etiquetaUbigeo = `${codigo} - ${u.distrito || ''}, ${u.provincia || ''}, ${u.departamento || ''}`;
-                        const coincide = String(codigo).trim() === String(valorActualUbigeo).trim();
-                        optsUbigeo += `<option value="${codigo}" ${coincide ? 'selected' : ''}>${etiquetaUbigeo}</option>`;
-                    });
-                    selCodigoUbigeo.innerHTML = optsUbigeo;
+
+                const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort();
+                if (selDep) {
+                    const actualDep = selDep.getAttribute('data-actual') || '';
+                    selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + departamentosUnicos.map(d => `<option value="${d}" ${d === actualDep ? 'selected' : ''}>${d}</option>`).join('');
                 }
 
-                poblarSelectDinamico('sel-ubigeo-departamento', coleccionUbigeo, 'departamento');
-                poblarSelectDinamico('sel-ubigeo-provincia', coleccionUbigeo, 'provincia');
-                poblarSelectDinamico('sel-ubigeo-distrito', coleccionUbigeo, 'distrito');
-                poblarSelectDinamico('sel-ubigeo-pais', coleccionUbigeo, 'pais');
+                if (selDep && selProv && selDist && selCodigoUbigeo) {
+                    const actualizarProvincias = () => {
+                        const depVal = selDep.value;
+                        const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === depVal).map(u => u.provincia))].filter(Boolean).sort();
+                        const actualProv = selProv.getAttribute('data-actual') || '';
+                        selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>' + provs.map(p => `<option value="${p}" ${p === actualProv ? 'selected' : ''}>${p}</option>`).join('');
+                    };
+
+                    const actualizarDistritosYUbigeo = () => {
+                        const depVal = selDep.value;
+                        const provVal = selProv.value;
+                        const dists = coleccionUbigeo.filter(u => u.departamento === depVal && u.provincia === provVal);
+                        const actualDist = selDist.getAttribute('data-actual') || '';
+                        
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + dists.map(d => `<option value="${d.distrito}" ${d.distrito === actualDist ? 'selected' : ''}>${d.distrito}</option>`).join('');
+                        
+                        let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                        dists.forEach(u => {
+                            const coincide = String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
+                            optsCodigo += `<option value="${u.codigo_ubigeo_id}" ${coincide ? 'selected' : ''}>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
+                        });
+                        selCodigoUbigeo.innerHTML = optsCodigo;
+                    };
+
+                    selDep.onchange = () => {
+                        selProv.removeAttribute('data-actual');
+                        selDist.removeAttribute('data-actual');
+                        actualizarProvincias();
+                        selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                        selCodigoUbigeo.innerHTML = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                    };
+
+                    selProv.onchange = () => {
+                        selDist.removeAttribute('data-actual');
+                        actualizarDistritosYUbigeo();
+                    };
+
+                    selDist.onchange = () => {
+                        const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
+                        if (match) {
+                            selCodigoUbigeo.value = match.codigo_ubigeo_id;
+                        }
+                    };
+
+                    selCodigoUbigeo.onchange = () => {
+                        const match = coleccionUbigeo.find(u => String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.value));
+                        if (match) {
+                            selDep.value = match.departamento;
+                            actualizarProvincias();
+                            selProv.value = match.provincia;
+                            actualizarDistritosYUbigeo();
+                            selDist.value = match.distrito;
+                        }
+                    };
+
+                    if (selDep.value) {
+                        actualizarProvincias();
+                        if (selProv.value) {
+                            actualizarDistritosYUbigeo();
+                        }
+                    }
+                }
+
+                // Autocompletado de Coordenadas Geográficas
+                const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
+                if (btnGeo) {
+                    btnGeo.onclick = async () => {
+                        const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
+                        const dist = selDist?.value || '';
+                        const prov = selProv?.value || '';
+                        const dep = selDep?.value || '';
+
+                        const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, Perú`;
+                        btnGeo.innerText = "Buscando coordenadas...";
+                        
+                        try {
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
+                            const dataGeo = await res.json();
+
+                            if (dataGeo && dataGeo.length > 0) {
+                                const lat = dataGeo[0].lat;
+                                const lon = dataGeo[0].lon;
+                                const displayName = dataGeo[0].display_name;
+
+                                const inputLat = formNode.querySelector('#input-crud-latitud');
+                                const inputLng = formNode.querySelector('#input-crud-longitud');
+                                const inputPrec = formNode.querySelector('#input-crud-geocode_precision');
+                                const inputRef = formNode.querySelector('#input-crud-referencia_mapa');
+                                const inputEnlace = formNode.querySelector('#input-crud-enlace_mapa');
+
+                                if (inputLat) inputLat.value = lat;
+                                if (inputLng) inputLng.value = lon;
+                                if (inputPrec) inputPrec.value = "exacta";
+                                if (inputRef) inputRef.value = displayName;
+                                if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+
+                                alert("¡Coordenadas y datos de mapa autocompletados exitosamente!");
+                            } else {
+                                alert("No se encontró la ubicación exacta en el mapa. Pruebe ajustando la dirección.");
+                            }
+                        } catch (errGeo) {
+                            console.error("Error en geocodificación:", errGeo);
+                            alert("Error al conectar con el servicio de geolocalización.");
+                        } finally {
+                            btnGeo.innerText = "📍 Autocompletar Coordenadas y Mapa desde Dirección";
+                        }
+                    };
+                }
 
             } catch (errLov) {
-                console.error("❌ [SRE ESPÍA ERROR] Fallo al cargar catálogos:", errLov);
+                console.error("❌ Error cargando catálogos de ubigeo y país:", errLov);
+            } finally {
+                console.groupEnd();
             }
         })();
     }
