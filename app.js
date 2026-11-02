@@ -613,11 +613,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         botonGeocodificarHtml = '<button type="button" id="btn-auto-geocodificar" style="margin-top: 6px; background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>';
                     }
 
-                    return '<div>' +
+                return '<div>' +
                         '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
-                        let tipoInputHtml = (c.nombre === 'latitud' || c.nombre === 'longitud') ? 'text' : (c.tipo || 'text');
-                        let inputmodeHtml = (c.nombre === 'latitud' || c.nombre === 'longitud') ? 'inputmode="decimal"' : '';
-                        '<input type="' + tipoInputHtml + '" ' + inputmodeHtml + ' name="' + c.nombre + '" ... >'
+                        '<input type="' + ((c.nombre === 'latitud' || c.nombre === 'longitud') ? 'text' : (c.tipo || 'text')) + '" ' + ((c.nombre === 'latitud' || c.nombre === 'longitud') ? 'inputmode="decimal"' : '') + ' name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
                         botonGeocodificarHtml +
                     '</div>';
                 }).join('')}
