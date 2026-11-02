@@ -494,41 +494,39 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el formulario del CRUD, 
- * con orden jerárquico estricto (País -> Departamento -> Provincia -> Distrito -> Dirección) 
- * y autocompletado automático de coordenadas y geocodificación.
+ * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD de manera 
+ * 100% dinámica, ordenando estrictamente los campos territoriales (País -> Departamento -> Provincia 
+ * -> Distrito -> Código Ubigeo -> Dirección) y permitiendo el autocompletado inteligente de coordenadas.
  */
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
-    const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
+    const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla]; // [INICIO DE LLAVE]: Abre la función principal de apertura del formulario CRUD
     const esEdicion = datosFila !== null;
 
-    console.group(`🔍 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO INTELIGENTE (${nombreTabla.toUpperCase()}) ===`);
-    console.log("Modo Edición:", esEdicion);
-    console.log("Datos de la Fila recibidos (datosFila):", datosFila);
+    console.group(`🔍 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO ORDENADO (${nombreTabla.toUpperCase()}) ===`);
 
     let fotosSecundariasObtenidas = [];
 
-    if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
-        try {
+    if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) { // [INICIO DE LLAVE]: Control condicional para buscar fotos secundarias de la propiedad en edición
+        try { // [INICIO DE LLAVE]: Bloque protegido try/catch para la carga de imágenes en BD
             const cliente = obtenerClienteSupabase();
-            if (cliente) {
+            if (cliente) { // [INICIO DE LLAVE]: Valida la existencia del cliente Supabase activo
                 const { data: imgsBD } = await cliente
                     .from('imagen_propiedad')
                     .select('ruta_imagen, orden')
                     .eq('propiedad_id_fk', datosFila[conf.pk])
                     .order('orden', { ascending: true });
 
-                if (imgsBD && imgsBD.length > 0) {
+                if (imgsBD && imgsBD.length > 0) { // [INICIO DE LLAVE]: Valida si existen registros de imágenes secundarias
                     fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
-                }
-            }
-        } catch (errFoto) {
+                } // [FIN DE LLAVE]: Cierra validación de imágenes secundarias encontradas
+            } // [FIN DE LLAVE]: Cierra validación del cliente Supabase
+        } catch (errFoto) { // [INICIO DE LLAVE]: Captura errores en la consulta de imágenes
             console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
-        }
-    }
+        } // [FIN DE LLAVE]: Cierra bloque catch de imágenes
+    } // [FIN DE LLAVE]: Cierra condición principal de edición de propiedades
 
     let subModal = document.getElementById('submodal-formulario-crud');
-    if (!subModal) {
+    if (!subModal) { // [INICIO DE LLAVE]: Condicional para crear el contenedor modal si no existe en el DOM
         subModal = document.createElement('div');
         subModal.id = 'submodal-formulario-crud';
         subModal.style.cssText = `
@@ -537,7 +535,24 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    }
+    } // [FIN DE LLAVE]: Cierra la creación condicional del submodal
+
+    let camposAProcesar = [...conf.campos];
+    if (nombreTabla === 'propiedad') { // [INICIO DE LLAVE]: Condicional para reordenar los campos específicamente de la tabla propiedad
+        const nombresOrdenadosDeseados = [
+            'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
+            'pais', 'departamento', 'provincia', 'distrito', 'codigo_ubigeo_id_fk', 'direccion',
+            'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
+        ];
+        
+        camposAProcesar.sort((a, b) => { // [INICIO DE LLAVE]: Función de ordenamiento personalizado basada en el índice deseado
+            let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
+            let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            return indexA - indexB;
+        }); // [FIN DE LLAVE]: Cierra el método sort de ordenamiento
+    } // [FIN DE LLAVE]: Cierra la condición de reordenamiento de campos
 
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
@@ -547,7 +562,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
-                ${conf.campos.map(c => {
+                ${camposAProcesar.map(c => { // [INICIO DE LLAVE]: Mapeo de la colección de campos para renderizar el HTML del formulario
                     if (c.nombre === 'galeria_fotos') return '';
 
                     let valorActual = esEdicion && datosFila[c.nombre] !== undefined && datosFila[c.nombre] !== null ? datosFila[c.nombre] : '';
@@ -571,7 +586,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     
                     const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'codigo_ubigeo_id_fk'].includes(c.nombre);
 
-                    if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) {
+                    if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) { // [INICIO DE LLAVE]: Renderiza selects especiales para catálogos y ubigeo
                         let idSelect = esUbigeoCasada ? 'sel-ubigeo-' + c.nombre : 'sel-lov-' + c.nombre;
 
                         return '<div>' +
@@ -580,19 +595,19 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Cargando...)' : '-- Seleccione --') + '</option>' +
                             '</select>' +
                         '</div>';
-                    }
+                    } // [FIN DE LLAVE]: Cierra condición de renderizado para selects
 
                     let valorInputFinal = valorActual;
                     if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
                         valorInputFinal = window.usuarioLogueado.id;
                     }
 
-                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) {
+                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) { // [INICIO DE LLAVE]: Asigna fotos extras en modo edición si existen
                         const numeroFotoExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
                         if (fotosSecundariasObtenidas[numeroFotoExtra] !== undefined) {
                             valorInputFinal = fotosSecundariasObtenidas[numeroFotoExtra];
                         }
-                    }
+                    } // [FIN DE LLAVE]: Cierra condición de fotos extras
 
                     let botonGeocodificarHtml = '';
                     if (nombreTabla === 'propiedad' && c.nombre === 'direccion') {
@@ -604,7 +619,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         '<input type="' + (c.tipo || 'text') + '" name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
                         botonGeocodificarHtml +
                     '</div>';
-                }).join('')}
+                }).join('')} // [FIN DE LLAVE]: Cierra el método map de campos
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
                     <button type="button" id="btn-cancelar-submodal" style="background: #94a3b8; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
@@ -618,15 +633,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     subModal.style.display = 'flex';
 
-    if (nombreTabla === 'propiedad') {
-        (async () => {
+    if (nombreTabla === 'propiedad') { // [INICIO DE LLAVE]: Bloque asíncrono para poblar catálogos y manejar la cascada territorial
+        (async () => { // [INICIO DE LLAVE]: Función autoejecutable asíncrona para consultas a Supabase
             const clienteSupabase = obtenerClienteSupabase();
             if (!clienteSupabase) return;
 
             const formNode = document.getElementById('form-generico-crud');
             if (!formNode) return;
 
-            try {
+            try { // [INICIO DE LLAVE]: Bloque try/catch para la carga de datos relacionales en paralelo
                 const [
                     resUbigeo, 
                     resTipoProp, 
@@ -654,21 +669,21 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
-                const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
+                const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => { // [INICIO DE LLAVE]: Función auxiliar para llenar selects flexibles
                     const selectNode = formNode.querySelector('#' + selectorId);
                     if (!selectNode || !dataRegistros) return;
 
                     const valorActualPre = String(selectNode.getAttribute('data-actual') || '').trim();
                     let optionsHtml = '<option value="">-- Seleccione --</option>';
                     
-                    dataRegistros.forEach(row => {
+                    dataRegistros.forEach(row => { // [INICIO DE LLAVE]: Bucle para evaluar columnas reales de los registros
                         let valReal = '';
-                        for (let col of posiblesColumnas) {
+                        for (let col of posiblesColumnas) { // [INICIO DE LLAVE]: Bucle para buscar coincidencia de columnas en el objeto
                             if (row[col] !== undefined && row[col] !== null) {
                                 valReal = row[col];
                                 break;
                             }
-                        }
+                        } // [FIN DE LLAVE]: Cierra bucle de búsqueda de columnas
                         if (!valReal) {
                             const keys = Object.keys(row);
                             valReal = row[keys[0]] || '';
@@ -676,9 +691,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                         const coincide = String(valReal).trim().toLowerCase() === valorActualPre.toLowerCase();
                         optionsHtml += `<option value="${valReal}" ${coincide ? 'selected' : ''}>${valReal}</option>`;
-                    });
+                    }); // [FIN DE LLAVE]: Cierra bucle forEach de registros
                     selectNode.innerHTML = optionsHtml;
-                };
+                }; // [FIN DE LLAVE]: Cierra la función auxiliar poblarSelectDinamicoFlex
 
                 // Poblar catálogos estándar y país
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
@@ -692,7 +707,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-                // Cascada Territorial Estricta: País -> Departamento -> Provincia -> Distrito -> Código Ubigeo
                 const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
                 const selProv = formNode.querySelector('#sel-ubigeo-provincia');
@@ -709,15 +723,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + departamentosUnicos.map(d => `<option value="${d}" ${d === actualDep ? 'selected' : ''}>${d}</option>`).join('');
                 }
 
-                if (selDep && selProv && selDist && selCodigoUbigeo) {
-                    const actualizarProvincias = () => {
+                if (selDep && selProv && selDist && selCodigoUbigeo) { // [INICIO DE LLAVE]: Configuración de la cascada jerárquica de territorio
+                    const actualizarProvincias = () => { // [INICIO DE LLAVE]: Función para refrescar el desplegable de provincias
                         const depVal = selDep.value;
                         const provs = [...new Set(coleccionUbigeo.filter(u => u.departamento === depVal).map(u => u.provincia))].filter(Boolean).sort();
                         const actualProv = selProv.getAttribute('data-actual') || '';
                         selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>' + provs.map(p => `<option value="${p}" ${p === actualProv ? 'selected' : ''}>${p}</option>`).join('');
-                    };
+                    }; // [FIN DE LLAVE]: Cierra actualizarProvincias
 
-                    const actualizarDistritosYUbigeo = () => {
+                    const actualizarDistritosYUbigeo = () => { // [INICIO DE LLAVE]: Función para refrescar distritos y código ubigeo
                         const depVal = selDep.value;
                         const provVal = selProv.value;
                         const dists = coleccionUbigeo.filter(u => u.departamento === depVal && u.provincia === provVal);
@@ -726,32 +740,32 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + dists.map(d => `<option value="${d.distrito}" ${d.distrito === actualDist ? 'selected' : ''}>${d.distrito}</option>`).join('');
                         
                         let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
-                        dists.forEach(u => {
+                        dists.forEach(u => { // [INICIO DE LLAVE]: Mapeo de códigos de ubigeo filtrados
                             const coincide = String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
                             optsCodigo += `<option value="${u.codigo_ubigeo_id}" ${coincide ? 'selected' : ''}>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
-                        });
+                        }); // [FIN DE LLAVE]: Cierra bucle forEach de ubigeos
                         selCodigoUbigeo.innerHTML = optsCodigo;
-                    };
+                    }; // [FIN DE LLAVE]: Cierra actualizarDistritosYUbigeo
 
-                    selDep.onchange = () => {
+                    selDep.onchange = () => { // [INICIO DE LLAVE]: Evento change de departamento
                         selProv.removeAttribute('data-actual');
                         selDist.removeAttribute('data-actual');
                         actualizarProvincias();
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
                         selCodigoUbigeo.innerHTML = '<option value="">-- Seleccione Código Ubigeo --</option>';
-                    };
+                    }; // [FIN DE LLAVE]: Cierra evento change departamento
 
-                    selProv.onchange = () => {
+                    selProv.onchange = () => { // [INICIO DE LLAVE]: Evento change de provincia
                         selDist.removeAttribute('data-actual');
                         actualizarDistritosYUbigeo();
-                    };
+                    }; // [FIN DE LLAVE]: Cierra evento change provincia
 
-                    selDist.onchange = () => {
+                    selDist.onchange = () => { // [INICIO DE LLAVE]: Evento change de distrito para sincronizar la llave primaria de ubigeo
                         const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
                         if (match) {
                             selCodigoUbigeo.value = match.codigo_ubigeo_id;
                         }
-                    };
+                    }; // [FIN DE LLAVE]: Cierra evento change distrito
 
                     if (selDep.value) {
                         actualizarProvincias();
@@ -759,12 +773,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             actualizarDistritosYUbigeo();
                         }
                     }
-                }
+                } // [FIN DE LLAVE]: Cierra la configuración de la cascada territorial
 
-                // Autocompletado inteligente de Ubigeo por Dirección y Geocodificación
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
-                if (btnGeo) {
-                    btnGeo.onclick = async () => {
+                if (btnGeo) { // [INICIO DE LLAVE]: Evento de autocompletado por geolocalización y dirección
+                    btnGeo.onclick = async () => { // [INICIO DE LLAVE]: Callback asíncrono para consultar Nominatim / OSM
                         const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
                         const dist = selDist?.value || '';
                         const prov = selProv?.value || '';
@@ -776,7 +789,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             return;
                         }
 
-                        // Sincronizar automáticamente el código de ubigeo si falta
                         const matchUbigeo = coleccionUbigeo.find(u => u.departamento === dep && u.provincia === prov && u.distrito === dist);
                         if (matchUbigeo && selCodigoUbigeo) {
                             selCodigoUbigeo.value = matchUbigeo.codigo_ubigeo_id;
@@ -785,11 +797,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
                         btnGeo.innerText = "Calculando ubicación y mapa...";
                         
-                        try {
+                        try { // [INICIO DE LLAVE]: Try/catch para la petición fetch a OpenStreetMap
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
                             const dataGeo = await res.json();
 
-                            if (dataGeo && dataGeo.length > 0) {
+                            if (dataGeo && dataGeo.length > 0) { // [INICIO DE LLAVE]: Valida si la API devolvió resultados geográficos
                                 const lat = dataGeo[0].lat;
                                 const lon = dataGeo[0].lon;
                                 const displayName = dataGeo[0].display_name;
@@ -809,27 +821,27 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 alert("¡Ubigeo, coordenadas y datos de mapa autocompletados con éxito!");
                             } else {
                                 alert("No se hallaron coordenadas exactas para esta dirección, pero el Ubigeo ha sido sincronizado.");
-                            }
-                        } catch (errGeo) {
+                            } // [FIN DE LLAVE]: Cierra validación de resultados de geocodificación
+                        } catch (errGeo) { // [INICIO DE LLAVE]: Captura errores de red del servicio de mapas
                             console.error("Error en geocodificación:", errGeo);
                             alert("Error al conectar con el servicio de mapas.");
-                        } finally {
+                        } finally { // [INICIO DE LLAVE]: Bloque finally para restablecer el texto del botón
                             btnGeo.innerText = "📍 Autocompletar Ubigeo, Coordenadas y Mapa";
-                        }
-                    };
-                }
+                        } // [FIN DE LLAVE]: Cierra bloque finally
+                    }; // [FIN DE LLAVE]: Cierra onclick del botón geocodificar
+                } // [FIN DE LLAVE]: Cierra condición del botón geocodificar
 
-            } catch (errLov) {
+            } catch (errLov) { // [INICIO DE LLAVE]: Captura errores generales de carga de catálogos
                 console.error("❌ Error cargando catálogos territoriales:", errLov);
-            } finally {
+            } finally { // [INICIO DE LLAVE]: Cierra grupo de consola
                 console.groupEnd();
-            }
-        })();
-    }
+            } // [FIN DE LLAVE]: Cierra bloque finally general
+        })(); // [FIN DE LLAVE]: Cierra función autoejecutable asíncrona
+    } // [FIN DE LLAVE]: Cierra condición para la tabla propiedad
 
-    const cerrarSubModal = () => { 
+    const cerrarSubModal = () => { // [INICIO DE LLAVE]: Función simple para cerrar el submodal
         if (subModal) subModal.style.display = 'none'; 
-    };
+    }; // [FIN DE LLAVE]: Cierra cerrarSubModal
 
     const btnCancelarCrud = document.getElementById('btn-cancelar-submodal');
     const btnCerrarCrudX = document.getElementById('btn-cerrar-submodal-x');
@@ -837,8 +849,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
     const formularioCrudDOM = document.getElementById('form-generico-crud');
-    if (formularioCrudDOM) {
-        formularioCrudDOM.onsubmit = async (e) => {
+    if (formularioCrudDOM) { // [INICIO DE LLAVE]: Manejador del evento submit del formulario CRUD
+        formularioCrudDOM.onsubmit = async (e) => { // [INICIO DE LLAVE]: Callback asíncrono para guardar los datos en Supabase
             e.preventDefault();
             const btnSubmit = document.getElementById('btn-guardar-crud-submit');
             if (btnSubmit) {
@@ -852,9 +864,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
-        };
-    }
-}
+        }; // [FIN DE LLAVE]: Cierra callback submit
+    } // [FIN DE LLAVE]: Cierra condición del formulario DOM
+} // [FIN DE LLAVE]: Cierra la función principal abrirFormularioEdicionCrud
 
 
  
