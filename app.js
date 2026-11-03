@@ -929,7 +929,7 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
         if (nombreTabla === 'propiedad' && listaFotosExtras.length > 0 && idPropiedadGenerada) {
             const filasImagenes = listaFotosExtras.map((urlFoto, index) => ({
                 propiedad_id_fk: idPropiedadGenerada,
-                url_imagen: urlFoto,
+                ruta_imagen: urlFoto,
                 orden: index + 1
             }));
 
