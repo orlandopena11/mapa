@@ -466,8 +466,8 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * autogenera el código de la llave primaria para nuevos registros, gestiona la carga de fotos, 
- * ordena los campos y prepara el formulario.
+ * autogenera el código de la llave primaria y el ID de usuario logueado para nuevos registros,
+ * gestiona la carga de fotos, ordena los campos y prepara el formulario.
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
@@ -500,6 +500,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         } // [FIN DE LLAVES]: Cierra try/catch de fotos
     } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
 
+    // [INICIO DE LLAVES]: Lógica automática para capturar el ID del usuario actual logueado
+    let idUsuarioActualSugerido = '';
+    if (window.usuarioLogueado && window.usuarioLogueado.id) {
+        idUsuarioActualSugerido = window.usuarioLogueado.id;
+    } else if (state.usuarioActual && state.usuarioActual.id) {
+        idUsuarioActualSugerido = state.usuarioActual.id;
+    } else {
+        idUsuarioActualSugerido = 'e9e1a0f6-9e78-4964-a6fa-c...'; // Respaldo por defecto si no hay sesión activa estricta
+    } // [FIN DE LLAVES]: Cierra captura de usuario actual
+
     // [INICIO DE LLAVES]: Lógica automática para generar la llave primaria si es un nuevo registro
     let valorPkSugerido = '';
     if (esEdicion) {
@@ -514,7 +524,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                 if (registrosExistentes && registrosExistentes.length > 0) {
                     if (nombreTabla === 'propiedad') {
-                        // Extrae el número mayor de los IDs existentes (ej: PROP-005 -> 5) y autoincrementa
                         const numerosExtraidos = registrosExistentes.map(r => {
                             const valStr = String(r[conf.pk] || '');
                             const matchNum = valStr.match(/\d+/);
@@ -523,7 +532,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const maxNum = Math.max(...numerosExtraidos, 0);
                         valorPkSugerido = `PROP-${String(maxNum + 1).padStart(3, '0')}`;
                     } else {
-                        // Generador estándar alfanumérico único para otras tablas
                         valorPkSugerido = 'SRE-' + Math.random().toString(36).substring(2, 9).toUpperCase();
                     }
                 } else {
@@ -635,9 +643,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 ${camposAProcesar.map(c => {
                     let valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
                     
-                    // Si es un nuevo registro y coincide con la columna PK, asignamos el valor autogenerado
+                    // Asignación automática de la Llave Primaria en modo nuevo registro
                     if (!esEdicion && c.nombre === conf.pk) {
                         valorActual = valorPkSugerido;
+                    }
+
+                    // Asignación automática del ID de usuario logueado en nuevos registros
+                    if (!esEdicion && c.nombre === 'usuario_id_fk') {
+                        valorActual = idUsuarioActualSugerido;
                     }
 
                     let inputHtml = '';
@@ -662,17 +675,24 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     } else {
-                        // Si es la llave primaria en modo edición, la hacemos de solo lectura para proteger la integridad
+                        // Protección de campos de solo lectura para PK y ID de Usuario en edición o asignación fija
                         const esPkCampo = (c.nombre === conf.pk);
-                        const estilosAdicionales = esPkCampo && esEdicion ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
-                        const atributoLectura = esPkCampo && esEdicion ? 'readonly' : '';
+                        const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
+                        const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
+                        
+                        const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
+                        const atributoLectura = debeBloquearse ? 'readonly' : '';
 
                         inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
                     } // [FIN DE LLAVES]: Cierra condicional de inputs
 
+                    let etiquetaExtra = '';
+                    if (!esEdicion && c.nombre === conf.pk) etiquetaExtra = '<span style="color:#006aff; font-size:10px;">(Generado Automáticamente)</span>';
+                    if (!esEdicion && c.nombre === 'usuario_id_fk') etiquetaExtra = '<span style="color:#10b981; font-size:10px;">(Usuario Activo Asignado)</span>';
+
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''} ${!esEdicion && c.nombre === conf.pk ? '<span style="color:#006aff; font-size:10px;">(Generado Automáticamente)</span>' : ''}</label>
+                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''} ${etiquetaExtra}</label>
                             ${inputHtml}
                         </div>
                     `;
