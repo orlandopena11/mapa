@@ -466,8 +466,8 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * autogenera el código de la llave primaria y el ID de usuario, restaura todas las Listas de Valores (LOVs),
- * gestiona el selector en cascada de Ubigeo y evita duplicados en los campos territoriales.
+ * programa la adición dinámica de características especiales desde "lov_caracteristica", asegura 
+ * todas las Listas de Valores (LOV), prioriza la dirección antes del ubigeo, y autogenera llaves y usuarios.
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
@@ -558,17 +558,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     } // [FIN DE LLAVES]: Cierra creación de subModal
 
     let camposAProcesar = [...conf.campos];
-    // [INICIO DE LLAVES]: Ordenamiento y filtrado de campos para evitar duplicados territoriales
+    // [INICIO DE LLAVES]: Ordenamiento y filtrado de campos (excluyendo texto plano redundante y galería genérica)
     if (nombreTabla === 'propiedad') {
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
-            'pais', 'codigo_ubigeo_id_fk', 'direccion',
+            'pais', 'direccion', 'codigo_ubigeo_id_fk',
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
         
-        // Excluimos explícitamente los campos de texto plano repetidos (departamento, provincia, distrito) 
-        // ya que se controlan dinámicamente en cascada a través de codigo_ubigeo_id_fk
-        camposAProcesar = camposAProcesar.filter(c => !['departamento', 'provincia', 'distrito'].includes(c.nombre));
+        // Excluimos explícitamente departamento, provincia, distrito y galeria_fotos obsoleta
+        camposAProcesar = camposAProcesar.filter(c => !['departamento', 'provincia', 'distrito', 'galeria_fotos'].includes(c.nombre));
 
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
@@ -577,7 +576,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-    } // [FIN DE LLAVES]: Cierra ordenamiento y filtrado de campos
+    } // [FIN DE LLAVES]: Cierra ordenamiento de campos
 
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
@@ -660,7 +659,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     let inputHtml = '';
 
                     // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos y Listas de Valores (LOV)
-                    if (c.tipo === 'select' || c.nombre === 'tipo_propiedad' || c.nombre === 'subtipo_propiedad' || c.nombre === 'pais') {
+                    if (c.tipo === 'select' || c.nombre === 'tipo_propiedad' || c.nombre === 'subtipo_propiedad' || c.nombre === 'pais' || c.nombre === 'situacion_propiedad' || c.nombre === 'vista') {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
                             c.opciones.forEach(op => {
@@ -671,12 +670,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     } else if (c.nombre === 'codigo_ubigeo_id_fk') {
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: -4px;">🌐 Selector Territorial en Cascada (Ubigeo):</label>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">🌐 1. Ingrese primero la Dirección exacta arriba y luego seleccione el Ubigeo:</label>
                                 <select id="sel-ubigeo-departamento" data-actual="${datosFila ? datosFila.departamento : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
                                 <select id="sel-ubigeo-provincia" data-actual="${datosFila ? datosFila.provincia : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
                                 <select id="sel-ubigeo-distrito" data-actual="${datosFila ? datosFila.distrito : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
                                 <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta</button>
                             </div>
                         `;
                     } else {
@@ -737,7 +736,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     resSituacion, 
                     resVista, 
                     resSino,
-                    resPais
+                    resPais,
+                    resCaracteristicasCat
                 ] = await Promise.all([
                     clienteSupabase.from('ubigeo').select('*'),
                     clienteSupabase.from('lov_tipo_propiedad').select('*'),
@@ -748,7 +748,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     clienteSupabase.from('lov_situacion_propiedad').select('*'),
                     clienteSupabase.from('lov_vista').select('*'),
                     clienteSupabase.from('lov_si_no').select('*'),
-                    clienteSupabase.from('lov_pais').select('*')
+                    clienteSupabase.from('lov_pais').select('*'),
+                    clienteSupabase.from('lov_caracteristica').select('*')
                 ]);
 
                 const coleccionUbigeo = resUbigeo.data || [];
@@ -786,11 +787,45 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda', 'nombre', 'simbolo']);
                 poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion', 'nombre']);
-                poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre']);
-                poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre']);
+                poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre', 'valor']);
+                poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
+
+                // [INICIO DE LLAVES]: Configuración del botón para añadir características dinámicamente
+                const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
+                const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
+                const listaCaracteristicasCat = resCaracteristicasCat.data || [];
+
+                if (btnAgregarCarac && contenedorCarac) {
+                    btnAgregarCarac.onclick = () => {
+                        const indiceFila = contenedorCarac.children.length + 1;
+                        const filaDiv = document.createElement('div');
+                        filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
+
+                        let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
+                        listaCaracteristicasCat.forEach(rowCarac => {
+                            let valCarac = rowCarac.caracteristica || rowCarac.nombre || rowCarac.valor || Object.values(rowCarac)[0];
+                            optionsCaracHtml += `<option value="${valCarac}">${valCarac}</option>`;
+                        });
+
+                        filaDiv.innerHTML = `
+                            <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
+                            <select name="caracteristica_extra_${indiceFila}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+                                ${optionsCaracHtml}
+                            </select>
+                            <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">✕</button>
+                        `;
+
+                        // Botón para eliminar la fila añadida
+                        filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
+                            filaDiv.remove();
+                        };
+
+                        contenedorCarac.appendChild(filaDiv);
+                    };
+                } // [FIN DE LLAVES]: Cierra configuración de características dinámicas
 
                 const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
@@ -861,7 +896,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     }
                 } // [FIN DE LLAVES]: Cierra sincronización en cascada
 
-                // [INICIO DE LLAVES]: Evento autocompletar geocodificación con puntos decimales
+                // [INICIO DE LLAVES]: Evento autocompletar geocodificación usando prioritariamente la dirección exacta ingresada
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
                 if (btnGeo) {
                     btnGeo.onclick = async () => {
@@ -871,8 +906,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const dep = selDep?.value || '';
                         const pais = selPais?.value || 'Perú';
 
+                        if (!dir) {
+                            alert("Por favor ingrese primero la Dirección exacta (Ej. Av. Higuereta 123) antes de geocodificar.");
+                            return;
+                        }
+
                         if (!dist || !prov || !dep) {
-                            alert("Por favor seleccione primero el Departamento, Provincia y Distrito.");
+                            alert("Por favor seleccione también el Departamento, Provincia y Distrito.");
                             return;
                         }
 
@@ -882,7 +922,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
 
                         const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
-                        btnGeo.innerText = "Calculando ubicación y mapa...";
+                        btnGeo.innerText = "Calculando ubicación exacta con la dirección...";
                         
                         try {
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
@@ -905,15 +945,15 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
-                                alert("¡Ubigeo, coordenadas y datos de mapa autocompletados con éxito usando puntos decimales!");
+                                alert("¡Coordenadas y mapa calculados con éxito basados en la dirección exacta!");
                             } else {
-                                alert("No se hallaron coordenadas exactas para esta dirección, pero el Ubigeo ha sido sincronizado.");
+                                alert("No se hallaron coordenadas exactas para esta dirección específica, intente refinarla.");
                             }
                         } catch (errGeo) {
                             console.error("Error en geocodificación:", errGeo);
                             alert("Error al conectar con el servicio de mapas.");
                         } finally {
-                            btnGeo.innerText = "📍 Autocompletar Ubigeo, Coordenadas y Mapa";
+                            btnGeo.innerText = "📍 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta";
                         }
                     };
                 } // [FIN DE LLAVES]: Cierra evento geocodificación
