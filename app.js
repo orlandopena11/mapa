@@ -175,36 +175,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
             { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
             { nombre: "galeria_fotos", label: "Galería de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
-            { nombre: "foto_extra_1", label: "Foto Extra 1", tipo: "text" },
-            { nombre: "foto_extra_2", label: "Foto Extra 2", tipo: "text" },
-            { nombre: "foto_extra_3", label: "Foto Extra 3", tipo: "text" },
-            { nombre: "foto_extra_4", label: "Foto Extra 4", tipo: "text" },
-            { nombre: "foto_extra_5", label: "Foto Extra 5", tipo: "text" },
-            { nombre: "foto_extra_6", label: "Foto Extra 6", tipo: "text" },
-            { nombre: "foto_extra_7", label: "Foto Extra 7", tipo: "text" },
-            { nombre: "foto_extra_8", label: "Foto Extra 8", tipo: "text" },
-            { nombre: "foto_extra_9", label: "Foto Extra 9", tipo: "text" },
-            { nombre: "foto_extra_10", label: "Foto Extra 10", tipo: "text" },
-            { nombre: "foto_extra_11", label: "Foto Extra 11", tipo: "text" },
-            { nombre: "foto_extra_12", label: "Foto Extra 12", tipo: "text" },
-            { nombre: "foto_extra_13", label: "Foto Extra 13", tipo: "text" },
-            { nombre: "foto_extra_14", label: "Foto Extra 14", tipo: "text" },
-            { nombre: "foto_extra_15", label: "Foto Extra 15", tipo: "text" },
-            { nombre: "foto_extra_16", label: "Foto Extra 16", tipo: "text" },
-            { nombre: "foto_extra_17", label: "Foto Extra 17", tipo: "text" },
-            { nombre: "foto_extra_18", label: "Foto Extra 18", tipo: "text" },
-            { nombre: "foto_extra_19", label: "Foto Extra 19", tipo: "text" },
-            { nombre: "foto_extra_20", label: "Foto Extra 20", tipo: "text" },
-            { nombre: "foto_extra_21", label: "Foto Extra 21", tipo: "text" },
-            { nombre: "foto_extra_22", label: "Foto Extra 22", tipo: "text" },
-            { nombre: "foto_extra_23", label: "Foto Extra 23", tipo: "text" },
-            { nombre: "foto_extra_24", label: "Foto Extra 24", tipo: "text" },
-            { nombre: "foto_extra_25", label: "Foto Extra 25", tipo: "text" },
-            { nombre: "foto_extra_26", label: "Foto Extra 26", tipo: "text" },
-            { nombre: "foto_extra_27", label: "Foto Extra 27", tipo: "text" },
-            { nombre: "foto_extra_28", label: "Foto Extra 28", tipo: "text" },
-            { nombre: "foto_extra_29", label: "Foto Extra 29", tipo: "text" },
-            { nombre: "foto_extra_30", label: "Foto Extra 30", tipo: "text" },
+
             { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
             { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
             { nombre: "situacion_propiedad", label: "Situación Propiedad", tipo: "text" },
@@ -875,43 +846,36 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 }
 
 
- 
-
-/**
- * Descripción de la función: guardarRegistroCrud realiza la persistencia en Supabase.
- */
-// [INICIO DE LLAVES]: Abre guardarRegistroCrud
+// [INICIO DE LLAVES]: Abre la función asíncrona guardarRegistroCrud blindada
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
-    try {
+    try { // [INICIO DE LLAVES]: Abre el bloque try principal de persistencia
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
-        // Extracción y separación inteligente si es la tabla propiedad
         let payloadPropiedad = { ...payload };
         let listaFotosExtras = [];
 
-        if (nombreTabla === 'propiedad') {
-            // Remoción de la propiedad huérfana galeria_fotos para sanar el payload de guardado
+        if (nombreTabla === 'propiedad') { // [INICIO DE LLAVES]: Abre condición para filtrar esquema de propiedad
             if (payloadPropiedad.hasOwnProperty('galeria_fotos')) delete payloadPropiedad['galeria_fotos'];
 
-            for (let i = 1; i <= 30; i++) {
-                let claveExtra = `foto_extra_${i}`;
-
-                if (payloadPropiedad[claveExtra]) {
-                    if (String(payloadPropiedad[claveExtra]).trim() !== "") {
-                        listaFotosExtras.push(String(payloadPropiedad[claveExtra]).trim());
+            // Limpieza dinámica general de cualquier clave extraña que no sea columna física de la BD
+            Object.keys(payloadPropiedad).forEach(clave => { // [INICIO DE LLAVES]: Abre bucle de filtrado de claves
+                if (clave.startsWith('foto_extra_')) {
+                    const valorFoto = payloadPropiedad[clave];
+                    if (valorFoto && String(valorFoto).trim() !== "") {
+                        listaFotosExtras.push(String(valorFoto).trim());
                     }
-                    delete payloadPropiedad[claveExtra]; // Se limpia para que la tabla propiedad solo reciba su esquema exacto
+                    delete payloadPropiedad[clave]; 
                 }
-            }
-        }
+            }); // [FIN DE LLAVES]: Cierra bucle de filtrado de claves
+        } // [FIN DE LLAVES]: Cierra condición de propiedad
 
         let res;
         let idPropiedadGenerada = pkValor;
 
-        if (esEdicion) {
+        if (esEdicion) { // [INICIO DE LLAVES]: Abre bloque para actualizar registro existente
             res = await cliente.from(nombreTabla).update(payloadPropiedad).eq(pkColumna, pkValor);
-        } else {
+        } else { // [INICIO DE LLAVES]: Abre bloque para insertar nuevo registro
             if (nombreTabla === 'propiedad') {
                 const { data: dataInsert, error: errInsert } = await cliente.from(nombreTabla).insert([payloadPropiedad]).select();
                 res = { error: errInsert };
@@ -921,12 +885,16 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             } else {
                 res = await cliente.from(nombreTabla).insert([payloadPropiedad]);
             }
-        }
+        } // [FIN DE LLAVES]: Cierra condicional de inserción/actualización
 
         if (res.error) throw res.error;
 
-        // Inserción masiva de las fotos secundarias en la tabla IMAGEN_PROPIEDAD
+        // [INICIO DE LLAVES]: Abre bloque para inserción masiva limpia en la tabla relacional imagen_propiedad
         if (nombreTabla === 'propiedad' && listaFotosExtras.length > 0 && idPropiedadGenerada) {
+            if (esEdicion) {
+                await cliente.from('imagen_propiedad').delete().eq('propiedad_id_fk', idPropiedadGenerada);
+            }
+
             const filasImagenes = listaFotosExtras.map((urlFoto, index) => ({
                 propiedad_id_fk: idPropiedadGenerada,
                 ruta_imagen: urlFoto,
@@ -935,18 +903,19 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
 
             const { error: errImgs } = await cliente.from('imagen_propiedad').insert(filasImagenes);
             if (errImgs) {
-                console.warn("Aviso: La propiedad se creó, pero hubo un detalle al insertar las fotos secundarias:", errImgs.message);
+                console.warn("Aviso: La propiedad se guardó, pero hubo un detalle al registrar las fotos secundarias:", errImgs.message);
             }
-        }
-        
+        } // [FIN DE LLAVES]: Cierra bloque de inserción de fotos secundarias
 
         alert(`¡Registro ${esEdicion ? 'actualizado' : 'creado'} exitosamente en ${nombreTabla}!`);
         await cargarDatosTablaCrud(nombreTabla);
 
-    } catch (err) {
+    } catch (err) { // [INICIO DE LLAVES]: Abre bloque catch de errores
         alert("Error al guardar en la base de datos: " + err.message);
-    } // [FIN DE LLAVES]: Cierra try/catch
-} // [FIN DE LLAVES]: Cierra guardarRegistroCrud
+    } // [FIN DE LLAVES]: Cierra bloque try/catch
+} // [FIN DE LLAVES]: Cierra la función asíncrona guardarRegistroCrud
+
+
 
 /**
  * Descripción de la función: eliminarRegistroCrud borra un registro de Supabase.
