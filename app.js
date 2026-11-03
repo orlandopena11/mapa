@@ -466,7 +466,8 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * gestiona la carga de fotos secundarias, ordena los campos y prepara el formulario de edición o creación.
+ * autogenera el código de la llave primaria para nuevos registros, gestiona la carga de fotos, 
+ * ordena los campos y prepara el formulario.
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
@@ -498,6 +499,42 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
         } // [FIN DE LLAVES]: Cierra try/catch de fotos
     } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
+
+    // [INICIO DE LLAVES]: Lógica automática para generar la llave primaria si es un nuevo registro
+    let valorPkSugerido = '';
+    if (esEdicion) {
+        valorPkSugerido = datosFila[conf.pk] || '';
+    } else {
+        try {
+            const clienteGen = obtenerClienteSupabase();
+            if (clienteGen) {
+                const { data: registrosExistentes } = await clienteGen
+                    .from(nombreTabla)
+                    .select(conf.pk);
+
+                if (registrosExistentes && registrosExistentes.length > 0) {
+                    if (nombreTabla === 'propiedad') {
+                        // Extrae el número mayor de los IDs existentes (ej: PROP-005 -> 5) y autoincrementa
+                        const numerosExtraidos = registrosExistentes.map(r => {
+                            const valStr = String(r[conf.pk] || '');
+                            const matchNum = valStr.match(/\d+/);
+                            return matchNum ? parseInt(matchNum[0], 10) : 0;
+                        });
+                        const maxNum = Math.max(...numerosExtraidos, 0);
+                        valorPkSugerido = `PROP-${String(maxNum + 1).padStart(3, '0')}`;
+                    } else {
+                        // Generador estándar alfanumérico único para otras tablas
+                        valorPkSugerido = 'SRE-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+                    }
+                } else {
+                    valorPkSugerido = nombreTabla === 'propiedad' ? 'PROP-001' : 'SRE-001';
+                }
+            }
+        } catch (errPk) {
+            console.warn("No se pudo autogenerar la PK, usando respaldo aleatorio:", errPk);
+            valorPkSugerido = 'SRE-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+        }
+    } // [FIN DE LLAVES]: Cierra bloque de generación automática de PK
 
     // [INICIO DE LLAVES]: Creación y validación del contenedor submodal en el DOM
     let subModal = document.getElementById('submodal-formulario-crud');
@@ -596,7 +633,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
                 ${camposAProcesar.map(c => {
-                    const valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
+                    let valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
+                    
+                    // Si es un nuevo registro y coincide con la columna PK, asignamos el valor autogenerado
+                    if (!esEdicion && c.nombre === conf.pk) {
+                        valorActual = valorPkSugerido;
+                    }
+
                     let inputHtml = '';
 
                     // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos
@@ -619,12 +662,17 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             </div>
                         `;
                     } else {
-                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box;">`;
+                        // Si es la llave primaria en modo edición, la hacemos de solo lectura para proteger la integridad
+                        const esPkCampo = (c.nombre === conf.pk);
+                        const estilosAdicionales = esPkCampo && esEdicion ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
+                        const atributoLectura = esPkCampo && esEdicion ? 'readonly' : '';
+
+                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
                     } // [FIN DE LLAVES]: Cierra condicional de inputs
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''}</label>
+                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''} ${!esEdicion && c.nombre === conf.pk ? '<span style="color:#006aff; font-size:10px;">(Generado Automáticamente)</span>' : ''}</label>
                             ${inputHtml}
                         </div>
                     `;
