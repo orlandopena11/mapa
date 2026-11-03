@@ -524,68 +524,60 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         });
     }
 
-    subModal.innerHTML = `
-        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
-                <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
-                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
-            </div>
+// [INICIO DE LLAVES]: Declaración e inicialización de las 30 cajas de fotos y características especiales
+    let html30CajasFotos = '';
+    let htmlSeccionCaracteristicasEspeciales = '';
 
-            <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
-// [INICIO DE LLAVES]: Bloques nuevos para las 30 cajas de fotos flexibles y características especiales
-let html30CajasFotos = '';
-let htmlSeccionCaracteristicasEspeciales = '';
+    if (nombreTabla === 'propiedad') {
+        html30CajasFotos = `
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
+                <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
+                    🖼️ Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
+                </label>
+                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
+                    Ingrese libremente los nombres, letras y símbolos de las fotos. Solo se registrarán aquellas cajas que complete.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
+        `;
 
-if (nombreTabla === 'propiedad') {
-    html30CajasFotos = `
-        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
-            <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
-                🖼️ Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
-            </label>
-            <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
-                Ingrese libremente los nombres, letras y símbolos de las fotos. Solo se registrarán aquellas cajas que complete.
-            </p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
-    `;
+        for (let i = 1; i <= 30; i++) {
+            let nombreFotoActual = '';
+            if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
+                nombreFotoActual = fotosSecundariasObtenidas[i - 1];
+            }
 
-    for (let i = 1; i <= 30; i++) {
-        let nombreFotoActual = '';
-        if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
-            nombreFotoActual = fotosSecundariasObtenidas[i - 1];
+            html30CajasFotos += `
+                <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                    <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${i}</span>
+                    <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
+                </div>
+            `;
         }
 
         html30CajasFotos += `
-            <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
-                <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${i}</span>
-                <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
+                </div>
+            </div>
+        `;
+
+        htmlSeccionCaracteristicasEspeciales = `
+            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label style="font-size: 14px; font-weight: 800; color: #002e50;">
+                        ⭐ Características Especiales de la Propiedad:
+                    </label>
+                    <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                        + Añadir Característica
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
+                    Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
+                </p>
+                <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                </div>
             </div>
         `;
     }
-
-    html30CajasFotos += `
-            </div>
-        </div>
-    `;
-
-    htmlSeccionCaracteristicasEspeciales = `
-        <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                    ⭐ Características Especiales de la Propiedad:
-                </label>
-                <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                    + Añadir Característica
-                </button>
-            </div>
-            <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
-                Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
-            </p>
-            <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
-            </div>
-        </div>
-    `;
-}
-// [FIN DE LLAVES]: Cierra bloque nuevo de visualización
+    // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
 
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
