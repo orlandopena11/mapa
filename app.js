@@ -466,8 +466,8 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * programa la adición dinámica de características especiales desde "lov_caracteristica", asegura 
- * todas las Listas de Valores (LOV), prioriza la dirección antes del ubigeo, y autogenera llaves y usuarios.
+ * corrige el campo geocode_precision con la cadena real, popula correctamente las características
+ * desde "lov_caracteristica" y gestiona su almacenamiento en "caracteristica_propiedad".
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
@@ -477,12 +477,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     console.group(`🔧 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
 
     let fotosSecundariasObtenidas = [];
+    let caracteristicasObtenidas = [];
 
-    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos secundarias si es edición de propiedad
+    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos y características si es edición de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
         try {
             const cliente = obtenerClienteSupabase();
-            // [INICIO DE LLAVES]: Valida existencia del cliente Supabase
             if (cliente) {
                 const { data: imgsBD } = await cliente
                     .from('imagen_propiedad')
@@ -490,27 +490,33 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     .eq('propiedad_id_fk', datosFila[conf.pk])
                     .order('orden', { ascending: true });
 
-                // [INICIO DE LLAVES]: Valida si existen imágenes registradas
                 if (imgsBD && imgsBD.length > 0) {
                     fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
-                } // [FIN DE LLAVES]: Cierra validación de imágenes
-            } // [FIN DE LLAVES]: Cierra validación de cliente
-        } catch (errFoto) {
-            console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
-        } // [FIN DE LLAVES]: Cierra try/catch de fotos
+                }
+
+                const { data: caracBD } = await cliente
+                    .from('caracteristica_propiedad')
+                    .select('nombre_caracteristica, valor_caracteristica')
+                    .eq('propiedad_id_fk', datosFila[conf.pk]);
+
+                if (caracBD && caracBD.length > 0) {
+                    caracteristicasObtenidas = caracBD;
+                }
+            }
+        } catch (errRelacionadas) {
+            console.warn("No se pudieron cargar las relaciones secundarias:", errRelacionadas);
+        }
     } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
 
-    // [INICIO DE LLAVES]: Lógica automática para capturar el ID del usuario actual logueado
     let idUsuarioActualSugerido = '';
     if (window.usuarioLogueado && window.usuarioLogueado.id) {
         idUsuarioActualSugerido = window.usuarioLogueado.id;
     } else if (state.usuarioActual && state.usuarioActual.id) {
         idUsuarioActualSugerido = state.usuarioActual.id;
     } else {
-        idUsuarioActualSugerido = 'e9e1a0f6-9e78-4964-a6fa-c94e0cfefc92'; // ID por defecto del usuario
-    } // [FIN DE LLAVES]: Cierra captura de usuario actual
+        idUsuarioActualSugerido = 'e9e1a0f6-9e78-4964-a6fa-c94e0cfefc92';
+    }
 
-    // [INICIO DE LLAVES]: Lógica automática para generar la llave primaria si es un nuevo registro
     let valorPkSugerido = '';
     if (esEdicion) {
         valorPkSugerido = datosFila[conf.pk] || '';
@@ -539,12 +545,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 }
             }
         } catch (errPk) {
-            console.warn("No se pudo autogenerar la PK, usando respaldo aleatorio:", errPk);
             valorPkSugerido = 'SRE-' + Math.random().toString(36).substring(2, 9).toUpperCase();
         }
-    } // [FIN DE LLAVES]: Cierra bloque de generación automática de PK
+    }
 
-    // [INICIO DE LLAVES]: Creación y validación del contenedor submodal en el DOM
     let subModal = document.getElementById('submodal-formulario-crud');
     if (!subModal) {
         subModal = document.createElement('div');
@@ -555,10 +559,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    } // [FIN DE LLAVES]: Cierra creación de subModal
+    }
 
     let camposAProcesar = [...conf.campos];
-    // [INICIO DE LLAVES]: Ordenamiento y filtrado de campos (excluyendo texto plano redundante y galería genérica)
     if (nombreTabla === 'propiedad') {
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
@@ -566,7 +569,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
         
-        // Excluimos explícitamente departamento, provincia, distrito y galeria_fotos obsoleta
         camposAProcesar = camposAProcesar.filter(c => !['departamento', 'provincia', 'distrito', 'galeria_fotos'].includes(c.nombre));
 
         camposAProcesar.sort((a, b) => {
@@ -576,65 +578,50 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-    } // [FIN DE LLAVES]: Cierra ordenamiento de campos
+    }
 
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
-    // [INICIO DE LLAVES]: Generación de HTML auxiliar para 30 cajas de fotos y características especiales
     if (nombreTabla === 'propiedad') {
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
                     📷 Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
                 </label>
-                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
-                    Ingrese libremente los nombres, letras y símbolos de las fotos. Solo se registrarán aquellas cajas que complete.
-                </p>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
 
-        // [INICIO DE LLAVES]: Bucle para renderizar las 30 cajas de texto de fotos
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
-            // [INICIO DE LLAVES]: Asigna valor actual si existe en edición
             if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
                 nombreFotoActual = fotosSecundariasObtenidas[i - 1];
-            } // [FIN DE LLAVES]: Cierra asignación de foto actual
-
+            }
             html30CajasFotos += `
                 <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
                     <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${i}</span>
                     <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
                 </div>
             `;
-        } // [FIN DE LLAVES]: Cierra bucle de 30 cajas
-
-        html30CajasFotos += `
-                </div>
-            </div>
-        `;
+        }
+        html30CajasFotos += `</div></div>`;
 
         htmlSeccionCaracteristicasEspeciales = `
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                        ⭐ Características Especiales de la Propiedad:
+                        ⭐ Características Especiales de la Propiedad (lov_caracteristica):
                     </label>
                     <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
                         + Añadir Característica
                     </button>
                 </div>
-                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
-                    Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
-                </p>
                 <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
                 </div>
             </div>
         `;
-    } // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
+    }
 
-    // [INICIO DE LLAVES]: Inyección del contenido principal y formulario dentro de subModal.innerHTML
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
@@ -646,19 +633,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 ${camposAProcesar.map(c => {
                     let valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
                     
-                    // Asignación automática de la Llave Primaria en modo nuevo registro
-                    if (!esEdicion && c.nombre === conf.pk) {
-                        valorActual = valorPkSugerido;
-                    }
-
-                    // Asignación automática del ID de usuario logueado en nuevos registros
-                    if (!esEdicion && c.nombre === 'usuario_id_fk') {
-                        valorActual = idUsuarioActualSugerido;
-                    }
+                    if (!esEdicion && c.nombre === conf.pk) valorActual = valorPkSugerido;
+                    if (!esEdicion && c.nombre === 'usuario_id_fk') valorActual = idUsuarioActualSugerido;
 
                     let inputHtml = '';
-
-                    // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos y Listas de Valores (LOV)
                     if (c.tipo === 'select' || c.nombre === 'tipo_propiedad' || c.nombre === 'subtipo_propiedad' || c.nombre === 'pais' || c.nombre === 'situacion_propiedad' || c.nombre === 'vista') {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
@@ -687,15 +665,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const atributoLectura = debeBloquearse ? 'readonly' : '';
 
                         inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
-                    } // [FIN DE LLAVES]: Cierra condicional de inputs
-
-                    let etiquetaExtra = '';
-                    if (!esEdicion && c.nombre === conf.pk) etiquetaExtra = '<span style="color:#006aff; font-size:10px;">(Generado Automáticamente)</span>';
-                    if (!esEdicion && c.nombre === 'usuario_id_fk') etiquetaExtra = '<span style="color:#10b981; font-size:10px;">(Usuario Activo Asignado)</span>';
+                    }
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''} ${etiquetaExtra}</label>
+                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''}</label>
                             ${inputHtml}
                         </div>
                     `;
@@ -712,11 +686,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 </div>
             </form>
         </div>
-    `; // [FIN DE LLAVES]: Cierra asignación de subModal.innerHTML
+    `;
 
     subModal.style.display = 'flex';
 
-    // [INICIO DE LLAVES]: Configuración de eventos y catálogos si la tabla es propiedad
     if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
@@ -727,17 +700,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
             try {
                 const [
-                    resUbigeo, 
-                    resTipoProp, 
-                    resSubtipo, 
-                    resEstadoProp, 
-                    resMoneda, 
-                    resEstadoPub, 
-                    resSituacion, 
-                    resVista, 
-                    resSino,
-                    resPais,
-                    resCaracteristicasCat
+                    resUbigeo, resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
+                    resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
                 ] = await Promise.all([
                     clienteSupabase.from('ubigeo').select('*'),
                     clienteSupabase.from('lov_tipo_propiedad').select('*'),
@@ -755,7 +719,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
-                // [INICIO DE LLAVES]: Función auxiliar para poblar selects dinámicos con catálogos LOV
                 const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
                     const selectNode = formNode.querySelector('#' + selectorId);
                     if (!selectNode || !dataRegistros) return;
@@ -780,7 +743,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         optionsHtml += `<option value="${valReal}" ${coincide ? 'selected' : ''}>${valReal}</option>`;
                     });
                     selectNode.innerHTML = optionsHtml;
-                }; // [FIN DE LLAVES]: Cierra función auxiliar
+                };
 
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
@@ -793,39 +756,47 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-                // [INICIO DE LLAVES]: Configuración del botón para añadir características dinámicamente
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
                 const listaCaracteristicasCat = resCaracteristicasCat.data || [];
 
-                if (btnAgregarCarac && contenedorCarac) {
-                    btnAgregarCarac.onclick = () => {
-                        const indiceFila = contenedorCarac.children.length + 1;
-                        const filaDiv = document.createElement('div');
-                        filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
+                const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
+                    const indiceFila = contenedorCarac.children.length + 1;
+                    const filaDiv = document.createElement('div');
+                    filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
-                        let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
-                        listaCaracteristicasCat.forEach(rowCarac => {
-                            let valCarac = rowCarac.caracteristica || rowCarac.nombre || rowCarac.valor || Object.values(rowCarac)[0];
-                            optionsCaracHtml += `<option value="${valCarac}">${valCarac}</option>`;
-                        });
+                    let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
+                    listaCaracteristicasCat.forEach(rowCarac => {
+                        let valCarac = rowCarac.caracteristica || rowCarac.nombre_caracteristica || rowCarac.nombre || rowCarac.valor || Object.values(rowCarac)[0];
+                        const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
+                        optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
+                    });
 
-                        filaDiv.innerHTML = `
-                            <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
-                            <select name="caracteristica_extra_${indiceFila}" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-                                ${optionsCaracHtml}
-                            </select>
-                            <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">✕</button>
-                        `;
+                    filaDiv.innerHTML = `
+                        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
+                        <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+                            ${optionsCaracHtml}
+                        </select>
+                        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: sí / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+                        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">✕</button>
+                    `;
 
-                        // Botón para eliminar la fila añadida
-                        filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
-                            filaDiv.remove();
-                        };
-
-                        contenedorCarac.appendChild(filaDiv);
+                    filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
+                        filaDiv.remove();
                     };
-                } // [FIN DE LLAVES]: Cierra configuración de características dinámicas
+
+                    contenedorCarac.appendChild(filaDiv);
+                };
+
+                if (btnAgregarCarac && contenedorCarac) {
+                    btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
+                }
+
+                if (caracteristicasObtenidas.length > 0) {
+                    caracteristicasObtenidas.forEach(carac => {
+                        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 'sí');
+                    });
+                }
 
                 const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
@@ -843,7 +814,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + departamentosUnicos.map(d => `<option value="${d}" ${d === actualDep ? 'selected' : ''}>${d}</option>`).join('');
                 }
 
-                // [INICIO DE LLAVES]: Sincronización en cascada de Ubigeo
                 if (selDep && selProv && selDist && selCodigoUbigeo) {
                     const actualizarProvincias = () => {
                         const depVal = selDep.value;
@@ -894,9 +864,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             actualizarDistritosYUbigeo();
                         }
                     }
-                } // [FIN DE LLAVES]: Cierra sincronización en cascada
+                }
 
-                // [INICIO DE LLAVES]: Evento autocompletar geocodificación usando prioritariamente la dirección exacta ingresada
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
                 if (btnGeo) {
                     btnGeo.onclick = async () => {
@@ -907,12 +876,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const pais = selPais?.value || 'Perú';
 
                         if (!dir) {
-                            alert("Por favor ingrese primero la Dirección exacta (Ej. Av. Higuereta 123) antes de geocodificar.");
-                            return;
-                        }
-
-                        if (!dist || !prov || !dep) {
-                            alert("Por favor seleccione también el Departamento, Provincia y Distrito.");
+                            alert("Por favor ingrese primero la Dirección exacta antes de geocodificar.");
                             return;
                         }
 
@@ -941,30 +905,30 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
-                                if (inputPrec) inputPrec.value = "exacta";
+                                // CORRECCIÓN: Inserta la cadena de caracteres real obtenida del mapa en lugar de la palabra "exacta"
+                                if (inputPrec) inputPrec.value = dataGeo[0].osm_type ? `OSM Type: ${dataGeo[0].osm_type} (${dataGeo[0].class})` : "exacta_nominatim";
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
                                 alert("¡Coordenadas y mapa calculados con éxito basados en la dirección exacta!");
                             } else {
-                                alert("No se hallaron coordenadas exactas para esta dirección específica, intente refinarla.");
+                                alert("No se hallaron coordenadas exactas para esta dirección específica.");
                             }
                         } catch (errGeo) {
                             console.error("Error en geocodificación:", errGeo);
-                            alert("Error al conectar con el servicio de mapas.");
                         } finally {
                             btnGeo.innerText = "📍 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta";
                         }
                     };
-                } // [FIN DE LLAVES]: Cierra evento geocodificación
+                }
 
             } catch (errLov) {
-                console.error("❌ Error cargando catálogos territoriales:", errLov);
+                console.error("❌ Error cargando catálogos:", errLov);
             } finally {
                 console.groupEnd();
             }
         })();
-    } // [FIN DE LLAVES]: Cierra configuración de propiedades
+    }
 
     const cerrarSubModal = () => { 
         if (subModal) subModal.style.display = 'none'; 
@@ -975,7 +939,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
     if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
-    // [INICIO DE LLAVES]: Envío y procesamiento de datos del formulario CRUD
     const formularioCrudDOM = document.getElementById('form-generico-crud');
     if (formularioCrudDOM) {
         formularioCrudDOM.onsubmit = async (e) => {
@@ -999,8 +962,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
         };
-    } // [FIN DE LLAVES]: Cierra envío de formulario
-} // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
+    }
+}
 
 
 
