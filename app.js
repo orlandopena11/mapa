@@ -580,14 +580,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
 
 
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                    <button type="button" id="btn-cancelar-submodal" style="background: #94a3b8; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
-                    <button type="submit" id="btn-guardar-crud-submit" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700;">
-                        ${esEdicion ? 'Guardar Cambios' : 'Crear Registro'}
-                    </button>
-                </div>
-            </form>
-        </div>
+    let htmlContenedorModalCrud = `
+        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+                <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
+                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
+            </div>
+
+            <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
     `;
 
     subModal.style.display = 'flex';
