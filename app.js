@@ -897,7 +897,7 @@ htmlSeccionCaracteristicasEspeciales = `
             cerrarSubModal();
         };
     }
-}
+
 
 
 // [INICIO DE LLAVES]: Abre la función asíncrona guardarRegistroCrud blindada
