@@ -777,16 +777,20 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
                 const listaCaracteristicasCat = resCaracteristicasCat.data || [];
 
-                const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
+const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
                     const indiceFila = contenedorCarac.children.length + 1;
                     const filaDiv = document.createElement('div');
                     filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
                     let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
                     listaCaracteristicasCat.forEach(rowCarac => {
-                        let valCarac = rowCarac.caracteristica || rowCarac.nombre_caracteristica || rowCarac.nombre || rowCarac.valor || Object.values(rowCarac)[0];
-                        const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
-                        optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
+                        // CORRECCIÓN: Leemos directamente la columna 'caracteristica' de la tabla lov_caracteristica
+                        let valCarac = rowCarac.caracteristica || rowCarac.codigo || Object.values(rowCarac)[0];
+                        
+                        if (valCarac !== undefined && valCarac !== null && String(valCarac).trim() !== "") {
+                            const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
+                            optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
+                        }
                     });
 
                     filaDiv.innerHTML = `
