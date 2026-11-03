@@ -466,8 +466,8 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * autogenera el código de la llave primaria y el ID de usuario logueado para nuevos registros,
- * gestiona la carga de fotos, ordena los campos y prepara el formulario.
+ * autogenera el código de la llave primaria y el ID de usuario, restaura todas las Listas de Valores (LOVs),
+ * gestiona el selector en cascada de Ubigeo y evita duplicados en los campos territoriales.
  */
 // [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
@@ -507,7 +507,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     } else if (state.usuarioActual && state.usuarioActual.id) {
         idUsuarioActualSugerido = state.usuarioActual.id;
     } else {
-        idUsuarioActualSugerido = 'e9e1a0f6-9e78-4964-a6fa-c...'; // Respaldo por defecto si no hay sesión activa estricta
+        idUsuarioActualSugerido = 'e9e1a0f6-9e78-4964-a6fa-c94e0cfefc92'; // ID por defecto del usuario
     } // [FIN DE LLAVES]: Cierra captura de usuario actual
 
     // [INICIO DE LLAVES]: Lógica automática para generar la llave primaria si es un nuevo registro
@@ -558,14 +558,18 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     } // [FIN DE LLAVES]: Cierra creación de subModal
 
     let camposAProcesar = [...conf.campos];
-    // [INICIO DE LLAVES]: Ordenamiento personalizado de campos si la tabla es propiedad
+    // [INICIO DE LLAVES]: Ordenamiento y filtrado de campos para evitar duplicados territoriales
     if (nombreTabla === 'propiedad') {
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
-            'pais', 'departamento', 'provincia', 'distrito', 'codigo_ubigeo_id_fk', 'direccion',
+            'pais', 'codigo_ubigeo_id_fk', 'direccion',
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
         
+        // Excluimos explícitamente los campos de texto plano repetidos (departamento, provincia, distrito) 
+        // ya que se controlan dinámicamente en cascada a través de codigo_ubigeo_id_fk
+        camposAProcesar = camposAProcesar.filter(c => !['departamento', 'provincia', 'distrito'].includes(c.nombre));
+
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
             let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
@@ -573,7 +577,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-    } // [FIN DE LLAVES]: Cierra ordenamiento de campos
+    } // [FIN DE LLAVES]: Cierra ordenamiento y filtrado de campos
 
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
@@ -655,8 +659,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                     let inputHtml = '';
 
-                    // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos
-                    if (c.tipo === 'select') {
+                    // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos y Listas de Valores (LOV)
+                    if (c.tipo === 'select' || c.nombre === 'tipo_propiedad' || c.nombre === 'subtipo_propiedad' || c.nombre === 'pais') {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
                             c.opciones.forEach(op => {
@@ -666,16 +670,16 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         inputHtml += `</select>`;
                     } else if (c.nombre === 'codigo_ubigeo_id_fk') {
                         inputHtml = `
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                <label style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: -4px;">🌐 Selector Territorial en Cascada (Ubigeo):</label>
                                 <select id="sel-ubigeo-departamento" data-actual="${datosFila ? datosFila.departamento : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
                                 <select id="sel-ubigeo-provincia" data-actual="${datosFila ? datosFila.provincia : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
                                 <select id="sel-ubigeo-distrito" data-actual="${datosFila ? datosFila.distrito : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
-                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #f8fafc;"><option value="">-- Código Ubigeo Automático --</option></select>
+                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
                                 <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>
                             </div>
                         `;
                     } else {
-                        // Protección de campos de solo lectura para PK y ID de Usuario en edición o asignación fija
                         const esPkCampo = (c.nombre === conf.pk);
                         const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
                         const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
@@ -750,7 +754,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
-                // [INICIO DE LLAVES]: Función auxiliar para poblar selects dinámicos
+                // [INICIO DE LLAVES]: Función auxiliar para poblar selects dinámicos con catálogos LOV
                 const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
                     const selectNode = formNode.querySelector('#' + selectorId);
                     if (!selectNode || !dataRegistros) return;
