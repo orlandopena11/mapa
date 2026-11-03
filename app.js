@@ -465,20 +465,23 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera el submodal del CRUD, 
- * asegurando que la latitud y longitud usen puntos (.) en lugar de comas (,) para los inputs numéricos.
+ * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
+ * gestiona la carga de fotos secundarias, ordena los campos y prepara el formulario de edición o creación.
  */
+// [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
-    console.group(`🔍 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
+    console.group(`🔧 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
 
     let fotosSecundariasObtenidas = [];
 
+    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos secundarias si es edición de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
         try {
             const cliente = obtenerClienteSupabase();
+            // [INICIO DE LLAVES]: Valida existencia del cliente Supabase
             if (cliente) {
                 const { data: imgsBD } = await cliente
                     .from('imagen_propiedad')
@@ -486,15 +489,17 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     .eq('propiedad_id_fk', datosFila[conf.pk])
                     .order('orden', { ascending: true });
 
+                // [INICIO DE LLAVES]: Valida si existen imágenes registradas
                 if (imgsBD && imgsBD.length > 0) {
                     fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
-                }
-            }
+                } // [FIN DE LLAVES]: Cierra validación de imágenes
+            } // [FIN DE LLAVES]: Cierra validación de cliente
         } catch (errFoto) {
             console.warn("No se pudieron cargar las fotos secundarias:", errFoto);
-        }
-    }
+        } // [FIN DE LLAVES]: Cierra try/catch de fotos
+    } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
 
+    // [INICIO DE LLAVES]: Creación y validación del contenedor submodal en el DOM
     let subModal = document.getElementById('submodal-formulario-crud');
     if (!subModal) {
         subModal = document.createElement('div');
@@ -505,9 +510,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(subModal);
-    }
+    } // [FIN DE LLAVES]: Cierra creación de subModal
 
     let camposAProcesar = [...conf.campos];
+    // [INICIO DE LLAVES]: Ordenamiento personalizado de campos si la tabla es propiedad
     if (nombreTabla === 'propiedad') {
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
@@ -522,17 +528,17 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-    }
+    } // [FIN DE LLAVES]: Cierra ordenamiento de campos
 
-// [INICIO DE LLAVES]: Declaración e inicialización de las 30 cajas de fotos y características especiales
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
+    // [INICIO DE LLAVES]: Generación de HTML auxiliar para 30 cajas de fotos y características especiales
     if (nombreTabla === 'propiedad') {
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
-                    🖼️ Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
+                    📷 Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
                 </label>
                 <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
                     Ingrese libremente los nombres, letras y símbolos de las fotos. Solo se registrarán aquellas cajas que complete.
@@ -540,11 +546,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
 
+        // [INICIO DE LLAVES]: Bucle para renderizar las 30 cajas de texto de fotos
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
+            // [INICIO DE LLAVES]: Asigna valor actual si existe en edición
             if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
                 nombreFotoActual = fotosSecundariasObtenidas[i - 1];
-            }
+            } // [FIN DE LLAVES]: Cierra asignación de foto actual
 
             html30CajasFotos += `
                 <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
@@ -552,7 +560,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
                 </div>
             `;
-        }
+        } // [FIN DE LLAVES]: Cierra bucle de 30 cajas
 
         html30CajasFotos += `
                 </div>
@@ -576,30 +584,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 </div>
             </div>
         `;
-    }
-    // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
+    } // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
 
-
-htmlSeccionCaracteristicasEspeciales = `
-            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                        ⭐ Características Especiales de la Propiedad:
-                    </label>
-                    <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                        + Añadir Característica
-                    </button>
-                </div>
-                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
-                    Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
-                </p>
-                <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
-                </div>
-            </div>
-        `;
-    }
-
-    // <-- PEGA ESTO AQUÍ EXACTAMENTE:
+    // [INICIO DE LLAVES]: Inyección del contenido principal y formulario dentro de subModal.innerHTML
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
@@ -612,6 +599,7 @@ htmlSeccionCaracteristicasEspeciales = `
                     const valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
                     let inputHtml = '';
 
+                    // [INICIO DE LLAVES]: Condicional para tipos de input dinámicos
                     if (c.tipo === 'select') {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
@@ -632,7 +620,7 @@ htmlSeccionCaracteristicasEspeciales = `
                         `;
                     } else {
                         inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box;">`;
-                    }
+                    } // [FIN DE LLAVES]: Cierra condicional de inputs
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -653,10 +641,11 @@ htmlSeccionCaracteristicasEspeciales = `
                 </div>
             </form>
         </div>
-    `;
+    `; // [FIN DE LLAVES]: Cierra asignación de subModal.innerHTML
 
     subModal.style.display = 'flex';
 
+    // [INICIO DE LLAVES]: Configuración de eventos y catálogos si la tabla es propiedad
     if (nombreTabla === 'propiedad') {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
@@ -693,6 +682,7 @@ htmlSeccionCaracteristicasEspeciales = `
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
+                // [INICIO DE LLAVES]: Función auxiliar para poblar selects dinámicos
                 const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
                     const selectNode = formNode.querySelector('#' + selectorId);
                     if (!selectNode || !dataRegistros) return;
@@ -717,7 +707,7 @@ htmlSeccionCaracteristicasEspeciales = `
                         optionsHtml += `<option value="${valReal}" ${coincide ? 'selected' : ''}>${valReal}</option>`;
                     });
                     selectNode.innerHTML = optionsHtml;
-                };
+                }; // [FIN DE LLAVES]: Cierra función auxiliar
 
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
@@ -746,6 +736,7 @@ htmlSeccionCaracteristicasEspeciales = `
                     selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + departamentosUnicos.map(d => `<option value="${d}" ${d === actualDep ? 'selected' : ''}>${d}</option>`).join('');
                 }
 
+                // [INICIO DE LLAVES]: Sincronización en cascada de Ubigeo
                 if (selDep && selProv && selDist && selCodigoUbigeo) {
                     const actualizarProvincias = () => {
                         const depVal = selDep.value;
@@ -796,8 +787,9 @@ htmlSeccionCaracteristicasEspeciales = `
                             actualizarDistritosYUbigeo();
                         }
                     }
-                }
+                } // [FIN DE LLAVES]: Cierra sincronización en cascada
 
+                // [INICIO DE LLAVES]: Evento autocompletar geocodificación con puntos decimales
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
                 if (btnGeo) {
                     btnGeo.onclick = async () => {
@@ -825,7 +817,6 @@ htmlSeccionCaracteristicasEspeciales = `
                             const dataGeo = await res.json();
 
                             if (dataGeo && dataGeo.length > 0) {
-                                // Forzar el punto (.) como separador decimal en lugar de comas
                                 const lat = String(dataGeo[0].lat).replace(',', '.');
                                 const lon = String(dataGeo[0].lon).replace(',', '.');
                                 const displayName = dataGeo[0].display_name;
@@ -853,7 +844,7 @@ htmlSeccionCaracteristicasEspeciales = `
                             btnGeo.innerText = "📍 Autocompletar Ubigeo, Coordenadas y Mapa";
                         }
                     };
-                }
+                } // [FIN DE LLAVES]: Cierra evento geocodificación
 
             } catch (errLov) {
                 console.error("❌ Error cargando catálogos territoriales:", errLov);
@@ -861,7 +852,7 @@ htmlSeccionCaracteristicasEspeciales = `
                 console.groupEnd();
             }
         })();
-    }
+    } // [FIN DE LLAVES]: Cierra configuración de propiedades
 
     const cerrarSubModal = () => { 
         if (subModal) subModal.style.display = 'none'; 
@@ -872,6 +863,7 @@ htmlSeccionCaracteristicasEspeciales = `
     if (btnCancelarCrud) btnCancelarCrud.onclick = cerrarSubModal;
     if (btnCerrarCrudX) btnCerrarCrudX.onclick = cerrarSubModal;
 
+    // [INICIO DE LLAVES]: Envío y procesamiento de datos del formulario CRUD
     const formularioCrudDOM = document.getElementById('form-generico-crud');
     if (formularioCrudDOM) {
         formularioCrudDOM.onsubmit = async (e) => {
@@ -885,7 +877,6 @@ htmlSeccionCaracteristicasEspeciales = `
             const formData = new FormData(e.target);
             const payload = {};
             formData.forEach((val, key) => { 
-                // Asegurar que latitud y longitud vayan con punto al guardar
                 if ((key === 'latitud' || key === 'longitud') && val) {
                     payload[key] = String(val).replace(',', '.');
                 } else {
@@ -896,7 +887,8 @@ htmlSeccionCaracteristicasEspeciales = `
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
         };
-    }
+    } // [FIN DE LLAVES]: Cierra envío de formulario
+} // [FIN DE LLAVES]: Cierra la función asíncrona abrirFormularioEdicionCrud
 
 
 
