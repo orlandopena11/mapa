@@ -775,24 +775,37 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
-                const listaCaracteristicasCat = resCaracteristicasCat.data || [];
 
-const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
+                // Consulta independiente y directa para asegurar que los datos de características siempre lleguen
+                let listaCaracteristicasCat = [];
+                try {
+                    const resCatDirecto = await clienteSupabase.from('lov_caracteristica').select('*');
+                    if (!resCatDirecto.error && resCatDirecto.data) {
+                        listaCaracteristicasCat = resCatDirecto.data;
+                    }
+                } catch (errCat) {
+                    console.warn("Aviso al consultar características independientes:", errCat);
+                }
+
+                const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
                     const indiceFila = contenedorCarac.children.length + 1;
                     const filaDiv = document.createElement('div');
                     filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
                     let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
-                    listaCaracteristicasCat.forEach(rowCarac => {
-                        // CORRECCIÓN: Leemos directamente la columna 'caracteristica' de la tabla lov_caracteristica
-                        let valCarac = rowCarac.caracteristica || rowCarac.codigo || Object.values(rowCarac)[0];
-                        
-                        if (valCarac !== undefined && valCarac !== null && String(valCarac).trim() !== "") {
-                            const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
-                            optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
-                        }
-                    });
-
+                    
+                    if (listaCaracteristicasCat && listaCaracteristicasCat.length > 0) {
+                        listaCaracteristicasCat.forEach(rowCarac => {
+                            // Leemos directamente la columna 'caracteristica' de la tabla lov_caracteristica
+                            let valCarac = rowCarac.caracteristica || rowCarac.codigo || Object.values(rowCarac)[0];
+                            
+                            if (valCarac !== undefined && valCarac !== null && String(valCarac).trim() !== "") {
+                                const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
+                                optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
+                            }
+                        });
+                    }
+                    
                     filaDiv.innerHTML = `
                         <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
                         <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
