@@ -580,7 +580,27 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     // [FIN DE LLAVES]: Cierra bloque de inicialización de HTML auxiliar
 
 
-    let htmlContenedorModalCrud = `
+htmlSeccionCaracteristicasEspeciales = `
+            <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label style="font-size: 14px; font-weight: 800; color: #002e50;">
+                        ⭐ Características Especiales de la Propiedad:
+                    </label>
+                    <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                        + Añadir Característica
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
+                    Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
+                </p>
+                <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                </div>
+            </div>
+        `;
+    }
+
+    // <-- PEGA ESTO AQUÍ EXACTAMENTE:
+    subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
@@ -588,6 +608,51 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
+                ${camposAProcesar.map(c => {
+                    const valorActual = esEdicion && datosFila[c.nombre] !== null && datosFila[c.nombre] !== undefined ? datosFila[c.nombre] : '';
+                    let inputHtml = '';
+
+                    if (c.tipo === 'select') {
+                        inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
+                        if (c.opciones) {
+                            c.opciones.forEach(op => {
+                                inputHtml += `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`;
+                            });
+                        }
+                        inputHtml += `</select>`;
+                    } else if (c.nombre === 'codigo_ubigeo_id_fk') {
+                        inputHtml = `
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <select id="sel-ubigeo-departamento" data-actual="${datosFila ? datosFila.departamento : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
+                                <select id="sel-ubigeo-provincia" data-actual="${datosFila ? datosFila.provincia : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
+                                <select id="sel-ubigeo-distrito" data-actual="${datosFila ? datosFila.distrito : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
+                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #f8fafc;"><option value="">-- Código Ubigeo Automático --</option></select>
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 8px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>
+                            </div>
+                        `;
+                    } else {
+                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box;">`;
+                    }
+
+                    return `
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''}</label>
+                            ${inputHtml}
+                        </div>
+                    `;
+                }).join('')}
+
+                ${html30CajasFotos}
+                ${htmlSeccionCaracteristicasEspeciales}
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <button type="button" id="btn-cancelar-submodal" style="background: #94a3b8; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
+                    <button type="submit" id="btn-guardar-crud-submit" style="background: #10b981; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700;">
+                        ${esEdicion ? 'Guardar Cambios' : 'Crear Registro'}
+                    </button>
+                </div>
+            </form>
+        </div>
     `;
 
     subModal.style.display = 'flex';
