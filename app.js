@@ -466,20 +466,20 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 /**
  * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * corrige el campo geocode_precision con la cadena real, popula correctamente las características
- * desde "lov_caracteristica" y gestiona su almacenamiento en "caracteristica_propiedad".
+ * resuelve de forma inteligente los datos geográficos por Ubigeo en modo edición, popula correctamente
+ * las características desde "lov_caracteristica" y gestiona su almacenamiento en "caracteristica_propiedad".
  */
-// [INICIO DE LLAVES]: Abre la función asíncrona abrirFormularioEdicionCrud
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
-    console.group(`🔧 [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
+    console.group(`?? [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
 
     let fotosSecundariasObtenidas = [];
     let caracteristicasObtenidas = [];
+    let ubigeoActualInfo = { departamento: '', provincia: '', distrito: '' };
 
-    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos y características si es edición de propiedad
+    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos, características e info de ubigeo si es edición de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
         try {
             const cliente = obtenerClienteSupabase();
@@ -502,9 +502,22 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 if (caracBD && caracBD.length > 0) {
                     caracteristicasObtenidas = caracBD;
                 }
+
+                // MEJORA SRE: Resolver departamento, provincia y distrito a partir del codigo_ubigeo_id_fk
+                const codUbigeoFk = datosFila.codigo_ubigeo_id_fk;
+                if (codUbigeoFk) {
+                    const { data: ubigeoData } = await cliente
+                        .from('ubigeo')
+                        .select('departamento, provincia, distrito')
+                        .eq('codigo_ubigeo_id', codUbigeoFk)
+                        .maybeSingle();
+                    if (ubigeoData) {
+                        ubigeoActualInfo = ubigeoData;
+                    }
+                }
             }
         } catch (errRelacionadas) {
-            console.warn("No se pudieron cargar las relaciones secundarias:", errRelacionadas);
+            console.warn("No se pudieron cargar las relaciones secundarias o el ubigeo:", errRelacionadas);
         }
     } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
 
@@ -587,7 +600,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
-                    📷 Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
+                    ?? Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
                 </label>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
@@ -610,7 +623,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                        ⭐ Características Especiales de la Propiedad (lov_caracteristica):
+                        ? Características Especiales de la Propiedad (lov_caracteristica):
                     </label>
                     <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
                         + Añadir Característica
@@ -646,14 +659,18 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
                         inputHtml += `</select>`;
                     } else if (c.nombre === 'codigo_ubigeo_id_fk') {
+                        const depValPre = esEdicion ? (datosFila.departamento || ubigeoActualInfo.departamento || '') : '';
+                        const provValPre = esEdicion ? (datosFila.provincia || ubigeoActualInfo.provincia || '') : '';
+                        const distValPre = esEdicion ? (datosFila.distrito || ubigeoActualInfo.distrito || '') : '';
+
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">🌐 1. Ingrese primero la Dirección exacta arriba y luego seleccione el Ubigeo:</label>
-                                <select id="sel-ubigeo-departamento" data-actual="${datosFila ? datosFila.departamento : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
-                                <select id="sel-ubigeo-provincia" data-actual="${datosFila ? datosFila.provincia : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
-                                <select id="sel-ubigeo-distrito" data-actual="${datosFila ? datosFila.distrito : ''}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">?? 1. Ingrese primero la Dirección exacta arriba y luego seleccione el Ubigeo:</label>
+                                <select id="sel-ubigeo-departamento" data-actual="${depValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
+                                <select id="sel-ubigeo-provincia" data-actual="${provValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
+                                <select id="sel-ubigeo-distrito" data-actual="${distValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
                                 <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta</button>
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">?? 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta</button>
                             </div>
                         `;
                     } else {
@@ -778,7 +795,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             ${optionsCaracHtml}
                         </select>
                         <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: sí / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-                        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">✕</button>
+                        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">?</button>
                     `;
 
                     filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
@@ -905,7 +922,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
-                                // CORRECCIÓN: Inserta la cadena de caracteres real obtenida del mapa en lugar de la palabra "exacta"
                                 if (inputPrec) inputPrec.value = dataGeo[0].osm_type ? `OSM Type: ${dataGeo[0].osm_type} (${dataGeo[0].class})` : "exacta_nominatim";
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
@@ -917,13 +933,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         } catch (errGeo) {
                             console.error("Error en geocodificación:", errGeo);
                         } finally {
-                            btnGeo.innerText = "📍 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta";
+                            btnGeo.innerText = "?? 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta";
                         }
                     };
                 }
 
             } catch (errLov) {
-                console.error("❌ Error cargando catálogos:", errLov);
+                console.error("? Error cargando catálogos:", errLov);
             } finally {
                 console.groupEnd();
             }
