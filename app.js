@@ -859,44 +859,98 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             }); // [FIN DE LLAVES]: Cierra bucle de filtrado de claves
         } // [FIN DE LLAVES]: Cierra condición de propiedad
 
+const correoSesionActual = window.usuarioLogueado && window.usuarioLogueado.email 
+            ? window.usuarioLogueado.email 
+            : (state.usuarioActual && state.usuarioActual.correo ? state.usuarioActual.correo : "orlandopena11@yahoo.com");
+
+        let listaNombresFotosValidados = [];
+        if (nombreTabla === 'propiedad') {
+            if (payloadPropiedad.hasOwnProperty('galeria_fotos')) delete payloadPropiedad['galeria_fotos'];
+
+            for (let i = 1; i <= 30; i++) {
+                const claveSlot = `foto_slot_${i}`;
+                if (payloadPropiedad.hasOwnProperty(claveSlot)) {
+                    const nombreFotoIngresado = payloadPropiedad[claveSlot];
+                    if (nombreFotoIngresado && String(nombreFotoIngresado).trim() !== "") {
+                        listaNombresFotosValidados.push(String(nombreFotoIngresado).trim());
+                    }
+                    delete payloadPropiedad[claveSlot];
+                }
+            }
+        }
+
         let res;
         let idPropiedadGenerada = pkValor;
 
-        if (esEdicion) { // [INICIO DE LLAVES]: Abre bloque para actualizar registro existente
+        if (esEdicion) {
             res = await cliente.from(nombreTabla).update(payloadPropiedad).eq(pkColumna, pkValor);
-        } else { // [INICIO DE LLAVES]: Abre bloque para insertar nuevo registro
+        } else {
             if (nombreTabla === 'propiedad') {
                 const { data: dataInsert, error: errInsert } = await cliente.from(nombreTabla).insert([payloadPropiedad]).select();
                 res = { error: errInsert };
                 if (dataInsert && dataInsert.length > 0) {
-                    idPropiedadGenerada = dataInsert[0][pkColumna];
+                    idPropiedadGenerada = dataInsert[0][conf.pk];
                 }
             } else {
                 res = await cliente.from(nombreTabla).insert([payloadPropiedad]);
             }
-        } // [FIN DE LLAVES]: Cierra condicional de inserción/actualización
+        }
 
         if (res.error) throw res.error;
 
-        // [INICIO DE LLAVES]: Abre bloque para inserción masiva limpia en la tabla relacional imagen_propiedad
-        if (nombreTabla === 'propiedad' && listaFotosExtras.length > 0 && idPropiedadGenerada) {
+        // Persistencia de fotos en imagen_propiedad
+        if (nombreTabla === 'propiedad' && idPropiedadGenerada) {
             if (esEdicion) {
                 await cliente.from('imagen_propiedad').delete().eq('propiedad_id_fk', idPropiedadGenerada);
             }
 
-            const filasImagenes = listaFotosExtras.map((urlFoto, index) => ({
-                propiedad_id_fk: idPropiedadGenerada,
-                ruta_imagen: urlFoto,
-                orden: index + 1
-            }));
+            if (listaNombresFotosValidados.length > 0) {
+                const filasImagenes = listaNombresFotosValidados.map((nombreFoto, index) => ({
+                    propiedad_id_fk: idPropiedadGenerada,
+                    ruta_imagen: nombreFoto,
+                    orden: index + 1
+                }));
 
-            const { error: errImgs } = await cliente.from('imagen_propiedad').insert(filasImagenes);
-            if (errImgs) {
-                console.warn("Aviso: La propiedad se guardó, pero hubo un detalle al registrar las fotos secundarias:", errImgs.message);
+                await cliente.from('imagen_propiedad').insert(filasImagenes);
             }
-        } // [FIN DE LLAVES]: Cierra bloque de inserción de fotos secundarias
+        }
 
-        alert(`¡Registro ${esEdicion ? 'actualizado' : 'creado'} exitosamente en ${nombreTabla}!`);
+        // Persistencia de características especiales en caracteristica_propiedad
+        if (nombreTabla === 'propiedad' && idPropiedadGenerada) {
+            if (esEdicion) {
+                await cliente.from('caracteristica_propiedad').delete().eq('propiedad_id_fk', idPropiedadGenerada);
+            }
+
+            const filasDomCaract = document.querySelectorAll('#contenedor-dinamico-caracteristicas-especiales > div');
+            let arrayFilasParaInsertar = [];
+
+            filasDomCaract.forEach((filaDiv) => {
+                const selectNombre = filaDiv.querySelector('.select-caract-nombre');
+                const inputValor = filaDiv.querySelector('.input-caract-valor');
+
+                if (selectNombre && selectNombre.value.trim() !== "") {
+                    const idGeneradoUnico = 'SOC-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+                    arrayFilasParaInsertar.push({
+                        caracteristica_id: idGeneradoUnico,
+                        propiedad_id_fk: idPropiedadGenerada,
+                        nombre_caracteristica: selectNombre.value.trim(),
+                        valor_caracteristica: inputValor ? inputValor.value.trim() : 'sí',
+                        unidad: '',
+                        tipo_data: 'booleano',
+                        creado_por: correoSesionActual
+                    });
+                }
+            });
+
+            if (arrayFilasParaInsertar.length > 0) {
+                const { error: errCaract } = await cliente.from('caracteristica_propiedad').insert(arrayFilasParaInsertar);
+                if (errCaract) {
+                    console.warn("Aviso al guardar características especiales:", errCaract.message);
+                }
+            }
+        }
+
+        alert(`¡Registro ${esEdicion ? 'actualizado' : 'creado'} exitosamente con sus fotos y características especiales!`);
         await cargarDatosTablaCrud(nombreTabla);
 
     } catch (err) { // [INICIO DE LLAVES]: Abre bloque catch de errores
