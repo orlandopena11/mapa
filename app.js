@@ -532,64 +532,61 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
-                ${camposAProcesar.map(c => {
-                    if (c.nombre === 'galeria_fotos') return '';
+// [INICIO DE LLAVES]: Bloques nuevos para las 30 cajas de fotos flexibles y características especiales
+let html30CajasFotos = '';
+let htmlSeccionCaracteristicasEspeciales = '';
 
-                    let valorActual = esEdicion && datosFila[c.nombre] !== undefined && datosFila[c.nombre] !== null ? String(datosFila[c.nombre]).replace(',', '.') : '';
-                    
-                    if (nombreTabla === 'propiedad' && c.nombre === 'propiedad_id' && !esEdicion) {
-                        valorActual = 'PROP-' + String(state.propiedades.length + 13).padStart(3, '0');
-                    }
+if (nombreTabla === 'propiedad') {
+    html30CajasFotos = `
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
+            <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
+                🖼️ Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
+            </label>
+            <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
+                Ingrese libremente los nombres, letras y símbolos de las fotos. Solo se registrarán aquellas cajas que complete.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
+    `;
 
-                    const camposLovSistema = [
-                        'tipo_propiedad', 
-                        'subtipo_propiedad', 
-                        'estado_propiedad', 
-                        'moneda', 
-                        'estado_publicacion', 
-                        'situacion_propiedad', 
-                        'vista', 
-                        'sotano', 
-                        'almacen',
-                        'pais'
-                    ];
-                    
-                    const esUbigeoCasada = ['departamento', 'provincia', 'distrito', 'codigo_ubigeo_id_fk'].includes(c.nombre);
+    for (let i = 1; i <= 30; i++) {
+        let nombreFotoActual = '';
+        if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
+            nombreFotoActual = fotosSecundariasObtenidas[i - 1];
+        }
 
-                    if (nombreTabla === 'propiedad' && (camposLovSistema.includes(c.nombre) || esUbigeoCasada)) {
-                        let idSelect = esUbigeoCasada ? 'sel-ubigeo-' + c.nombre : 'sel-lov-' + c.nombre;
+        html30CajasFotos += `
+            <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
+                <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${i}</span>
+                <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
+            </div>
+        `;
+    }
 
-                        return '<div>' +
-                            '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
-                            '<select name="' + c.nombre + '" id="' + idSelect + '" data-actual="' + valorActual + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff;">' +
-                                '<option value="' + valorActual + '">' + (valorActual ? valorActual + ' (Cargando...)' : '-- Seleccione --') + '</option>' +
-                            '</select>' +
-                        '</div>';
-                    }
+    html30CajasFotos += `
+            </div>
+        </div>
+    `;
 
-                    let valorInputFinal = valorActual;
-                    if (nombreTabla === 'propiedad' && c.nombre === 'usuario_id_fk' && !esEdicion && window.usuarioLogueado) {
-                        valorInputFinal = window.usuarioLogueado.id;
-                    }
+    htmlSeccionCaracteristicasEspeciales = `
+        <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <label style="font-size: 14px; font-weight: 800; color: #002e50;">
+                    ⭐ Características Especiales de la Propiedad:
+                </label>
+                <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                    + Añadir Característica
+                </button>
+            </div>
+            <p style="font-size: 12px; color: #64748b; margin-top: 0; margin-bottom: 12px;">
+                Seleccione las amenidades o características especiales (Piscina, Zona de parrilla, etc.) que apliquen a este inmueble.
+            </p>
+            <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+            </div>
+        </div>
+    `;
+}
+// [FIN DE LLAVES]: Cierra bloque nuevo de visualización
 
-                    if (esEdicion && nombreTabla === 'propiedad' && c.nombre.startsWith('foto_extra_')) {
-                        const numeroFotoExtra = parseInt(c.nombre.replace('foto_extra_', ''), 10);
-                        if (fotosSecundariasObtenidas[numeroFotoExtra] !== undefined) {
-                            valorInputFinal = fotosSecundariasObtenidas[numeroFotoExtra];
-                        }
-                    }
-
-                    let botonGeocodificarHtml = '';
-                    if (nombreTabla === 'propiedad' && c.nombre === 'direccion') {
-                        botonGeocodificarHtml = '<button type="button" id="btn-auto-geocodificar" style="margin-top: 6px; background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">📍 Autocompletar Ubigeo, Coordenadas y Mapa</button>';
-                    }
-
-                return '<div>' +
-                        '<label style="font-size: 12px; font-weight: 700; color: #1e293b; display: block; margin-bottom: 4px;">' + c.label + ':</label>' +
-                        '<input type="' + ((c.nombre === 'latitud' || c.nombre === 'longitud') ? 'text' : (c.tipo || 'text')) + '" ' + ((c.nombre === 'latitud' || c.nombre === 'longitud') ? 'inputmode="decimal"' : '') + ' name="' + c.nombre + '" id="input-crud-' + c.nombre + '" value="' + valorInputFinal + '" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; box-sizing: border-box;" ' + (c.requerido ? 'required' : '') + '>' +
-                        botonGeocodificarHtml +
-                    '</div>';
-                }).join('')}
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
                     <button type="button" id="btn-cancelar-submodal" style="background: #94a3b8; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
