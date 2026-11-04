@@ -673,16 +673,28 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">?? 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta</button>
                             </div>
                         `;
-                    } else {
-                        const esPkCampo = (c.nombre === conf.pk);
-                        const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
-                        const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
-                        
-                        const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
-                        const atributoLectura = debeBloquearse ? 'readonly' : '';
+                    } 
+ /**
+ * Descripción: Genera de forma dinámica los campos de entrada estándar (texto, número, email, fecha) 
+ * para el formulario CRUD, incorporando la propiedad 'step="any"' en los campos numéricos 
+ * para permitir coordenadas geográficas con decimales exactos y montos sin restricciones del navegador.
+ */
+// [INICIO DE LLAVES]: Abre el bloque condicional para la renderización de inputs estándar
+else {
+    // [INICIO DE LLAVES]: Bloque de validación de campos de solo lectura (PK y Usuario FK)
+    const esPkCampo = (c.nombre === conf.pk);
+    const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
+    const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
+    
+    const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
+    const atributoLectura = debeBloquearse ? 'readonly' : '';
+    // [FIN DE LLAVES]: Cierra la validación de bloqueos
 
-                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
-                    }
+    // Si el tipo de campo es 'number', añadimos step="any" para admitir decimales en latitud, longitud y precios
+    const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
+
+    inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
+} // [FIN DE LLAVES]: Cierra el bloque else de generación de inputs estándar
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
