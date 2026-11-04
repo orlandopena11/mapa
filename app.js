@@ -776,18 +776,18 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
 
-/**
- * Descripción: Consulta de forma directa y explícita la columna 'caracteristica' de la tabla 
- * 'lov_caracteristica' en Supabase para poblar dinámicamente los menús desplegables de características 
- * especiales en el formulario de propiedades, asegurando una lectura limpia tanto en PC como en móvil.
+ /**
+ * Descripción: Consulta el catálogo completo de características desde la tabla 'lov_caracteristica' 
+ * y lo almacena en la caché global 'state.catalogoCaracteristicas' para alimentar instantáneamente 
+ * los menús desplegables del formulario CRUD sin problemas de sincronización asíncrona.
  */
-// [INICIO DE LLAVES]: Abre el bloque asíncrono para consultar y poblar el catálogo de características
-let listaCaracteristicasCat = [];
+// [INICIO DE LLAVES]: Abre el bloque de consulta y almacenamiento en caché global de características
+state.catalogoCaracteristicas = [];
 try {
-    // [INICIO DE LLAVES]: Intento de consulta selectiva a la tabla lov_caracteristica
+    // [INICIO DE LLAVES]: Intento de consulta selectiva de la columna caracteristica
     const resCatDirecto = await clienteSupabase.from('lov_caracteristica').select('caracteristica');
     if (!resCatDirecto.error && resCatDirecto.data) {
-        listaCaracteristicasCat = resCatDirecto.data;
+        state.catalogoCaracteristicas = resCatDirecto.data;
     }
 } catch (errCat) {
     console.warn("Aviso al consultar el catálogo de características:", errCat);
@@ -801,9 +801,10 @@ const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 
 
     let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
     
-    if (listaCaracteristicasCat && listaCaracteristicasCat.length > 0) {
-        // [INICIO DE LLAVES]: Recorre cada registro del catálogo para agregarlo al <select>
-        listaCaracteristicasCat.forEach(rowCarac => {
+    // Validar y recorrer el catálogo global almacenado en state
+    if (state.catalogoCaracteristicas && state.catalogoCaracteristicas.length > 0) {
+        // [INICIO DE LLAVES]: Bucle forEach para recorrer cada registro del catálogo
+        state.catalogoCaracteristicas.forEach(rowCarac => {
             const textoCaracteristica = rowCarac.caracteristica;
             
             if (textoCaracteristica !== undefined && textoCaracteristica !== null && String(textoCaracteristica).trim() !== "") {
@@ -829,17 +830,21 @@ const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 
     contenedorCarac.appendChild(filaDiv);
 }; // [FIN DE LLAVES]: Cierra la función agregarFilaCaracteristica
 
-// [INICIO DE LLAVES]: Valida y asigna el evento al botón de añadir característica
+// [INICIO DE LLAVES]: Valida y asigna el evento de clic al botón para añadir nueva fila de característica
 if (btnAgregarCarac && contenedorCarac) {
     btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
-} // [FIN DE LLAVES]: Cierra la validación del botón
+} // [FIN DE LLAVES]: Cierra la validación del botón de adición
 
-// [INICIO DE LLAVES]: Valida si existen características previas guardadas para cargarlas en modo edición
+// [INICIO DE LLAVES]: Valida si estamos editando una propiedad para precargar sus características existentes
 if (caracteristicasObtenidas.length > 0) {
     caracteristicasObtenidas.forEach(carac => {
         agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 'sí');
     });
-} // [FIN DE LLAVES]: Cierra la condición de carga previa
+} else {
+    // Si es un registro nuevo, dejamos una fila inicial lista por defecto
+    agregarFilaCaracteristica();
+} // [FIN DE LLAVES]: Cierra la condición de precarga en modo edición
+                
                 
 
                 const selPais = formNode.querySelector('#sel-lov-pais');
