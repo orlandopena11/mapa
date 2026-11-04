@@ -1000,128 +1000,75 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
 
 
-// [INICIO DE LLAVES]: Abre la función asíncrona guardarRegistroCrud blindada
+/**
+ * Descripción: Función asíncrona encargada de coordinar el almacenamiento CRUD. 
+ * Si la tabla activa es 'propiedad', empaqueta los datos, fotos y características en un JSON 
+ * y los envía de manera atómica a la función RPC 'guardar_propiedad_completa' en PostgreSQL.
+ * Para otras tablas, opera mediante inserciones o actualizaciones directas estándar.
+ */
+// [INICIO DE LLAVES]: Abre la función asíncrona principal guardarRegistroCrud basada en RPC
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
-    try { // [INICIO DE LLAVES]: Abre el bloque try principal de persistencia
+    // [INICIO DE LLAVES]: Bloque principal de control de errores y persistencia
+    try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
-        let payloadPropiedad = { ...payload };
-        let listaFotosExtras = [];
-
-        if (nombreTabla === 'propiedad') { // [INICIO DE LLAVES]: Abre condición para filtrar esquema de propiedad
-            if (payloadPropiedad.hasOwnProperty('galeria_fotos')) delete payloadPropiedad['galeria_fotos'];
-
-            // Limpieza dinámica general de cualquier clave extraña que no sea columna física de la BD
-            Object.keys(payloadPropiedad).forEach(clave => { // [INICIO DE LLAVES]: Abre bucle de filtrado de claves
-                if (clave.startsWith('foto_extra_')) {
-                    const valorFoto = payloadPropiedad[clave];
-                    if (valorFoto && String(valorFoto).trim() !== "") {
-                        listaFotosExtras.push(String(valorFoto).trim());
-                    }
-                    delete payloadPropiedad[clave]; 
-                }
-            }); // [FIN DE LLAVES]: Cierra bucle de filtrado de claves
-        } // [FIN DE LLAVES]: Cierra condición de propiedad
-
-const correoSesionActual = window.usuarioLogueado && window.usuarioLogueado.email 
-            ? window.usuarioLogueado.email 
-            : (state.usuarioActual && state.usuarioActual.correo ? state.usuarioActual.correo : "orlandopena11@yahoo.com");
-
-        let listaNombresFotosValidados = [];
+        // [INICIO DE LLAVES]: Validación específica para la tabla propiedad mediante procedimiento almacenado
         if (nombreTabla === 'propiedad') {
-            if (payloadPropiedad.hasOwnProperty('galeria_fotos')) delete payloadPropiedad['galeria_fotos'];
+            let payloadLimpio = { ...payload };
+            let arrayFotos = [];
+            let arrayCaracteristicas = [];
 
+            // Recopilar los slots de fotos dinámicos (hasta 30)
             for (let i = 1; i <= 30; i++) {
-                const claveSlot = `foto_slot_${i}`;
-                if (payloadPropiedad.hasOwnProperty(claveSlot)) {
-                    const nombreFotoIngresado = payloadPropiedad[claveSlot];
-                    if (nombreFotoIngresado && String(nombreFotoIngresado).trim() !== "") {
-                        listaNombresFotosValidados.push(String(nombreFotoIngresado).trim());
-                    }
-                    delete payloadPropiedad[claveSlot];
+                if (payloadLimpio[`foto_slot_${i}`]) {
+                    const fotoVal = String(payloadLimpio[`foto_slot_${i}`]).trim();
+                    if (fotoVal) arrayFotos.push(fotoVal);
+                    delete payloadLimpio[`foto_slot_${i}`];
                 }
             }
-        }
+            if (payloadLimpio.galeria_fotos) delete payloadLimpio.galeria_fotos;
 
-        let res;
-        let idPropiedadGenerada = pkValor;
-
-        if (esEdicion) {
-            res = await cliente.from(nombreTabla).update(payloadPropiedad).eq(pkColumna, pkValor);
-        } else {
-            if (nombreTabla === 'propiedad') {
-                const { data: dataInsert, error: errInsert } = await cliente.from(nombreTabla).insert([payloadPropiedad]).select();
-                res = { error: errInsert };
-                if (dataInsert && dataInsert.length > 0) {
-                    idPropiedadGenerada = dataInsert[0][conf.pk];
-                }
-            } else {
-                res = await cliente.from(nombreTabla).insert([payloadPropiedad]);
-            }
-        }
-
-        if (res.error) throw res.error;
-
-        // Persistencia de fotos en imagen_propiedad
-        if (nombreTabla === 'propiedad' && idPropiedadGenerada) {
-            if (esEdicion) {
-                await cliente.from('imagen_propiedad').delete().eq('propiedad_id_fk', idPropiedadGenerada);
-            }
-
-            if (listaNombresFotosValidados.length > 0) {
-                const filasImagenes = listaNombresFotosValidados.map((nombreFoto, index) => ({
-                    propiedad_id_fk: idPropiedadGenerada,
-                    ruta_imagen: nombreFoto,
-                    orden: index + 1
-                }));
-
-                await cliente.from('imagen_propiedad').insert(filasImagenes);
-            }
-        }
-
-        // Persistencia de características especiales en caracteristica_propiedad
-        if (nombreTabla === 'propiedad' && idPropiedadGenerada) {
-            if (esEdicion) {
-                await cliente.from('caracteristica_propiedad').delete().eq('propiedad_id_fk', idPropiedadGenerada);
-            }
-
-            const filasDomCaract = document.querySelectorAll('#contenedor-dinamico-caracteristicas-especiales > div');
-            let arrayFilasParaInsertar = [];
-
-            filasDomCaract.forEach((filaDiv) => {
-                const selectNombre = filaDiv.querySelector('.select-caract-nombre');
-                const inputValor = filaDiv.querySelector('.input-caract-valor');
-
-                if (selectNombre && selectNombre.value.trim() !== "") {
-                    const idGeneradoUnico = 'SOC-' + Math.random().toString(36).substring(2, 9).toUpperCase();
-                    arrayFilasParaInsertar.push({
-                        caracteristica_id: idGeneradoUnico,
-                        propiedad_id_fk: idPropiedadGenerada,
-                        nombre_caracteristica: selectNombre.value.trim(),
-                        valor_caracteristica: inputValor ? inputValor.value.trim() : 'sí',
-                        unidad: '',
-                        tipo_data: 'booleano',
-                        creado_por: correoSesionActual
-                    });
-                }
+            // Recopilar las características especiales dinámicas desde el DOM del formulario
+            document.querySelectorAll('#contenedor-dinamico-caracteristicas-especiales > div').forEach(fila => {
+                const nombre = fila.querySelector('.select-caract-nombre')?.value?.trim();
+                const valor = fila.querySelector('.input-caract-valor')?.value?.trim() || 'sí';
+                if (nombre) arrayCaracteristicas.push({ nombre, valor });
             });
 
-            if (arrayFilasParaInsertar.length > 0) {
-                const { error: errCaract } = await cliente.from('caracteristica_propiedad').insert(arrayFilasParaInsertar);
-                if (errCaract) {
-                    console.warn("Aviso al guardar características especiales:", errCaract.message);
-                }
+            // Adjuntar las colecciones y el correo de la sesión actual al paquete JSON
+            payloadLimpio.fotos = arrayFotos;
+            payloadLimpio.caracteristicas = arrayCaracteristicas;
+            payloadLimpio.usuario_id_fk = window.usuarioLogueado?.email || state.usuarioActual?.correo || "orlandopena11@yahoo.com";
+            if (esEdicion && pkValor) {
+                payloadLimpio.propiedad_id = pkValor;
             }
-        }
 
-        alert(`¡Registro ${esEdicion ? 'actualizado' : 'creado'} exitosamente con sus fotos y características especiales!`);
+            // Invocación atómica ultrarrápida a la función RPC alojada en Supabase
+            const { data, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
+            if (error) throw error;
+
+            alert("¡Propiedad, anuncios, fotos y características guardadas de forma atómica en la base de datos!");
+        } else {
+            // Comportamiento estándar directo para las demás tablas del sistema CRUD
+            if (esEdicion) {
+                const { error } = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
+                if (error) throw error;
+            } else {
+                const { error } = await cliente.from(nombreTabla).insert([payload]);
+                if (error) throw error;
+            }
+            alert("¡Registro actualizado exitosamente!");
+        } // [FIN DE LLAVES]: Cierra el bloque condicional del tipo de tabla
+
         await cargarDatosTablaCrud(nombreTabla);
 
-    } catch (err) { // [INICIO DE LLAVES]: Abre bloque catch de errores
-        alert("Error al guardar en la base de datos: " + err.message);
-    } // [FIN DE LLAVES]: Cierra bloque try/catch
-} // [FIN DE LLAVES]: Cierra la función asíncrona guardarRegistroCrud
+    } catch (err) {
+        // [INICIO DE LLAVES]: Bloque de captura y manejo de excepciones en la persistencia
+        alert("Error al procesar en la Base de Datos: " + err.message);
+        console.error("XX [SRE RPC ERROR]:", err);
+    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
+} // [FIN DE LLAVES]: Cierra la función guardarRegistroCrud
 
 
 
