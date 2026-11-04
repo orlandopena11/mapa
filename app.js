@@ -776,61 +776,71 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
 
-                // Consulta independiente y directa para asegurar que los datos de características siempre lleguen
-                let listaCaracteristicasCat = [];
-                try {
-                    const resCatDirecto = await clienteSupabase.from('lov_caracteristica').select('*');
-                    if (!resCatDirecto.error && resCatDirecto.data) {
-                        listaCaracteristicasCat = resCatDirecto.data;
-                    }
-                } catch (errCat) {
-                    console.warn("Aviso al consultar características independientes:", errCat);
-                }
+/**
+ * Descripción: Consulta de forma directa y explícita la columna 'caracteristica' de la tabla 
+ * 'lov_caracteristica' en Supabase para poblar dinámicamente los menús desplegables de características 
+ * especiales en el formulario de propiedades, asegurando una lectura limpia tanto en PC como en móvil.
+ */
+// [INICIO DE LLAVES]: Abre el bloque asíncrono para consultar y poblar el catálogo de características
+let listaCaracteristicasCat = [];
+try {
+    // [INICIO DE LLAVES]: Intento de consulta selectiva a la tabla lov_caracteristica
+    const resCatDirecto = await clienteSupabase.from('lov_caracteristica').select('caracteristica');
+    if (!resCatDirecto.error && resCatDirecto.data) {
+        listaCaracteristicasCat = resCatDirecto.data;
+    }
+} catch (errCat) {
+    console.warn("Aviso al consultar el catálogo de características:", errCat);
+} // [FIN DE LLAVES]: Cierra el bloque try/catch de consulta
 
-                const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
-                    const indiceFila = contenedorCarac.children.length + 1;
-                    const filaDiv = document.createElement('div');
-                    filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
+const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
+    // [INICIO DE LLAVES]: Abre la función interna para añadir filas dinámicas de características
+    const indiceFila = contenedorCarac.children.length + 1;
+    const filaDiv = document.createElement('div');
+    filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
-                    let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
-                    
-                    if (listaCaracteristicasCat && listaCaracteristicasCat.length > 0) {
-                        listaCaracteristicasCat.forEach(rowCarac => {
-                            // Leemos directamente la columna 'caracteristica' de la tabla lov_caracteristica
-                            let valCarac = rowCarac.caracteristica || rowCarac.codigo || Object.values(rowCarac)[0];
-                            
-                            if (valCarac !== undefined && valCarac !== null && String(valCarac).trim() !== "") {
-                                const coincide = String(valCarac).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
-                                optionsCaracHtml += `<option value="${valCarac}" ${coincide ? 'selected' : ''}>${valCarac}</option>`;
-                            }
-                        });
-                    }
-                    
-                    filaDiv.innerHTML = `
-                        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
-                        <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-                            ${optionsCaracHtml}
-                        </select>
-                        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: sí / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-                        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">?</button>
-                    `;
+    let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
+    
+    if (listaCaracteristicasCat && listaCaracteristicasCat.length > 0) {
+        // [INICIO DE LLAVES]: Recorre cada registro del catálogo para agregarlo al <select>
+        listaCaracteristicasCat.forEach(rowCarac => {
+            const textoCaracteristica = rowCarac.caracteristica;
+            
+            if (textoCaracteristica !== undefined && textoCaracteristica !== null && String(textoCaracteristica).trim() !== "") {
+                const coincide = String(textoCaracteristica).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
+                optionsCaracHtml += `<option value="${textoCaracteristica}" ${coincide ? 'selected' : ''}>${textoCaracteristica}</option>`;
+            }
+        }); // [FIN DE LLAVES]: Cierra el bucle forEach del catálogo
+    }
+    
+    filaDiv.innerHTML = `
+        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
+        <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+            ${optionsCaracHtml}
+        </select>
+        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: sí / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">×</button>
+    `;
 
-                    filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
-                        filaDiv.remove();
-                    };
+    filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
+        filaDiv.remove();
+    };
 
-                    contenedorCarac.appendChild(filaDiv);
-                };
+    contenedorCarac.appendChild(filaDiv);
+}; // [FIN DE LLAVES]: Cierra la función agregarFilaCaracteristica
 
-                if (btnAgregarCarac && contenedorCarac) {
-                    btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
-                }
+// [INICIO DE LLAVES]: Valida y asigna el evento al botón de añadir característica
+if (btnAgregarCarac && contenedorCarac) {
+    btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
+} // [FIN DE LLAVES]: Cierra la validación del botón
 
-                if (caracteristicasObtenidas.length > 0) {
-                    caracteristicasObtenidas.forEach(carac => {
-                        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 'sí');
-                    });
-                }
+// [INICIO DE LLAVES]: Valida si existen características previas guardadas para cargarlas en modo edición
+if (caracteristicasObtenidas.length > 0) {
+    caracteristicasObtenidas.forEach(carac => {
+        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 'sí');
+    });
+} // [FIN DE LLAVES]: Cierra la condición de carga previa
+                
 
                 const selPais = formNode.querySelector('#sel-lov-pais');
                 const selDep = formNode.querySelector('#sel-ubigeo-departamento');
