@@ -1117,25 +1117,29 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             let arrayCaracteristicas = [];
             
 
-/**
- * Descripción: Recopila de forma dinámica los slots de fotos del formulario (hasta 30),
- * estructurando cada elemento como un objeto JSON que contiene la ruta de la imagen y 
- * su tipo correspondiente, asegurando la compatibilidad con el esquema de la base de datos.
- */
-// [INICIO DE LLAVES]: Procesamiento y empaquetado dinámico de la galería de fotos
+             /**
+             * Descripción: Recopila de forma dinámica los slots de fotos del formulario (hasta 30),
+             * capturando tanto la ruta de la izquierda como el tipo seleccionado de la derecha 
+             * para enviarlos como un objeto JSON estructurado al backend.
+             */
+            // [INICIO DE LLAVES]: Procesamiento y empaquetado dinámico de la galería dual para el payload
             for (let i = 1; i <= 30; i++) {
                 if (payloadLimpio[`foto_slot_${i}`]) {
                     const fotoVal = String(payloadLimpio[`foto_slot_${i}`]).trim();
+                    const tipoVal = String(payloadLimpio[`tipo_slot_${i}`] || 'interior').trim();
+                    
                     if (fotoVal) {
                         arrayFotos.push({
                             ruta: fotoVal,
-                            tipo: 'interior' // Tipo por defecto vinculado a lov_tipo_imagen
+                            tipo: tipoVal
                         });
                     }
                     delete payloadLimpio[`foto_slot_${i}`];
+                    delete payloadLimpio[`tipo_slot_${i}`];
                 }
             }
-// [FIN DE LLAVES]: Cierra el ciclo de recopilación de fotos para el payload
+            // [FIN DE LLAVES]: Cierra el ciclo de recopilación de fotos y tipos
+            
             
             
             if (payloadLimpio.galeria_fotos) delete payloadLimpio.galeria_fotos;
