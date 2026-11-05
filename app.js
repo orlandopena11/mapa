@@ -175,6 +175,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
             { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
             { nombre: "galeria_fotos", label: "Galería de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
+            
 
             { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
             { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
@@ -582,8 +583,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
         
-        camposAProcesar = camposAProcesar.filter(c => !['departamento', 'provincia', 'distrito', 'galeria_fotos'].includes(c.nombre));
+const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol_id_fk) === 1;
+    camposAProcesar = camposAProcesar.filter(c => {
+        if (['departamento', 'provincia', 'distrito', 'galeria_fotos'].includes(c.nombre)) return false;
+        if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
+        return true;
+    });
 
+        
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
             let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
