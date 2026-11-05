@@ -1066,7 +1066,25 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             // Adjuntar las colecciones y el correo de la sesión actual al paquete JSON
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
-            payloadLimpio.usuario_id_fk = window.usuarioLogueado?.email || state.usuarioActual?.correo || "orlandopena11@yahoo.com";
+/**
+ * Descripción: Obtiene dinámicamente el UUID real del usuario autenticado desde Supabase Auth 
+ * o el estado global, evitando cualquier valor harcodeado y asegurando el soporte multiusuario.
+ */
+// [INICIO DE LLAVES]: Extracción dinámica y estricta del UUID del usuario actual
+const uuidUsuarioAutenticado = window.usuarioLogueado?.id || state.usuarioActual?.id;
+
+if (!uuidUsuarioAutenticado) {
+    alert("Error de Autenticación: Debe iniciar sesión con su cuenta para registrar o modificar propiedades.");
+    if (btnSubmit) {
+        btnSubmit.innerText = "Guardar Cambios";
+        btnSubmit.disabled = false;
+    }
+    return;
+}
+
+payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
+// [FIN DE LLAVES]: Cierra la asignación dinámica
+            
             if (esEdicion && pkValor) {
                 payloadLimpio.propiedad_id = pkValor;
             }
