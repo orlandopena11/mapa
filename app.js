@@ -1004,7 +1004,16 @@ if (caracteristicasObtenidas.length > 0) {
 
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
-                                if (inputPrec) inputPrec.value = dataGeo[0].osm_type ? `OSM Type: ${dataGeo[0].osm_type} (${dataGeo[0].class})` : "exacta_nominatim";
+
+/**
+ * Descripción: Asigna el identificador place_id único de la geocodificación 
+ * en lugar del tipo descriptivo de OpenStreetMap.
+ */
+// [INICIO DE LLAVES]: Asignación limpia del place_id para geocode_precision
+                                const placeIdNominatim = dataGeo[0].place_id ? String(dataGeo[0].place_id) : "exacta_nominatim";
+                                if (inputPrec) inputPrec.value = placeIdNominatim;
+// [FIN DE LLAVES]: Cierra la asignación de precisión de geocodificación
+
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
@@ -1048,12 +1057,10 @@ if (caracteristicasObtenidas.length > 0) {
             }
 
 /**
- * Descripción: Captura los datos del formulario del CRUD, realiza una validación 
- * preventiva de campos obligatorios (título y precio base) para evitar que se 
- * pierda la información ingresada por el usuario en caso de omisión, y ejecuta 
- * el guardado atómico en la base de datos.
+ * Descripción: Captura y procesa los datos del formulario del CRUD, asegurando la 
+ * inclusión explícita de los campos de departamento y provincia seleccionados en los menús.
  */
-// [INICIO DE LLAVES]: Procesamiento y validación preventiva del formulario CRUD
+// [INICIO DE LLAVES]: Procesamiento y rescate de departamento, provincia y coordenadas
             const formData = new FormData(e.target);
             const payload = {};
             formData.forEach((val, key) => { 
@@ -1063,6 +1070,15 @@ if (caracteristicasObtenidas.length > 0) {
                     payload[key] = val; 
                 }
             });
+
+            const selDepDOM = document.getElementById('sel-ubigeo-departamento');
+            const selProvDOM = document.getElementById('sel-ubigeo-provincia');
+            if (selDepDOM && selDepDOM.value) payload.departamento = selDepDOM.value;
+            if (selProvDOM && selProvDOM.value) payload.provincia = selProvDOM.value;
+            if (!payload.departamento) payload.departamento = 'Lima';
+            if (!payload.provincia) payload.provincia = 'Lima';
+// [FIN DE LLAVES]: Cierra el rescate de departamento y provincia
+            
 
             // Validación preventiva de campos clave requeridos para mantener el estado del formulario
             if (!payload.titulo || String(payload.titulo).trim() === "") {
@@ -1151,9 +1167,21 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
                 if (nombre) arrayCaracteristicas.push({ nombre, valor });
             });
 
-            // Adjuntar las colecciones y el correo de la sesión actual al paquete JSON
+/**
+ * Descripción: Adjunta las colecciones de fotos, características y define 
+ * automáticamente la foto principal utilizando la primera ruta de la galería.
+ */
+// [INICIO DE LLAVES]: Inyección de foto_principal, fotos y características al payload
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
+            
+            if (arrayFotos.length > 0) {
+                payloadLimpio.foto_principal = arrayFotos[0].ruta;
+            } else {
+                payloadLimpio.foto_principal = 'principal.jpg';
+            }
+// [FIN DE LLAVES]: Cierra la asignación de la foto principal y colecciones
+            
 /**
  * Descripción: Obtiene dinámicamente el UUID real del usuario autenticado desde Supabase Auth 
  * o el estado global, evitando cualquier valor harcodeado y asegurando el soporte multiusuario.
