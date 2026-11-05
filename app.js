@@ -1009,6 +1009,13 @@ if (caracteristicasObtenidas.length > 0) {
                 btnSubmit.disabled = true;
             }
 
+/**
+ * Descripción: Captura los datos del formulario del CRUD, realiza una validación 
+ * preventiva de campos obligatorios (título y precio base) para evitar que se 
+ * pierda la información ingresada por el usuario en caso de omisión, y ejecuta 
+ * el guardado atómico en la base de datos.
+ */
+// [INICIO DE LLAVES]: Procesamiento y validación preventiva del formulario CRUD
             const formData = new FormData(e.target);
             const payload = {};
             formData.forEach((val, key) => { 
@@ -1019,8 +1026,33 @@ if (caracteristicasObtenidas.length > 0) {
                 }
             });
 
+            // Validación preventiva de campos clave requeridos para mantener el estado del formulario
+            if (!payload.titulo || String(payload.titulo).trim() === "") {
+                alert("Falta ingresar el valor requerido: Título de Anuncio.");
+                if (btnSubmit) {
+                    btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
+                    btnSubmit.disabled = false;
+                }
+                return; // Detiene el flujo sin cerrar el modal ni borrar los datos ingresados
+            }
+
+            if (!payload.precio_base || isNaN(parseFloat(payload.precio_base))) {
+                alert("Falta ingresar un valor válido para el Precio Base ($).");
+                if (btnSubmit) {
+                    btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
+                    btnSubmit.disabled = false;
+                }
+                return; // Detiene el flujo sin cerrar el modal ni borrar los datos ingresados
+            }
+
+            if (btnSubmit) {
+                btnSubmit.innerText = "Guardando...";
+                btnSubmit.disabled = true;
+            }
+
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
+// [FIN DE LLAVES]: Cierra el bloque de procesamiento y envío del CRUD
         };
     }
 }
