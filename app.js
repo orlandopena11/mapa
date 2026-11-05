@@ -600,32 +600,63 @@ const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol
         });
     }
 
-    let html30CajasFotos = '';
+let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
     if (nombreTabla === 'propiedad') {
+        /**
+         * Descripción: Renderiza los slots de la galería de fotos en dos columnas con sus respectivas 
+         * etiquetas de cabecera: "NOMBRE FOTO" a la izquierda y "FOTO DE:" a la derecha, vinculando 
+         * el selector desplegable con los valores permitidos de la tabla lov_tipo_imagen.
+         */
+        // [INICIO DE LLAVES]: Generación de la interfaz de galería dual con etiquetas específicas
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
-                <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 6px;">
-                    ?? Galería de Nombres de Fotos (Hasta 30 espacios flexibles):
+                <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 8px;">
+                    ?? Galería de Fotos y Clasificación (Hasta 30 espacios flexibles):
                 </label>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #64748b; padding: 0 4px 4px 4px; border-bottom: 1px solid #cbd5e1; margin-bottom: 8px;">
+                    <span style="width: 48%;">NOMBRE FOTO</span>
+                    <span style="width: 48%;">FOTO DE:</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
+
+        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
 
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
+            let tipoFotoActual = 'interior';
+            
             if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
-                nombreFotoActual = fotosSecundariasObtenidas[i - 1];
+                // Si tienes la estructura de objeto o array, se recupera aquí de forma segura
+                const itemFoto = fotosSecundariasObtenidas[i - 1];
+                if (typeof itemFoto === 'object' && itemFoto !== null) {
+                    nombreFotoActual = itemFoto.ruta || '';
+                    tipoFotoActual = itemFoto.tipo || 'interior';
+                } else {
+                    nombreFotoActual = String(itemFoto || '');
+                }
             }
+
             html30CajasFotos += `
-                <div style="display: flex; align-items: center; gap: 6px; background: #fff; padding: 4px 8px; border: 1px solid #e2e8f0; border-radius: 4px;">
-                    <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${i}</span>
-                    <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada_#1@2026.jpg" style="width: 100%; border: none; outline: none; font-size: 12px; color: #1e293b;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <div style="display: flex; align-items: center; gap: 6px; width: 48%;">
+                        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 20px;">#${i}</span>
+                        <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; color: #1e293b;">
+                    </div>
+                    <div style="width: 48%;">
+                        <select name="tipo_slot_${i}" id="select-crud-tipo-slot-${i}" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; background: #fff; color: #1e293b;">
+                            ${tiposImagenOpciones.map(t => `<option value="${t}" ${t === tipoFotoActual ? 'selected' : ''}>${t}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
             `;
         }
         html30CajasFotos += `</div></div>`;
-
+        // [FIN DE LLAVES]: Cierra la construcción de la interfaz de galería de fotos
+        
+    
         htmlSeccionCaracteristicasEspeciales = `
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
