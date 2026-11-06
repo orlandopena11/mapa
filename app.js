@@ -774,23 +774,31 @@ else {
             const formNode = document.getElementById('form-generico-crud');
             if (!formNode) return;
 
-            try {
-                const [
-                    resUbigeo, resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
-                    resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
-                ] = await Promise.all([
-                    clienteSupabase.from('ubigeo').select('*').range(0, 2500), // <--- CAMBIO AQUÍ: Trae todos los registros sin límite de 1000
-                    clienteSupabase.from('lov_tipo_propiedad').select('*'),
-                    clienteSupabase.from('lov_subtipo_propiedad').select('*'),
-                    clienteSupabase.from('lov_estado_propiedad').select('*'),
-                    clienteSupabase.from('lov_moneda').select('*'),
-                    clienteSupabase.from('lov_estado_publicacion').select('*'),
-                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
-                    clienteSupabase.from('lov_vista').select('*'),
-                    clienteSupabase.from('lov_si_no').select('*'),
-                    clienteSupabase.from('lov_pais').select('*'),
-                    clienteSupabase.from('lov_caracteristica').select('*')
-                ]);
+try {
+            // 1. Descargamos los ubigeos en dos bloques para romper el límite de 1,000 de Supabase
+            const [resUbigeoP1, resUbigeoP2] = await Promise.all([
+                clienteSupabase.from('ubigeo').select('*').range(0, 999),
+                clienteSupabase.from('ubigeo').select('*').range(1000, 2000)
+            ]);
+            const coleccionUbigeo = [...(resUbigeoP1.data || []), ...(resUbigeoP2.data || [])];
+            state.ubigeosCache = coleccionUbigeo;
+
+            // 2. Mantenemos intactas todas tus variables de catálogos y LOVs originales
+            const [
+                resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
+                resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
+            ] = await Promise.all([
+                clienteSupabase.from('lov_tipo_propiedad').select('*'),
+                clienteSupabase.from('lov_subtipo_propiedad').select('*'),
+                clienteSupabase.from('lov_estado_propiedad').select('*'),
+                clienteSupabase.from('lov_moneda').select('*'),
+                clienteSupabase.from('lov_estado_publicacion').select('*'),
+                clienteSupabase.from('lov_situacion_propiedad').select('*'),
+                clienteSupabase.from('lov_vista').select('*'),
+                clienteSupabase.from('lov_si_no').select('*'),
+                clienteSupabase.from('lov_pais').select('*'),
+                clienteSupabase.from('lov_caracteristica').select('*')
+            ]);
 
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
