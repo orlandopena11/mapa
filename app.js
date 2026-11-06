@@ -775,15 +775,17 @@ else {
             if (!formNode) return;
 
 try {
-            // 1. Descargamos los ubigeos en dos bloques para romper el límite de 1,000 de Supabase
+            // 1. Descargamos los ubigeos en dos bloques y asignamos a la variable global o existente
             const [resUbigeoP1, resUbigeoP2] = await Promise.all([
                 clienteSupabase.from('ubigeo').select('*').range(0, 999),
                 clienteSupabase.from('ubigeo').select('*').range(1000, 2000)
             ]);
-            const coleccionUbigeo = [...(resUbigeoP1.data || []), ...(resUbigeoP2.data || [])];
-            state.ubigeosCache = coleccionUbigeo;
+            
+            // Usamos 'window.coleccionUbigeo' o reutilizamos la variable sin re-declarar 'const'
+            window.coleccionUbigeo = [...(resUbigeoP1.data || []), ...(resUbigeoP2.data || [])];
+            state.ubigeosCache = window.coleccionUbigeo;
 
-            // 2. Mantenemos intactas todas tus variables de catálogos y LOVs originales
+            // 2. Catálogos y LOVs originales
             const [
                 resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
                 resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
@@ -799,7 +801,7 @@ try {
                 clienteSupabase.from('lov_pais').select('*'),
                 clienteSupabase.from('lov_caracteristica').select('*')
             ]);
-
+    
                 const coleccionUbigeo = resUbigeo.data || [];
                 state.ubigeosCache = coleccionUbigeo;
 
