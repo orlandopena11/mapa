@@ -839,33 +839,42 @@ try {
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-    // [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento alfabético para el código postal
+// [INICIO DE LLAVES]: Abre el bloque de consulta y ordenamiento alfabético desde la tabla lov_codigo_postal
 {
-    const selectPostalNode = formNode.querySelector('#sel-lov-codigo_postal');
-    if (selectPostalNode && coleccionUbigeo) {
-        const valorActualPostal = String(selectPostalNode.getAttribute('data-actual') || '').trim();
-        
-        // Ordenamos alfabéticamente la colección basándonos en el centro poblado o distrito
-        const ubigeoOrdenado = [...coleccionUbigeo].sort((a, b) => {
-            const textoA = String(a.centro_poblado || a.distrito || '').toLowerCase();
-            const textoB = String(b.centro_poblado || b.distrito || '').toLowerCase();
-            return textoA.localeCompare(textoB);
-        });
+    (async () => {
+        const selectPostalNode = formNode.querySelector('#sel-lov-codigo_postal');
+        if (selectPostalNode) {
+            try {
+                // Consultamos directamente la tabla de códigos postales en Supabase
+                const { data: dataPostal, error: errPostal } = await clienteSupabase
+                    .from('lov_codigo_postal')
+                    .select('codigo_postal, centro_poblado')
+                    .order('centro_poblado', { ascending: true });
 
-        let optionsPostalHtml = '<option value="">-- Seleccione Centro Poblado --</option>';
-        ubigeoOrdenado.forEach(row => {
-            const codigoPostalVal = row.codigo_postal || '';
-            const centroPobladoTexto = row.centro_poblado || row.distrito || 'Sin Nombre';
-            
-            if (codigoPostalVal) {
-                const coincide = String(codigoPostalVal).trim().toLowerCase() === valorActualPostal.toLowerCase();
-                // Muestra el Centro Poblado ordenado en pantalla, pero guarda únicamente el código postal en el value
-                optionsPostalHtml += `<option value="${codigoPostalVal}" ${coincide ? 'selected' : ''}>${centroPobladoTexto} (CP: ${codigoPostalVal})</option>`;
+                if (!errPostal && dataPostal && dataPostal.length > 0) {
+                    const valorActualPostal = String(selectPostalNode.getAttribute('data-actual') || '').trim();
+                    let optionsPostalHtml = '<option value="">-- Seleccione Centro Poblado --</option>';
+
+                    dataPostal.forEach(row => {
+                        const codigoPostalVal = row.codigo_postal || '';
+                        const centroPobladoTexto = row.centro_poblado || 'Sin Nombre';
+
+                        if (codigoPostalVal) {
+                            const coincide = String(codigoPostalVal).trim().toLowerCase() === valorActualPostal.toLowerCase();
+                            // Muestra el Centro Poblado ordenado alfabéticamente en pantalla, pero registra únicamente el código postal
+                            optionsPostalHtml += `<option value="${codigoPostalVal}" ${coincide ? 'selected' : ''}>${centroPobladoTexto} (CP: ${codigoPostalVal})</option>`;
+                        }
+                    });
+                    selectPostalNode.innerHTML = optionsPostalHtml;
+                }
+            } catch (errCP) {
+                console.warn("Aviso al cargar lov_codigo_postal:", errCP);
             }
-        });
-        selectPostalNode.innerHTML = optionsPostalHtml;
-    }
+        }
+    })();
 }
+// [FIN DE LLAVES]: Cierra el bloque de consulta y ordenamiento de la tabla lov_codigo_postal
+    
 // [FIN DE LLAVES]: Cierra el bloque de procesamiento y ordenamiento alfabético del código postal
                 // Inyectamos la población dinámica de la colección completa de ubigeos para el código postal
                // poblarSelectDinamicoFlex('sel-lov-codigo_postal', coleccionUbigeo, ['codigo_postal', 'centro_poblado', 'codigo_ubigeo_id']);
