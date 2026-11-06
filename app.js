@@ -827,6 +827,7 @@ try {
                     selectNode.innerHTML = optionsHtml;
                 };
 
+// [INICIO DE LLAVES]: Abre el bloque de población de selectores y catálogos dinámicos
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
@@ -837,7 +838,10 @@ try {
                 poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
-
+                
+                // Inyectamos la población dinámica de la colección completa de ubigeos para el código postal
+                poblarSelectDinamicoFlex('sel-lov-codigo_postal', coleccionUbigeo, ['codigo_postal', 'centro_poblado', 'codigo_ubigeo_id']);
+// [FIN DE LLAVES]: Cierra el bloque de población de selectores dinámicos
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
 
