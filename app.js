@@ -779,7 +779,7 @@ else {
                     resUbigeo, resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
                     resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
                 ] = await Promise.all([
-                    clienteSupabase.from('ubigeo').select('*'),
+                    clienteSupabase.from('ubigeo').select('*').range(0, 2500), // <--- CAMBIO AQUÍ: Trae todos los registros sin límite de 1000
                     clienteSupabase.from('lov_tipo_propiedad').select('*'),
                     clienteSupabase.from('lov_subtipo_propiedad').select('*'),
                     clienteSupabase.from('lov_estado_propiedad').select('*'),
