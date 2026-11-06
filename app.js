@@ -156,7 +156,16 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "departamento", label: "Departamento", tipo: "text" },
             { nombre: "provincia", label: "Provincia", tipo: "text" },
             { nombre: "distrito", label: "Distrito", tipo: "text" },
-            { nombre: "codigo_postal", label: "Código Postal", tipo: "text" },
+
+            // [INICIO DE LLAVES]: Declaración del campo select para código postal en el esquema CRUD de propiedades
+            { 
+                nombre: "codigo_postal", 
+                label: "Código Postal y Centro Poblado", 
+                tipo: "select", 
+                requerido: true 
+            },
+            // [FIN DE LLAVES]: Cierra la definición del campo código postal
+
             { nombre: "latitud", label: "Latitud", tipo: "number" },
             { nombre: "longitud", label: "Longitud", tipo: "number" },
             { nombre: "geocode_precision", label: "Precisión Geocode", tipo: "text" },
