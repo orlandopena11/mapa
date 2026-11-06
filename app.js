@@ -838,9 +838,37 @@ try {
                 poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
-                
+
+    // [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento alfabético para el código postal
+{
+    const selectPostalNode = formNode.querySelector('#sel-lov-codigo_postal');
+    if (selectPostalNode && coleccionUbigeo) {
+        const valorActualPostal = String(selectPostalNode.getAttribute('data-actual') || '').trim();
+        
+        // Ordenamos alfabéticamente la colección basándonos en el centro poblado o distrito
+        const ubigeoOrdenado = [...coleccionUbigeo].sort((a, b) => {
+            const textoA = String(a.centro_poblado || a.distrito || '').toLowerCase();
+            const textoB = String(b.centro_poblado || b.distrito || '').toLowerCase();
+            return textoA.localeCompare(textoB);
+        });
+
+        let optionsPostalHtml = '<option value="">-- Seleccione Centro Poblado --</option>';
+        ubigeoOrdenado.forEach(row => {
+            const codigoPostalVal = row.codigo_postal || '';
+            const centroPobladoTexto = row.centro_poblado || row.distrito || 'Sin Nombre';
+            
+            if (codigoPostalVal) {
+                const coincide = String(codigoPostalVal).trim().toLowerCase() === valorActualPostal.toLowerCase();
+                // Muestra el Centro Poblado ordenado en pantalla, pero guarda únicamente el código postal en el value
+                optionsPostalHtml += `<option value="${codigoPostalVal}" ${coincide ? 'selected' : ''}>${centroPobladoTexto} (CP: ${codigoPostalVal})</option>`;
+            }
+        });
+        selectPostalNode.innerHTML = optionsPostalHtml;
+    }
+}
+// [FIN DE LLAVES]: Cierra el bloque de procesamiento y ordenamiento alfabético del código postal
                 // Inyectamos la población dinámica de la colección completa de ubigeos para el código postal
-                poblarSelectDinamicoFlex('sel-lov-codigo_postal', coleccionUbigeo, ['codigo_postal', 'centro_poblado', 'codigo_ubigeo_id']);
+               // poblarSelectDinamicoFlex('sel-lov-codigo_postal', coleccionUbigeo, ['codigo_postal', 'centro_poblado', 'codigo_ubigeo_id']);
 // [FIN DE LLAVES]: Cierra el bloque de población de selectores dinámicos
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
