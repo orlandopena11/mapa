@@ -4385,7 +4385,7 @@ if (formTour) {
                     cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
-                }
+               // }
             } // [CIERRE 1]: Cierra el bloque condicional del if (nombreTabla === 'propiedad') y la IIFE de carga inicial
         } // [CIERRE 2]: Cierra el bloque if/else o la función principal del submodal o la estructura interna del CRUD
     } // [CIERRE 3]: Cierra la función asíncrona abrirFormularioEdicionCrud
