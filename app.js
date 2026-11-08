@@ -1090,7 +1090,7 @@ if (caracteristicasObtenidas.length > 0) {
                            
 
                             poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
-                            selCodigoPostal.value = postalPreferido;
+                           
                         } catch (errCP) {
                             if (idConsulta !== secuenciaConsultaPostal) return;
                             console.warn("Aviso al filtrar lov_codigo_postal:", errCP);
