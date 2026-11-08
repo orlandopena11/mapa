@@ -594,7 +594,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         
 const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol_id_fk) === 1;
     camposAProcesar = camposAProcesar.filter(c => {
-        if (['departamento', 'provincia', 'distrito', 'galeria_fotos'].includes(c.nombre)) return false;
+
+        if (['departamento', 'provincia', 'distrito', 'galeria_fotos', 'estado', 'ciudad'].includes(c.nombre)) return false;
         if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
         return true;
     });
