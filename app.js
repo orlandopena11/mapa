@@ -1056,11 +1056,14 @@ if (caracteristicasObtenidas.length > 0) {
                         poblarSelectCascadaCrud(selCodigoPostal, 'Cargando centros poblados...', [], '');
 
                         try {
-                            const { data: dataPostal, error: errPostal } = await clienteSupabase
-                                .from('lov_codigo_postal')
-                                .select('codigo_postal, centro_poblado, codigo_ubigeo_id')
-                                .eq('codigo_ubigeo_id', ubigeoIdSeleccionado)
-                                .order('centro_poblado', { ascending: true });
+                        // [INICIO DE LLAVES]: Consulta paginada y segura para evitar el límite de 1000 filas en centros poblados densos
+                        const { data: dataPostal, error: errPostal } = await clienteSupabase
+                            .from('lov_codigo_postal')
+                            .select('codigo_postal, centro_poblado, codigo_ubigeo_id')
+                            .eq('codigo_ubigeo_id', ubigeoIdSeleccionado)
+                            .order('centro_poblado', { ascending: true })
+                            .range(0, 999);
+                        // [FIN DE LLAVES]: Cierra la consulta segura con rango controlado
 
                             // Si el usuario cambió de ubigeo mientras se consultaba, se descarta esta respuesta obsoleta
                             if (idConsulta !== secuenciaConsultaPostal) return;
@@ -1084,9 +1087,7 @@ if (caracteristicasObtenidas.length > 0) {
                                     texto: `${centroPobladoTexto} - ${codigoPostalVal}` 
                                 };
                             });
-                            poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
-                            // [FIN DE LLAVES]: Cierra el mapeo postal y puebla el select cascada
-                            
+                           
 
                             poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
                         } catch (errCP) {
