@@ -148,10 +148,10 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "tipo_propiedad", label: "Tipo Propiedad", tipo: "select", opciones: ['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote'] },
             { nombre: "subtipo_propiedad", label: "Subtipo Propiedad", tipo: "text" },
-            { nombre: "titulo", label: "T tulo de Anuncio", tipo: "text", requerido: true },
-            { nombre: "codigo_ubigeo_id_fk", label: "C digo Ubigeo FK", tipo: "text" },
-            { nombre: "pais", label: "Pa s", tipo: "text" },
-            { nombre: "estado", label: "Estado/Regi n", tipo: "text" },
+            { nombre: "titulo", label: "Titulo de Anuncio", tipo: "text", requerido: true },
+            { nombre: "codigo_ubigeo_id_fk", label: "Codigo Ubigeo FK", tipo: "text" },
+            { nombre: "pais", label: "Pais", tipo: "text" },
+            { nombre: "estado", label: "Estado/Region", tipo: "text" },
             { nombre: "ciudad", label: "Ciudad", tipo: "text" },
             { nombre: "departamento", label: "Departamento", tipo: "text" },
             { nombre: "provincia", label: "Provincia", tipo: "text" },
@@ -168,29 +168,29 @@ const CONFIGURACION_TABLAS_CRUD = {
 
             { nombre: "latitud", label: "Latitud", tipo: "number" },
             { nombre: "longitud", label: "Longitud", tipo: "number" },
-            { nombre: "geocode_precision", label: "Precisi n Geocode", tipo: "text" },
+            { nombre: "geocode_precision", label: "Precision Geocode", tipo: "text" },
             { nombre: "referencia_mapa", label: "Referencia Mapa", tipo: "text" },
             { nombre: "enlace_mapa", label: "Enlace Mapa", tipo: "text" },
-            { nombre: "direccion", label: "Direcci n", tipo: "text" },
-            { nombre: "descripcion", label: "Descripci n", tipo: "text" },
-            { nombre: "area_terreno", label: " rea Terreno (m )", tipo: "number" },
-            { nombre: "area_construida", label: " rea Construida (m )", tipo: "number" },
+            { nombre: "direccion", label: "Direccion", tipo: "text" },
+            { nombre: "descripcion", label: "Descripcion", tipo: "text" },
+            { nombre: "area_terreno", label: "Area Terreno (m )", tipo: "number" },
+            { nombre: "area_construida", label: "Area Construida (m )", tipo: "number" },
             { nombre: "habitaciones", label: "Habitaciones", tipo: "number" },
-            { nombre: "banos", label: "Ba os", tipo: "number" },
+            { nombre: "banos", label: "Baños", tipo: "number" },
             { nombre: "estacionamientos", label: "Estacionamientos", tipo: "number" },
-            { nombre: "ano_construccion", label: "A o Construcci n", tipo: "number" },
+            { nombre: "ano_construccion", label: "Año Construccion", tipo: "number" },
             { nombre: "estado_propiedad", label: "Estado Propiedad", tipo: "select", opciones: ['nueva', 'usada', 'en_construccion', 'remodelada'] },
             { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
             { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
-            { nombre: "galeria_fotos", label: "Galer a de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
+            { nombre: "galeria_fotos", label: "Galeria de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
             
 
-            { nombre: "estado_publicacion", label: "Estado Publicaci n", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
+            { nombre: "estado_publicacion", label: "Estado Publicacion", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
             { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
-            { nombre: "situacion_propiedad", label: "Situaci n Propiedad", tipo: "text" },
-            { nombre: "sotano", label: "S tano", tipo: "select", opciones: ['S ', 'No'] },
-            { nombre: "almacen", label: "Almac n", tipo: "select", opciones: ['S ', 'No'] },
+            { nombre: "situacion_propiedad", label: "Situacion Propiedad", tipo: "text" },
+            { nombre: "sotano", label: "Sotano", tipo: "select", opciones: ['S ', 'No'] },
+            { nombre: "almacen", label: "Almacen", tipo: "select", opciones: ['S ', 'No'] },
             { nombre: "vista", label: "Vista", tipo: "text" }
         ]
     },
@@ -198,7 +198,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         titulo: "Caracter sticas de Propiedad",
         pk: "caracteristica_id",
         campos: [
-            { nombre: "caracteristica_id", label: "ID Caracter stica", tipo: "text", requerido: true },
+            { nombre: "caracteristica_id", label: "ID Caracteristica", tipo: "text", requerido: true },
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "nombre_caracteristica", label: "Nombre (Ej: Piscina, Parrilla)", tipo: "text", requerido: true },
             { nombre: "valor_caracteristica", label: "Valor", tipo: "text" },
@@ -213,7 +213,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "agente_id_fk", label: "ID Agente FK", tipo: "text" },
-            { nombre: "fecha_publicacion", label: "Fecha Publicaci n", tipo: "date" },
+            { nombre: "fecha_publicacion", label: "Fecha Publicacion", tipo: "date" },
             { nombre: "estado_anuncio", label: "Estado Anuncio", tipo: "select", opciones: ['activo', 'inactivo', 'pausado'] }
         ]
     },
@@ -223,8 +223,8 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "nombre", label: "Nombre", tipo: "text", requerido: true },
             { nombre: "apellido", label: "Apellido", tipo: "text", requerido: true },
-            { nombre: "correo", label: "Correo Electr nico", tipo: "email", requerido: true },
-            { nombre: "telefono_agente", label: "Tel fono Agente", tipo: "text" },
+            { nombre: "correo", label: "Correo Electronico", tipo: "email", requerido: true },
+            { nombre: "telefono_agente", label: "Telefono Agente", tipo: "text" },
             { nombre: "prioridad", label: "Prioridad", tipo: "number" },
             { nombre: "leads", label: "M ximo Leads", tipo: "number" },
             { nombre: "leads_recibidos", label: "Leads Recibidos", tipo: "number" }
@@ -236,8 +236,8 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "nombre", label: "Nombre", tipo: "text", requerido: true },
             { nombre: "apellido", label: "Apellido", tipo: "text", requerido: true },
-            { nombre: "correo", label: "Correo Electr nico", tipo: "email", requerido: true },
-            { nombre: "telefono", label: "Tel fono", tipo: "text" },
+            { nombre: "correo", label: "Correo Electronico", tipo: "email", requerido: true },
+            { nombre: "telefono", label: "Telefono", tipo: "text" },
             { nombre: "rol_id_fk", label: "Rol (1:Admin, 2:Agente, 3:Usuario)", tipo: "number", requerido: true },
             { nombre: "estado_cuenta", label: "Estado Cuenta", tipo: "select", opciones: ['activo', 'pendiente', 'suspendido'] }
         ]
@@ -248,7 +248,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "nombre_visita", label: "Nombre Interesado", tipo: "text", requerido: true },
-            { nombre: "telefono", label: "Tel fono", tipo: "text" },
+            { nombre: "telefono", label: "Telefono", tipo: "text" },
             { nombre: "fecha_visita", label: "Fecha/Hora Visita", tipo: "text" },
             { nombre: "estado_visita", label: "Estado Visita", tipo: "select", opciones: ['pendiente', 'confirmada', 'cancelada', 'completada'] },
             { nombre: "estado_lead", label: "Estado Lead", tipo: "select", opciones: ['nuevo', 'contactado', 'en_proceso', 'cerrado'] }
@@ -260,7 +260,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "precio_propiedad", label: "Precio Propiedad ($)", tipo: "number" },
-            { nombre: "monto_prestamo", label: "Monto Pr stamo ($)", tipo: "number" },
+            { nombre: "monto_prestamo", label: "Monto Prestamo ($)", tipo: "number" },
             { nombre: "pago_mensual_estimated", label: "Cuota Estimada ($)", tipo: "number" },
             { nombre: "plazo_meses", label: "Plazo Meses", tipo: "number" },
             { nombre: "tasa_tea", label: "Tasa TEA", tipo: "number" }
