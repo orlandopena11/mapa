@@ -4361,6 +4361,22 @@ if (formTour) {
 
                         ejecutarRecalculoHipoteca();
                     }
+                //} catch (errLOV) {
+                //    console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
+                //    cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
+                //    cPlazo.innerHTML = '<option value="20">20 Años</option>';
+                //    cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
+                //    cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
+                //    cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
+                //    ejecutarRecalculoHipoteca();
+                //}
+            
+// }); // Cierra el DOMContentLoaded del archivo
+
+         //   }; // Cierra el DOMContentLoaded del archivo
+
+    //} 
+ //)
                 } catch (errLOV) {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                     cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
@@ -4370,10 +4386,7 @@ if (formTour) {
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
                 }
-            
-// }); // Cierra el DOMContentLoaded del archivo
-
-         //   }; // Cierra el DOMContentLoaded del archivo
-
-    } 
- )
+            } // [CIERRE 1]: Cierra el bloque condicional del if (nombreTabla === 'propiedad') y la IIFE de carga inicial
+        } // [CIERRE 2]: Cierra el bloque if/else o la función principal del submodal o la estructura interna del CRUD
+    } // [CIERRE 3]: Cierra la función asíncrona abrirFormularioEdicionCrud
+} // [CIERRE 4]: Cierra la función inyectarCapacidadCompraZillow (fin del archivo app.js)
