@@ -886,6 +886,12 @@ try {
 
         // Escuchamos cuando cambie el código de ubigeo principal para refrescar el combo postal
         selectUbigeoIdNode.addEventListener('change', actualizarCodigosPostalesPorUbigeo);
+        
+        // [INICIO DE LLAVES]: Evalúa y fuerza la ejecución inmediata del filtrado postal si el ubigeo ya cuenta con un valor asignado
+        if (selectUbigeoIdNode && selectUbigeoIdNode.value) {
+            actualizarCodigosPostalesPorUbigeo();
+        }
+        // [FIN DE LLAVES]: Cierra el disparador condicional de seguridad para la carga de centros poblados
 
         // Si ya hay un ubigeo seleccionado al abrir el formulario (modo edición), cargamos sus postales de inmediato
         if (selectUbigeoIdNode.value) {
@@ -1078,14 +1084,10 @@ if (caracteristicasObtenidas.length > 0) {
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
 
-/**
- * Descripción: Asigna el identificador place_id único de la geocodificación 
- * en lugar del tipo descriptivo de OpenStreetMap.
- */
-// [INICIO DE LLAVES]: Asignación limpia del place_id para geocode_precision
-                                const placeIdNominatim = dataGeo[0].place_id ? String(dataGeo[0].place_id) : "exacta_nominatim";
-                                if (inputPrec) inputPrec.value = placeIdNominatim;
-// [FIN DE LLAVES]: Cierra la asignación de precisión de geocodificación
+                                // [INICIO DE LLAVES]: Asigna el tipo de texto descriptivo (ej. residential, building) devuelto por Nominatim en lugar del ID numérico
+                                const tipoPrecisionTexto = dataGeo[0].type ? String(dataGeo[0].type) : "exacta_nominatim";
+                                if (inputPrec) inputPrec.value = tipoPrecisionTexto;
+                                // [FIN DE LLAVES]: Cierra la asignación de la precisión basada en texto descriptivo
 
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
