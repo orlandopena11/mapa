@@ -4373,7 +4373,7 @@ if (formTour) {
             
 // }); // Cierra el DOMContentLoaded del archivo
 
-            }; // Cierra el DOMContentLoaded del archivo
+         //   }; // Cierra el DOMContentLoaded del archivo
 
-} 
-)
+    } 
+        // )
