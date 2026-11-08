@@ -1008,14 +1008,28 @@ if (caracteristicasObtenidas.length > 0) {
                         
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + dists.map(d => `<option value="${d.distrito}" ${d.distrito === actualDist ? 'selected' : ''}>${d.distrito}</option>`).join('');
                         
-                        let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
-                        dists.forEach(u => {
-                            const coincide = String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
-                            optsCodigo += `<option value="${u.codigo_ubigeo_id}" ${coincide ? 'selected' : ''}>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
-                        });
-                        selCodigoUbigeo.innerHTML = optsCodigo;
-                    };
+                    // [INICIO DE LLAVES]: Asignación limpia y automática del código ubigeo único por distrito seleccionado con traza espía
+                    console.group("?? [SRE ESPÍA UBIGEO] === FILTRANDO DISTRITO Y UBIGEO ===");
+                    let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
 
+                    // Si al filtrar por departamento y provincia solo queda un distrito (o el usuario seleccionó uno), 
+                    // lo fijamos de forma limpia y automática para evitar mostrar toda la lista de Lima.
+                    dists.forEach(u => {
+                        const coincide = String(u.distrito).trim().toLowerCase() === String(selDist.value).trim().toLowerCase() ||
+                                         String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
+    
+                        if (coincide) {
+                            optsCodigo += `<option value="${u.codigo_ubigeo_id}" selected>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
+                            selCodigoUbigeo.value = u.codigo_ubigeo_id; // Forzamos el valor seleccionado de forma automática
+                            console.log("? Ubigeo auto-fijado con éxito:", u.codigo_ubigeo_id, "-", u.distrito);
+                        } else {
+                            optsCodigo += `<option value="${u.codigo_ubigeo_id}">${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
+                        }
+                    });
+                    selCodigoUbigeo.innerHTML = optsCodigo;
+                    console.groupEnd();
+                    // [FIN DE LLAVES]: Cierra la asignación automática y el espía de ubigeo
+                        
                     selDep.onchange = () => {
                         selProv.removeAttribute('data-actual');
                         selDist.removeAttribute('data-actual');
