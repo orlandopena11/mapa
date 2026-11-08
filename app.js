@@ -1043,12 +1043,36 @@ if (caracteristicasObtenidas.length > 0) {
                         actualizarDistritosYUbigeo();
                     };
 
+                    // [INICIO DE LLAVES]: Captura el cambio de distrito, autoselecciona de forma limpia el código de ubigeo y añade traza espía para auditoría en consola
                     selDist.onchange = () => {
+                        console.group(">> [SRE ESPÍA UBIGEO] === SELECCIONANDO DISTRITO ===");
+                        console.log("Distrito seleccionado:", selDist.value);
+
                         const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
-                        if (match) {
-                            selCodigoUbigeo.value = match.codigo_ubigeo_id;
+                        
+                        let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                        
+                        coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value).forEach(u => {
+                            const coincide = (match && String(u.codigo_ubigeo_id) === String(match.codigo_ubigeo_id)) ||
+                                             String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
+                            
+                            if (coincide) {
+                                optsCodigo += `<option value="${u.codigo_ubigeo_id}" selected>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
+                                selCodigoUbigeo.value = u.codigo_ubigeo_id;
+                                console.log(">> Ubigeo auto-fijado:", u.codigo_ubigeo_id, "-", u.distrito);
+                            } else {
+                                optsCodigo += `<option value="${u.codigo_ubigeo_id}">${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
+                            }
+                        });
+                        
+                        selCodigoUbigeo.innerHTML = optsCodigo;
+                        console.groupEnd();
+
+                        if (typeof actualizarCodigosPostalesPorUbigeo === "function") {
+                            actualizarCodigosPostalesPorUbigeo();
                         }
                     };
+                    // [FIN DE LLAVES]: Cierra la función de selección de distrito, auto-fijado de ubigeo y consola espía
 
                     if (selDep.value) {
                         actualizarProvincias();
