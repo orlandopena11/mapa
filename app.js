@@ -1075,11 +1075,18 @@ if (caracteristicasObtenidas.length > 0) {
                                 return;
                             }
 
+                            // [INICIO DE LLAVES]: Mapeo optimizado de centros poblados y códigos postales para el selector dinámico CRUD
                             const opcionesPostal = filasValidas.map(row => {
                                 const codigoPostalVal = String(row.codigo_postal).trim();
                                 const centroPobladoTexto = row.centro_poblado || 'Sin Nombre';
-                                return { valor: codigoPostalVal, texto: `${centroPobladoTexto} (CP: ${codigoPostalVal})` };
+                                return { 
+                                    valor: codigoPostalVal, 
+                                    texto: `${centroPobladoTexto} - ${codigoPostalVal}` 
+                                };
                             });
+                            poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
+                            // [FIN DE LLAVES]: Cierra el mapeo postal y puebla el select cascada
+                            
 
                             poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
                         } catch (errCP) {
