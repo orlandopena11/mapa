@@ -1211,12 +1211,14 @@ if (caracteristicasObtenidas.length > 0) {
 
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
-
-                                // [INICIO DE LLAVES]: Asigna el tipo de texto descriptivo (ej. residential, building) devuelto por Nominatim en lugar del ID num rico
-                                const tipoPrecisionTexto = dataGeo[0].type ? String(dataGeo[0].type) : "exacta_nominatim";
-                                if (inputPrec) inputPrec.value = tipoPrecisionTexto;
-                                // [FIN DE LLAVES]: Cierra la asignaci n de la precisi n basada en texto descriptivo
-
+                                
+                            // [INICIO DE LLAVES]: Asignación limpia y formateada de la precisión geocodificada basada en texto descriptivo de Nominatim
+                            const rawType = dataGeo[0].type ? String(dataGeo[0].type).trim() : "exacta";
+                            const rawClass = dataGeo[0].class ? String(dataGeo[0].class).trim() : "osm";
+                            const tipoPrecisionTexto = `${rawClass.toUpperCase()} Type: ${rawType}`;
+                            if (inputPrec) inputPrec.value = tipoPrecisionTexto;
+                            // [FIN DE LLAVES]: Cierra la asignación de la precisión basada en texto descriptivo
+                                
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
