@@ -1220,9 +1220,9 @@ if (caracteristicasObtenidas.length > 0) {
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
-                                alert(" Coordenadas y mapa calculados con  xito basados en la direcci n exacta!");
+                                alert(" Coordenadas y mapa calculados con exito basados en la direccion exacta!");
                             } else {
-                                alert("No se hallaron coordenadas exactas para esta direcci n espec fica.");
+                                alert("No se hallaron coordenadas exactas para esta direccion especifica.");
                             }
                         } catch (errGeo) {
                             console.error("Error en geocodificaci n:", errGeo);
@@ -1411,7 +1411,7 @@ payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
             const { data, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
             if (error) throw error;
 
-            alert(" Propiedad, anuncios, fotos y caracter sticas guardadas de forma at mica en la base de datos!");
+            alert(" Propiedad, anuncios, fotos y caracteristicas guardadas de forma atomica en la base de datos!");
         } else {
             // Comportamiento est ndar directo para las dem s tablas del sistema CRUD
             if (esEdicion) {
@@ -2549,7 +2549,7 @@ const ajustarLayoutMovilDinamico = () => {
                             };
 
                             if (estadoActual === 'pendiente') {
-                                alert(" Cuenta verificada exitosamente! Su correo electr nico ha sido confirmado. Ya puede usar todas las funciones premium.");
+                                alert(" Cuenta verificada exitosamente! Su correo electronico ha sido confirmado. Ya puede usar todas las funciones premium.");
                                 console.log(">> [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
                             } else {
                                 console.log(`> [SRE AUTH] Sesi n tradicional restaurada con  xito. Estado: ${estadoActual.toUpperCase()}`);
@@ -3676,7 +3676,7 @@ if (formAgente) {
             } // [FIN DE LLAVE]: Cierra evaluaci n de correo del agente
             
 
-            alert(" Mensaje enviado con  xito! Su requerimiento fue asignado al agente inmobiliario.");
+            alert(" Mensaje enviado con  exito! Su requerimiento fue asignado al agente inmobiliario.");
             cerrarPopupAccion('modal-agent-comercial');
             formAgente.reset();
 
@@ -4378,7 +4378,7 @@ if (formTour) {
 
                         if (error) throw error;
 
-                        alert(" Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en d lares y el documento oficial PDF est  en camino a tu bandeja de correo registrado.");
+                        alert(" Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dolares y el documento oficial PDF esta en camino a tu bandeja de correo registrado.");
                         btnGuardar.innerText = "Cronograma Enviado Exitosamente";
                         btnGuardar.style.background = "#002E50";
                         btnGuardar.style.color = "#FFB91D";
