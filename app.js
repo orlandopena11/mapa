@@ -1068,9 +1068,11 @@ if (caracteristicasObtenidas.length > 0) {
                         selCodigoUbigeo.innerHTML = optsCodigo;
                         console.groupEnd();
 
-                        if (typeof actualizarCodigosPostalesPorUbigeo === "function") {
-                            actualizarCodigosPostalesPorUbigeo();
+                        // [INICIO DE LLAVES]: Dispara el evento change de forma segura sobre el ubigeo para activar la carga postal sin problemas de ámbito
+                        if (selCodigoUbigeo.value) {
+                            selCodigoUbigeo.dispatchEvent(new Event('change'));
                         }
+                        // [FIN DE LLAVES]: Cierra el disparador seguro del evento postal
                     };
                     // [FIN DE LLAVES]: Cierra la función de selección de distrito, auto-fijado de ubigeo y consola espía
 
