@@ -31,13 +31,13 @@ const state = {
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
     limpiadoresDOM: new Map()
-}; // Fin de asignación del objeto global state
+}; // Fin de asignaci�n del objeto global state
 
 
 // ==========================================================================
-// CONTROLADOR DINÁMICO DE SESIÓN, BOTÓN LOGUEO Y ROLES MEDIANTE RPC
+// CONTROLADOR DIN�MICO DE SESI�N, BOT�N LOGUEO Y ROLES MEDIANTE RPC
 // ==========================================================================
-// [INICIO DE LLAVES]: Abre la función asíncrona actualizarBotonCuenta
+// [INICIO DE LLAVES]: Abre la funci�n as�ncrona actualizarBotonCuenta
 async function actualizarBotonCuenta() { 
     const navbar = document.querySelector('header.navbar-global');
     if (!navbar) return;
@@ -45,7 +45,7 @@ async function actualizarBotonCuenta() {
     let indicador = document.getElementById('user-session-badge');
     const btnOpenLogin = document.getElementById('btn-open-login');
 
-    // [INICIO DE LLAVES]: Control condicional de visibilidad según estado de autenticación
+    // [INICIO DE LLAVES]: Control condicional de visibilidad seg�n estado de autenticaci�n
     if (window.usuarioLogueado) {
         if (btnOpenLogin) btnOpenLogin.style.display = 'none';
 
@@ -72,7 +72,7 @@ async function actualizarBotonCuenta() {
     } else {
         if (indicador) indicador.style.display = 'none';
         if (btnOpenLogin) btnOpenLogin.style.display = 'block';
-    } // [FIN DE LLAVES]: Cierra el bloque condicional de autenticación visual
+    } // [FIN DE LLAVES]: Cierra el bloque condicional de autenticaci�n visual
 
     if (indicador && window.usuarioLogueado) {
         // [INICIO DE LLAVES]: Bloque de procesamiento de datos y llamada RPC de permisos
@@ -103,32 +103,32 @@ async function actualizarBotonCuenta() {
 
         let htmlContenido = `
             <span title="${window.usuarioLogueado.email}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                👤 ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
+                ?? ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
             </span>
         `;
 
-        // [INICIO DE LLAVES]: Condición para inyectar acceso al panel de mantenimiento si tiene permisos
+        // [INICIO DE LLAVES]: Condici�n para inyectar acceso al panel de mantenimiento si tiene permisos
         if (puedeCrud) {
             htmlContenido += `
                 <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
-                    ⚙️ Mantenimiento
+                    ?? Mantenimiento
                 </a>
             `;
-        } // [FIN DE LLAVES]: Cierra la condición de inyección del enlace CRUD
+        } // [FIN DE LLAVES]: Cierra la condici�n de inyecci�n del enlace CRUD
 
         indicador.innerHTML = htmlContenido;
         indicador.style.display = 'flex';
 
         const btnCrud = document.getElementById('link-crud-propiedades');
-        // [INICIO DE LLAVES]: Asignación de evento de clic al botón de mantenimiento CRUD
+        // [INICIO DE LLAVES]: Asignaci�n de evento de clic al bot�n de mantenimiento CRUD
         if (btnCrud) {
             btnCrud.onclick = (e) => {
                 e.preventDefault();
                 ejecutarPanelMantenimientoCrud(rolTexto);
             };
-        } // [FIN DE LLAVES]: Cierra la asignación del evento onclick
-    } // [FIN DE LLAVES]: Cierra la condición principal de indicador con usuario activo
-} // [FIN DE LLAVES]: Cierra la función asíncrona actualizarBotonCuenta
+        } // [FIN DE LLAVES]: Cierra la asignaci�n del evento onclick
+    } // [FIN DE LLAVES]: Cierra la condici�n principal de indicador con usuario activo
+} // [FIN DE LLAVES]: Cierra la funci�n as�ncrona actualizarBotonCuenta
 
 
 // ==========================================================================
@@ -136,7 +136,7 @@ async function actualizarBotonCuenta() {
 // ==========================================================================
 
 /**
- * Mapeo completo de configuración para las 7 tablas del sistema,
+ * Mapeo completo de configuraci�n para las 7 tablas del sistema,
  * reflejando fielmente las columnas exactas de la base de datos en Supabase.
  */
 const CONFIGURACION_TABLAS_CRUD = {
@@ -148,57 +148,57 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "tipo_propiedad", label: "Tipo Propiedad", tipo: "select", opciones: ['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote'] },
             { nombre: "subtipo_propiedad", label: "Subtipo Propiedad", tipo: "text" },
-            { nombre: "titulo", label: "Título de Anuncio", tipo: "text", requerido: true },
-            { nombre: "codigo_ubigeo_id_fk", label: "Código Ubigeo FK", tipo: "text" },
-            { nombre: "pais", label: "País", tipo: "text" },
-            { nombre: "estado", label: "Estado/Región", tipo: "text" },
+            { nombre: "titulo", label: "T�tulo de Anuncio", tipo: "text", requerido: true },
+            { nombre: "codigo_ubigeo_id_fk", label: "C�digo Ubigeo FK", tipo: "text" },
+            { nombre: "pais", label: "Pa�s", tipo: "text" },
+            { nombre: "estado", label: "Estado/Regi�n", tipo: "text" },
             { nombre: "ciudad", label: "Ciudad", tipo: "text" },
             { nombre: "departamento", label: "Departamento", tipo: "text" },
             { nombre: "provincia", label: "Provincia", tipo: "text" },
             { nombre: "distrito", label: "Distrito", tipo: "text" },
 
-            // [INICIO DE LLAVES]: Declaración del campo select para código postal en el esquema CRUD de propiedades
+            // [INICIO DE LLAVES]: Declaraci�n del campo select para c�digo postal en el esquema CRUD de propiedades
             { 
                 nombre: "codigo_postal", 
-                label: "Código Postal y Centro Poblado", 
+                label: "C�digo Postal y Centro Poblado", 
                 tipo: "select", 
                 requerido: true 
             },
-            // [FIN DE LLAVES]: Cierra la definición del campo código postal
+            // [FIN DE LLAVES]: Cierra la definici�n del campo c�digo postal
 
             { nombre: "latitud", label: "Latitud", tipo: "number" },
             { nombre: "longitud", label: "Longitud", tipo: "number" },
-            { nombre: "geocode_precision", label: "Precisión Geocode", tipo: "text" },
+            { nombre: "geocode_precision", label: "Precisi�n Geocode", tipo: "text" },
             { nombre: "referencia_mapa", label: "Referencia Mapa", tipo: "text" },
             { nombre: "enlace_mapa", label: "Enlace Mapa", tipo: "text" },
-            { nombre: "direccion", label: "Dirección", tipo: "text" },
-            { nombre: "descripcion", label: "Descripción", tipo: "text" },
-            { nombre: "area_terreno", label: "Área Terreno (m²)", tipo: "number" },
-            { nombre: "area_construida", label: "Área Construida (m²)", tipo: "number" },
+            { nombre: "direccion", label: "Direcci�n", tipo: "text" },
+            { nombre: "descripcion", label: "Descripci�n", tipo: "text" },
+            { nombre: "area_terreno", label: "�rea Terreno (m�)", tipo: "number" },
+            { nombre: "area_construida", label: "�rea Construida (m�)", tipo: "number" },
             { nombre: "habitaciones", label: "Habitaciones", tipo: "number" },
-            { nombre: "banos", label: "Baños", tipo: "number" },
+            { nombre: "banos", label: "Ba�os", tipo: "number" },
             { nombre: "estacionamientos", label: "Estacionamientos", tipo: "number" },
-            { nombre: "ano_construccion", label: "Año Construcción", tipo: "number" },
+            { nombre: "ano_construccion", label: "A�o Construcci�n", tipo: "number" },
             { nombre: "estado_propiedad", label: "Estado Propiedad", tipo: "select", opciones: ['nueva', 'usada', 'en_construccion', 'remodelada'] },
             { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
             { nombre: "foto_principal", label: "Foto Principal (Ej: principal.jpg)", tipo: "text" },
-            { nombre: "galeria_fotos", label: "Galería de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
+            { nombre: "galeria_fotos", label: "Galer�a de Fotos (Nombres separados por comas o URLs)", tipo: "text" },
             
 
-            { nombre: "estado_publicacion", label: "Estado Publicación", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
+            { nombre: "estado_publicacion", label: "Estado Publicaci�n", tipo: "select", opciones: ['disponible', 'vendida', 'alquilada', 'reservada'] },
             { nombre: "cuota_mantenimiento", label: "Cuota Mantenimiento", tipo: "number" },
-            { nombre: "situacion_propiedad", label: "Situación Propiedad", tipo: "text" },
-            { nombre: "sotano", label: "Sótano", tipo: "select", opciones: ['Sí', 'No'] },
-            { nombre: "almacen", label: "Almacén", tipo: "select", opciones: ['Sí', 'No'] },
+            { nombre: "situacion_propiedad", label: "Situaci�n Propiedad", tipo: "text" },
+            { nombre: "sotano", label: "S�tano", tipo: "select", opciones: ['S�', 'No'] },
+            { nombre: "almacen", label: "Almac�n", tipo: "select", opciones: ['S�', 'No'] },
             { nombre: "vista", label: "Vista", tipo: "text" }
         ]
     },
     caracteristica_propiedad: {
-        titulo: "Características de Propiedad",
+        titulo: "Caracter�sticas de Propiedad",
         pk: "caracteristica_id",
         campos: [
-            { nombre: "caracteristica_id", label: "ID Característica", tipo: "text", requerido: true },
+            { nombre: "caracteristica_id", label: "ID Caracter�stica", tipo: "text", requerido: true },
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "nombre_caracteristica", label: "Nombre (Ej: Piscina, Parrilla)", tipo: "text", requerido: true },
             { nombre: "valor_caracteristica", label: "Valor", tipo: "text" },
@@ -213,7 +213,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "agente_id_fk", label: "ID Agente FK", tipo: "text" },
-            { nombre: "fecha_publicacion", label: "Fecha Publicación", tipo: "date" },
+            { nombre: "fecha_publicacion", label: "Fecha Publicaci�n", tipo: "date" },
             { nombre: "estado_anuncio", label: "Estado Anuncio", tipo: "select", opciones: ['activo', 'inactivo', 'pausado'] }
         ]
     },
@@ -223,10 +223,10 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "nombre", label: "Nombre", tipo: "text", requerido: true },
             { nombre: "apellido", label: "Apellido", tipo: "text", requerido: true },
-            { nombre: "correo", label: "Correo Electrónico", tipo: "email", requerido: true },
-            { nombre: "telefono_agente", label: "Teléfono Agente", tipo: "text" },
+            { nombre: "correo", label: "Correo Electr�nico", tipo: "email", requerido: true },
+            { nombre: "telefono_agente", label: "Tel�fono Agente", tipo: "text" },
             { nombre: "prioridad", label: "Prioridad", tipo: "number" },
-            { nombre: "leads", label: "Máximo Leads", tipo: "number" },
+            { nombre: "leads", label: "M�ximo Leads", tipo: "number" },
             { nombre: "leads_recibidos", label: "Leads Recibidos", tipo: "number" }
         ]
     },
@@ -236,8 +236,8 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "nombre", label: "Nombre", tipo: "text", requerido: true },
             { nombre: "apellido", label: "Apellido", tipo: "text", requerido: true },
-            { nombre: "correo", label: "Correo Electrónico", tipo: "email", requerido: true },
-            { nombre: "telefono", label: "Teléfono", tipo: "text" },
+            { nombre: "correo", label: "Correo Electr�nico", tipo: "email", requerido: true },
+            { nombre: "telefono", label: "Tel�fono", tipo: "text" },
             { nombre: "rol_id_fk", label: "Rol (1:Admin, 2:Agente, 3:Usuario)", tipo: "number", requerido: true },
             { nombre: "estado_cuenta", label: "Estado Cuenta", tipo: "select", opciones: ['activo', 'pendiente', 'suspendido'] }
         ]
@@ -248,7 +248,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "nombre_visita", label: "Nombre Interesado", tipo: "text", requerido: true },
-            { nombre: "telefono", label: "Teléfono", tipo: "text" },
+            { nombre: "telefono", label: "Tel�fono", tipo: "text" },
             { nombre: "fecha_visita", label: "Fecha/Hora Visita", tipo: "text" },
             { nombre: "estado_visita", label: "Estado Visita", tipo: "select", opciones: ['pendiente', 'confirmada', 'cancelada', 'completada'] },
             { nombre: "estado_lead", label: "Estado Lead", tipo: "select", opciones: ['nuevo', 'contactado', 'en_proceso', 'cerrado'] }
@@ -260,7 +260,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         campos: [
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "precio_propiedad", label: "Precio Propiedad ($)", tipo: "number" },
-            { nombre: "monto_prestamo", label: "Monto Préstamo ($)", tipo: "number" },
+            { nombre: "monto_prestamo", label: "Monto Pr�stamo ($)", tipo: "number" },
             { nombre: "pago_mensual_estimated", label: "Cuota Estimada ($)", tipo: "number" },
             { nombre: "plazo_meses", label: "Plazo Meses", tipo: "number" },
             { nombre: "tasa_tea", label: "Tasa TEA", tipo: "number" }
@@ -271,9 +271,9 @@ const CONFIGURACION_TABLAS_CRUD = {
 let tablaCrudActiva = "propiedad";
 
 /**
- * Descripción de la función: ejecutarPanelMantenimientoCrud valida permisos e inicializa la interfaz CRUD.
+ * Descripci�n de la funci�n: ejecutarPanelMantenimientoCrud valida permisos e inicializa la interfaz CRUD.
  */
-// [INICIO DE LLAVES]: Abre la función principal ejecutarPanelMantenimientoCrud
+// [INICIO DE LLAVES]: Abre la funci�n principal ejecutarPanelMantenimientoCrud
 async function ejecutarPanelMantenimientoCrud(rol) {
     const permisos = state.usuarioPermisos || {};
     
@@ -281,7 +281,7 @@ async function ejecutarPanelMantenimientoCrud(rol) {
     if (!permisos.permiso_insertar && !permisos.permiso_modificar) {
         alert("Su rol actual no cuenta con privilegios de escritura sobre las tablas del sistema.");
         return;
-    } // [FIN DE LLAVES]: Cierra validación de permisos
+    } // [FIN DE LLAVES]: Cierra validaci�n de permisos
 
     let modalCrud = document.getElementById('modal-mantenimiento-crud-sre');
     // [INICIO DE LLAVES]: Crea el contenedor modal si no existe
@@ -294,7 +294,7 @@ async function ejecutarPanelMantenimientoCrud(rol) {
             align-items: center; justify-content: center; font-family: sans-serif;
         `;
         document.body.appendChild(modalCrud);
-    } // [FIN DE LLAVES]: Cierra creación del modal
+    } // [FIN DE LLAVES]: Cierra creaci�n del modal
 
     modalCrud.innerHTML = `
         <div style="background: #ffffff; width: 94%; max-width: 1240px; height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.4);">
@@ -303,7 +303,7 @@ async function ejecutarPanelMantenimientoCrud(rol) {
                     <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Panel de Mantenimiento CRUD</h3>
                     <span style="font-size: 12px; color: #FFB91D; font-weight: 600;">Rango Autorizado: ${rol.toUpperCase()}</span>
                 </div>
-                <button id="btn-cerrar-crud-modal" style="background: transparent; border: none; color: #ffffff; font-size: 24px; cursor: pointer; font-weight: bold;">✕</button>
+                <button id="btn-cerrar-crud-modal" style="background: transparent; border: none; color: #ffffff; font-size: 24px; cursor: pointer; font-weight: bold;">?</button>
             </div>
 
             <div style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1; padding: 10px 24px; display: flex; gap: 8px; overflow-x: auto;">
@@ -336,7 +336,7 @@ async function ejecutarPanelMantenimientoCrud(rol) {
         modalCrud.style.display = 'none';
     };
 
-    // [INICIO DE LLAVES]: Asigna eventos a pestañas
+    // [INICIO DE LLAVES]: Asigna eventos a pesta�as
     modalCrud.querySelectorAll('.btn-tab-crud').forEach(btn => {
         btn.onclick = (e) => {
             // [INICIO DE LLAVES]: Cambia la tabla activa
@@ -350,19 +350,19 @@ async function ejecutarPanelMantenimientoCrud(rol) {
             document.getElementById('titulo-tabla-crud').innerText = CONFIGURACION_TABLAS_CRUD[tablaCrudActiva].titulo;
             cargarDatosTablaCrud(tablaCrudActiva);
         }; // [FIN DE LLAVES]: Cierra callback
-    }); // [FIN DE LLAVES]: Cierra bucle de pestañas
+    }); // [FIN DE LLAVES]: Cierra bucle de pesta�as
 
     const btnNuevo = document.getElementById('btn-nuevo-registro-crud');
-    // [INICIO DE LLAVES]: Valida botón nuevo
+    // [INICIO DE LLAVES]: Valida bot�n nuevo
     if (btnNuevo) {
         btnNuevo.onclick = () => abrirFormularioEdicionCrud(tablaCrudActiva, null);
-    } // [FIN DE LLAVES]: Cierra validación
+    } // [FIN DE LLAVES]: Cierra validaci�n
 
     await cargarDatosTablaCrud(tablaCrudActiva);
 } // [FIN DE LLAVES]: Cierra ejecutarPanelMantenimientoCrud
 
 /**
- * Descripción de la función: cargarDatosTablaCrud consulta y renderiza la tabla en pantalla.
+ * Descripci�n de la funci�n: cargarDatosTablaCrud consulta y renderiza la tabla en pantalla.
  */
 // [INICIO DE LLAVES]: Abre cargarDatosTablaCrud
 async function cargarDatosTablaCrud(nombreTabla) {
@@ -381,7 +381,7 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
         if (error) throw error;
 
-        // [INICIO DE LLAVE]: Tubería asíncrona para inyectar fotos extras en la rejilla principal del CRUD
+        // [INICIO DE LLAVE]: Tuber�a as�ncrona para inyectar fotos extras en la rejilla principal del CRUD
         if (nombreTabla === 'propiedad' && data && data.length > 0) {
             try {
                 // Consultamos de golpe todas las fotos de las propiedades cargadas en la rejilla
@@ -409,14 +409,14 @@ async function cargarDatosTablaCrud(nombreTabla) {
             } catch (errGridFotos) {
                 console.warn("No se pudieron pre-cargar las fotos secundarias para la rejilla:", errGridFotos);
             }
-        } // [FIN DE LLAVE]: Cierra la inyección multimedia para la tabla principal
+        } // [FIN DE LLAVE]: Cierra la inyecci�n multimedia para la tabla principal
 
 
-        // [INICIO DE LLAVES]: Valida datos vacíos
+        // [INICIO DE LLAVES]: Valida datos vac�os
         if (!data || data.length === 0) {
             contenedor.innerHTML = `<p style="text-align: center; color: #64748b; padding: 40px;">No existen registros registrados en esta tabla actualmente.</p>`;
             return;
-        } // [FIN DE LLAVES]: Cierra validación
+        } // [FIN DE LLAVES]: Cierra validaci�n
 
         const permisos = state.usuarioPermisos || {};
 
@@ -460,9 +460,9 @@ async function cargarDatosTablaCrud(nombreTabla) {
         // [INICIO DE LLAVES]: Asigna eventos a botones de eliminar fila
         contenedor.querySelectorAll('.btn-delete-crud').forEach(btn => {
             btn.onclick = async () => {
-                // [INICIO DE LLAVES]: Confirma eliminación
+                // [INICIO DE LLAVES]: Confirma eliminaci�n
                 const idRegistro = btn.getAttribute('data-id');
-                if (confirm(`¿Confirma eliminar el registro con ID: ${idRegistro} de la tabla ${nombreTabla}?`)) {
+                if (confirm(`�Confirma eliminar el registro con ID: ${idRegistro} de la tabla ${nombreTabla}?`)) {
                     await eliminarRegistroCrud(nombreTabla, conf.pk, idRegistro);
                 }
             }; // [FIN DE LLAVES]: Cierra callback
@@ -475,21 +475,21 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción de la función: abrirFormularioEdicionCrud genera dinámicamente el submodal del CRUD,
- * resuelve de forma inteligente los datos geográficos por Ubigeo en modo edición, popula correctamente
- * las características desde "lov_caracteristica" y gestiona su almacenamiento en "caracteristica_propiedad".
+ * Descripci�n de la funci�n: abrirFormularioEdicionCrud genera din�micamente el submodal del CRUD,
+ * resuelve de forma inteligente los datos geogr�ficos por Ubigeo en modo edici�n, popula correctamente
+ * las caracter�sticas desde "lov_caracteristica" y gestiona su almacenamiento en "caracteristica_propiedad".
  */
 async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const conf = CONFIGURACION_TABLAS_CRUD[nombreTabla];
     const esEdicion = datosFila !== null;
 
-    console.group(`?? [SRE ESPÍA CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
+    console.group(`?? [SRE ESP�A CRUD] === ABRIENDO FORMULARIO (${nombreTabla.toUpperCase()}) ===`);
 
     let fotosSecundariasObtenidas = [];
     let caracteristicasObtenidas = [];
     let ubigeoActualInfo = { departamento: '', provincia: '', distrito: '' };
 
-    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos, características e info de ubigeo si es edición de propiedad
+    // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos, caracter�sticas e info de ubigeo si es edici�n de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
         try {
             const cliente = obtenerClienteSupabase();
@@ -529,7 +529,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         } catch (errRelacionadas) {
             console.warn("No se pudieron cargar las relaciones secundarias o el ubigeo:", errRelacionadas);
         }
-    } // [FIN DE LLAVES]: Cierra condición de edición de propiedad
+    } // [FIN DE LLAVES]: Cierra condici�n de edici�n de propiedad
 
     let idUsuarioActualSugerido = '';
     if (window.usuarioLogueado && window.usuarioLogueado.id) {
@@ -615,15 +615,15 @@ let html30CajasFotos = '';
 
     if (nombreTabla === 'propiedad') {
         /**
-         * Descripción: Renderiza los slots de la galería de fotos en dos columnas con sus respectivas 
+         * Descripci�n: Renderiza los slots de la galer�a de fotos en dos columnas con sus respectivas 
          * etiquetas de cabecera: "NOMBRE FOTO" a la izquierda y "FOTO DE:" a la derecha, vinculando 
          * el selector desplegable con los valores permitidos de la tabla lov_tipo_imagen.
          */
-        // [INICIO DE LLAVES]: Generación de la interfaz de galería dual con etiquetas específicas
+        // [INICIO DE LLAVES]: Generaci�n de la interfaz de galer�a dual con etiquetas espec�ficas
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 8px;">
-                    ?? Galería de Fotos y Clasificación (Hasta 30 espacios flexibles):
+                    ?? Galer�a de Fotos y Clasificaci�n (Hasta 30 espacios flexibles):
                 </label>
                 <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #64748b; padding: 0 4px 4px 4px; border-bottom: 1px solid #cbd5e1; margin-bottom: 8px;">
                     <span style="width: 48%;">NOMBRE FOTO</span>
@@ -632,14 +632,14 @@ let html30CajasFotos = '';
                 <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
 
-        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
+        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'ba�o', 'patio', 'plano'];
 
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
             let tipoFotoActual = 'interior';
             
             if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
-                // Si tienes la estructura de objeto o array, se recupera aquí de forma segura
+                // Si tienes la estructura de objeto o array, se recupera aqu� de forma segura
                 const itemFoto = fotosSecundariasObtenidas[i - 1];
                 if (typeof itemFoto === 'object' && itemFoto !== null) {
                     nombreFotoActual = itemFoto.ruta || '';
@@ -664,17 +664,17 @@ let html30CajasFotos = '';
             `;
         }
         html30CajasFotos += `</div></div>`;
-        // [FIN DE LLAVES]: Cierra la construcción de la interfaz de galería de fotos
+        // [FIN DE LLAVES]: Cierra la construcci�n de la interfaz de galer�a de fotos
         
     
         htmlSeccionCaracteristicasEspeciales = `
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                        ? Características Especiales de la Propiedad (lov_caracteristica):
+                        ? Caracter�sticas Especiales de la Propiedad (lov_caracteristica):
                     </label>
                     <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                        + Añadir Característica
+                        + A�adir Caracter�stica
                     </button>
                 </div>
                 <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
@@ -687,7 +687,7 @@ let html30CajasFotos = '';
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
                 <h4 style="margin: 0; color: #002e50; font-size: 18px; font-weight: 700;">${esEdicion ? 'Editar' : 'Nuevo'} Registro - ${conf.titulo}</h4>
-                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">×</button>
+                <button type="button" id="btn-cerrar-submodal-x" style="background: none; border: none; font-size: 20px; font-weight: bold; color: #64748b; cursor: pointer;">�</button>
             </div>
 
             <form id="form-generico-crud" style="display: flex; flex-direction: column; gap: 14px;">
@@ -713,36 +713,36 @@ let html30CajasFotos = '';
 
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">?? 1. Ingrese primero la Dirección exacta arriba y luego seleccione el Ubigeo:</label>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">?? 1. Ingrese primero la Direcci�n exacta arriba y luego seleccione el Ubigeo:</label>
                                 <select id="sel-ubigeo-departamento" data-actual="${depValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
                                 <select id="sel-ubigeo-provincia" data-actual="${provValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
                                 <select id="sel-ubigeo-distrito" data-actual="${distValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
-                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">?? 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta</button>
+                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- C�digo Ubigeo Autom�tico --</option></select>
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">?? 2. Autocompletar Coordenadas y Mapa con la Direcci�n Exacta</button>
                             </div>
                         `;
                     } 
  /**
- * Descripción: Genera de forma dinámica los campos de entrada estándar (texto, número, email, fecha) 
- * para el formulario CRUD, incorporando la propiedad 'step="any"' en los campos numéricos 
- * para permitir coordenadas geográficas con decimales exactos y montos sin restricciones del navegador.
+ * Descripci�n: Genera de forma din�mica los campos de entrada est�ndar (texto, n�mero, email, fecha) 
+ * para el formulario CRUD, incorporando la propiedad 'step="any"' en los campos num�ricos 
+ * para permitir coordenadas geogr�ficas con decimales exactos y montos sin restricciones del navegador.
  */
-// [INICIO DE LLAVES]: Abre el bloque condicional para la renderización de inputs estándar
+// [INICIO DE LLAVES]: Abre el bloque condicional para la renderizaci�n de inputs est�ndar
 else {
-    // [INICIO DE LLAVES]: Bloque de validación de campos de solo lectura (PK y Usuario FK)
+    // [INICIO DE LLAVES]: Bloque de validaci�n de campos de solo lectura (PK y Usuario FK)
     const esPkCampo = (c.nombre === conf.pk);
     const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
     const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
     
     const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
     const atributoLectura = debeBloquearse ? 'readonly' : '';
-    // [FIN DE LLAVES]: Cierra la validación de bloqueos
+    // [FIN DE LLAVES]: Cierra la validaci�n de bloqueos
 
-    // Si el tipo de campo es 'number', añadimos step="any" para admitir decimales en latitud, longitud y precios
+    // Si el tipo de campo es 'number', a�adimos step="any" para admitir decimales en latitud, longitud y precios
     const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
 
     inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
-} // [FIN DE LLAVES]: Cierra el bloque else de generación de inputs estándar
+} // [FIN DE LLAVES]: Cierra el bloque else de generaci�n de inputs est�ndar
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -776,7 +776,7 @@ else {
             if (!formNode) return;
 
 try {
-    // 1. Descargamos los ubigeos en dos bloques para superar el límite de 1,000 de Supabase
+    // 1. Descargamos los ubigeos en dos bloques para superar el l�mite de 1,000 de Supabase
     const [resUbigeoP1, resUbigeoP2] = await Promise.all([
         clienteSupabase.from('ubigeo').select('*').range(0, 999),
         clienteSupabase.from('ubigeo').select('*').range(1000, 2000)
@@ -785,7 +785,7 @@ try {
     const coleccionUbigeo = [...(resUbigeoP1.data || []), ...(resUbigeoP2.data || [])];
     state.ubigeosCache = coleccionUbigeo;
 
-    // 2. Catálogos y LOVs originales intactos
+    // 2. Cat�logos y LOVs originales intactos
     const [
         resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
         resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
@@ -828,7 +828,7 @@ try {
                     selectNode.innerHTML = optionsHtml;
                 };
 
-// [INICIO DE LLAVES]: Abre el bloque de población de selectores y catálogos dinámicos
+// [INICIO DE LLAVES]: Abre el bloque de poblaci�n de selectores y cat�logos din�micos
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
                 poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
@@ -840,7 +840,7 @@ try {
                 poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
                 poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-// [INICIO DE LLAVES]: Abre el bloque de filtrado dinámico de códigos postales según el ubigeo seleccionado
+// [INICIO DE LLAVES]: Abre el bloque de filtrado din�mico de c�digos postales seg�n el ubigeo seleccionado
 {
     const selectPostalNode = formNode.querySelector('#sel-lov-codigo_postal');
     const selectUbigeoIdNode = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
@@ -884,33 +884,33 @@ try {
             }
         };
 
-        // Escuchamos cuando cambie el código de ubigeo principal para refrescar el combo postal
+        // Escuchamos cuando cambie el c�digo de ubigeo principal para refrescar el combo postal
         selectUbigeoIdNode.addEventListener('change', actualizarCodigosPostalesPorUbigeo);
         
-        // [INICIO DE LLAVES]: Evalúa y fuerza la ejecución inmediata del filtrado postal si el ubigeo ya cuenta con un valor asignado
+        // [INICIO DE LLAVES]: Eval�a y fuerza la ejecuci�n inmediata del filtrado postal si el ubigeo ya cuenta con un valor asignado
         if (selectUbigeoIdNode && selectUbigeoIdNode.value) {
             actualizarCodigosPostalesPorUbigeo();
         }
         // [FIN DE LLAVES]: Cierra el disparador condicional de seguridad para la carga de centros poblados
 
-        // Si ya hay un ubigeo seleccionado al abrir el formulario (modo edición), cargamos sus postales de inmediato
+        // Si ya hay un ubigeo seleccionado al abrir el formulario (modo edici�n), cargamos sus postales de inmediato
         if (selectUbigeoIdNode.value) {
             actualizarCodigosPostalesPorUbigeo();
         }
     }
 }
-// [FIN DE LLAVES]: Cierra el bloque de filtrado dinámico de códigos postales según el ubigeo seleccionado
+// [FIN DE LLAVES]: Cierra el bloque de filtrado din�mico de c�digos postales seg�n el ubigeo seleccionado
 
     
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
 
  /**
- * Descripción: Consulta el catálogo completo de características desde la tabla 'lov_caracteristica' 
- * y lo almacena en la caché global 'state.catalogoCaracteristicas' para alimentar instantáneamente 
- * los menús desplegables del formulario CRUD sin problemas de sincronización asíncrona.
+ * Descripci�n: Consulta el cat�logo completo de caracter�sticas desde la tabla 'lov_caracteristica' 
+ * y lo almacena en la cach� global 'state.catalogoCaracteristicas' para alimentar instant�neamente 
+ * los men�s desplegables del formulario CRUD sin problemas de sincronizaci�n as�ncrona.
  */
-// [INICIO DE LLAVES]: Abre el bloque de consulta y almacenamiento en caché global de características
+// [INICIO DE LLAVES]: Abre el bloque de consulta y almacenamiento en cach� global de caracter�sticas
 state.catalogoCaracteristicas = [];
 try {
     // [INICIO DE LLAVES]: Intento de consulta selectiva de la columna caracteristica
@@ -919,20 +919,20 @@ try {
         state.catalogoCaracteristicas = resCatDirecto.data;
     }
 } catch (errCat) {
-    console.warn("Aviso al consultar el catálogo de características:", errCat);
+    console.warn("Aviso al consultar el cat�logo de caracter�sticas:", errCat);
 } // [FIN DE LLAVES]: Cierra el bloque try/catch de consulta
 
-const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'sí') => {
-    // [INICIO DE LLAVES]: Abre la función interna para añadir filas dinámicas de características
+const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 's�') => {
+    // [INICIO DE LLAVES]: Abre la funci�n interna para a�adir filas din�micas de caracter�sticas
     const indiceFila = contenedorCarac.children.length + 1;
     const filaDiv = document.createElement('div');
     filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
-    let optionsCaracHtml = '<option value="">-- Seleccione Característica --</option>';
+    let optionsCaracHtml = '<option value="">-- Seleccione Caracter�stica --</option>';
     
-    // Validar y recorrer el catálogo global almacenado en state
+    // Validar y recorrer el cat�logo global almacenado en state
     if (state.catalogoCaracteristicas && state.catalogoCaracteristicas.length > 0) {
-        // [INICIO DE LLAVES]: Bucle forEach para recorrer cada registro del catálogo
+        // [INICIO DE LLAVES]: Bucle forEach para recorrer cada registro del cat�logo
         state.catalogoCaracteristicas.forEach(rowCarac => {
             const textoCaracteristica = rowCarac.caracteristica;
             
@@ -940,7 +940,7 @@ const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 
                 const coincide = String(textoCaracteristica).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
                 optionsCaracHtml += `<option value="${textoCaracteristica}" ${coincide ? 'selected' : ''}>${textoCaracteristica}</option>`;
             }
-        }); // [FIN DE LLAVES]: Cierra el bucle forEach del catálogo
+        }); // [FIN DE LLAVES]: Cierra el bucle forEach del cat�logo
     }
     
     filaDiv.innerHTML = `
@@ -948,8 +948,8 @@ const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 
         <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
             ${optionsCaracHtml}
         </select>
-        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: sí / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">×</button>
+        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: s� / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
+        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">�</button>
     `;
 
     filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
@@ -957,22 +957,22 @@ const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 
     };
 
     contenedorCarac.appendChild(filaDiv);
-}; // [FIN DE LLAVES]: Cierra la función agregarFilaCaracteristica
+}; // [FIN DE LLAVES]: Cierra la funci�n agregarFilaCaracteristica
 
-// [INICIO DE LLAVES]: Valida y asigna el evento de clic al botón para añadir nueva fila de característica
+// [INICIO DE LLAVES]: Valida y asigna el evento de clic al bot�n para a�adir nueva fila de caracter�stica
 if (btnAgregarCarac && contenedorCarac) {
     btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
-} // [FIN DE LLAVES]: Cierra la validación del botón de adición
+} // [FIN DE LLAVES]: Cierra la validaci�n del bot�n de adici�n
 
-// [INICIO DE LLAVES]: Valida si estamos editando una propiedad para precargar sus características existentes
+// [INICIO DE LLAVES]: Valida si estamos editando una propiedad para precargar sus caracter�sticas existentes
 if (caracteristicasObtenidas.length > 0) {
     caracteristicasObtenidas.forEach(carac => {
-        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 'sí');
+        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 's�');
     });
 } else {
     // Si es un registro nuevo, dejamos una fila inicial lista por defecto
     agregarFilaCaracteristica();
-} // [FIN DE LLAVES]: Cierra la condición de precarga en modo edición
+} // [FIN DE LLAVES]: Cierra la condici�n de precarga en modo edici�n
                 
                 
 
@@ -983,7 +983,7 @@ if (caracteristicasObtenidas.length > 0) {
                 const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
 
                 if (selPais && !selPais.value && resPais.data && resPais.data.length > 0) {
-                    selPais.value = resPais.data[0].pais || 'Perú';
+                    selPais.value = resPais.data[0].pais || 'Per�';
                 }
 
                 const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort();
@@ -1008,34 +1008,35 @@ if (caracteristicasObtenidas.length > 0) {
                         
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + dists.map(d => `<option value="${d.distrito}" ${d.distrito === actualDist ? 'selected' : ''}>${d.distrito}</option>`).join('');
                         
-                    // [INICIO DE LLAVES]: Asignación limpia y automática del código ubigeo único por distrito seleccionado con traza espía
-                    console.group("?? [SRE ESPÍA UBIGEO] === FILTRANDO DISTRITO Y UBIGEO ===");
-                    let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                    // [INICIO DE LLAVES]: Asignaci�n limpia y autom�tica del c�digo ubigeo �nico por distrito seleccionado con traza esp�a
+                    console.group("?? [SRE ESP�A UBIGEO] === FILTRANDO DISTRITO Y UBIGEO ===");
+                    let optsCodigo = '<option value="">-- Seleccione C�digo Ubigeo --</option>';
 
-                    // Si al filtrar por departamento y provincia solo queda un distrito (o el usuario seleccionó uno), 
-                    // lo fijamos de forma limpia y automática para evitar mostrar toda la lista de Lima.
+                    // Si al filtrar por departamento y provincia solo queda un distrito (o el usuario seleccion� uno), 
+                    // lo fijamos de forma limpia y autom�tica para evitar mostrar toda la lista de Lima.
                     dists.forEach(u => {
                         const coincide = String(u.distrito).trim().toLowerCase() === String(selDist.value).trim().toLowerCase() ||
                                          String(u.codigo_ubigeo_id) === String(selCodigoUbigeo.getAttribute('data-actual'));
     
                         if (coincide) {
                             optsCodigo += `<option value="${u.codigo_ubigeo_id}" selected>${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
-                            selCodigoUbigeo.value = u.codigo_ubigeo_id; // Forzamos el valor seleccionado de forma automática
-                            console.log("? Ubigeo auto-fijado con éxito:", u.codigo_ubigeo_id, "-", u.distrito);
+                            selCodigoUbigeo.value = u.codigo_ubigeo_id; // Forzamos el valor seleccionado de forma autom�tica
+                            console.log("? Ubigeo auto-fijado con �xito:", u.codigo_ubigeo_id, "-", u.distrito);
                         } else {
                             optsCodigo += `<option value="${u.codigo_ubigeo_id}">${u.codigo_ubigeo_id} - ${u.distrito}</option>`;
                         }
                     });
                     selCodigoUbigeo.innerHTML = optsCodigo;
                     console.groupEnd();
-                    // [FIN DE LLAVES]: Cierra la asignación automática y el espía de ubigeo
-                        
+                    // [FIN DE LLAVES]: Cierra la asignaci�n autom�tica y el esp�a de ubigeo
+                    }; // [FIN DE LLAVES]: Cierra actualizarDistritosYUbigeo
+
                     selDep.onchange = () => {
                         selProv.removeAttribute('data-actual');
                         selDist.removeAttribute('data-actual');
                         actualizarProvincias();
                         selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                        selCodigoUbigeo.innerHTML = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                        selCodigoUbigeo.innerHTML = '<option value="">-- Seleccione C�digo Ubigeo --</option>';
                     };
 
                     selProv.onchange = () => {
@@ -1043,14 +1044,14 @@ if (caracteristicasObtenidas.length > 0) {
                         actualizarDistritosYUbigeo();
                     };
 
-                    // [INICIO DE LLAVES]: Captura el cambio de distrito, autoselecciona de forma limpia el código de ubigeo y añade traza espía para auditoría en consola
+                    // [INICIO DE LLAVES]: Captura el cambio de distrito, autoselecciona de forma limpia el c�digo de ubigeo y a�ade traza esp�a para auditor�a en consola
                     selDist.onchange = () => {
-                        console.group(">> [SRE ESPÍA UBIGEO] === SELECCIONANDO DISTRITO ===");
+                        console.group(">> [SRE ESP�A UBIGEO] === SELECCIONANDO DISTRITO ===");
                         console.log("Distrito seleccionado:", selDist.value);
 
                         const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
                         
-                        let optsCodigo = '<option value="">-- Seleccione Código Ubigeo --</option>';
+                        let optsCodigo = '<option value="">-- Seleccione C�digo Ubigeo --</option>';
                         
                         coleccionUbigeo.filter(u => u.departamento === selDep.value && u.provincia === selProv.value).forEach(u => {
                             const coincide = (match && String(u.codigo_ubigeo_id) === String(match.codigo_ubigeo_id)) ||
@@ -1068,13 +1069,13 @@ if (caracteristicasObtenidas.length > 0) {
                         selCodigoUbigeo.innerHTML = optsCodigo;
                         console.groupEnd();
 
-                        // [INICIO DE LLAVES]: Dispara el evento change de forma segura sobre el ubigeo para activar la carga postal sin problemas de ámbito
+                        // [INICIO DE LLAVES]: Dispara el evento change de forma segura sobre el ubigeo para activar la carga postal sin problemas de �mbito
                         if (selCodigoUbigeo.value) {
                             selCodigoUbigeo.dispatchEvent(new Event('change'));
                         }
                         // [FIN DE LLAVES]: Cierra el disparador seguro del evento postal
                     };
-                    // [FIN DE LLAVES]: Cierra la función de selección de distrito, auto-fijado de ubigeo y consola espía
+                    // [FIN DE LLAVES]: Cierra la funci�n de selecci�n de distrito, auto-fijado de ubigeo y consola esp�a
 
                     if (selDep.value) {
                         actualizarProvincias();
@@ -1091,10 +1092,10 @@ if (caracteristicasObtenidas.length > 0) {
                         const dist = selDist?.value || '';
                         const prov = selProv?.value || '';
                         const dep = selDep?.value || '';
-                        const pais = selPais?.value || 'Perú';
+                        const pais = selPais?.value || 'Per�';
 
                         if (!dir) {
-                            alert("Por favor ingrese primero la Dirección exacta antes de geocodificar.");
+                            alert("Por favor ingrese primero la Direcci�n exacta antes de geocodificar.");
                             return;
                         }
 
@@ -1104,7 +1105,7 @@ if (caracteristicasObtenidas.length > 0) {
                         }
 
                         const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
-                        btnGeo.innerText = "Calculando ubicación exacta con la dirección...";
+                        btnGeo.innerText = "Calculando ubicaci�n exacta con la direcci�n...";
                         
                         try {
                             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
@@ -1124,27 +1125,30 @@ if (caracteristicasObtenidas.length > 0) {
                                 if (inputLat) inputLat.value = lat;
                                 if (inputLng) inputLng.value = lon;
 
-                                // [INICIO DE LLAVES]: Asigna el tipo de texto descriptivo (ej. residential, building) devuelto por Nominatim en lugar del ID numérico
+                                // [INICIO DE LLAVES]: Asigna el tipo de texto descriptivo (ej. residential, building) devuelto por Nominatim en lugar del ID num�rico
                                 const tipoPrecisionTexto = dataGeo[0].type ? String(dataGeo[0].type) : "exacta_nominatim";
                                 if (inputPrec) inputPrec.value = tipoPrecisionTexto;
-                                // [FIN DE LLAVES]: Cierra la asignación de la precisión basada en texto descriptivo
+                                // [FIN DE LLAVES]: Cierra la asignaci�n de la precisi�n basada en texto descriptivo
 
                                 if (inputRef) inputRef.value = displayName;
                                 if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
-                                alert("¡Coordenadas y mapa calculados con éxito basados en la dirección exacta!");
+                                alert("�Coordenadas y mapa calculados con �xito basados en la direcci�n exacta!");
                             } else {
-                                alert("No se hallaron coordenadas exactas para esta dirección específica.");
+                                alert("No se hallaron coordenadas exactas para esta direcci�n espec�fica.");
                             }
                         } catch (errGeo) {
-                            console.error("Error en geocodificación:", errGeo);
+                            console.error("Error en geocodificaci�n:", errGeo);
                         } finally {
-                            btnGeo.innerText = "?? 2. Autocompletar Coordenadas y Mapa con la Dirección Exacta";
+                            btnGeo.innerText = "?? 2. Autocompletar Coordenadas y Mapa con la Direcci�n Exacta";
                         }
                     };
                 }
 
 
+        } catch (errInicializacionFormulario) {
+            console.warn("No se pudo inicializar los catálogos del formulario CRUD:", errInicializacionFormulario);
+        }
         })();
     }
 
@@ -1168,8 +1172,8 @@ if (caracteristicasObtenidas.length > 0) {
             }
 
 /**
- * Descripción: Captura y procesa los datos del formulario del CRUD, asegurando la 
- * inclusión explícita de los campos de departamento y provincia seleccionados en los menús.
+ * Descripci�n: Captura y procesa los datos del formulario del CRUD, asegurando la 
+ * inclusi�n expl�cita de los campos de departamento y provincia seleccionados en los men�s.
  */
 // [INICIO DE LLAVES]: Procesamiento y rescate de departamento, provincia y coordenadas
             const formData = new FormData(e.target);
@@ -1191,9 +1195,9 @@ if (caracteristicasObtenidas.length > 0) {
 // [FIN DE LLAVES]: Cierra el rescate de departamento y provincia
             
 
-            // Validación preventiva de campos clave requeridos para mantener el estado del formulario
+            // Validaci�n preventiva de campos clave requeridos para mantener el estado del formulario
             if (!payload.titulo || String(payload.titulo).trim() === "") {
-                alert("Falta ingresar el valor requerido: Título de Anuncio.");
+                alert("Falta ingresar el valor requerido: T�tulo de Anuncio.");
                 if (btnSubmit) {
                     btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
                     btnSubmit.disabled = false;
@@ -1202,7 +1206,7 @@ if (caracteristicasObtenidas.length > 0) {
             }
 
             if (!payload.precio_base || isNaN(parseFloat(payload.precio_base))) {
-                alert("Falta ingresar un valor válido para el Precio Base ($).");
+                alert("Falta ingresar un valor v�lido para el Precio Base ($).");
                 if (btnSubmit) {
                     btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
                     btnSubmit.disabled = false;
@@ -1217,7 +1221,7 @@ if (caracteristicasObtenidas.length > 0) {
 
             await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             cerrarSubModal();
-// [FIN DE LLAVES]: Cierra el bloque de procesamiento y envío del CRUD
+// [FIN DE LLAVES]: Cierra el bloque de procesamiento y env�o del CRUD
         };
     }
 }
@@ -1225,19 +1229,19 @@ if (caracteristicasObtenidas.length > 0) {
 
 
 /**
- * Descripción: Función asíncrona encargada de coordinar el almacenamiento CRUD. 
- * Si la tabla activa es 'propiedad', empaqueta los datos, fotos y características en un JSON 
- * y los envía de manera atómica a la función RPC 'guardar_propiedad_completa' en PostgreSQL.
- * Para otras tablas, opera mediante inserciones o actualizaciones directas estándar.
+ * Descripci�n: Funci�n as�ncrona encargada de coordinar el almacenamiento CRUD. 
+ * Si la tabla activa es 'propiedad', empaqueta los datos, fotos y caracter�sticas en un JSON 
+ * y los env�a de manera at�mica a la funci�n RPC 'guardar_propiedad_completa' en PostgreSQL.
+ * Para otras tablas, opera mediante inserciones o actualizaciones directas est�ndar.
  */
-// [INICIO DE LLAVES]: Abre la función asíncrona principal guardarRegistroCrud basada en RPC
+// [INICIO DE LLAVES]: Abre la funci�n as�ncrona principal guardarRegistroCrud basada en RPC
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
     // [INICIO DE LLAVES]: Bloque principal de control de errores y persistencia
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
-        // [INICIO DE LLAVES]: Validación específica para la tabla propiedad mediante procedimiento almacenado
+        // [INICIO DE LLAVES]: Validaci�n espec�fica para la tabla propiedad mediante procedimiento almacenado
         if (nombreTabla === 'propiedad') {
             let payloadLimpio = { ...payload };
             let arrayFotos = [];
@@ -1245,11 +1249,11 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             
 
              /**
-             * Descripción: Recopila de forma dinámica los slots de fotos del formulario (hasta 30),
+             * Descripci�n: Recopila de forma din�mica los slots de fotos del formulario (hasta 30),
              * capturando tanto la ruta de la izquierda como el tipo seleccionado de la derecha 
              * para enviarlos como un objeto JSON estructurado al backend.
              */
-            // [INICIO DE LLAVES]: Procesamiento y empaquetado dinámico de la galería dual para el payload
+            // [INICIO DE LLAVES]: Procesamiento y empaquetado din�mico de la galer�a dual para el payload
             for (let i = 1; i <= 30; i++) {
                 if (payloadLimpio[`foto_slot_${i}`]) {
                     const fotoVal = String(payloadLimpio[`foto_slot_${i}`]).trim();
@@ -1265,24 +1269,24 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
                     delete payloadLimpio[`tipo_slot_${i}`];
                 }
             }
-            // [FIN DE LLAVES]: Cierra el ciclo de recopilación de fotos y tipos
+            // [FIN DE LLAVES]: Cierra el ciclo de recopilaci�n de fotos y tipos
             
             
             
             if (payloadLimpio.galeria_fotos) delete payloadLimpio.galeria_fotos;
 
-            // Recopilar las características especiales dinámicas desde el DOM del formulario
+            // Recopilar las caracter�sticas especiales din�micas desde el DOM del formulario
             document.querySelectorAll('#contenedor-dinamico-caracteristicas-especiales > div').forEach(fila => {
                 const nombre = fila.querySelector('.select-caract-nombre')?.value?.trim();
-                const valor = fila.querySelector('.input-caract-valor')?.value?.trim() || 'sí';
+                const valor = fila.querySelector('.input-caract-valor')?.value?.trim() || 's�';
                 if (nombre) arrayCaracteristicas.push({ nombre, valor });
             });
 
 /**
- * Descripción: Adjunta las colecciones de fotos, características y define 
- * automáticamente la foto principal utilizando la primera ruta de la galería.
+ * Descripci�n: Adjunta las colecciones de fotos, caracter�sticas y define 
+ * autom�ticamente la foto principal utilizando la primera ruta de la galer�a.
  */
-// [INICIO DE LLAVES]: Inyección de foto_principal, fotos y características al payload
+// [INICIO DE LLAVES]: Inyecci�n de foto_principal, fotos y caracter�sticas al payload
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
             
@@ -1291,17 +1295,17 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             } else {
                 payloadLimpio.foto_principal = 'principal.jpg';
             }
-// [FIN DE LLAVES]: Cierra la asignación de la foto principal y colecciones
+// [FIN DE LLAVES]: Cierra la asignaci�n de la foto principal y colecciones
             
 /**
- * Descripción: Obtiene dinámicamente el UUID real del usuario autenticado desde Supabase Auth 
+ * Descripci�n: Obtiene din�micamente el UUID real del usuario autenticado desde Supabase Auth 
  * o el estado global, evitando cualquier valor harcodeado y asegurando el soporte multiusuario.
  */
-// [INICIO DE LLAVES]: Extracción dinámica y estricta del UUID del usuario actual
+// [INICIO DE LLAVES]: Extracci�n din�mica y estricta del UUID del usuario actual
 const uuidUsuarioAutenticado = window.usuarioLogueado?.id || state.usuarioActual?.id;
 
 if (!uuidUsuarioAutenticado) {
-    alert("Error de Autenticación: Debe iniciar sesión con su cuenta para registrar o modificar propiedades.");
+    alert("Error de Autenticaci�n: Debe iniciar sesi�n con su cuenta para registrar o modificar propiedades.");
     if (btnSubmit) {
         btnSubmit.innerText = "Guardar Cambios";
         btnSubmit.disabled = false;
@@ -1310,19 +1314,19 @@ if (!uuidUsuarioAutenticado) {
 }
 
 payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
-// [FIN DE LLAVES]: Cierra la asignación dinámica
+// [FIN DE LLAVES]: Cierra la asignaci�n din�mica
             
             if (esEdicion && pkValor) {
                 payloadLimpio.propiedad_id = pkValor;
             }
 
-            // Invocación atómica ultrarrápida a la función RPC alojada en Supabase
+            // Invocaci�n at�mica ultrarr�pida a la funci�n RPC alojada en Supabase
             const { data, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
             if (error) throw error;
 
-            alert("¡Propiedad, anuncios, fotos y características guardadas de forma atómica en la base de datos!");
+            alert("�Propiedad, anuncios, fotos y caracter�sticas guardadas de forma at�mica en la base de datos!");
         } else {
-            // Comportamiento estándar directo para las demás tablas del sistema CRUD
+            // Comportamiento est�ndar directo para las dem�s tablas del sistema CRUD
             if (esEdicion) {
                 const { error } = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
                 if (error) throw error;
@@ -1330,7 +1334,7 @@ payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
                 const { error } = await cliente.from(nombreTabla).insert([payload]);
                 if (error) throw error;
             }
-            alert("¡Registro actualizado exitosamente!");
+            alert("�Registro actualizado exitosamente!");
         } // [FIN DE LLAVES]: Cierra el bloque condicional del tipo de tabla
 
         await cargarDatosTablaCrud(nombreTabla);
@@ -1340,16 +1344,16 @@ payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
         alert("Error al procesar en la Base de Datos: " + err.message);
         console.error("XX [SRE RPC ERROR]:", err);
     } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
-} // [FIN DE LLAVES]: Cierra la función guardarRegistroCrud
+} // [FIN DE LLAVES]: Cierra la funci�n guardarRegistroCrud
 
 
 
 /**
- * Descripción de la función: eliminarRegistroCrud borra un registro de Supabase.
+ * Descripci�n de la funci�n: eliminarRegistroCrud borra un registro de Supabase.
  */
 // [INICIO DE LLAVES]: Abre eliminarRegistroCrud
 async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
-    // [INICIO DE LLAVES]: Try/catch eliminación
+    // [INICIO DE LLAVES]: Try/catch eliminaci�n
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
@@ -1357,7 +1361,7 @@ async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
         const { error } = await cliente.from(nombreTabla).delete().eq(pkColumna, pkValor);
         if (error) throw error;
 
-        alert(`¡Registro eliminado exitosamente de la tabla ${nombreTabla}!`);
+        alert(`�Registro eliminado exitosamente de la tabla ${nombreTabla}!`);
         await cargarDatosTablaCrud(nombreTabla);
 
     } catch (err) {
@@ -1367,13 +1371,13 @@ async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
 
 
 // ==========================================================================
-// PARTE 2 DE 15: INITIALIZACIÓN CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
+// PARTE 2 DE 15: INITIALIZACI�N CORE DEL CLIENTE SUPABASE CON FILTROS DE RED
 // ==========================================================================
 
 const supabaseUrl = 'https://aohizylvnnrjhgplsods.supabase.co';
 const supabaseAnonKey = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
-console.warn(">> [SRE ESPÍA 1] Iniciando traza de compilación en el hilo principal...");
+console.warn(">> [SRE ESP�A 1] Iniciando traza de compilaci�n en el hilo principal...");
 
 let supabase = null;
 
@@ -1385,9 +1389,9 @@ function obtenerClienteSupabase() { // Inicia Function obtenerClienteSupabase
         supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
     }
     if (supabase) {
-        console.log("OK [SRE ESPÍA 2] Cliente Supabase vinculado y listo para peticiones.");
+        console.log("OK [SRE ESP�A 2] Cliente Supabase vinculado y listo para peticiones.");
     } else {
-        console.error("XX [SRE ESPÍA 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
+        console.error("XX [SRE ESP�A 2] No se pudo instanciar el cliente Supabase. Verifique CDN.");
     }
     return supabase;
 } // Fin de Function obtenerClienteSupabase
@@ -1400,13 +1404,13 @@ obtenerClienteSupabase();
 // ==========================================================================
 
 function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
-    console.group(">>> [SRE ESPÍA ACL] Verificando credenciales de interacción");
+    console.group(">>> [SRE ESP�A ACL] Verificando credenciales de interacci�n");
     console.log("Usuario actual en estado:", state.usuarioActual);
 
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("!! ACL BLOQUEADO: Sesión inexistente.");
+        console.warn("!! ACL BLOQUEADO: Sesi�n inexistente.");
         console.groupEnd();
-        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
+        alert("Acceso Restringido: Debe iniciar sesi�n con su cuenta para realizar esta acci�n.");
         if (typeof mostrarPopupAccion === "function") {
             mostrarPopupAccion("modal-autenticacion-supabase");
         }
@@ -1416,7 +1420,7 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
     if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
         console.error("XX ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
         console.groupEnd();
-        alert("Cuenta Suspendida: No tiene autorización para realizar esta acción.");
+        alert("Cuenta Suspendida: No tiene autorizaci�n para realizar esta acci�n.");
         return false;
     }
 
@@ -1430,41 +1434,41 @@ function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacio
 // GUARDIA CENTRALIZADO DE ACCESO PARA TODAS LAS FUNCIONALIDADES PROTEGIDAS
 // ==========================================================================
 
-// --- REPARACIÓN QUIRÚRGICA PUNTO 1: Cortafuegos de Sesión async/await con recuperación caliente ---
+// --- REPARACI�N QUIR�RGICA PUNTO 1: Cortafuegos de Sesi�n async/await con recuperaci�n caliente ---
 async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado Async Optimizado
-    console.group(">> [CORTAFUEGOS CENTRAL] Evaluando permisos de interacción...");
+    console.group(">> [CORTAFUEGOS CENTRAL] Evaluando permisos de interacci�n...");
 
-    // 1. VERIFICACIÓN DE AUTENTICACIÓN: ¿Existe un estado de usuario en memoria?
+    // 1. VERIFICACI�N DE AUTENTICACI�N: �Existe un estado de usuario en memoria?
     if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("!! ACL: Estado de usuario vacío. Intento caliente de recuperación de sesión nativa...");
+        console.warn("!! ACL: Estado de usuario vac�o. Intento caliente de recuperaci�n de sesi�n nativa...");
 
-        // Intento caliente: leer la sesión nativa activa del navegador desde Supabase Auth
+        // Intento caliente: leer la sesi�n nativa activa del navegador desde Supabase Auth
         try {
             const cliente = obtenerClienteSupabase();
             if (cliente) {
                 const { data: { session } } = await cliente.auth.getSession();
 
-                // Si existe una sesión activa válida de Supabase, sincroniza el objeto en memoria
+                // Si existe una sesi�n activa v�lida de Supabase, sincroniza el objeto en memoria
                 if (session && session.user && session.user.id) {
                     state.usuarioActual = {
                         id: session.user.id,
                         correo: session.user.email,
                         estado_cuenta: 'activo'
                     };
-                    console.log(">> [CORTAFUEGOS] Sesión nativa recuperada y sincronizada para:", state.usuarioActual.correo);
+                    console.log(">> [CORTAFUEGOS] Sesi�n nativa recuperada y sincronizada para:", state.usuarioActual.correo);
                     console.groupEnd();
                     return true; // Permite el paso para evitar la alerta falsa de "Acceso Restringido"
                 }
             }
         } catch (errRecuperacion) {
-            console.warn("!! [CORTAFUEGOS] Fallo en el intento caliente de recuperación de sesión:", errRecuperacion.message);
+            console.warn("!! [CORTAFUEGOS] Fallo en el intento caliente de recuperaci�n de sesi�n:", errRecuperacion.message);
         }
 
-        // Si no se pudo recuperar la sesión, se bloquea el acceso de forma tradicional
-        console.warn("X ACL BLOQUEADO: El interesado no ha iniciado sesión.");
+        // Si no se pudo recuperar la sesi�n, se bloquea el acceso de forma tradicional
+        console.warn("X ACL BLOQUEADO: El interesado no ha iniciado sesi�n.");
         console.groupEnd();
 
-        alert("Acceso Restringido: Debe iniciar sesión con su cuenta para realizar esta acción.");
+        alert("Acceso Restringido: Debe iniciar sesi�n con su cuenta para realizar esta acci�n.");
 
         if (typeof gestionarCortinaSPA === "function") gestionarCortinaSPA('cerrar');
         if (typeof cerrarTodosLosPaneles === "function") cerrarTodosLosPaneles();
@@ -1473,9 +1477,9 @@ async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado
             mostrarPopupAccion("modal-autenticacion-supabase");
         }
         return false;
-    } // Fin de verificación de usuario vacío con intento caliente
+    } // Fin de verificaci�n de usuario vac�o con intento caliente
 
-    // 2. VERIFICACIÓN DE ESTADO: Extraemos el estado limpio de la cuenta
+    // 2. VERIFICACI�N DE ESTADO: Extraemos el estado limpio de la cuenta
     const estadoCuenta = String(state.usuarioActual.estado_cuenta || '').toLowerCase().trim();
     console.log(`> Interesado identificado: ${state.usuarioActual.correo} | Estado: ${estadoCuenta.toUpperCase()}`);
 
@@ -1483,16 +1487,16 @@ async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado
         console.error("X ACL BLOQUEO CENTRAL: Intento de uso por usuario SUSPENDIDO.");
         console.groupEnd();
 
-        alert("Cuenta Suspendida: No tiene autorización para realizar acciones premium en la plataforma.");
+        alert("Cuenta Suspendida: No tiene autorizaci�n para realizar acciones premium en la plataforma.");
         if (typeof gestionarCortinaSPA === "function") gestionarCortinaSPA('cerrar');
         return false;
     }
 
     if (estadoCuenta === "pendiente") {
-        console.warn("! ACL BLOQUEO CENTRAL: Cuenta aún en estado PENDIENTE.");
+        console.warn("! ACL BLOQUEO CENTRAL: Cuenta a�n en estado PENDIENTE.");
         console.groupEnd();
 
-        alert("Acceso Restringido: Por favor, revise su correo electrónico y valide su cuenta usando el enlace enviado para activar sus beneficios.");
+        alert("Acceso Restringido: Por favor, revise su correo electr�nico y valide su cuenta usando el enlace enviado para activar sus beneficios.");
         return false;
     }
 
@@ -1554,7 +1558,7 @@ async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado
                     const origenPublicacion = String(prop.situacion_propiedad || prop.creado_por || "").toLowerCase().trim();
                     if (origenPublicacion !== "" && !state.filtros.tiposListado.has(origenPublicacion)) {
                         return false;
-                    } // Fin de validación inside Set tiposListado
+                    } // Fin de validaci�n inside Set tiposListado
                 }
 
                 const checkboxesFisicosEnPantalla = document.querySelectorAll('.more-filter-cb');
@@ -1570,12 +1574,12 @@ async function validarAccesoFuncionalidadPremium() { // SRE Guardia Centralizado
                 } // Fin de if checkboxesMarcados
 
                 return true;
-            } // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuración por defecto SRE
+            } // Fin de Function evaluarCriteriosDeFiltrado con retorno a configuraci�n por defecto SRE
 
 
 
 async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeSupabase
-    console.log(">> [SRE ESPÍA 3] Consultando directamente a Supabase REST API sin intermediarios...");
+    console.log(">> [SRE ESP�A 3] Consultando directamente a Supabase REST API sin intermediarios...");
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
@@ -1589,12 +1593,12 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
 
         if (error) throw error;
 
-        console.group("%c>> [SRE ESPÍA 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
+        console.group("%c>> [SRE ESP�A 1] DATOS CRUDOS DE SUPABASE", "background: #002E50; color: #FFB91D; padding: 4px; font-weight: bold;");
         console.log("Cantidad total devuelta por la Vista SQL:", data.length);
         if (data.length > 0) {
             console.log("Estructura del primer registro (PROP-001):", data[0]);
-            console.log("¿Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "Sí" : "NO");
-            console.log("Campos de coordenadas en la raíz: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
+            console.log("�Tiene objeto .ubicacion?:", data[0].hasOwnProperty('ubicacion') ? "S�" : "NO");
+            console.log("Campos de coordenadas en la ra�z: latitud =", data[0].latitud, "| longitud =", data[0].longitud);
         }
         console.groupEnd();
 
@@ -1605,20 +1609,20 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
         procesarDatosDelMotor(paqueteData);
 
     } catch (err) {
-        console.error("X [SRE ESPÍA ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
+        console.error("X [SRE ESP�A ERROR] Fallo en la lectura directa de Supabase REST:", err.message);
     }
 } // Fin de Function cargarDatosDesdeSupabase
 
 
 // ==========================================================================
-// PARTE 4 DE 15: MOTOR DE NORMALIZACIÓN RELACIONAL Y CONCATENACIÓN DE IMÁGENES
+// PARTE 4 DE 15: MOTOR DE NORMALIZACI�N RELACIONAL Y CONCATENACI�N DE IM�GENES
 // ==========================================================================
 function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
     const urlBaseCloudinary = "https://res.cloudinary.com/obw6ciov/image/upload/";
 
     let fotosUnificadas = [];
 
-    console.group(`[ESPÍA FOTOS] Evaluando propiedad ID: ${prop.propiedad_id || prop.id}`);
+    console.group(`[ESP�A FOTOS] Evaluando propiedad ID: ${prop.propiedad_id || prop.id}`);
     console.log("Origen galeria_fotos:", prop.galeria_fotos);
     console.log("Origen foto_despliegue:", prop.foto_despliegue);
     console.log("Origen foto_principal:", prop.foto_principal);
@@ -1653,7 +1657,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         fotosUnificadas.push(urlBaseCloudinary + "Foto15_havrr3.webp");
     }
 
-    console.log(`[ESPÍA RESULTADO] Propiedad: ${prop.propiedad_id || prop.id} -> Total fotos detectadas final: ${fotosUnificadas.length}`, fotosUnificadas);
+    console.log(`[ESP�A RESULTADO] Propiedad: ${prop.propiedad_id || prop.id} -> Total fotos detectadas final: ${fotosUnificadas.length}`, fotosUnificadas);
 
     const latNum = parseFloat(prop.latitud);
     const lngNum = parseFloat(prop.longitud);
@@ -1701,14 +1705,14 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         amenidades: prop.amenidades || []
     };
 
-    console.log(`%c>> [SRE ESPÍA 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacción: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
+    console.log(`%c>> [SRE ESP�A 2] Normalizado ${res.id} -> Lat: ${res.latitud} | Lng: ${res.longitud} | Transacci�n: ${res.tipo_anuncio} | Estado: ${res.estado_publicacion}`, "color: #006aff; font-size: 11px;");
 
     return res;
 } // Fin de Function normalizarPropiedad
 
 
 // ==========================================================================
-// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCIÓN DE RIEL MULTIMEDIA
+// PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCI�N DE RIEL MULTIMEDIA
 // ==========================================================================
 
 function formatearPrecioCompleto(precio) { // Inicia Function formatearPrecioCompleto
@@ -1729,7 +1733,7 @@ function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCom
 
 
 // ==========================================================================
-// PARTE 6 DE 15: CONSTRUCTOR DINÁMICO DEL COMPONENTE RIEL MULTIMEDIA
+// PARTE 6 DE 15: CONSTRUCTOR DIN�MICO DEL COMPONENTE RIEL MULTIMEDIA
 // ==========================================================================
 function construirRielCarruselComponente(prop, esPopup = false) {
     const contenedorFoto = document.createElement('div');
@@ -1902,7 +1906,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
 }
 
 // ==========================================================================
-// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CATÁLOGO DE ESCRITORIO
+// PARTE 8 DE 15: FABRICANTE DEL NODO DE LA TARJETA DEL CAT�LOGO DE ESCRITORIO
 // ==========================================================================
 
 function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponenteTarjetaZillow
@@ -1936,12 +1940,12 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
             ${prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
         </div>
         <div class="caracteristicas-inmueble">
-            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
+            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba�os | ${prop.estacionamientos || 0} Estacionamiento
         </div>
         <div class="detalles-adicionales">
             <div style="font-weight: bold;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
-            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
-            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+            <div>Construido: ${prop.area_construida || 0} m� | Terreno: ${prop.area_terreno || 0} m�</div>
+            <div>A�o: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
         </div>
         <div class="ubicacion-direccion-directa">
             ${prop.direccion ? `${prop.direccion}, ${prop.distrito || ''}` : (prop.titulo || "")}
@@ -1955,7 +1959,7 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
 
 
 // ==========================================================================
-// PARTE 9 DE 15: INYECCIÓN DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
+// PARTE 9 DE 15: INYECCI�N DE TARJETAS AL DOM MEDIANTE DOCUMENT FRAGMENT
 // ==========================================================================
 
 function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTarjetas
@@ -1979,13 +1983,13 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
 
     const contador = document.getElementById('results-counter');
 
-    console.log(`>> [SRE ESPÍA CATALOGO] Re-renderizando rejilla. Propiedades filtradas y ordenadas por destacado a pintar: ${filtradas.length}`);
+    console.log(`>> [SRE ESP�A CATALOGO] Re-renderizando rejilla. Propiedades filtradas y ordenadas por destacado a pintar: ${filtradas.length}`);
 
     if (filtradas.length === 0) {
         contenedorRejilla.innerHTML = `
             <div class="mensaje-sin-propiedades" style="padding: 60px 20px; text-align: center; width: 100%; box-sizing: border-box;">
                 <h3 style="font-size: 22px; color: #2d3748; font-weight: 700; font-family: sans-serif;">No existe este tipo de propiedades en este momento</h3>
-                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando más opciones.</p>
+                <p style="color: #718096; font-size: 15px; font-family: sans-serif;">Prueba seleccionando otros criterios o habilitando m�s opciones.</p>
             </div>
         `;
         if (contador) contador.textContent = `0 resultados disponibles`;
@@ -2020,12 +2024,12 @@ function construirContenedorPopupLeaflet(prop) {
             $${prop.precio_base ? Number(prop.precio_base).toLocaleString('en-US') : 'Precio no disponible'}
         </div>
         <div class="caracteristicas-inmueble" style="font-size: 11px; color: #4a5568; margin-bottom: 2px;">
-            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
+            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba�os | ${prop.estacionamientos || 0} Estacionamiento
         </div>
         <div class="detalles-adicionales" style="font-size: 11px; color: #718096; line-height: 1.3;">
             <div style="font-weight: bold; color: #1a202c;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
-            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
-            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+            <div>Construido: ${prop.area_construida || 0} m� | Terreno: ${prop.area_terreno || 0} m�</div>
+            <div>A�o: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
         </div>
         <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${prop.direccion ? prop.direccion + (prop.distrito ? ', ' + prop.distrito : '') : String(prop.titulo || '')}
@@ -2048,7 +2052,7 @@ function construirContenedorPopupLeaflet(prop) {
         if (typeof gestionarCortinaSPA === "function") {
             gestionarCortinaSPA('detalle', prop);
         }
-    }; // Fin de la función ejecutarTransicionDetalle
+    }; // Fin de la funci�n ejecutarTransicionDetalle
 
     carruselPopup.addEventListener('click', ejecutarTransicionDetalle);
 
@@ -2063,7 +2067,7 @@ function construirContenedorPopupLeaflet(prop) {
 }
 
 /**
- * FUNCIÓN MAESTRA: Encargada únicamente del control de capas y encuadre geométrico del mapa.
+ * FUNCI�N MAESTRA: Encargada �nicamente del control de capas y encuadre geom�trico del mapa.
  */
 function renderizarMapaZillow() {
     if (!window.map || !document.getElementById('map-instance')) return;
@@ -2136,7 +2140,7 @@ function renderizarMapaZillow() {
                     textoDatos.style.cssText = 'display:flex; flex-direction:column; gap:2px; padding:4px 0; cursor:pointer;';
                     textoDatos.innerHTML = `
                         <strong style="font-size:20px; color:#1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</strong>
-                        <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida || 0} m²</span>
+                        <span style="font-size:13px; color:#4a5568; font-weight:600;">${prop.habitaciones} bd | ${prop.banos} ba | ${prop.area_construida || 0} m�</span>
                         <p style="font-size:13px; color:#2d3748; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:500;">${prop.direccion || prop.titulo}</p>
                     `;
 
@@ -2195,20 +2199,20 @@ function renderizarMapaZillow() {
                 });
             }
         } catch (errGeometrico) {
-            console.warn(">> [SRE ESPÍA MAPA] Fallo en el cálculo de límites Leaflet:", errGeometrico.message);
+            console.warn(">> [SRE ESP�A MAPA] Fallo en el c�lculo de l�mites Leaflet:", errGeometrico.message);
         }
     }
 }
 
-// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESIÓN Y DOM CONTENT LOADED
+// PARTE 12 DE 15: ESCUCHADOR INTEGRAL DE CAMBIOS DE SESI�N Y DOM CONTENT LOADED
 // ==========================================================================
 
 function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
-    console.group(">> [SRE ESPÍA INTERCEPTOR] Paquete crudo recibido desde el Motor");
-    console.log("Estructura completa de la carga útil:", data);
+    console.group(">> [SRE ESP�A INTERCEPTOR] Paquete crudo recibido desde el Motor");
+    console.log("Estructura completa de la carga �til:", data);
 
     if (!data || !data.propiedades || !Array.isArray(data.propiedades)) {
-        console.error("X Formato de datos inválido o ausencia de la colección 'propiedades'.");
+        console.error("X Formato de datos inv�lido o ausencia de la colecci�n 'propiedades'.");
         console.groupEnd();
         return;
     }
@@ -2234,7 +2238,7 @@ function interceptarFirewallSeguridadUsuario(usuarios, email) {
 } // Fin de la Function interceptarFirewallSeguridadUsuario
 
 document.addEventListener("DOMContentLoaded", () => {
-    // --- CONTROLADOR DINÁMICO DE LAYOUT MÓVIL (INYECTADO DESDE APP.JS) ---
+    // --- CONTROLADOR DIN�MICO DE LAYOUT M�VIL (INYECTADO DESDE APP.JS) ---
 const ajustarLayoutMovilDinamico = () => {
         if (window.innerWidth <= 768) {
             const mapaContenedor = document.getElementById('map-instance');
@@ -2271,17 +2275,17 @@ const ajustarLayoutMovilDinamico = () => {
             cargarDatosDesdeSupabase();
 
             const btnCerrarTarjetaMovil = document.getElementById("btn-cerrar-tarjeta-movil-sre");
-            if (btnCerrarTarjetaMovil) { // Inicio Condicional Botón Móvil
-                btnCerrarTarjetaMovil.onclick = (e) => { // Inicio Evento Click Móvil
+            if (btnCerrarTarjetaMovil) { // Inicio Condicional Bot�n M�vil
+                btnCerrarTarjetaMovil.onclick = (e) => { // Inicio Evento Click M�vil
                     e.stopPropagation();
                     const cajaFlotanteMovil = document.getElementById("tarjeta-flotante-movil-sre");
                     if (cajaFlotanteMovil) cajaFlotanteMovil.className = "tarjeta-movil-sre-oculta";
-                }; // Fin Evento Click Móvil
-            } // Fin Condicional Botón Móvil
+                }; // Fin Evento Click M�vil
+            } // Fin Condicional Bot�n M�vil
 
             if (typeof supabase !== "undefined" && supabase !== null) { // Inicio Control Central Supabase SRE
                 supabase.auth.onAuthStateChange((event, session) => { // Inicio Callback Central onAuthStateChange SRE
-                    console.log(`%c>> [SRE AUTH] Evento pasivo de sesión detectado: ${event}`, "color: #ffb91d; font-weight: bold;");
+                    console.log(`%c>> [SRE AUTH] Evento pasivo de sesi�n detectado: ${event}`, "color: #ffb91d; font-weight: bold;");
 
                     setTimeout(async () => {
                         const user = (session && session.user) ? session.user : null;
@@ -2290,7 +2294,7 @@ const ajustarLayoutMovilDinamico = () => {
                             state.usuarioActual = null;
                             window.usuarioLogueado = null;
                             actualizarBotonCuenta();
-                            console.log("> [SRE AUTH] Sesión inactiva o cerrada. Estado global de seguridad reseteado.");
+                            console.log("> [SRE AUTH] Sesi�n inactiva o cerrada. Estado global de seguridad reseteado.");
                             return;
                         }
 
@@ -2323,7 +2327,7 @@ const ajustarLayoutMovilDinamico = () => {
                         if (errorBusquedaSocial) throw errorBusquedaSocial;
 
                         if (!perfilSocial) {
-                            console.log('> [SRE AUTH] Buscando vinculación existente por correo electrónico...');
+                            console.log('> [SRE AUTH] Buscando vinculaci�n existente por correo electr�nico...');
                             const { data: perfilPorCorreo, error: errorPorCorreo } = await cliente
                                 .from('usuario_autenticado')
                                 .select('usuario_id, estado_cuenta, verificado')
@@ -2333,7 +2337,7 @@ const ajustarLayoutMovilDinamico = () => {
                             if (errorPorCorreo) throw errorPorCorreo;
 
                             if (perfilPorCorreo) {
-                                console.log('>> [SRE AUTH] Correo preexistente detectado. Acoplando UUID de red social de forma atómica...');
+                                console.log('>> [SRE AUTH] Correo preexistente detectado. Acoplando UUID de red social de forma at�mica...');
 
                                 const { error: errorSincronizacionOAuth } = await cliente
                                     .from('usuario_autenticado')
@@ -2354,7 +2358,7 @@ const ajustarLayoutMovilDinamico = () => {
                         }
 
                         if (!perfilSocial) {
-                            console.warn('>> [SRE AUTH] Creando registro autónomo nuevo para el interesado social...');
+                            console.warn('>> [SRE AUTH] Creando registro aut�nomo nuevo para el interesado social...');
 
                             const metadatos = user.user_metadata || {};
                             const partesNombre = String(metadatos.full_name || metadatos.name || "Interesado").trim().split(" ");
@@ -2458,14 +2462,14 @@ const ajustarLayoutMovilDinamico = () => {
                             };
 
                             if (estadoActual === 'pendiente') {
-                                alert("¡Cuenta verificada exitosamente! Su correo electrónico ha sido confirmado. Ya puede usar todas las funciones premium.");
+                                alert("�Cuenta verificada exitosamente! Su correo electr�nico ha sido confirmado. Ya puede usar todas las funciones premium.");
                                 console.log(">> [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
                             } else {
-                                console.log(`> [SRE AUTH] Sesión tradicional restaurada con éxito. Estado: ${estadoActual.toUpperCase()}`);
+                                console.log(`> [SRE AUTH] Sesi�n tradicional restaurada con �xito. Estado: ${estadoActual.toUpperCase()}`);
                             }
 
                         } catch (err) {
-                            console.error('X [SRE AUTH CRÍTICO] Excepción capturada en la tubería de sincronización:', err);
+                            console.error('X [SRE AUTH CR�TICO] Excepci�n capturada en la tuber�a de sincronizaci�n:', err);
                             state.usuarioActual = null;
                         }
                     }, 0);
@@ -2660,7 +2664,7 @@ const ajustarLayoutMovilDinamico = () => {
                         }, 600);
                     });
                 }
-            } // Fin definitivo de la función inicializarEventosDeFiltros
+            } // Fin definitivo de la funci�n inicializarEventosDeFiltros
 
 
             function cerrarTodosLosPaneles() {
@@ -2670,7 +2674,7 @@ const ajustarLayoutMovilDinamico = () => {
             }
 
             // ==========================================================================
-            // PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCIÓN ÚNICA
+            // PARTE 14 DE 15: CONTROL DE ENTRADAS DE CAMPOS SEGMENTADOS DE SELECCI�N �NICA
             // ==========================================================================
 
             function configurarSegmentado(idContenedor, callback) { // Inicia Function configurarSegmentado
@@ -2712,13 +2716,13 @@ const ajustarLayoutMovilDinamico = () => {
                 if (modoDestino === 'registro') {
                     if (wrapperRegistro) wrapperRegistro.style.display = 'flex';
                     if (subtitulo) subtitulo.style.display = 'block';
-                    if (lblEmail) lblEmail.innerText = "Dirección de correo para registrar cuenta *";
+                    if (lblEmail) lblEmail.innerText = "Direcci�n de correo para registrar cuenta *";
                     if (btnPrincipal) {
                         btnPrincipal.innerText = "Confirmar Registro";
                         btnPrincipal.setAttribute('data-modo', 'registro');
                     }
                     if (linkConmutador) {
-                        linkConmutador.innerHTML = `¿Ya tiene una cuenta aprobada? <a href="#" id="link-volver-login-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Inicie sesión aquí</a>`;
+                        linkConmutador.innerHTML = `�Ya tiene una cuenta aprobada? <a href="#" id="link-volver-login-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Inicie sesi�n aqu�</a>`;
                         document.getElementById('link-volver-login-sre')?.addEventListener('click', (e) => {
                             e.preventDefault();
                             inicializacionModalEstadosVistaSRE('login');
@@ -2727,13 +2731,13 @@ const ajustarLayoutMovilDinamico = () => {
                 } else {
                     if (wrapperRegistro) wrapperRegistro.style.display = 'none';
                     if (subtitulo) subtitulo.style.display = 'none';
-                    if (lblEmail) lblEmail.innerText = "Dirección de correo electrónico *";
+                    if (lblEmail) lblEmail.innerText = "Direcci�n de correo electr�nico *";
                     if (btnPrincipal) {
                         btnPrincipal.innerText = "Continuar";
                         btnPrincipal.setAttribute('data-modo', 'login');
                     }
                     if (linkConmutador) {
-                        linkConmutador.innerHTML = `¿Nuevo en Inmobiliaria en Surco? <a href="#" id="link-crear-cuenta-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Crear cuenta</a>`;
+                        linkConmutador.innerHTML = `�Nuevo en Inmobiliaria en Surco? <a href="#" id="link-crear-cuenta-sre" style="color: #006aff; font-weight: 600; text-decoration: none;">Crear cuenta</a>`;
                         document.getElementById('link-crear-cuenta-sre')?.addEventListener('click', (e) => {
                             e.preventDefault();
                             inicializacionModalEstadosVistaSRE('registro');
@@ -2744,18 +2748,18 @@ const ajustarLayoutMovilDinamico = () => {
 
             function inicializarAutenticacionTresCanalesSupabase() { // Inicia la Funcion inicializarAutenticacionTresCanalesSupabase SRE
                 const btnAutenticarEmail = document.getElementById('btn-autenticar');
-            // [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR]
+            // [C�DIGO NUEVO A INSERTAR / REEMPLAZAR]
             /**
-             * Descripción: Valida si el usuario ya está registrado en 'usuario_autenticado'. 
+             * Descripci�n: Valida si el usuario ya est� registrado en 'usuario_autenticado'. 
              * Si es un usuario existente (como orlandopena11@yahoo.com), valida su estado y evita 
-             * enviar correos OTP innecesarios, permitiendo su acceso directo o vinculación limpia.
+             * enviar correos OTP innecesarios, permitiendo su acceso directo o vinculaci�n limpia.
              */
-            // [INICIO DE LLAVES]: Abre la función procesarAutenticacionMagicaSRE optimizada
+            // [INICIO DE LLAVES]: Abre la funci�n procesarAutenticacionMagicaSRE optimizada
                 const procesarAutenticacionMagicaSRE = async (esRegistroNuevo) => { 
                     const emailInput = document.getElementById('login-email-input');
                     const emailValor = emailInput ? emailInput.value.trim().toLowerCase() : "";
                     if (!emailValor) {
-                        alert("Por favor ingrese su dirección de correo electrónico.");
+                        alert("Por favor ingrese su direcci�n de correo electr�nico.");
                         return;
                     }
 
@@ -2801,7 +2805,7 @@ const ajustarLayoutMovilDinamico = () => {
                         // 2. Si intenta registrarse pero ya existe en la BD
                         if (esRegistroNuevo) {
                             if (usuarioBD) {
-                                alert("Aviso: Este correo electrónico ya se encuentra registrado en el sistema. Por favor, inicie sesión directamente.");
+                                alert("Aviso: Este correo electr�nico ya se encuentra registrado en el sistema. Por favor, inicie sesi�n directamente.");
                                 inicializacionModalEstadosVistaSRE('login');
                                 return;
                             }
@@ -2841,9 +2845,9 @@ const ajustarLayoutMovilDinamico = () => {
                             if (insertError) throw new Error("No se pudo pre-registrar el perfil en la base de datos: " + insertError.message);
 
                         } else {
-                            // Si es inicio de sesión tradicional y NO existe en la tabla usuario_autenticado
+                            // Si es inicio de sesi�n tradicional y NO existe en la tabla usuario_autenticado
                             if (!usuarioBD) {
-                                alert("Acceso Restringido: El correo ingresado no figura en nuestro sistema. Si es nuevo, use la opción 'Crear cuenta'.");
+                                alert("Acceso Restringido: El correo ingresado no figura en nuestro sistema. Si es nuevo, use la opci�n 'Crear cuenta'.");
                                 inicializacionModalEstadosVistaSRE('registro');
                                 return;
                             }
@@ -2855,7 +2859,7 @@ const ajustarLayoutMovilDinamico = () => {
                             }
                         }
 
-                        // 3. Envío seguro del enlace OTP solo tras validar que el usuario es legítimo en el sistema
+                        // 3. Env�o seguro del enlace OTP solo tras validar que el usuario es leg�timo en el sistema
                         const URL_RETORNO_CORRECTA = window.location.origin + window.location.pathname;
                         const {
                             error: errorOtp
@@ -2866,9 +2870,9 @@ const ajustarLayoutMovilDinamico = () => {
                             }
                         });
 
-                        if (errorOtp) throw new Error("Fallo de conexión con Supabase Auth: " + errorOtp.message);
+                        if (errorOtp) throw new Error("Fallo de conexi�n con Supabase Auth: " + errorOtp.message);
 
-                        alert(esRegistroNuevo ? "¡Cuenta pre-registrada con éxito! Le hemos enviado un enlace de confirmación a su correo." : "¡Enlace de acceso verificado! Revise su bandeja de entrada para ingresar a su sesión.");
+                        alert(esRegistroNuevo ? "�Cuenta pre-registrada con �xito! Le hemos enviado un enlace de confirmaci�n a su correo." : "�Enlace de acceso verificado! Revise su bandeja de entrada para ingresar a su sesi�n.");
                         cerrarPopupAccion('modal-autenticacion-supabase');
                         inicializacionModalEstadosVistaSRE('login');
 
@@ -2881,7 +2885,7 @@ const ajustarLayoutMovilDinamico = () => {
                             btnAutenticarEmail.disabled = false;
                         }
                     }
-                }; // [FIN DE LLAVES]: Cierra la función procesarAutenticacionMagicaSRE
+                }; // [FIN DE LLAVES]: Cierra la funci�n procesarAutenticacionMagicaSRE
 
 
                 if (btnAutenticarEmail) {
@@ -2928,7 +2932,7 @@ const ajustarLayoutMovilDinamico = () => {
 
 
             function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
-                // Actúa como un escudo de paso vacío exigido por el motor de renderizado de la Parte 12
+                // Act�a como un escudo de paso vac�o exigido por el motor de renderizado de la Parte 12
             } // Fin interceptarFirewallSeguridadUsuario
 
             async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
@@ -2970,26 +2974,26 @@ const ajustarLayoutMovilDinamico = () => {
             });
 
 
-<!-- [CÓDIGO NUEVO A INSERTAR / REEMPLAZAR] -->
+<!-- [C�DIGO NUEVO A INSERTAR / REEMPLAZAR] -->
 /**
- * Descripción de la función: inicializarEventosPopups unifica y registra todos los 
- * escuchadores de eventos de la interfaz, incluyendo el botón de inicio de sesión superior, 
- * los cierres de modales comerciales, la navegación por pasos del tour y la validación de seguridad.
+ * Descripci�n de la funci�n: inicializarEventosPopups unifica y registra todos los 
+ * escuchadores de eventos de la interfaz, incluyendo el bot�n de inicio de sesi�n superior, 
+ * los cierres de modales comerciales, la navegaci�n por pasos del tour y la validaci�n de seguridad.
  */
-// [INICIO DE LLAVES]: Abre la función principal unificada inicializarEventosPopups
+// [INICIO DE LLAVES]: Abre la funci�n principal unificada inicializarEventosPopups
 function inicializarEventosPopups() {
     
-    // 1. Vinculación del botón de inicio de sesión en la barra superior
+    // 1. Vinculaci�n del bot�n de inicio de sesi�n en la barra superior
     const btnOpenLogin = document.getElementById('btn-open-login');
-    // [INICIO DE LLAVES]: Valida existencia del botón superior de login
+    // [INICIO DE LLAVES]: Valida existencia del bot�n superior de login
     if (btnOpenLogin) {
         btnOpenLogin.addEventListener('click', (e) => {
-            // [INICIO DE LLAVES]: Callback de apertura del modal de autenticación
+            // [INICIO DE LLAVES]: Callback de apertura del modal de autenticaci�n
             if (e) e.preventDefault();
-            console.log("[SRE AUTH] Desplegando modal de autenticación desde la barra superior");
+            console.log("[SRE AUTH] Desplegando modal de autenticaci�n desde la barra superior");
             mostrarPopupAccion('modal-autenticacion-supabase');
         }); // [FIN DE LLAVES]: Cierra callback de login
-    } // [FIN DE LLAVES]: Cierra condición del botón de login
+    } // [FIN DE LLAVES]: Cierra condici�n del bot�n de login
 
     // 2. Cierre de modales comerciales de tour y agente
     // [INICIO DE LLAVES]: Vincula evento para cerrar el modal de tour
@@ -3004,9 +3008,9 @@ function inicializarEventosPopups() {
         cerrarPopupAccion('modal-agent-comercial');
     }); // [FIN DE LLAVES]: Cierra evento de cierre de agente
 
-    // 3. Enlace táctil dual síncrono para la navegación reactiva al Paso 2 del Tour
+    // 3. Enlace t�ctil dual s�ncrono para la navegaci�n reactiva al Paso 2 del Tour
     const btnSiguienteTour = document.getElementById('btn-navegacion-siguiente-tour');
-    // [INICIO DE LLAVES]: Valida existencia del botón siguiente en el tour
+    // [INICIO DE LLAVES]: Valida existencia del bot�n siguiente en el tour
     if (btnSiguienteTour) {
         const avanzarFaseTour = (e) => {
             // [INICIO DE LLAVES]: Callback para avanzar de fase en el tour
@@ -3016,17 +3020,17 @@ function inicializarEventosPopups() {
             }
             console.log("[SRE INFRAESTRUCTURA] Avanzando de forma interactiva al Paso 2 del Tour");
             gestionarPasosModalTour(2);
-        }; // [FIN DE LLAVES]: Cierra la función avanzarFaseTour
+        }; // [FIN DE LLAVES]: Cierra la funci�n avanzarFaseTour
         btnSiguienteTour.onclick = avanzarFaseTour;
         btnSiguienteTour.addEventListener('touchend', avanzarFaseTour, { passive: false });
-    } // [FIN DE LLAVES]: Cierra la condición del botón siguiente tour
+    } // [FIN DE LLAVES]: Cierra la condici�n del bot�n siguiente tour
 
-    // 4. Vinculación directa y limpia al Guardia de Seguridad unificado para solicitar tour
+    // 4. Vinculaci�n directa y limpia al Guardia de Seguridad unificado para solicitar tour
     const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
-    // [INICIO DE LLAVES]: Valida existencia del botón para solicitar tour en la galería
+    // [INICIO DE LLAVES]: Valida existencia del bot�n para solicitar tour en la galer�a
     if (btnSolicitarTourSelector) {
         btnSolicitarTourSelector.onclick = async function(e) {
-            // [INICIO DE LLAVES]: Callback asíncrono protegido por el cortafuegos premium
+            // [INICIO DE LLAVES]: Callback as�ncrono protegido por el cortafuegos premium
             if (e) e.stopPropagation();
             const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
             if (!tieneAccesoValido) return;
@@ -3034,17 +3038,17 @@ function inicializarEventosPopups() {
             mostrarPopupAccion("modal-tour-comercial");
             calcularCalendarioTresCajas();
             gestionarPasosModalTour(1);
-        }; // [FIN DE LLAVES]: Cierra el callback asíncrono
-    } // [FIN DE LLAVES]: Cierra la condición del botón de tour en galería
+        }; // [FIN DE LLAVES]: Cierra el callback as�ncrono
+    } // [FIN DE LLAVES]: Cierra la condici�n del bot�n de tour en galer�a
 
-} // [FIN DE LLAVES]: Cierra la función principal unificada inicializarEventosPopups
+} // [FIN DE LLAVES]: Cierra la funci�n principal unificada inicializarEventosPopups
 
                       
 
 
 // ==========================================================================
-// FUNCIÓN CENTRALIZADA: Invocador de Edge Function Supabase (enviar-correo)
-// Descripción: Envía de forma segura los parámetros a la Edge Function de Supabase.
+// FUNCI�N CENTRALIZADA: Invocador de Edge Function Supabase (enviar-correo)
+// Descripci�n: Env�a de forma segura los par�metros a la Edge Function de Supabase.
 // ==========================================================================
 async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje) { // [INICIO DE LLAVE]: Abre dispararCorreoNotificacionSRE
     if (!destinatario || String(destinatario).trim() === "") return false;
@@ -3067,7 +3071,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
 
         const resultado = await respuesta.json();
         if (!respuesta.ok) {
-            throw new Error(resultado.error || "Error al invocar la función de correo");
+            throw new Error(resultado.error || "Error al invocar la funci�n de correo");
         }
 
         console.log(`>> [SRE EMAIL] Correo enviado exitosamente a: [${destinatario}]`);
@@ -3144,7 +3148,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         }
                         else {
                             if (fechasSeleccionadasTour.size >= 3) {
-                                alert("Seleccione hasta 3 veces únicamente.");
+                                alert("Seleccione hasta 3 veces �nicamente.");
                                 return;
                             }
                             fechasSeleccionadasTour.add(valorDataIso);
@@ -3174,7 +3178,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                 }
             } // Fin calcularCalendarioTresCajas
 
-            // Alterna la visibilidad de los paneles internos del modal con pre-selección automática elástica SRE
+            // Alterna la visibilidad de los paneles internos del modal con pre-selecci�n autom�tica el�stica SRE
             function gestionarPasosModalTour(paso) { // Inicia gestionarPasosModalTour SRE
                 const paso1 = document.getElementById('tour-paso-horarios');
                 const paso2 = document.getElementById('tour-paso-confirmacion');
@@ -3188,17 +3192,17 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                     if (btnEnviar) btnEnviar.style.display = 'none';
                 } 
                 else if (paso === 2) { 
-                    // Si el interesado no hizo clic en ninguna caja, acoplamos de forma automática el primer día disponible
+                    // Si el interesado no hizo clic en ninguna caja, acoplamos de forma autom�tica el primer d�a disponible
                     if (fechasSeleccionadasTour.size === 0) { 
-                        console.log("[SRE CONTROL CALIENTE] No se detectó clic manual. Pre-seleccionando primera opción por defecto.");
+                        console.log("[SRE CONTROL CALIENTE] No se detect� clic manual. Pre-seleccionando primera opci�n por defecto.");
                         const primeraCajaDisponible = document.querySelector('.cajas-fechas-row .caja-fecha-item');
                         if (primeraCajaDisponible) {
-                            // Simulamos la pulsación interactiva sobre el nodo para poblar el Set de fechas
+                            // Simulamos la pulsaci�n interactiva sobre el nodo para poblar el Set de fechas
                             primeraCajaDisponible.click();
                         }
                     }
 
-                    // Segunda verificación de salvaguarda relacional
+                    // Segunda verificaci�n de salvaguarda relacional
                     if (fechasSeleccionadasTour.size === 0) { 
                         alert("Por favor, seleccione al menos una fecha para su recorrido en el calendario superior.");
                         return;
@@ -3283,14 +3287,14 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                             <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
                                 <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd |
                                 <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba |
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m² AC
+                                <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m� AC
                             </p>
                             <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
                         </div>
 
                         <div style="display: flex; gap: 24px; margin-bottom: 24px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <div style="font-size: 14px; color: #475569;">
-                                <strong style="color: #1e293b; font-size: 16px; display: block;">14</strong> Días en el portal
+                                <strong style="color: #1e293b; font-size: 16px; display: block;">14</strong> D�as en el portal
                             </div>
                             <div style="font-size: 14px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 24px;">
                                 <strong style="color: #1e293b; font-size: 16px; display: block;">1,248</strong> Vistas totales
@@ -3298,31 +3302,31 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         </div>
 
                         <div style="margin-bottom: 28px;">
-                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Características esenciales</h4>
+                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Caracter�sticas esenciales</h4>
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
                                 <div>
                                     <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Tipo</span>
                                     <strong style="font-size: 14px; color: #1a1a1a;">${prop.tipo_propiedad || 'Casa'}</strong>
                                 </div>
                                 <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Área Terreno</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_terreno || 0} m²</strong>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">�rea Terreno</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_terreno || 0} m�</strong>
                                 </div>
                                 <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Área Const.</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_construida || 0} m²</strong>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">�rea Const.</span>
+                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_construida || 0} m�</strong>
                                 </div>
                                 <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Año Const.</span>
+                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">A�o Const.</span>
                                     <strong style="font-size: 14px; color: #1a1a1a;">${prop.ano_construccion || 'N/A'}</strong>
                                 </div>
                             </div>
                         </div>
 
                         <div style="margin-bottom: 32px;">
-                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">¿Qué es especial de este hogar?</h4>
+                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;">�Qu� es especial de este hogar?</h4>
                             <p style="font-size: 14px; color: #4a5568; line-height: 1.6; background: #ffffff; padding: 0; margin: 0;">
-                                ${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}
+                                ${prop.descripcion || 'Sin descripci�n comercial registrada actualmente.'}
                             </p>
                         </div>
 
@@ -3351,7 +3355,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         const divTel = document.createElement('div');
                         divTel.style.cssText = 'margin-top: 10px; width: 100%;';
                         divTel.innerHTML = `
-                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Ver Teléfono del Vendedor</button>
+                <button type="button" id="btn-ver-telefono-premium" style="width: 100%; background: #ffffff; color: #002e50; border: 1px solid #002e50; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Ver Tel�fono del Vendedor</button>
                 <div id="txt-telefono-desplegado" style="display: none; text-align: center; margin-top: 8px; font-size: 16px; font-weight: bold; color: #006aff;"></div>
             `;
                         contenedorFijoFicha.appendChild(divTel);
@@ -3365,30 +3369,30 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         };
                     }
 
-                    const ejecutarFlujoModalProtegidoSRE = async (idBoton) => { // Inicia flujo asíncrono robusto unificado SRE
-                        console.group(`[SRE RADAR INTEGRAL] PROCESANDO DISPARO ASÍNCRONO EN: ${idBoton}`);
+                    const ejecutarFlujoModalProtegidoSRE = async (idBoton) => { // Inicia flujo as�ncrono robusto unificado SRE
+                        console.group(`[SRE RADAR INTEGRAL] PROCESANDO DISPARO AS�NCRONO EN: ${idBoton}`);
                         
-                        // Sincronización caliente de sesión OAuth pasiva en caso de desbordamiento en memoria
+                        // Sincronizaci�n caliente de sesi�n OAuth pasiva en caso de desbordamiento en memoria
                         if ((!state.usuarioActual || !state.usuarioActual.id) && window.usuarioLogueado) { 
                             state.usuarioActual = {
                                 id: window.usuarioLogueado.id,
                                 correo: window.usuarioLogueado.email,
                                 estado_cuenta: "activo"
                             };
-                        } // Fin de sincronización pasiva
+                        } // Fin de sincronizaci�n pasiva
 
-                        // Forzamos al hilo principal a esperar la resolución booleana del cortafuegos central
+                        // Forzamos al hilo principal a esperar la resoluci�n booleana del cortafuegos central
                         const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
-                        console.log("[SRE ESPÍA FIREWALL RESUELTO] Permisos confirmados por el cortafuegos:", tieneAccesoValido);
+                        console.log("[SRE ESP�A FIREWALL RESUELTO] Permisos confirmados por el cortafuegos:", tieneAccesoValido);
 
                         if (!tieneAccesoValido) {
-                            console.warn("[SRE ESPÍA RECHAZADO] Acceso denegado. Desplegando modal de autenticación.");
+                            console.warn("[SRE ESP�A RECHAZADO] Acceso denegado. Desplegando modal de autenticaci�n.");
                             mostrarPopupAccion("modal-autenticacion-supabase");
                             console.groupEnd();
                             return;
                         }
 
-                        if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia lógica para tours aprobados
+                        if (idBoton === 'btn-solicitar-tour-galeria') { // Inicia l�gica para tours aprobados
                             const propActualTour = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
                             if (propActualTour) { 
                                 const imgMini = document.getElementById('modal-tour-mini-foto');
@@ -3396,25 +3400,25 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                                 const specsMini = document.getElementById('modal-tour-mini-specs');
                                 
                                 if (imgMini) imgMini.src = propActualTour.fotos && propActualTour.fotos[0] ? propActualTour.fotos[0] : "";
-                                if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Dirección no disponible";
-                                if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m² AC`;
-                            } // Fin de inyección de metadatos
+                                if (dirMini) dirMini.textContent = propActualTour.direccion || propActualTour.titulo || "Direcci�n no disponible";
+                                if (specsMini) specsMini.textContent = `${propActualTour.habitaciones || 0} bd | ${propActualTour.banos || 0} ba | ${propActualTour.area_construida || 0} m� AC`;
+                            } // Fin de inyecci�n de metadatos
 
                             mostrarPopupAccion("modal-tour-comercial");
                             calcularCalendarioTresCajas();
                             gestionarPasosModalTour(1);
-                        } // Fin de lógica para tours
+                        } // Fin de l�gica para tours
 
-                        if (idBoton === 'btn-contactar-agente-galeria') { // Inicia lógica para agentes aprobados
+                        if (idBoton === 'btn-contactar-agente-galeria') { // Inicia l�gica para agentes aprobados
                             mostrarPopupAccion("modal-agent-comercial");
                             inyectarDatosPropiedadAlMensaje();
-                        } // Fin de lógica para agentes
+                        } // Fin de l�gica para agentes
                         
                         console.groupEnd();
-                    }; // Fin de la función asíncrona unificada SRE
+                    }; // Fin de la funci�n as�ncrona unificada SRE
 
 
-                    const manejarPulsacionFichaInmuebleSRE = (e) => { // Inicia callback de intercepción elástica
+                    const manejarPulsacionFichaInmuebleSRE = (e) => { // Inicia callback de intercepci�n el�stica
                         const elementoTocado = e.target;
                         if (!elementoTocado) return;
 
@@ -3423,23 +3427,23 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         if (idBotonEncontrado === 'btn-solicitar-tour-galeria' || idBotonEncontrado === 'btn-contactar-agente-galeria') {
                             if (e.cancelable) e.preventDefault();
                             e.stopPropagation();
-                            console.log(`[SRE CAPTURA DE DELEGACIÓN] Capturado clic real en pantalla. Botón detectado: ${idBotonEncontrado}`);
+                            console.log(`[SRE CAPTURA DE DELEGACI�N] Capturado clic real en pantalla. Bot�n detectado: ${idBotonEncontrado}`);
                             ejecutarFlujoModalProtegidoSRE(idBotonEncontrado);
                         }
-                    }; // Fin de callback de intercepción elástica
+                    }; // Fin de callback de intercepci�n el�stica
 
                     cortina.addEventListener('click', manejarPulsacionFichaInmuebleSRE);
                     cortina.addEventListener('touchend', manejarPulsacionFichaInmuebleSRE, { passive: false });
-                    console.log("%c-> [SRE INFRAESTRUCTURA] Escuchas elásticas enlazadas directamente a la Cortina SPA.", "color: #10b981; font-weight: bold;");
+                    console.log("%c-> [SRE INFRAESTRUCTURA] Escuchas el�sticas enlazadas directamente a la Cortina SPA.", "color: #10b981; font-weight: bold;");
 
 
 
 // ==========================================================================
-// FUNCIÓN: Asignación de Agente, Leads y Notificación con Traza Espía SRE
+// FUNCI�N: Asignaci�n de Agente, Leads y Notificaci�n con Traza Esp�a SRE
 // ==========================================================================
 /**
- * Descripción: Gestiona el formulario para contactar un agente. 
- * Audita la vista, la comparación, la selección por prioridad/leads,
+ * Descripci�n: Gestiona el formulario para contactar un agente. 
+ * Audita la vista, la comparaci�n, la selecci�n por prioridad/leads,
  * el INSERT en contacte_agente, el UPDATE en agente_inmobiliario y el correo.
  */
 // [INICIO DE LLAVES]: Abre el bloque del formulario de agente
@@ -3447,15 +3451,15 @@ const formAgente = document.getElementById('form-contactar-agente');
 if (formAgente) {
     formAgente.onsubmit = async (eventSubmit) => {
         eventSubmit.preventDefault();
-        console.group("🕵️‍♂️ [SRE ESPÍA AGENTE] === INICIO DE TRAZA: CONTACTAR UN AGENTE ===");
+        console.group("?????? [SRE ESP�A AGENTE] === INICIO DE TRAZA: CONTACTAR UN AGENTE ===");
 
-        // 1. VALOR LEÍDO DE LA VISTA
+        // 1. VALOR LE�DO DE LA VISTA
         const idVista = state.propiedadSeleccionadaId;
         const propActualAgente = state.propiedades.find(p => p.id === idVista);
-        console.log("1. [ESPÍA VISTA] Valor leído de 'vista_catalogo_mapa' (columna 'propiedad_id'):", idVista);
+        console.log("1. [ESP�A VISTA] Valor le�do de 'vista_catalogo_mapa' (columna 'propiedad_id'):", idVista);
 
         if (!(await validarAccesoFuncionalidadPremium())) {
-            console.warn("❌ [ESPÍA AGENTE] Cortafuegos bloqueó la ejecución.");
+            console.warn("? [ESP�A AGENTE] Cortafuegos bloque� la ejecuci�n.");
             console.groupEnd();
             return;
         }
@@ -3476,7 +3480,7 @@ if (formAgente) {
             const idPropiedadReal = String(propActualAgente ? propActualAgente.id : idVista).trim();
             
             // 2. VALOR Y TABLA CON LA QUE COMPARA
-            console.log(`2. [ESPÍA COMPARACIÓN] Comparando ID ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
+            console.log(`2. [ESP�A COMPARACI�N] Comparando ID ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
 
             const { data: anuncioData } = await clienteSupabaseSRE
                 .from('anuncio')
@@ -3487,7 +3491,7 @@ if (formAgente) {
             const idAnuncioReal = anuncioData ? anuncioData.anuncio_id : null;
             const agenteFallbackId = anuncioData ? anuncioData.agente_id_fk : null;
 
-            console.log("3. [ESPÍA LECTURA AGENTES] Consultando TABLA 'agente_inmobiliario' (columnas: 'prioridad', 'leads', 'leads_recibidos')...");
+            console.log("3. [ESP�A LECTURA AGENTES] Consultando TABLA 'agente_inmobiliario' (columnas: 'prioridad', 'leads', 'leads_recibidos')...");
             const { data: listaAgentes, error: errorAgentes } = await clienteSupabaseSRE
                 .from('agente_inmobiliario')
                 .select('agente_id, prioridad, leads, leads_recibidos, correo')
@@ -3501,17 +3505,17 @@ if (formAgente) {
                     const ag = listaAgentes[i];
                     const maxLeads = Number(ag.leads) || 10;
                     const actualLeads = Number(ag.leads_recibidos) || 0;
-                    console.log(`   -> Evaluando Agente [ID: ${ag.agente_id}] | Prioridad: ${ag.prioridad} | Recibidos: ${actualLeads} / Máx: ${maxLeads}`);
+                    console.log(`   -> Evaluando Agente [ID: ${ag.agente_id}] | Prioridad: ${ag.prioridad} | Recibidos: ${actualLeads} / M�x: ${maxLeads}`);
 
                     if (actualLeads < maxLeads) {
                         agenteAsignadoSRE = ag;
-                        console.log("      ✅ Asignado por disponibilidad de leads.");
+                        console.log("      ? Asignado por disponibilidad de leads.");
                         break;
                     }
                 }
                 if (!agenteAsignadoSRE) {
                     agenteAsignadoSRE = listaAgentes[0];
-                    console.log("      ⚠️ Límite alcanzado en todos. Asignando por defecto al primer agente de prioridad.");
+                    console.log("      ?? L�mite alcanzado en todos. Asignando por defecto al primer agente de prioridad.");
                 }
             }
 
@@ -3541,7 +3545,7 @@ if (formAgente) {
                 fecha_creacion: fechaContacteISO
             };
 
-            console.log("4. [ESPÍA INSERT PREPARADO] Valores listos para insertar en TABLA 'contacte_agente':", payloadContacteAgente);
+            console.log("4. [ESP�A INSERT PREPARADO] Valores listos para insertar en TABLA 'contacte_agente':", payloadContacteAgente);
 
             const { error: errorInsertLead } = await clienteSupabaseSRE
                 .from('contacte_agente')
@@ -3550,12 +3554,12 @@ if (formAgente) {
             if (errorInsertLead) throw errorInsertLead;
 
             // 4. LOGRO DEL INSERT
-            console.log("✅ 5. [ESPÍA INSERT LOGRADO] Se ejecutó y confirmó el INSERT en la TABLA 'contacte_agente'.");
+            console.log("? 5. [ESP�A INSERT LOGRADO] Se ejecut� y confirm� el INSERT en la TABLA 'contacte_agente'.");
 
             // 4. LOGRO DEL UPDATE (Incrementar leads_recibidos)
             if (agenteAsignadoSRE) {
                 const nuevosLeads = (Number(agenteAsignadoSRE.leads_recibidos) || 0) + 1;
-                console.log(`6. [ESPÍA UPDATE PREPARADO] Incrementando 'leads_recibidos' a [${nuevosLeads}] en TABLA 'agente_inmobiliario' (agente_id = '${agenteAsignadoSRE.agente_id}')`);
+                console.log(`6. [ESP�A UPDATE PREPARADO] Incrementando 'leads_recibidos' a [${nuevosLeads}] en TABLA 'agente_inmobiliario' (agente_id = '${agenteAsignadoSRE.agente_id}')`);
 
                 const { error: errorUpdateLead } = await clienteSupabaseSRE
                     .from('agente_inmobiliario')
@@ -3563,37 +3567,37 @@ if (formAgente) {
                     .eq('agente_id', agenteAsignadoSRE.agente_id);
 
                 if (errorUpdateLead) {
-                    console.error("⚠️ [ESPÍA UPDATE FALLIDO]:", errorUpdateLead.message);
+                    console.error("?? [ESP�A UPDATE FALLIDO]:", errorUpdateLead.message);
                 } else {
-                    console.log("✅ 7. [ESPÍA UPDATE LOGRADO] Se ejecutó y confirmó el UPDATE en la TABLA 'agente_inmobiliario'.");
+                    console.log("? 7. [ESP�A UPDATE LOGRADO] Se ejecut� y confirm� el UPDATE en la TABLA 'agente_inmobiliario'.");
                 }
             }
 
             // 5. VALOR PARA ENVIAR EL CORREO AL AGENTE
             const correoAgenteNotificar = agenteAsignadoSRE ? agenteAsignadoSRE.correo : null;
-            console.log(`8. [ESPÍA VALOR CORREO] Correo del agente capturado para notificar: [${correoAgenteNotificar || 'No asignado'}]`);
+            console.log(`8. [ESP�A VALOR CORREO] Correo del agente capturado para notificar: [${correoAgenteNotificar || 'No asignado'}]`);
 
-            // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
-            if (correoAgenteNotificar) { // [INICIO DE LLAVE]: Evalúa si existe correo del agente
+            // 6. ESTADO DEL ENV�O DE CORREO V�A EDGE FUNCTION
+            if (correoAgenteNotificar) { // [INICIO DE LLAVE]: Eval�a si existe correo del agente
                 const asuntoAgente = "Nuevo lead asignado: Interesado requiere agente";          
                 const cuerpoAgente = `Estimado Agente,\n\nUn interesado (${nombreAgenteInput}, Correo: ${state.usuarioActual.correo}, Tel: ${telefonoAgenteInput}) desea comunicarse con usted para definir una oportunidad de negocio.\n\nPor favor, contacte al cliente a la brevedad.`;
                 
                 await dispararCorreoNotificacionSRE(correoAgenteNotificar, asuntoAgente, cuerpoAgente);
-                console.log(`📧 9. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente al agente: ${correoAgenteNotificar}`);
+                console.log(`?? 9. [ESP�A ENV�O CORREO: S�] Correo enviado exitosamente al agente: ${correoAgenteNotificar}`);
             } else {
-                console.warn("⚠️ 9. [ESPÍA ENVÍO CORREO: NO] No se envió correo al agente por falta de dirección.");
-            } // [FIN DE LLAVE]: Cierra evaluación de correo del agente
+                console.warn("?? 9. [ESP�A ENV�O CORREO: NO] No se envi� correo al agente por falta de direcci�n.");
+            } // [FIN DE LLAVE]: Cierra evaluaci�n de correo del agente
             
 
-            alert("¡Mensaje enviado con éxito! Su requerimiento fue asignado al agente inmobiliario.");
+            alert("�Mensaje enviado con �xito! Su requerimiento fue asignado al agente inmobiliario.");
             cerrarPopupAccion('modal-agent-comercial');
             formAgente.reset();
 
         } catch (errAgente) {
-            console.error("❌ [ESPÍA AGENTE ERROR]:", errAgente.message);
-            alert("Error en el sistema de asignación: " + errAgente.message);
+            console.error("? [ESP�A AGENTE ERROR]:", errAgente.message);
+            alert("Error en el sistema de asignaci�n: " + errAgente.message);
         } finally {
-            console.log("🕵️‍♂️ [SRE ESPÍA AGENTE] === FIN DE TRAZA ===");
+            console.log("?????? [SRE ESP�A AGENTE] === FIN DE TRAZA ===");
             console.groupEnd();
             if (btnEnviarAgente) {
                 btnEnviarAgente.innerText = "Enviar Mensaje";
@@ -3610,7 +3614,7 @@ if (formAgente) {
                             e.stopPropagation();
                             if (!(await validarAccesoFuncionalidadPremium())) return;
 
-                            elementoBtnTelefono.innerText = "Consultando número...";
+                            elementoBtnTelefono.innerText = "Consultando n�mero...";
                             try {
                                 const cliente = obtenerClienteSupabase();
 
@@ -3648,13 +3652,13 @@ if (formAgente) {
 
                                 const cajaTextoTelefono = document.getElementById('txt-telefono-desplegado');
                                 if (cajaTextoTelefono) {
-                                    cajaTextoTelefono.innerText = `Número: ${telefonoObtenido}`;
+                                    cajaTextoTelefono.innerText = `N�mero: ${telefonoObtenido}`;
                                     cajaTextoTelefono.style.display = "block";
                                     elementoBtnTelefono.style.display = "none";
                                 }
                             } catch (errTel) {
-                                console.error("Error al recuperar el teléfono:", errTel);
-                                elementoBtnTelefono.innerText = "Ver Teléfono del Vendedor";
+                                console.error("Error al recuperar el tel�fono:", errTel);
+                                elementoBtnTelefono.innerText = "Ver Tel�fono del Vendedor";
                             }
                         };
                     }
@@ -3688,10 +3692,10 @@ if (formAgente) {
 
 
 // ==========================================================================
-// FUNCIÓN: Procesamiento, Agenda de Tour y Notificación con Traza Espía SRE
+// FUNCI�N: Procesamiento, Agenda de Tour y Notificaci�n con Traza Esp�a SRE
 // ==========================================================================
 /**
- * Descripción: Gestiona el envío del formulario de solicitud de un tour. 
+ * Descripci�n: Gestiona el env�o del formulario de solicitud de un tour. 
  * Asigna la fecha de hoy a fecha_creacion, consulta el correo del propietario 
  * en usuario_autenticado si no hay agente, y audita todo el proceso por consola.
  */
@@ -3700,15 +3704,15 @@ const formTour = document.getElementById('form-solicitar-tour-completo');
 if (formTour) {
     formTour.onsubmit = async (e) => {
         e.preventDefault();
-        console.group("🕵️‍♂️ [SRE ESPÍA TOUR] === INICIO DE TRAZA: SOLICITAR UN TOUR ===");
+        console.group("?????? [SRE ESP�A TOUR] === INICIO DE TRAZA: SOLICITAR UN TOUR ===");
 
-        // 1. VALOR LEÍDO DE LA VISTA
+        // 1. VALOR LE�DO DE LA VISTA
         const idVista = state.propiedadSeleccionadaId;
         const propActual = state.propiedades.find(p => p.id === idVista);
-        console.log("1. [ESPÍA VISTA] Valor leído de 'vista_catalogo_mapa' (columna 'propiedad_id'):", idVista);
+        console.log("1. [ESP�A VISTA] Valor le�do de 'vista_catalogo_mapa' (columna 'propiedad_id'):", idVista);
 
         if (!(await validarAccesoFuncionalidadPremium())) {
-            console.warn("❌ [ESPÍA TOUR] Cortafuegos bloqueó la ejecución.");
+            console.warn("? [ESP�A TOUR] Cortafuegos bloque� la ejecuci�n.");
             console.groupEnd();
             return;
         }
@@ -3723,13 +3727,13 @@ if (formTour) {
 
             const fechaSeleccionadaArregloSRE = Array.from(fechasSeleccionadasTour);
             const primeraFechaEscogidaSRE = fechaSeleccionadaArregloSRE[0] || "";
-            if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha válida en el calendario.");
+            if (!primeraFechaEscogidaSRE) throw new Error("Seleccione una fecha v�lida en el calendario.");
 
             const timestampEstandarISO = `${primeraFechaEscogidaSRE} ${horaSeleccionada}:00`;
             const idPropiedadReal = String(propActual ? propActual.id : idVista).trim();
             
-            // 2. COMPARACIÓN CON TABLA Y COLUMNA
-            console.log(`2. [ESPÍA COMPARACIÓN] Comparando ID ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
+            // 2. COMPARACI�N CON TABLA Y COLUMNA
+            console.log(`2. [ESP�A COMPARACI�N] Comparando ID ['${idPropiedadReal}'] con la TABLA 'anuncio' en su COLUMNA 'propiedad_id_fk'`);
             
             const { data: anuncioData, error: errAnuncio } = await cliente
                 .from('anuncio')
@@ -3738,7 +3742,7 @@ if (formTour) {
                 .maybeSingle();
 
             if (errAnuncio) throw errAnuncio;
-            if (!anuncioData) throw new Error("La propiedad seleccionada no cuenta con un anuncio válido en la base de datos.");
+            if (!anuncioData) throw new Error("La propiedad seleccionada no cuenta con un anuncio v�lido en la base de datos.");
 
             console.log("   -> Coincidencia hallada en TABLA 'anuncio':", anuncioData);
 
@@ -3766,17 +3770,17 @@ if (formTour) {
                 estado_lead: 'nuevo'
             };
 
-            console.log("3. [ESPÍA INSERT PREPARADO] Valores listos para insertar en TABLA 'visita':", payloadVisita);
+            console.log("3. [ESP�A INSERT PREPARADO] Valores listos para insertar en TABLA 'visita':", payloadVisita);
             
             const { error: errorVisita } = await cliente.from('visita').insert([payloadVisita]);
             if (errorVisita) throw errorVisita;
 
-            console.log("✅ 4. [ESPÍA INSERT LOGRADO] Se ejecutó y confirmó con éxito el INSERT en la TABLA 'visita'.");
+            console.log("? 4. [ESP�A INSERT LOGRADO] Se ejecut� y confirm� con �xito el INSERT en la TABLA 'visita'.");
 
 // ==========================================================================
-            // CONSULTAR QUIÉN VENDE PARA EL CORREO (LÓGICA HÍBRIDA PROPIETARIO / AGENTE)
+            // CONSULTAR QUI�N VENDE PARA EL CORREO (L�GICA H�BRIDA PROPIETARIO / AGENTE)
             // ==========================================================================
-            console.log("5. [ESPÍA VENDEDOR] Evaluando quién gestiona el anuncio...");
+            console.log("5. [ESP�A VENDEDOR] Evaluando qui�n gestiona el anuncio...");
             let correoVendedor = null;
             let tipoVendedor = "";
 
@@ -3792,14 +3796,14 @@ if (formTour) {
                     .maybeSingle();
 
                 if (errorAgente) {
-                    console.error("❌ Error al consultar el agente:", errorAgente.message);
+                    console.error("? Error al consultar el agente:", errorAgente.message);
                 }
 
                 if (agenteInfo && agenteInfo.correo) {
                     correoVendedor = agenteInfo.correo;
-                    console.log(`   ✅ Correo del agente encontrado: [${correoVendedor}]`);
+                    console.log(`   ? Correo del agente encontrado: [${correoVendedor}]`);
                 } else {
-                    console.warn("⚠️ El agente no tiene un correo registrado en su perfil.");
+                    console.warn("?? El agente no tiene un correo registrado en su perfil.");
                 }
             } 
             
@@ -3816,45 +3820,45 @@ if (formTour) {
                         .maybeSingle();
 
                     if (errorProp) {
-                        console.error("❌ Error al consultar el propietario:", errorProp.message);
+                        console.error("? Error al consultar el propietario:", errorProp.message);
                     }
 
                     if (propietarioInfo && propietarioInfo.correo) {
                         correoVendedor = propietarioInfo.correo;
-                        console.log(`   ✅ Correo del propietario encontrado: [${correoVendedor}]`);
+                        console.log(`   ? Correo del propietario encontrado: [${correoVendedor}]`);
                     }
                 }
             }
 
-            // Respaldo de seguridad SRE: Si por alguna razón no se halló el correo del vendedor principal
+            // Respaldo de seguridad SRE: Si por alguna raz�n no se hall� el correo del vendedor principal
             if (!correoVendedor) {
-                console.warn("⚠️ [SRE ADVERTENCIA] No se pudo determinar el correo del vendedor. Usando respaldo institucional.");
+                console.warn("?? [SRE ADVERTENCIA] No se pudo determinar el correo del vendedor. Usando respaldo institucional.");
                 correoVendedor = state.usuarioActual.correo; // Correo de respaldo temporal para pruebas
             }
 
             // 5. VALOR PARA ENVIAR EL CORREO
-            console.log(`6. [ESPÍA VALOR CORREO] Correo capturado para notificar: [${correoVendedor || 'No registrado'}] (Tipo: ${tipoVendedor})`);
+            console.log(`6. [ESP�A VALOR CORREO] Correo capturado para notificar: [${correoVendedor || 'No registrado'}] (Tipo: ${tipoVendedor})`);
 
-            // 6. ESTADO DEL ENVÍO DE CORREO VÍA EDGE FUNCTION
-            if (correoVendedor) { // [INICIO DE LLAVE]: Evalúa si existe correo del vendedor
+            // 6. ESTADO DEL ENV�O DE CORREO V�A EDGE FUNCTION
+            if (correoVendedor) { // [INICIO DE LLAVE]: Eval�a si existe correo del vendedor
                 const asuntoTour = "Nueva solicitud de Tour para su propiedad";
-                const cuerpoTour = `Estimado(a) ${tipoVendedor},\n\nUn interesado ha solicitado agendar un Tour presencial para su propiedad.\n\nDetalles:\n- Fecha y Hora: ${timestampEstandarISO}\n- Interesado: ${nombreInput}\n- Correo: ${state.usuarioActual.correo}\n- Teléfono: ${telefonoTourInput}\n\nPor favor, gestione la visita.`;
+                const cuerpoTour = `Estimado(a) ${tipoVendedor},\n\nUn interesado ha solicitado agendar un Tour presencial para su propiedad.\n\nDetalles:\n- Fecha y Hora: ${timestampEstandarISO}\n- Interesado: ${nombreInput}\n- Correo: ${state.usuarioActual.correo}\n- Tel�fono: ${telefonoTourInput}\n\nPor favor, gestione la visita.`;
                 await dispararCorreoNotificacionSRE(correoVendedor, asuntoTour, cuerpoTour);
-                console.log(`📧 7. [ESPÍA ENVÍO CORREO: SÍ] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour.`);
+                console.log(`?? 7. [ESP�A ENV�O CORREO: S�] Correo enviado exitosamente a '${correoVendedor}' con los detalles del tour.`);
             } else {
-                console.warn("⚠️ 7. [ESPÍA ENVÍO CORREO: NO] No se envió el correo debido a que el vendedor no tiene una dirección registrada.");
-            } // [FIN DE LLAVE]: Cierra evaluación de correo del vendedor
+                console.warn("?? 7. [ESP�A ENV�O CORREO: NO] No se envi� el correo debido a que el vendedor no tiene una direcci�n registrada.");
+            } // [FIN DE LLAVE]: Cierra evaluaci�n de correo del vendedor
             
 
-            alert("¡Tour agendado exitosamente! Se ha notificado al vendedor.");
+            alert("�Tour agendado exitosamente! Se ha notificado al vendedor.");
             cerrarPopupAccion('modal-tour-comercial');
             formTour.reset();
 
         } catch (errTour) {
-            console.error("❌ [ESPÍA TOUR ERROR]:", errTour.message);
+            console.error("? [ESP�A TOUR ERROR]:", errTour.message);
             alert("Error al procesar la agenda: " + errTour.message);
         } finally {
-            console.log("🕵️‍♂️ [SRE ESPÍA TOUR] === FIN DE TRAZA ===");
+            console.log("?????? [SRE ESP�A TOUR] === FIN DE TRAZA ===");
             console.groupEnd();
         }
     };
@@ -3872,13 +3876,13 @@ if (formTour) {
 
                 cortina.classList.add('cortina-activa');
 
-            } // FIN DEFINITIVO DE LA FUNCIÓN gestionarCortinaSPA RESTABLECIDA
+            } // FIN DEFINITIVO DE LA FUNCI�N gestionarCortinaSPA RESTABLECIDA
 
 
 
 
             // ==========================================================================
-            // COMPONENTE MODULAR INTERIOR: CÁLCULOS FINANCIEROS Y CARACTERÍSTICAS
+            // COMPONENTE MODULAR INTERIOR: C�LCULOS FINANCIEROS Y CARACTER�STICAS
             // ==========================================================================
 
             function inyectarSeccionesAdicionalesZillow(prop) {
@@ -3897,49 +3901,49 @@ if (formTour) {
                 const fMoneda = (val) => val > 0 ? '$' + Math.round(val).toLocaleString('en-US') : 'No disponible';
 
                 slotDinamico.innerHTML = `
-        <!-- SECCIÓN 1: DATOS Y CARACTERÍSTICAS -->
+        <!-- SECCI�N 1: DATOS Y CARACTER�STICAS -->
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Datos y características del inmueble</h4>
+            <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Datos y caracter�sticas del inmueble</h4>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 8px;">
                     <h5 style="font-size: 15px; font-weight: 700; color: #006aff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Interior</h5>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Habitaciones y baños:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños completos</strong>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Habitaciones y ba�os:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba�os completos</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Calefacción y Enfriamiento:</span>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Calefacci�n y Enfriamiento:</span>
                             <strong style="font-size: 14px; color: #1e293b;">Centralizado / Aire Acondicionado independiente</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Electrodomésticos incluidos:</span>
+                            <span style="font-size: 13px; color: #64748b; display: block;">Electrodom�sticos incluidos:</span>
                             <strong style="font-size: 14px; color: #1e293b;">Cocina empotrada, Horno, Extractor de grasa</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Sótanos y Almacenes:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">Sótano: ${prop.sotano || 'No'} | Depósito/Almacén: ${prop.almacen || 'No'}</strong>
+                            <span style="font-size: 13px; color: #64748b; display: block;">S�tanos y Almacenes:</span>
+                            <strong style="font-size: 14px; color: #1e293b;">S�tano: ${prop.sotano || 'No'} | Dep�sito/Almac�n: ${prop.almacen || 'No'}</strong>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SECCIÓN 2: VALOR DE MERCADO ESTIMADO -->
+        <!-- SECCI�N 2: VALOR DE MERCADO ESTIMADO -->
         <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                 <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a;">Valor de mercado estimado</h4>
                 <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">ZESTIMATE</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">Índice de valoración automatizado calculado en tiempo real con la data de la zona.</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;">�ndice de valoraci�n automatizado calculado en tiempo real con la data de la zona.</p>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
 
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                     <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Precio de lista</span>
                     <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(precioBase)}</strong>
-                    <span style="font-size: 11px; color: #10b981; font-weight: 600;">Valor base de tasación</span>
+                    <span style="font-size: 11px; color: #10b981; font-weight: 600;">Valor base de tasaci�n</span>
                 </div>
 
                 <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 4px solid #006aff;">
@@ -4045,7 +4049,7 @@ if (formTour) {
                     tablaHtmlRows += `
             <tr style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding: 10px 16px; color: #475569; font-weight: 600;">${periodo}</td>
-                <td style="padding: 10px 16px; color: #1e293b;">$${historialM2[periodo].toLocaleString('en-US')} / m²</td>
+                <td style="padding: 10px 16px; color: #1e293b;">$${historialM2[periodo].toLocaleString('en-US')} / m�</td>
                 <td style="padding: 10px 16px; font-weight: 700; color: #006aff;">$${Math.round(valInmueble).toLocaleString('en-US')}</td>
             </tr>
         `;
@@ -4058,7 +4062,7 @@ if (formTour) {
                 slotHistorial.innerHTML = `
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate (Últimos 3 años)</h4>
+                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate (�ltimos 3 a�os)</h4>
                 <span style="font-size: 12px; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">Ubigeo: ${ubigeoPropiedad}</span>
             </div>
 
@@ -4081,22 +4085,22 @@ if (formTour) {
 
                 <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; font-weight: bold; margin-top: 12px; padding: 0 10px;">
                     <span>2023 (Inicio)</span>
-                    <span>2024 (Evolución)</span>
+                    <span>2024 (Evoluci�n)</span>
                     <span>2025 (Crecimiento)</span>
                     <span style="color: #006aff;">2026 (Actual)</span>
                 </div>
             </div>
-            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 10px;">Curva de tasación automatizada para el área construida de <strong>${areaConstruida} m²</strong> en ${distritoNombre}.</p>
+            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 10px;">Curva de tasaci�n automatizada para el �rea construida de <strong>${areaConstruida} m�</strong> en ${distritoNombre}.</p>
         </div>
 
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Vista de la tabla analítica completa</h4>
+            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Vista de la tabla anal�tica completa</h4>
             <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; max-height: 280px; overflow-y: auto;">
                 <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
                     <thead style="position: sticky; top: 0; background: #f8fafc; box-shadow: 0 1px 0 #e2e8f0;">
                         <tr style="color: #475569; font-weight: 600;">
                             <th style="padding: 12px 16px;">Trimestre</th>
-                            <th style="padding: 12px 16px;">Valor m² (USD)</th>
+                            <th style="padding: 12px 16px;">Valor m� (USD)</th>
                             <th style="padding: 12px 16px;">Valor Comercial Estimado</th>
                         </tr>
                     </thead>
@@ -4108,13 +4112,13 @@ if (formTour) {
         </div>
 
         <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 12px;">
-            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos públicos estimados</h4>
+            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos p�blicos estimados</h4>
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
                 <div>
-                    <strong style="font-size: 13px; color: #1e293b; display: block;">Autovalúo predial estimado:</strong>
+                    <strong style="font-size: 13px; color: #1e293b; display: block;">Autoval�o predial estimado:</strong>
                     <span style="font-size: 12px; color: #64748b;">Monto tributario anual proyectado de acuerdo a los aranceles vigentes de la zona.</span>
                 </div>
-                <strong style="font-size: 18px; color: #1e293b; white-space: nowrap;">${fM(impuestoAnual)} / año</strong>
+                <strong style="font-size: 18px; color: #1e293b; white-space: nowrap;">${fM(impuestoAnual)} / a�o</strong>
             </div>
         </div>
 
@@ -4132,9 +4136,9 @@ if (formTour) {
             // ====================================================================================
             // INICIO DE FUNCTION: inyectarCapacidadCompraZillow
             // ====================================================================================
-            async function inyectarCapacidadCompraZillow(prop) { // Abre la función principal inyectarCapacidadCompraZillow
+            async function inyectarCapacidadCompraZillow(prop) { // Abre la funci�n principal inyectarCapacidadCompraZillow
                 if (!prop || !prop.propiedad_id || isNaN(parseFloat(prop.precio_base))) {
-                    console.log(">> [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulación hipotecaria.");
+                    console.log(">> [SRE SIMULADOR] Pasivo en arranque. No se ejecuta simulaci�n hipotecaria.");
                     return;
                 }
 
@@ -4148,9 +4152,9 @@ if (formTour) {
         <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <h4 style="font-size: 18px; font-weight: 700; color: #002E50;">Simulador Hipotecario Inteligente</h4>
-                <span style="background: #002E50; color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXIÓN DIRECTA</span>
+                <span style="background: #002E50; color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXI�N DIRECTA</span>
             </div>
-            <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">Evaluación en base a las políticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
+            <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">Evaluaci�n en base a las pol�ticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
             <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,46,80,0.04); display: flex; flex-direction: column; gap: 20px;">
                 <div style="text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
                     <span style="font-size: 14px; color: #002E50; font-weight: 600;">Cuota Mensual Total Estimada</span>
@@ -4167,7 +4171,7 @@ if (formTour) {
                         <select id="combo-lov-plazo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Tasa de Interés Anual (TEA):</label>
+                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Tasa de Inter�s Anual (TEA):</label>
                         <select id="combo-lov-tea" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
                     </div>
                     <div>
@@ -4181,7 +4185,7 @@ if (formTour) {
                 </div>
                 <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px;">
                     <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #002E50;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #002E50;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortizaci�n + Inter�s):</span><strong id="txt-calc-cuotabase" style="color: #002E50;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #002E50;">-</strong></div>
                     <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #002E50;">-</strong></div>
                 </div>
@@ -4200,7 +4204,7 @@ if (formTour) {
 
                 let calculosGlobales = null;
 
-                function ejecutarRecalculoHipoteca() { // Abre sub-función matemática ejecutarRecalculoHipoteca
+                function ejecutarRecalculoHipoteca() { // Abre sub-funci�n matem�tica ejecutarRecalculoHipoteca
                     const pctInicial = parseFloat(cInicial.value) || 0;
                     const anosPlazo = parseInt(cPlazo.value) || 0;
                     const valorTea = parseFloat(cTea.value) || 0;
@@ -4245,7 +4249,7 @@ if (formTour) {
                         cuotaTotal,
                         ratioLtv
                     };
-                } // Cierra sub-función matemática ejecutarRecalculoHipoteca
+                } // Cierra sub-funci�n matem�tica ejecutarRecalculoHipoteca
 
                 [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
@@ -4287,13 +4291,13 @@ if (formTour) {
 
                         if (error) throw error;
 
-                        alert("¡Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en dólares y el documento oficial PDF está en camino a tu bandeja de correo registrado.");
+                        alert("�Cronograma generado exitosamente! Hemos procesado tu corrida de cuotas en d�lares y el documento oficial PDF est� en camino a tu bandeja de correo registrado.");
                         btnGuardar.innerText = "Cronograma Enviado Exitosamente";
                         btnGuardar.style.background = "#002E50";
                         btnGuardar.style.color = "#FFB91D";
 
                     } catch (err) {
-                        console.error("Fallo guardando simulación:", err.message);
+                        console.error("Fallo guardando simulaci�n:", err.message);
                         alert("Error procesando solicitud: " + err.message);
                         btnGuardar.innerText = "Enviar mi cronograma de hipoteca a mi correo";
                         btnGuardar.disabled = false;
@@ -4320,16 +4324,16 @@ if (formTour) {
                                 return `<option value="${pctValor}" data-comment="${opt.comentarios_sbs_mercado || ''}">${textoPorcentaje}</option>`;
                             }).join('');
                         } else {
-                            cInicial.innerHTML = '<option value="0.20" data-comment="Mínimo regular">20% Mínimo</option>';
+                            cInicial.innerHTML = '<option value="0.20" data-comment="M�nimo regular">20% M�nimo</option>';
                         }
 
                         if (rPlazo.data && rPlazo.data.length > 0) {
                             cPlazo.innerHTML = rPlazo.data.map(opt => {
                                 const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
-                                return `<option value="${valorAnos}">${valorAnos} Años</option>`;
+                                return `<option value="${valorAnos}">${valorAnos} A�os</option>`;
                             }).join('');
                         } else {
-                            cPlazo.innerHTML = '<option value="20">20 Años</option>';
+                            cPlazo.innerHTML = '<option value="20">20 A�os</option>';
                         }
 
                         if (rTea.data && rTea.data.length > 0) {
@@ -4364,7 +4368,7 @@ if (formTour) {
                 //} catch (errLOV) {
                 //    console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                 //    cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
-                //    cPlazo.innerHTML = '<option value="20">20 Años</option>';
+                //    cPlazo.innerHTML = '<option value="20">20 A�os</option>';
                 //    cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
                 //    cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
                 //    cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
@@ -4380,13 +4384,12 @@ if (formTour) {
                 } catch (errLOV) {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                     cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
-                    cPlazo.innerHTML = '<option value="20">20 Años</option>';
+                    cPlazo.innerHTML = '<option value="20">20 A�os</option>';
                     cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
                     cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
                // }
-            } // [CIERRE 1]: Cierra el bloque condicional del if (nombreTabla === 'propiedad') y la IIFE de carga inicial
-        } // [CIERRE 2]: Cierra el bloque if/else o la función principal del submodal o la estructura interna del CRUD
-    } // [CIERRE 3]: Cierra la función asíncrona abrirFormularioEdicionCrud
-} // [CIERRE 4]: Cierra la función inyectarCapacidadCompraZillow (fin del archivo app.js)
+            } // [CIERRE 1]: Cierra el bloque catch (errLOV) de la carga de LOV hipotecarios
+    } // [CIERRE 2]: Cierra la función inyectarCapacidadCompraZillow
+}); // [CIERRE 3]: Cierra el callback de document.addEventListener("DOMContentLoaded", ...) abierto en la Parte 12
