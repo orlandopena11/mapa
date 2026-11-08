@@ -1090,6 +1090,7 @@ if (caracteristicasObtenidas.length > 0) {
                            
 
                             poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
+                            selCodigoPostal.value = postalPreferido;
                         } catch (errCP) {
                             if (idConsulta !== secuenciaConsultaPostal) return;
                             console.warn("Aviso al filtrar lov_codigo_postal:", errCP);
@@ -1132,6 +1133,7 @@ if (caracteristicasObtenidas.length > 0) {
 
                         const codigo = String(filaUbigeo.codigo_ubigeo_id);
                         poblarSelectCascadaCrud(selCodigoUbigeo, textoUbigeoAuto, [{ valor: codigo, texto: `${codigo} - ${filaUbigeo.distrito}` }], codigo);
+                        selCodigoUbigeo.value = codigo; // Asegura la persistencia síncrona del valor dinámico
                         return codigo;
                     };
 
