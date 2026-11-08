@@ -1144,11 +1144,7 @@ if (caracteristicasObtenidas.length > 0) {
                     };
                 }
 
-            } catch (errLov) {
-                console.error("? Error cargando catálogos:", errLov);
-            } finally {
-                console.groupEnd();
-            }
+
         })();
     }
 
