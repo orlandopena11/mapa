@@ -1029,178 +1029,102 @@ if (caracteristicasObtenidas.length > 0) {
                 
                 
 
-                // ==========================================================================
-                // CASCADA UBIGEO: Departamento -> Provincia -> Distrito -> Código Ubigeo -> Código Postal
-                // Funciona igual en modo creación y en modo edición (precarga síncrona desde la caché en memoria).
-                // ==========================================================================
-                const selPais = formNode.querySelector('#sel-lov-pais');
-                const selDep = formNode.querySelector('#sel-ubigeo-departamento');
-                const selProv = formNode.querySelector('#sel-ubigeo-provincia');
-                const selDist = formNode.querySelector('#sel-ubigeo-distrito');
-                const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
-                const selCodigoPostal = formNode.querySelector('#sel-lov-codigo_postal');
+/**
+ * Descripción: Inicializa la cascada multi-nivel territorial basada en 'paises_configuracion' y 'ubicaciones_territoriales'.
+ */
+// [INICIO DE LLAVES]: Abre la función asíncrona principal de la nueva cascada territorial
+async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, datosFilaEdicion) {
+    // [INICIO DE LLAVES]: Validación y selección de nodos del DOM en el formulario
+    const selPais = formNode.querySelector('#sel-lov-pais');
+    const contenedorCascada = formNode.querySelector('#contenedor-cascada-territorial');
+    if (!selPais || !contenedorCascada) return;
+    // [FIN DE LLAVES]: Cierra la validación de nodos
 
-                if (selPais && !selPais.value && resPais.data && resPais.data.length > 0) {
-                    selPais.value = resPais.data[0].pais || 'Perú';
-                }
+    // [INICIO DE LLAVES]: Bloque principal try/catch para la carga de catálogos territoriales
+    try {
+        // 1. Cargar la lista oficial de países desde 'paises_configuracion'
+        const { data: paisesData, error: errPaises } = await clienteSupabase
+            .from('paises_configuracion')
+            .select('nombre_pais, codigo_iso')
+            .order('nombre_pais', { ascending: true });
 
-                // [INICIO DE LLAVES]: Valida que existan los 4 selectores de la cascada antes de enlazar la lógica
-                if (selDep && selProv && selDist && selCodigoUbigeo) {
-                    const comparadorEs = (a, b) => String(a).localeCompare(String(b), 'es');
-                    const textoUbigeoAuto = '-- Código Ubigeo Automático --';
+        if (errPaises) throw errPaises;
 
-                    // Valores guardados del registro en edición (en creación quedan vacíos)
-                    const codigoUbigeoOriginal = String(selCodigoUbigeo.getAttribute('data-actual') || '').trim();
-                    const codigoPostalOriginal = String(selCodigoPostal ? (selCodigoPostal.getAttribute('data-actual') || '') : '').trim();
+        const paisInicial = (datosFilaEdicion && datosFilaEdicion.pais) || (paisesData && paisesData.length > 0 ? paisesData[0].nombre_pais : 'Perú');
 
-                    // ----------------------------------------------------------------------
-                    // Pre-filtro y carga de lov_codigo_postal según el código de ubigeo seleccionado
-                    // ----------------------------------------------------------------------
-                    let secuenciaConsultaPostal = 0;
+        selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
+            (paisesData || []).map(p => `<option value="${p.nombre_pais}" ${p.nombre_pais === paisInicial ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
 
-                    // [INICIO DE LLAVES]: Abre la función asíncrona de carga de códigos postales / centros poblados
-                    const cargarCodigosPostalesPorUbigeo = async () => {
-                        if (!selCodigoPostal) return;
+        // 2. Función interna para renderizar y enlazar los niveles territoriales dinámicos
+        const actualizarEstructuraTerritorial = async (paisSeleccionado) => {
+            // [INICIO DE LLAVES]: Validación de selección de país
+            if (!paisSeleccionado) {
+                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para ver los niveles territoriales.</p>';
+                return;
+            } // [FIN DE LLAVES]: Cierra validación
 
-                        const ubigeoIdSeleccionado = String(selCodigoUbigeo.value || '').trim();
-                        const idConsulta = ++secuenciaConsultaPostal;
+            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando estructura territorial...</p>';
 
-                        if (!ubigeoIdSeleccionado) {
-                            poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione primero el Ubigeo --', [], '');
-                            return;
-                        }
+            // Consultar ubicaciones desde la tabla unificada 'ubicaciones_territoriales'
+            const { data: ubicacionesData, error: errUbicaciones } = await clienteSupabase
+                .from('ubicaciones_territoriales')
+                .select('*')
+                .eq('pais', paisSeleccionado)
+                .order('nivel', { ascending: true });
 
-                        // Si se vuelve al ubigeo guardado, se reselecciona el código postal guardado (data-actual)
-                        const postalPreferido = ubigeoIdSeleccionado === codigoUbigeoOriginal ? codigoPostalOriginal : '';
+            if (errUbicaciones) throw errUbicaciones;
 
-                        poblarSelectCascadaCrud(selCodigoPostal, 'Cargando centros poblados...', [], '');
+            if (!ubicacionesData || ubicacionesData.length === 0) {
+                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">No hay ubicaciones registradas para este país.</p>';
+                return;
+            }
 
-                        try {
-                        // [INICIO DE LLAVES]: Consulta paginada y segura para evitar el límite de 1000 filas en centros poblados densos
-                        const { data: dataPostal, error: errPostal } = await clienteSupabase
-                            .from('lov_codigo_postal')
-                            .select('codigo_postal, centro_poblado, codigo_ubigeo_id')
-                            .eq('codigo_ubigeo_id', ubigeoIdSeleccionado)
-                            .order('centro_poblado', { ascending: true })
-                            .range(0, 999);
-                        // [FIN DE LLAVES]: Cierra la consulta segura con rango controlado
+            // Obtener los niveles disponibles únicos ordenados de menor a mayor (ej. 1, 2, 3...)
+            const nivelesDisponibles = [...new Set(ubicacionesData.map(u => u.nivel))].sort((a, b) => a - b);
 
-                            // Si el usuario cambió de ubigeo mientras se consultaba, se descarta esta respuesta obsoleta
-                            if (idConsulta !== secuenciaConsultaPostal) return;
-                            if (errPostal) throw errPostal;
+            let htmlSelectores = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            
+            nivelesDisponibles.forEach((nivel) => {
+                htmlSelectores += `
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #002e50;">Nivel Territorial ${nivel}:</label>
+                        <select id="sel-territorio-nivel-${nivel}" class="select-territorio-dinamico" data-nivel="${nivel}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                `;
+            });
 
-                            const filasValidas = (dataPostal || []).filter(row =>
-                                row.codigo_postal !== undefined && row.codigo_postal !== null && String(row.codigo_postal).trim() !== ''
-                            );
+            // Campo oculto final para almacenar el código de la ubicación seleccionada
+            htmlSelectores += `
+                <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${datosFilaEdicion ? (datosFilaEdicion.codigo_ubigeo_id_fk || '') : ''}">
+            </div>`;
 
-                            if (filasValidas.length === 0) {
-                                poblarSelectCascadaCrud(selCodigoPostal, '-- No hay centros poblados para este ubigeo --', [], '');
-                                return;
-                            }
+            contenedorCascada.innerHTML = htmlSelectores;
 
-                            // [INICIO DE LLAVES]: Mapeo optimizado de centros poblados y códigos postales para el selector dinámico CRUD
-                            const opcionesPostal = filasValidas.map(row => {
-                                const codigoPostalVal = String(row.codigo_postal).trim();
-                                const centroPobladoTexto = row.centro_poblado || 'Sin Nombre';
-                                return { 
-                                    valor: codigoPostalVal, 
-                                    texto: `${centroPobladoTexto} - ${codigoPostalVal}` 
-                                };
-                            });
-                           
+            // Poblar el Nivel 1 inicial
+            const selectNivel1 = contenedorCascada.querySelector('#sel-territorio-nivel-1');
+            if (selectNivel1) {
+                const primerNivelItems = ubicacionesData.filter(u => u.nivel === nivelesDisponibles[0]);
+                selectNivel1.innerHTML = '<option value="">-- Seleccione --</option>' + 
+                    primerNivelItems.map(item => `<option value="${item.ubicacion_id || item.nombre}">${item.nombre}</option>`).join('');
+            }
+        }; // [FIN DE LLAVES]: Cierra la función interna actualizarEstructuraTerritorial
 
-                            poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione Centro Poblado --', opcionesPostal, postalPreferido);
-                           
-                        } catch (errCP) {
-                            if (idConsulta !== secuenciaConsultaPostal) return;
-                            console.warn("Aviso al filtrar lov_codigo_postal:", errCP);
-                            poblarSelectCascadaCrud(selCodigoPostal, '-- No se pudieron cargar los centros poblados --', [], '');
-                        }
-                    }; // [FIN DE LLAVES]: Cierra cargarCodigosPostalesPorUbigeo
+        // Disparar carga inicial para el país por defecto
+        await actualizarEstructuraTerritorial(paisInicial);
 
-                    // Al cambiar el código de ubigeo principal se refresca el combo postal
-                    selCodigoUbigeo.addEventListener('change', cargarCodigosPostalesPorUbigeo);
+        // Actualizar al cambiar de país en el selector
+        selPais.onchange = async () => {
+            await actualizarEstructuraTerritorial(selPais.value);
+        };
 
-                    // ----------------------------------------------------------------------
-                    // Cascada Departamento -> Provincia -> Distrito -> Código Ubigeo
-                    // ----------------------------------------------------------------------
-                    const cargarProvincias = (provinciaPreferida) => {
-                        const provincias = [...new Set(
-                            coleccionUbigeo.filter(u => u.departamento === selDep.value).map(u => u.provincia)
-                        )].filter(Boolean).sort(comparadorEs);
-                        poblarSelectCascadaCrud(selProv, '-- Seleccione Provincia --', provincias.map(p => ({ valor: p, texto: p })), provinciaPreferida);
-                    };
-
-                    const cargarDistritos = (distritoPreferido) => {
-                        const distritos = [...new Set(
-                            coleccionUbigeo
-                                .filter(u => u.departamento === selDep.value && u.provincia === selProv.value)
-                                .map(u => u.distrito)
-                        )].filter(Boolean).sort(comparadorEs);
-                        poblarSelectCascadaCrud(selDist, '-- Seleccione Distrito --', distritos.map(d => ({ valor: d, texto: d })), distritoPreferido);
-                    };
-
-                    // Un distrito tiene un único codigo_ubigeo_id: se fija automáticamente como única opción
-                    const fijarCodigoUbigeo = () => {
-                        const filaUbigeo = (selDep.value && selProv.value && selDist.value)
-                            ? coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value)
-                            : null;
-
-                        if (!filaUbigeo) {
-                            poblarSelectCascadaCrud(selCodigoUbigeo, textoUbigeoAuto, [], '');
-                            return '';
-                        }
-
-                        const codigo = String(filaUbigeo.codigo_ubigeo_id);
-                        poblarSelectCascadaCrud(selCodigoUbigeo, textoUbigeoAuto, [{ valor: codigo, texto: `${codigo} - ${filaUbigeo.distrito}` }], codigo);
-                        selCodigoUbigeo.value = codigo; // Asegura la persistencia síncrona del valor dinámico
-                        return codigo;
-                    };
-
-                    // Fija el ubigeo y dispara 'change' para que se recargue el combo de códigos postales
-                    const sincronizarUbigeoYPostal = () => {
-                        fijarCodigoUbigeo();
-                        selCodigoUbigeo.dispatchEvent(new Event('change'));
-                    };
-
-                    selDep.onchange = () => {
-                        cargarProvincias('');
-                        cargarDistritos('');
-                        sincronizarUbigeoYPostal();
-                    };
-
-                    selProv.onchange = () => {
-                        cargarDistritos('');
-                        sincronizarUbigeoYPostal();
-                    };
-
-                    selDist.onchange = () => {
-                        sincronizarUbigeoYPostal();
-                    };
-
-                    // ----------------------------------------------------------------------
-                    // Precarga inicial (creación = todo vacío / edición = valores guardados)
-                    // ----------------------------------------------------------------------
-                    if (coleccionUbigeo.length === 0) {
-                        poblarSelectCascadaCrud(selDep, '-- No se pudo cargar el catálogo de ubigeos --', [], '');
-                        poblarSelectCascadaCrud(selCodigoPostal, '-- Seleccione primero el Ubigeo --', [], '');
-                    } else {
-                        // En edición, el codigo_ubigeo_id guardado es la fuente de verdad para Departamento/Provincia/Distrito
-                        const filaUbigeoGuardada = codigoUbigeoOriginal
-                            ? coleccionUbigeo.find(u => String(u.codigo_ubigeo_id) === codigoUbigeoOriginal)
-                            : null;
-
-                        const depInicial = filaUbigeoGuardada ? filaUbigeoGuardada.departamento : (selDep.getAttribute('data-actual') || '');
-                        const provInicial = filaUbigeoGuardada ? filaUbigeoGuardada.provincia : (selProv.getAttribute('data-actual') || '');
-                        const distInicial = filaUbigeoGuardada ? filaUbigeoGuardada.distrito : (selDist.getAttribute('data-actual') || '');
-
-                        const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort(comparadorEs);
-                        poblarSelectCascadaCrud(selDep, '-- Seleccione Departamento --', departamentosUnicos.map(d => ({ valor: d, texto: d })), depInicial);
-                        cargarProvincias(provInicial);
-                        cargarDistritos(distInicial);
-                        sincronizarUbigeoYPostal();
-                    }
-                } // [FIN DE LLAVES]: Cierra la validación de selectores de la cascada
+    } catch (errCascada) {
+        console.warn("Error al inicializar la cascada territorial:", errCascada);
+        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">Error cargando niveles territoriales.</p>';
+    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
+} // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCompleta
+    
 
                 const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
                 if (btnGeo) {
