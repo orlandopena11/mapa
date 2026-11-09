@@ -1196,95 +1196,32 @@ async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, 
 } // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCompleta
     
 
-// [INICIO DE LLAVES]: Abre el controlador lógico de la cascada territorial y geocodificación automática
-            const selDep = formNode.querySelector('#sel-ubigeo-departamento');
-            const selProv = formNode.querySelector('#sel-ubigeo-provincia');
-            const selDist = formNode.querySelector('#sel-ubigeo-distrito');
-            const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
+// [INICIO DE LLAVES]: Abre la inicialización del motor de geocodificación automática basado en ubicaciones territoriales
             const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
+            const selPaisForm = formNode.querySelector('#sel-lov-pais');
 
-            if (coleccionUbigeo && coleccionUbigeo.length > 0) {
-                // [INICIO DE LLAVES]: Extrae departamentos únicos ordenados alfabéticamente
-                const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort();
-                
-                selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
-                    departamentosUnicos.map(d => `<option value="${d}" ${d === depValPre ? 'selected' : ''}>${d}</option>`).join('');
-                // [FIN DE LLAVES]: Cierra la población del selector de departamentos
-
-                // [INICIO DE LLAVES]: Función para actualizar Provincias según el Departamento seleccionado
-                const actualizarProvincias = (depSeleccionado, provinciaASeleccionar = '') => {
-                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
-                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                    selCodigoUbigeo.innerHTML = '<option value="">-- Código Ubigeo Automático --</option>';
-
-                    if (!depSeleccionado) return;
-
-                    const provinciasUnicas = [...new Set(coleccionUbigeo.filter(u => u.departamento === depSeleccionado).map(u => u.provincia))].filter(Boolean).sort();
-                    
-                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>' + 
-                        provinciasUnicas.map(p => `<option value="${p}" ${p === provinciaASeleccionar ? 'selected' : ''}>${p}</option>`).join('');
-                };
-                // [FIN DE LLAVES]: Cierra la función actualizarProvincias
-
-                // [INICIO DE LLAVES]: Función para actualizar Distritos según la Provincia seleccionada
-                const actualizarDistritos = (depSeleccionado, provSeleccionada, distritoASeleccionar = '') => {
-                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
-                    selCodigoUbigeo.innerHTML = '<option value="">-- Código Ubigeo Automático --</option>';
-
-                    if (!depSeleccionado || !provSeleccionada) return;
-
-                    const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === depSeleccionado && u.provincia === provSeleccionada);
-                    
-                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + 
-                        distritosFiltrados.map(d => `<option value="${d.distrito}" ${d.distrito === distritoASeleccionar ? 'selected' : ''}>${d.distrito}</option>`).join('');
-                };
-                // [FIN DE LLAVES]: Cierra la función actualizarDistritos
-
-                // [INICIO DE LLAVES]: Eventos de cambio en cascada para los selectores
-                selDep.onchange = () => {
-                    actualizarProvincias(selDep.value);
-                };
-
-                selProv.onchange = () => {
-                    actualizarDistritos(selDep.value, selProv.value);
-                };
-
-                selDist.onchange = () => {
-                    const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
-                    if (match && selCodigoUbigeo) {
-                        selCodigoUbigeo.innerHTML = `<option value="${match.codigo_ubigeo_id}" selected>${match.codigo_ubigeo_id} - ${match.distrito}</option>`;
-                    }
-                };
-                // [FIN DE LLAVES]: Cierra los eventos de cambio en cascada
-
-                // Si estamos editando, disparamos la carga inicial de la cascada con los valores existentes
-                if (depValPre) {
-                    actualizarProvincias(depValPre, provValPre);
-                    if (provValPre) {
-                        actualizarDistritos(depValPre, provValPre, distValPre);
-                        const matchEdicion = coleccionUbigeo.find(u => u.departamento === depValPre && u.provincia === provValPre && u.distrito === distValPre);
-                        if (matchEdicion && selCodigoUbigeo) {
-                            selCodigoUbigeo.innerHTML = `<option value="${matchEdicion.codigo_ubigeo_id}" selected>${matchEdicion.codigo_ubigeo_id} - ${matchEdicion.distrito}</option>`;
-                        }
-                    }
-                }
+            if (typeof inicializarCascadaTerritorialCompleta === 'function') {
+                await inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, esEdicion ? datosFila : null);
             }
 
             // [INICIO DE LLAVES]: Configura el evento de clic para geocodificar automáticamente mediante Nominatim
             if (btnGeo) {
                 btnGeo.onclick = async () => {
                     const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
-                    const dist = selDist?.value || '';
-                    const prov = selProv?.value || '';
-                    const dep = selDep?.value || '';
-                    const pais = formNode.querySelector('#sel-lov-pais')?.value || 'Perú';
+                    const pais = selPaisForm?.value || 'Perú';
+                    
+                    const selectsTerritorio = formNode.querySelectorAll('.select-territorio-dinamico');
+                    let partesUbicacion = [];
+                    selectsTerritorio.forEach(sel => {
+                        if (sel.value) partesUbicacion.push(sel.value);
+                    });
 
-                    if (!dir || !dist || !prov || !dep) {
-                        alert("Por favor complete estrictamente la secuencia territorial (Departamento, Provincia, Distrito) y la Dirección exacta antes de geocodificar.");
+                    if (!dir || partesUbicacion.length === 0) {
+                        alert("Por favor complete los niveles territoriales y la Dirección exacta antes de geocodificar.");
                         return;
                     }
 
-                    const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
+                    const queryBusqueda = `${dir}, ${partesUbicacion.reverse().join(', ')}, ${pais}`;
                     btnGeo.innerText = "Calculando ubicación exacta con la dirección...";
                     
                     try {
@@ -1324,7 +1261,8 @@ async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, 
                     }
                 };
             } // [FIN DE LLAVES]: Cierra el controlador del botón de geocodificación
-           // [FIN DE LLAVES]: Cierra el controlador lógico global territorial y geocodificación
+// [FIN DE LLAVES]: Cierra la inicialización del motor de geocodificación
+    
     
 
 
