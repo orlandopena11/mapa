@@ -4488,7 +4488,8 @@ if (formTour) {
 
                     }
 
-                } catch (errLOV) {
+                //} catch (errLOV) {
+                    try {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                     cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
                     cPlazo.innerHTML = '<option value="20">20 Años</option>';
