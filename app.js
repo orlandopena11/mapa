@@ -149,7 +149,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "tipo_propiedad", label: "Tipo Propiedad", tipo: "select", opciones: ['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote'] },
             { nombre: "subtipo_propiedad", label: "Subtipo Propiedad", tipo: "text" },
             { nombre: "titulo", label: "Titulo de Anuncio", tipo: "text", requerido: true },
-            { nombre: "codigo_ubigeo_id_fk", label: "Codigo Ubigeo FK", tipo: "text" },
+            { nombre: "codigo_ubigeo_id_fk", label: "Ubicacion Territorial", tipo: "text" },
             { nombre: "pais", label: "Pais", tipo: "text" },
             { nombre: "estado", label: "Estado/Region", tipo: "text" },
             { nombre: "ciudad", label: "Ciudad", tipo: "text" },
@@ -176,9 +176,9 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "area_terreno", label: "Area Terreno (m )", tipo: "number" },
             { nombre: "area_construida", label: "Area Construida (m )", tipo: "number" },
             { nombre: "habitaciones", label: "Habitaciones", tipo: "number" },
-            { nombre: "banos", label: "Baños", tipo: "number" },
+            { nombre: "banos", label: "Ba�os", tipo: "number" },
             { nombre: "estacionamientos", label: "Estacionamientos", tipo: "number" },
-            { nombre: "ano_construccion", label: "Año Construccion", tipo: "number" },
+            { nombre: "ano_construccion", label: "A�o Construccion", tipo: "number" },
             { nombre: "estado_propiedad", label: "Estado Propiedad", tipo: "select", opciones: ['nueva', 'usada', 'en_construccion', 'remodelada'] },
             { nombre: "precio_base", label: "Precio Base ($)", tipo: "number", requerido: true },
             { nombre: "moneda", label: "Moneda", tipo: "select", opciones: ['USD', 'PEN'] },
@@ -211,6 +211,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         pk: "anuncio_id",
         campos: [
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
+            { nombre: "tipo_anuncio", label: "Tipo de Anuncio", tipo: "select", opciones: ['Venta', 'Alquiler'], requerido: true },
             { nombre: "usuario_id_fk", label: "ID Usuario FK", tipo: "text" },
             { nombre: "agente_id_fk", label: "ID Agente FK", tipo: "text" },
             { nombre: "fecha_publicacion", label: "Fecha Publicacion", tipo: "date" },
@@ -224,7 +225,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "nombre", label: "Nombre", tipo: "text", requerido: true },
             { nombre: "apellido", label: "Apellido", tipo: "text", requerido: true },
             { nombre: "correo", label: "Correo Electronico", tipo: "email", requerido: true },
-            { nombre: "telefono_agente", label: "Telefono Agente", tipo: "text" },
+            { nombre: "telefono", label: "Telefono Agente", tipo: "text" },
             { nombre: "prioridad", label: "Prioridad", tipo: "number" },
             { nombre: "leads", label: "M ximo Leads", tipo: "number" },
             { nombre: "leads_recibidos", label: "Leads Recibidos", tipo: "number" }
@@ -261,7 +262,7 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: "propiedad_id_fk", label: "ID Propiedad FK", tipo: "text", requerido: true },
             { nombre: "precio_propiedad", label: "Precio Propiedad ($)", tipo: "number" },
             { nombre: "monto_prestamo", label: "Monto Prestamo ($)", tipo: "number" },
-            { nombre: "pago_mensual_estimated", label: "Cuota Estimada ($)", tipo: "number" },
+            { nombre: "pago_mensual_estimado", label: "Cuota Estimada ($)", tipo: "number" },
             { nombre: "plazo_meses", label: "Plazo Meses", tipo: "number" },
             { nombre: "tasa_tea", label: "Tasa TEA", tipo: "number" }
         ]
@@ -474,140 +475,14 @@ async function cargarDatosTablaCrud(nombreTabla) {
 } // [FIN DE LLAVES]: Cierra cargarDatosTablaCrud
 
 
-/**
- * Descripción: Descarga y almacena en caché la jerarquía territorial flexible para el país seleccionado
- * consultando la tabla unificada 'ubicaciones_territoriales' en Supabase.
- */
-// [INICIO DE LLAVES]: Abre la función asíncrona para consultar ubicaciones territoriales por país
-async function descargarUbicacionesTerritorialesPorPais(cliente, paisSeleccionado) {
-    // [INICIO DE LLAVES]: Valida si los datos ya existen en la caché local en memoria
-    if (state.ubicacionesCache && state.ubicacionesCache[paisSeleccionado]) {
-        return state.ubicacionesCache[paisSeleccionado];
-    } // [FIN DE LLAVES]: Cierra la validación de caché
-
-    // [INICIO DE LLAVES]: Bloque principal de consulta a la base de datos Supabase
-    try {
-        const { data, error } = await cliente
-            .from('ubicaciones_territoriales')
-            .select('*')
-            .eq('pais', paisSeleccionado)
-            .order('nivel', { ascending: true });
-
-        if (error) throw error;
-
-        if (!state.ubicacionesCache) state.ubicacionesCache = {};
-        state.ubicacionesCache[paisSeleccionado] = data || [];
-        return data || [];
-    } catch (errUbicaciones) {
-        console.warn("Aviso: No se pudieron cargar las ubicaciones territoriales:", errUbicaciones);
-        return [];
-    } // [FIN DE LLAVES]: Cierra el bloque try/catch de consulta territorial
-} // [FIN DE LLAVES]: Cierra la función descargarUbicacionesTerritorialesPorPais
-
-
-/**
- * Descripción: Inicializa la cascada multi-nivel territorial basada en 'paises_configuracion' y 'ubicaciones_territoriales'.
- */
-// [INICIO DE LLAVES]: Abre la función asíncrona principal de la nueva cascada territorial
-async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, datosFilaEdicion) {
-    // [INICIO DE LLAVES]: Validación y selección de nodos del DOM en el formulario
-    const selPais = formNode.querySelector('#sel-lov-pais');
-    const contenedorCascada = formNode.querySelector('#contenedor-cascada-territorial');
-    if (!selPais || !contenedorCascada) return;
-    // [FIN DE LLAVES]: Cierra la validación de nodos
-
-    // [INICIO DE LLAVES]: Bloque principal try/catch para la carga de catálogos territoriales
-    try {
-        // 1. Cargar la lista oficial de países desde 'paises_configuracion'
-        const { data: paisesData, error: errPaises } = await clienteSupabase
-            .from('paises_configuracion')
-            .select('nombre_pais, codigo_iso')
-            .order('nombre_pais', { ascending: true });
-
-        if (errPaises) throw errPaises;
-
-        const paisInicial = (datosFilaEdicion && datosFilaEdicion.pais) || (paisesData && paisesData.length > 0 ? paisesData[0].nombre_pais : 'Perú');
-
-        selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
-            (paisesData || []).map(p => `<option value="${p.nombre_pais}" ${p.nombre_pais === paisInicial ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
-
-        // 2. Función interna para renderizar y enlazar los niveles territoriales dinámicos
-        const actualizarEstructuraTerritorial = async (paisSeleccionado) => {
-            // [INICIO DE LLAVES]: Validación de selección de país
-            if (!paisSeleccionado) {
-                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para ver los niveles territoriales.</p>';
-                return;
-            } // [FIN DE LLAVES]: Cierra validación
-
-            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando estructura territorial...</p>';
-
-            // Consultar ubicaciones desde la tabla unificada 'ubicaciones_territoriales'
-            const { data: ubicacionesData, error: errUbicaciones } = await clienteSupabase
-                .from('ubicaciones_territoriales')
-                .select('*')
-                .eq('pais', paisSeleccionado)
-                .order('nivel', { ascending: true });
-
-            if (errUbicaciones) throw errUbicaciones;
-
-            if (!ubicacionesData || ubicacionesData.length === 0) {
-                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">No hay ubicaciones registradas para este país.</p>';
-                return;
-            }
-
-            // Obtener los niveles disponibles únicos ordenados de menor a mayor (ej. 1, 2, 3...)
-            const nivelesDisponibles = [...new Set(ubicacionesData.map(u => u.nivel))].sort((a, b) => a - b);
-
-            let htmlSelectores = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
-            
-            nivelesDisponibles.forEach((nivel) => {
-                htmlSelectores += `
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 11px; font-weight: bold; color: #002e50;">Nivel Territorial ${nivel}:</label>
-                        <select id="sel-territorio-nivel-${nivel}" class="select-territorio-dinamico" data-nivel="${nivel}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
-                            <option value="">-- Seleccione --</option>
-                        </select>
-                    </div>
-                `;
-            });
-
-            // Campo oculto final para almacenar el código de la ubicación seleccionada
-            htmlSelectores += `
-                <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${datosFilaEdicion ? (datosFilaEdicion.codigo_ubigeo_id_fk || '') : ''}">
-            </div>`;
-
-            contenedorCascada.innerHTML = htmlSelectores;
-
-            // Poblar el Nivel 1 inicial
-            const selectNivel1 = contenedorCascada.querySelector('#sel-territorio-nivel-1');
-            if (selectNivel1) {
-                const primerNivelItems = ubicacionesData.filter(u => u.nivel === nivelesDisponibles[0]);
-                selectNivel1.innerHTML = '<option value="">-- Seleccione --</option>' + 
-                    primerNivelItems.map(item => `<option value="${item.ubicacion_id || item.nombre}">${item.nombre}</option>`).join('');
-            }
-        }; // [FIN DE LLAVES]: Cierra la función interna actualizarEstructuraTerritorial
-
-        // Disparar carga inicial para el país por defecto
-        await actualizarEstructuraTerritorial(paisInicial);
-
-        // Actualizar al cambiar de país en el selector
-        selPais.onchange = async () => {
-            await actualizarEstructuraTerritorial(selPais.value);
-        };
-
-    } catch (errCascada) {
-        console.warn("Error al inicializar la cascada territorial:", errCascada);
-        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">Error cargando niveles territoriales.</p>';
-    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
-}
 
 
 
 /**
- * Descripción: Rellena un <select> con un placeholder y una lista de opciones {valor, texto}.
- * Selecciona (solo una vez) la opción cuyo valor coincide con valorSeleccionado. Construye las opciones
+ * Descripci�n: Rellena un <select> con un placeholder y una lista de opciones {valor, texto}.
+ * Selecciona (solo una vez) la opci�n cuyo valor coincide con valorSeleccionado. Construye las opciones
  * con el DOM (new Option), por lo que no hay problemas con comillas o caracteres especiales.
- * Devuelve true si se seleccionó alguna opción distinta del placeholder.
+ * Devuelve true si se seleccion� alguna opci�n distinta del placeholder.
  */
 // [INICIO DE LLAVES]: Abre poblarSelectCascadaCrud
 function poblarSelectCascadaCrud(selectNode, textoPlaceholder, opciones, valorSeleccionado) {
@@ -632,6 +507,263 @@ function poblarSelectCascadaCrud(selectNode, textoPlaceholder, opciones, valorSe
     return yaSeleccionado;
 } // [FIN DE LLAVES]: Cierra poblarSelectCascadaCrud
 
+
+// ==========================================================================
+// MÓDULO TERRITORIAL: paises_configuracion + ubicaciones_territoriales
+// ==========================================================================
+const normalizarTextoSRE = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+const COLUMNAS_TERRITORIO = 'id, pais_iso, nivel_jerarquia, nombre, codigo_oficial, parent_id';
+
+function etiquetaNivelTerritorial(pais, nivel) {
+    const e = pais ? pais.etiquetas_niveles : null;
+    let texto = '';
+    if (Array.isArray(e)) texto = e[nivel - 1];
+    else if (e && typeof e === 'object') texto = e[nivel] ?? e[String(nivel)] ?? Object.values(e)[nivel - 1];
+    return String(texto || `Nivel ${nivel}`);
+}
+
+// Hijos de un nodo (nivel 1 no necesita parent). Evita el tope de 1000 filas cargando por nivel.
+async function consultarNivelTerritorial(cliente, paisIso, nivel, parentId) {
+    let consulta = cliente.from('ubicaciones_territoriales')
+        .select(COLUMNAS_TERRITORIO)
+        .eq('pais_iso', paisIso)
+        .eq('nivel_jerarquia', nivel);
+    if (nivel > 1) consulta = consulta.eq('parent_id', parentId);
+    const { data, error } = await consulta.order('nombre', { ascending: true }).limit(1000);
+    if (error) {
+        console.warn('Error consultando nivel territorial:', error.message);
+        return [];
+    }
+    return data || [];
+}
+
+// Dado un codigo_oficial devuelve la cadena [nivel1, nivel2, ..., hoja] subiendo por parent_id
+async function obtenerCadenaTerritorial(cliente, codigoOficial, paisIso) {
+    const codigo = String(codigoOficial || '').trim();
+    if (!codigo) return [];
+
+    let consulta = cliente.from('ubicaciones_territoriales').select(COLUMNAS_TERRITORIO).eq('codigo_oficial', codigo);
+    if (paisIso) consulta = consulta.eq('pais_iso', paisIso);
+    const { data: hojas, error } = await consulta.order('nivel_jerarquia', { ascending: false }).limit(1);
+    if (error || !hojas || hojas.length === 0) return [];
+
+    const cadena = [];
+    let actual = hojas[0];
+    for (let seguridad = 0; actual && seguridad < 10; seguridad++) {
+        cadena.unshift(actual);
+        if (actual.parent_id === null || actual.parent_id === undefined) break;
+        const { data: padre } = await cliente.from('ubicaciones_territoriales')
+            .select(COLUMNAS_TERRITORIO).eq('id', actual.parent_id).maybeSingle();
+        actual = padre;
+    }
+    return cadena;
+}
+
+/**
+ * Cascada: País -> N niveles (según niveles_totales) -> codigo_oficial final en el input hidden.
+ * En edición precarga y auto-selecciona todo a partir de datosFilaEdicion.codigo_ubigeo_id_fk.
+ */
+async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFilaEdicion) {
+    const selPais = formNode.querySelector('#sel-lov-pais');
+    const contenedor = formNode.querySelector('#contenedor-cascada-territorial');
+    const hiddenFinal = formNode.querySelector('#input-hidden-ubicacion-final');
+    if (!selPais || !contenedor || !hiddenFinal) return;
+
+    try {
+        const { data: paises, error: errPaises } = await cliente
+            .from('paises_configuracion')
+            .select('pais_iso, nombre_pais, niveles_totales, etiquetas_niveles')
+            .order('nombre_pais', { ascending: true });
+        if (errPaises) throw errPaises;
+
+        const listaPaises = paises || [];
+        const buscarPais = (valor) => listaPaises.find(p =>
+            normalizarTextoSRE(p.nombre_pais) === normalizarTextoSRE(valor) ||
+            normalizarTextoSRE(p.pais_iso) === normalizarTextoSRE(valor)) || null;
+
+        // --- Precarga en modo edición ---
+        const codigoGuardado = datosFilaEdicion ? String(datosFilaEdicion.codigo_ubigeo_id_fk || '').trim() : '';
+        let paisInicial = datosFilaEdicion ? buscarPais(datosFilaEdicion.pais) : null;
+        let cadenaInicial = [];
+        if (codigoGuardado) {
+            cadenaInicial = await obtenerCadenaTerritorial(cliente, codigoGuardado, paisInicial ? paisInicial.pais_iso : null);
+            if (cadenaInicial.length > 0 && !paisInicial) {
+                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial[0].pais_iso) || null;
+            }
+        }
+        if (!paisInicial) paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises[0] || null;
+
+        poblarSelectCascadaCrud(
+            selPais, '-- Seleccione País --',
+            listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
+            paisInicial ? paisInicial.nombre_pais : ''
+        );
+
+        const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
+
+        const renderizarNiveles = async (pais, cadena) => {
+            hiddenFinal.value = '';
+            if (!pais) {
+                contenedor.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">Seleccione un país para ver los niveles territoriales.</p>';
+                hiddenFinal.dispatchEvent(new Event('change'));
+                return;
+            }
+
+            const total = Number(pais.niveles_totales) || 3;
+            contenedor.innerHTML = '';
+            const selects = [];
+
+            for (let n = 1; n <= total; n++) {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
+                const lbl = document.createElement('label');
+                lbl.style.cssText = 'font-size: 11px; font-weight: bold; color: #002e50;';
+                lbl.textContent = `${n}. ${etiquetaNivelTerritorial(pais, n)}`;
+                const sel = document.createElement('select');
+                sel.className = 'select-territorio-dinamico';   // sin atributo name: no entra al FormData
+                sel.id = `sel-territorio-nivel-${n}`;
+                sel.dataset.nivel = String(n);
+                sel.style.cssText = estiloSelect;
+                sel._items = [];
+                poblarSelectCascadaCrud(sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`, [], '');
+                sel.disabled = n > 1;
+                wrap.appendChild(lbl);
+                wrap.appendChild(sel);
+                contenedor.appendChild(wrap);
+                selects.push(sel);
+            }
+
+            const cargarNivel = async (n, parentId, valorPre) => {
+                const sel = selects[n - 1];
+                if (!sel) return;
+                sel.disabled = true;
+                const items = await consultarNivelTerritorial(cliente, pais.pais_iso, n, parentId);
+                sel._items = items;
+                poblarSelectCascadaCrud(
+                    sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`,
+                    items.map(it => ({ valor: String(it.id), texto: it.nombre })),
+                    valorPre
+                );
+                sel.disabled = items.length === 0;
+            };
+
+            const actualizarValorFinal = () => {
+                let ultimo = null;
+                selects.forEach(sel => {
+                    if (!sel.value) return;
+                    const it = sel._items.find(x => String(x.id) === sel.value);
+                    if (it) ultimo = it;
+                });
+                hiddenFinal.value = ultimo ? String(ultimo.codigo_oficial || ultimo.id) : '';
+                hiddenFinal.dispatchEvent(new Event('change'));
+            };
+
+            selects.forEach((sel, idx) => {
+                sel.onchange = async () => {
+                    // Limpiar y bloquear los niveles inferiores
+                    for (let j = idx + 1; j < selects.length; j++) {
+                        selects[j]._items = [];
+                        poblarSelectCascadaCrud(selects[j], `-- Seleccione ${etiquetaNivelTerritorial(pais, j + 1)} --`, [], '');
+                        selects[j].disabled = true;
+                    }
+                    if (sel.value && idx + 1 < selects.length) {
+                        await cargarNivel(idx + 2, Number(sel.value), '');
+                    }
+                    actualizarValorFinal();
+                };
+            });
+
+            // Carga inicial (y precarga si hay cadena guardada)
+            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
+            for (let i = 1; i < total; i++) {
+                if (!cadena[i - 1]) break;
+                await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
+            }
+            if (cadena.length > 0) actualizarValorFinal();
+        };
+
+        selPais.onchange = async () => { await renderizarNiveles(buscarPais(selPais.value), []); };
+        await renderizarNiveles(paisInicial, cadenaInicial);
+
+    } catch (errCascada) {
+        console.warn('Error al inicializar la cascada territorial:', errCascada);
+        contenedor.innerHTML = '<p style="font-size: 12px; color: #ef4444; margin: 0;">Error cargando niveles territoriales.</p>';
+    }
+}
+
+/**
+ * Código postal dependiente: filtra lov_codigo_postal por codigo_ubigeo_id = ubigeo final seleccionado.
+ */
+async function inicializarCodigoPostalDependiente(cliente, formNode, datosFila) {
+    const selPostal = formNode.querySelector('#sel-lov-codigo_postal');
+    const hiddenFinal = formNode.querySelector('#input-hidden-ubicacion-final');
+    if (!selPostal || !hiddenFinal) return;
+
+    const postalGuardado = datosFila && datosFila.codigo_postal ? String(datosFila.codigo_postal).trim() : '';
+    let ultimaConsulta = '';
+
+    const recargar = async (preseleccion) => {
+        const codigo = hiddenFinal.value.trim();
+        if (!codigo) {
+            poblarSelectCascadaCrud(selPostal, '-- Seleccione primero la ubicación --', [], '');
+            return;
+        }
+        ultimaConsulta = codigo;
+        const { data, error } = await cliente.from('lov_codigo_postal')
+            .select('codigo_postal, centro_poblado')
+            .eq('codigo_ubigeo_id', codigo)
+            .order('centro_poblado', { ascending: true });
+        if (ultimaConsulta !== codigo) return; // llegó una respuesta vieja
+        if (error) console.warn('Error consultando lov_codigo_postal:', error.message);
+
+        const vistos = new Set();
+        const opciones = [];
+        (data || []).forEach(r => {
+            const clave = `${r.codigo_postal}|${r.centro_poblado}`;
+            if (vistos.has(clave)) return;
+            vistos.add(clave);
+            opciones.push({ valor: r.codigo_postal, texto: `${r.codigo_postal} - ${r.centro_poblado}` });
+        });
+        // Conservar un valor histórico que ya no esté en el catálogo
+        if (preseleccion && !opciones.some(o => String(o.valor) === String(preseleccion))) {
+            opciones.unshift({ valor: preseleccion, texto: preseleccion });
+        }
+        poblarSelectCascadaCrud(
+            selPostal,
+            opciones.length ? '-- Seleccione Código Postal --' : '-- Sin códigos postales para esta ubicación --',
+            opciones, preseleccion
+        );
+    };
+
+    hiddenFinal.addEventListener('change', () => recargar(''));
+    await recargar(postalGuardado);
+}
+
+/**
+ * Rellena un <select> existente desde filas de un LOV. Si el LOV viene vacío conserva las opciones estáticas.
+ */
+function poblarSelectDinamicoFlex(idSelect, filas, columnasPosibles) {
+    const sel = document.getElementById(idSelect);
+    if (!sel || !Array.isArray(filas) || filas.length === 0) return;
+
+    const actual = String(sel.getAttribute('data-actual') || '').trim();
+    const vistos = new Set();
+    const opciones = [];
+    filas.forEach(fila => {
+        const col = columnasPosibles.find(c => fila[c] !== undefined && fila[c] !== null && String(fila[c]).trim() !== '');
+        if (!col) return;
+        const valor = String(fila[col]).trim();
+        if (vistos.has(valor)) return;
+        vistos.add(valor);
+        opciones.push({ valor, texto: valor });
+    });
+    // Si el registro guardado tiene un valor que ya no está en el LOV, se conserva
+    if (actual && !opciones.some(o => o.valor.toLowerCase() === actual.toLowerCase())) {
+        opciones.unshift({ valor: actual, texto: actual });
+    }
+    poblarSelectCascadaCrud(sel, '-- Seleccione --', opciones, actual);
+}
+
 /**
  * Descripci n de la funci n: abrirFormularioEdicionCrud genera din micamente el submodal del CRUD,
  * resuelve de forma inteligente los datos geogr ficos por Ubigeo en modo edici n, popula correctamente
@@ -654,12 +786,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (cliente) {
                 const { data: imgsBD } = await cliente
                     .from('imagen_propiedad')
-                    .select('ruta_imagen, orden')
+                    .select('ruta_imagen, orden, tipo_imagen')
                     .eq('propiedad_id_fk', datosFila[conf.pk])
                     .order('orden', { ascending: true });
 
                 if (imgsBD && imgsBD.length > 0) {
-                    fotosSecundariasObtenidas = imgsBD.map(item => item.ruta_imagen);
+                    fotosSecundariasObtenidas = imgsBD.map(item => ({ ruta: item.ruta_imagen, tipo: item.tipo_imagen || 'interior' }));
                 }
 
                 const { data: caracBD } = await cliente
@@ -745,24 +877,26 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 // [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento de campos para la tabla propiedad
     let camposAProcesar = [...conf.campos];
     if (nombreTabla === 'propiedad') {
-        // [INICIO DE LLAVES]: Define el array con la jerarquía estricta territorial y comercial deseada
+        // [INICIO DE LLAVES]: Define el array con la jerarqu�a estricta territorial y comercial deseada
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
-            'pais', 'departamento', 'provincia', 'distrito', 'direccion', 'codigo_ubigeo_id_fk', 'codigo_postal',
+            'pais', 'codigo_ubigeo_id_fk', 'direccion', 'codigo_postal',
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
-        // [FIN DE LLAVES]: Cierra la definición del array de ordenamiento
+        // [FIN DE LLAVES]: Cierra la definici�n del array de ordenamiento
         
         // [INICIO DE LLAVES]: Valida permisos estrictos mediante la tabla rol (Administrador rol_id = 1)
-        const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol_id_fk) === 1;
+        const permisosForm = state.usuarioPermisos || {};
+        const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
+            || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
         camposAProcesar = camposAProcesar.filter(c => {
-            if (['galeria_fotos', 'estado', 'ciudad'].includes(c.nombre)) return false;
+            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
             if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
             return true;
         });
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
-        // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
+        // [INICIO DE LLAVES]: Ordena los campos en base a la jerarqu�a territorial definida
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
             let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
@@ -770,7 +904,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-        // [FIN DE LLAVES]: Cierra la función de ordenamiento
+        // [FIN DE LLAVES]: Cierra la funci�n de ordenamiento
     } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
     
 
@@ -796,7 +930,7 @@ let html30CajasFotos = '';
                 <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
         `;
 
-        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'ba o', 'patio', 'plano'];
+        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
 
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
@@ -862,7 +996,21 @@ let html30CajasFotos = '';
                     if (!esEdicion && c.nombre === 'usuario_id_fk') valorActual = idUsuarioActualSugerido;
 
                     let inputHtml = '';
-                    if (c.tipo === 'select' || c.nombre === 'tipo_propiedad' || c.nombre === 'subtipo_propiedad' || c.nombre === 'pais' || c.nombre === 'situacion_propiedad' || c.nombre === 'vista') {
+                    const esSelectLov = (c.tipo === 'select' || ['tipo_propiedad', 'subtipo_propiedad', 'pais', 'situacion_propiedad', 'vista'].includes(c.nombre));
+
+                    if (c.nombre === 'codigo_ubigeo_id_fk') {
+                        // Panel territorial: los selects se construyen en inicializarCascadaTerritorialCompleta
+                        inputHtml = `
+                            <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia: Pais, niveles territoriales y Ubigeo final</label>
+                                <div id="contenedor-cascada-territorial" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <p style="font-size: 12px; color: #006aff; margin: 0;">Cargando estructura territorial...</p>
+                                </div>
+                                <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${valorActual}">
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">Autocompletar Coordenadas y Mapa con la Direccion</button>
+                            </div>
+                        `;
+                    } else if (esSelectLov) {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
                             c.opciones.forEach(op => {
@@ -870,49 +1018,16 @@ let html30CajasFotos = '';
                             });
                         }
                         inputHtml += `</select>`;
-// [INICIO DE LLAVES]: Abre el bloque condicional para renderizar el panel interactivo territorial en cascada
-                    else if (c.nombre === 'codigo_ubigeo_id_fk') {
-                        // [INICIO DE LLAVES]: Recupera los valores previos en modo edición si existen
-                        const depValPre = esEdicion ? (datosFila.departamento || ubigeoActualInfo.departamento || '') : '';
-                        const provValPre = esEdicion ? (datosFila.provincia || ubigeoActualInfo.provincia || '') : '';
-                        const distValPre = esEdicion ? (datosFila.distrito || ubigeoActualInfo.distrito || '') : '';
-                        // [FIN DE LLAVES]: Cierra la recuperación de valores previos
+                    } else {
+                        const esPkCampo = (c.nombre === conf.pk);
+                        const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
+                        const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
+                        const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
+                        const atributoLectura = debeBloquearse ? 'readonly' : '';
+                        const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
 
-                        // [INICIO DE LLAVES]: Inyecta el marcado HTML estructurado para la selección territorial en cascada
-                        inputHtml = `
-                            <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">🌐 Secuencia Obligatoria: 1. Departamento ➔ 2. Provincia ➔ 3. Distrito ➔ 4. Ubigeo</label>
-                                <select id="sel-ubigeo-departamento" data-actual="${depValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
-                                <select id="sel-ubigeo-provincia" data-actual="${provValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
-                                <select id="sel-ubigeo-distrito" data-actual="${distValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
-                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 Autocompletar Coordenadas y Mapa con la Dirección</button>
-                            </div>
-                        `;
-                        // [FIN DE LLAVES]: Cierra la asignación del HTML de selección territorial
-                    } // [FIN DE LLAVES]: Cierra el bloque condicional del campo codigo_ubigeo_id_fk
-                        
- /**
- * Descripci n: Genera de forma din mica los campos de entrada est ndar (texto, n mero, email, fecha) 
- * para el formulario CRUD, incorporando la propiedad 'step="any"' en los campos num ricos 
- * para permitir coordenadas geogr ficas con decimales exactos y montos sin restricciones del navegador.
- */
-// [INICIO DE LLAVES]: Abre el bloque condicional para la renderizaci n de inputs est ndar
-else {
-    // [INICIO DE LLAVES]: Bloque de validaci n de campos de solo lectura (PK y Usuario FK)
-    const esPkCampo = (c.nombre === conf.pk);
-    const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
-    const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
-    
-    const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
-    const atributoLectura = debeBloquearse ? 'readonly' : '';
-    // [FIN DE LLAVES]: Cierra la validaci n de bloqueos
-
-    // Si el tipo de campo es 'number', a adimos step="any" para admitir decimales en latitud, longitud y precios
-    const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
-
-    inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
-} // [FIN DE LLAVES]: Cierra el bloque else de generaci n de inputs est ndar
+                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
+                    }
 
                     return `
                         <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -941,334 +1056,148 @@ else {
         (async () => {
             const clienteSupabase = obtenerClienteSupabase();
             if (!clienteSupabase) return;
-
             const formNode = document.getElementById('form-generico-crud');
             if (!formNode) return;
 
-try {
-// [INICIO DE LLAVES]: Abre la carga de la estructura territorial basada en la tabla unificada 'ubicaciones_territoriales' y 'paises_configuracion'
-    let coleccionUbicacionesTerritoriales = [];
-    try {
-        // Consultamos directamente la tabla unificada territorial adaptada a tu esquema multi-país actual
-        const { data: dataUbicaciones, error: errTerritorial } = await clienteSupabase
-            .from('ubicaciones_territoriales')
-            .select('*')
-            .order('nivel', { ascending: true });
+            try {
+                // 1. Catálogos LOV (país y código postal se manejan en la cascada territorial)
+                const [
+                    resTipoProp, resSubtipo, resEstadoProp, resMoneda,
+                    resEstadoPub, resSituacion, resVista, resSino, resCaracteristicasCat
+                ] = await Promise.all([
+                    clienteSupabase.from('lov_tipo_propiedad').select('*'),
+                    clienteSupabase.from('lov_subtipo_propiedad').select('*'),
+                    clienteSupabase.from('lov_estado_propiedad').select('*'),
+                    clienteSupabase.from('lov_moneda').select('*'),
+                    clienteSupabase.from('lov_estado_publicacion').select('*'),
+                    clienteSupabase.from('lov_situacion_propiedad').select('*'),
+                    clienteSupabase.from('lov_vista').select('*'),
+                    clienteSupabase.from('lov_si_no').select('*'),
+                    clienteSupabase.from('lov_caracteristica').select('*')
+                ]);
 
-        if (!errTerritorial && dataUbicaciones) {
-            coleccionUbicacionesTerritoriales = dataUbicaciones;
-        }
-    } catch (errUbic) {
-        console.warn("Aviso: No se pudieron descargar las ubicaciones territoriales unificadas:", errUbic);
-    }
-    state.ubicacionesTerritorialesCache = coleccionUbicacionesTerritoriales;
-// [FIN DE LLAVES]: Cierra la carga de la estructura territorial unificada
-    
+                poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad']);
+                poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad']);
+                poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad']);
+                poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda']);
+                poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion']);
+                poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad']);
+                poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista']);
+                poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no']);
+                poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no']);
 
-    // 2. Cat logos y LOVs originales intactos
-    const [
-        resTipoProp, resSubtipo, resEstadoProp, resMoneda, 
-        resEstadoPub, resSituacion, resVista, resSino, resPais, resCaracteristicasCat
-    ] = await Promise.all([
-        clienteSupabase.from('lov_tipo_propiedad').select('*'),
-        clienteSupabase.from('lov_subtipo_propiedad').select('*'),
-        clienteSupabase.from('lov_estado_propiedad').select('*'),
-        clienteSupabase.from('lov_moneda').select('*'),
-        clienteSupabase.from('lov_estado_publicacion').select('*'),
-        clienteSupabase.from('lov_situacion_propiedad').select('*'),
-        clienteSupabase.from('lov_vista').select('*'),
-        clienteSupabase.from('lov_si_no').select('*'),
-        clienteSupabase.from('lov_pais').select('*'),
-        clienteSupabase.from('lov_caracteristica').select('*')
-    ]);
-    
-// [INICIO DE LLAVES]: Abre la consulta asíncrona para obtener el catálogo independiente de códigos postales
-    let resCodigoPostal = { data: [] };
-    try {
-        resCodigoPostal = await clienteSupabase.from('lov_codigo_postal').select('*');
-    } catch (errPostal) {
-        console.warn("Aviso: No se pudo consultar lov_codigo_postal:", errPostal);
-    }
-// [FIN DE LLAVES]: Cierra la consulta del catálogo postal
+                // 2. Características especiales (lov_caracteristica.caracteristica)
+                state.catalogoCaracteristicas = (resCaracteristicasCat.data || [])
+                    .filter(r => r && String(r.caracteristica || '').trim() !== '');
 
-// [INICIO DE LLAVES]: Abre el bloque de población de selectores y catálogos dinámicos
-    poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
-    poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
-    poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
-    poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda', 'nombre', 'simbolo']);
-    poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion', 'nombre']);
-    poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre', 'valor']);
-    poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre', 'valor']);
-    poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
-    poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
-    poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
-
-    // [INICIO DE LLAVES]: Población independiente del selector de código postal desde la tabla lov_codigo_postal
-    poblarSelectDinamicoFlex('sel-lov-codigo_postal', resCodigoPostal.data, ['codigo_postal', 'centro_poblado', 'nombre', 'valor']);
-    // [FIN DE LLAVES]: Cierra la población independiente del código postal
-// [FIN DE LLAVES]: Cierra el bloque de población de selectores
-    
-
-// [INICIO DE LLAVES]: Abre el bloque de poblaci n de selectores y cat logos din micos
-                poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
-                poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
-                poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
-                poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda', 'nombre', 'simbolo']);
-                poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion', 'nombre']);
-                poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre', 'valor']);
-                poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre', 'valor']);
-                poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
-                poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
-                poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
-
-// El filtrado dinámico de lov_codigo_postal por codigo_ubigeo_id se implementa más abajo,
-// junto con la cascada Departamento -> Provincia -> Distrito -> Código Ubigeo -> Código Postal.
-
-    
                 const btnAgregarCarac = formNode.querySelector('#btn-agregar-caracteristica-extra');
                 const contenedorCarac = formNode.querySelector('#contenedor-dinamico-caracteristicas-especiales');
 
- /**
- * Descripci n: Consulta el cat logo completo de caracter sticas desde la tabla 'lov_caracteristica' 
- * y lo almacena en la cach  global 'state.catalogoCaracteristicas' para alimentar instant neamente 
- * los men s desplegables del formulario CRUD sin problemas de sincronizaci n as ncrona.
- */
-// [INICIO DE LLAVES]: Abre el bloque de consulta y almacenamiento en cach  global de caracter sticas
-state.catalogoCaracteristicas = [];
-try {
-    // [INICIO DE LLAVES]: Intento de consulta selectiva de la columna caracteristica
-    const resCatDirecto = await clienteSupabase.from('lov_caracteristica').select('caracteristica');
-    if (!resCatDirecto.error && resCatDirecto.data) {
-        state.catalogoCaracteristicas = resCatDirecto.data;
-    }
-} catch (errCat) {
-    console.warn("Aviso al consultar el cat logo de caracter sticas:", errCat);
-} // [FIN DE LLAVES]: Cierra el bloque try/catch de consulta
+                const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 'si') => {
+                    if (!contenedorCarac) return;
+                    const fila = document.createElement('div');
+                    fila.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
 
-const agregarFilaCaracteristica = (nombreSeleccionado = '', valorSeleccionado = 's ') => {
-    // [INICIO DE LLAVES]: Abre la funci n interna para a adir filas din micas de caracter sticas
-    const indiceFila = contenedorCarac.children.length + 1;
-    const filaDiv = document.createElement('div');
-    filaDiv.style.cssText = 'display: flex; align-items: center; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 6px;';
+                    const indice = document.createElement('span');
+                    indice.style.cssText = 'font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;';
+                    indice.textContent = `#${contenedorCarac.children.length + 1}`;
 
-    let optionsCaracHtml = '<option value="">-- Seleccione Caracter stica --</option>';
-    
-    // Validar y recorrer el cat logo global almacenado en state
-    if (state.catalogoCaracteristicas && state.catalogoCaracteristicas.length > 0) {
-        // [INICIO DE LLAVES]: Bucle forEach para recorrer cada registro del cat logo
-        state.catalogoCaracteristicas.forEach(rowCarac => {
-            const textoCaracteristica = rowCarac.caracteristica;
-            
-            if (textoCaracteristica !== undefined && textoCaracteristica !== null && String(textoCaracteristica).trim() !== "") {
-                const coincide = String(textoCaracteristica).trim().toLowerCase() === String(nombreSeleccionado).trim().toLowerCase();
-                optionsCaracHtml += `<option value="${textoCaracteristica}" ${coincide ? 'selected' : ''}>${textoCaracteristica}</option>`;
-            }
-        }); // [FIN DE LLAVES]: Cierra el bucle forEach del cat logo
-    }
-    
-    filaDiv.innerHTML = `
-        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 24px;">#${indiceFila}</span>
-        <select class="select-caract-nombre" style="width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-            ${optionsCaracHtml}
-        </select>
-        <input type="text" class="input-caract-valor" value="${valorSeleccionado}" placeholder="Valor (ej: s  / 50m2)" style="width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;">
-        <button type="button" class="btn-eliminar-fila-carac" style="background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;"> </button>
-    `;
-
-    filaDiv.querySelector('.btn-eliminar-fila-carac').onclick = () => {
-        filaDiv.remove();
-    };
-
-    contenedorCarac.appendChild(filaDiv);
-}; // [FIN DE LLAVES]: Cierra la funci n agregarFilaCaracteristica
-
-// [INICIO DE LLAVES]: Valida y asigna el evento de clic al bot n para a adir nueva fila de caracter stica
-if (btnAgregarCarac && contenedorCarac) {
-    btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
-} // [FIN DE LLAVES]: Cierra la validaci n del bot n de adici n
-
-// [INICIO DE LLAVES]: Valida si estamos editando una propiedad para precargar sus caracter sticas existentes
-if (caracteristicasObtenidas.length > 0) {
-    caracteristicasObtenidas.forEach(carac => {
-        agregarFilaCaracteristica(carac.nombre_caracteristica, carac.valor_caracteristica || 's ');
-    });
-} else {
-    // Si es un registro nuevo, dejamos una fila inicial lista por defecto
-    agregarFilaCaracteristica();
-} // [FIN DE LLAVES]: Cierra la condici n de precarga en modo edici n
-                
-                
-
-/**
- * Descripción: Inicializa la cascada multi-nivel territorial basada en 'paises_configuracion' y 'ubicaciones_territoriales'.
- */
-// [INICIO DE LLAVES]: Abre la función asíncrona principal de la nueva cascada territorial
-async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, datosFilaEdicion) {
-    // [INICIO DE LLAVES]: Validación y selección de nodos del DOM en el formulario
-    const selPais = formNode.querySelector('#sel-lov-pais');
-    const contenedorCascada = formNode.querySelector('#contenedor-cascada-territorial');
-    if (!selPais || !contenedorCascada) return;
-    // [FIN DE LLAVES]: Cierra la validación de nodos
-
-    // [INICIO DE LLAVES]: Bloque principal try/catch para la carga de catálogos territoriales
-    try {
-        // 1. Cargar la lista oficial de países desde 'paises_configuracion'
-        const { data: paisesData, error: errPaises } = await clienteSupabase
-            .from('paises_configuracion')
-            .select('nombre_pais, codigo_iso')
-            .order('nombre_pais', { ascending: true });
-
-        if (errPaises) throw errPaises;
-
-        const paisInicial = (datosFilaEdicion && datosFilaEdicion.pais) || (paisesData && paisesData.length > 0 ? paisesData[0].nombre_pais : 'Perú');
-
-        selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
-            (paisesData || []).map(p => `<option value="${p.nombre_pais}" ${p.nombre_pais === paisInicial ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
-
-        // 2. Función interna para renderizar y enlazar los niveles territoriales dinámicos
-        const actualizarEstructuraTerritorial = async (paisSeleccionado) => {
-            // [INICIO DE LLAVES]: Validación de selección de país
-            if (!paisSeleccionado) {
-                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para ver los niveles territoriales.</p>';
-                return;
-            } // [FIN DE LLAVES]: Cierra validación
-
-            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando estructura territorial...</p>';
-
-            // Consultar ubicaciones desde la tabla unificada 'ubicaciones_territoriales'
-            const { data: ubicacionesData, error: errUbicaciones } = await clienteSupabase
-                .from('ubicaciones_territoriales')
-                .select('*')
-                .eq('pais', paisSeleccionado)
-                .order('nivel', { ascending: true });
-
-            if (errUbicaciones) throw errUbicaciones;
-
-            if (!ubicacionesData || ubicacionesData.length === 0) {
-                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">No hay ubicaciones registradas para este país.</p>';
-                return;
-            }
-
-            // Obtener los niveles disponibles únicos ordenados de menor a mayor (ej. 1, 2, 3...)
-            const nivelesDisponibles = [...new Set(ubicacionesData.map(u => u.nivel))].sort((a, b) => a - b);
-
-            let htmlSelectores = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
-            
-            nivelesDisponibles.forEach((nivel) => {
-                htmlSelectores += `
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label style="font-size: 11px; font-weight: bold; color: #002e50;">Nivel Territorial ${nivel}:</label>
-                        <select id="sel-territorio-nivel-${nivel}" class="select-territorio-dinamico" data-nivel="${nivel}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
-                            <option value="">-- Seleccione --</option>
-                        </select>
-                    </div>
-                `;
-            });
-
-            // Campo oculto final para almacenar el código de la ubicación seleccionada
-            htmlSelectores += `
-                <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${datosFilaEdicion ? (datosFilaEdicion.codigo_ubigeo_id_fk || '') : ''}">
-            </div>`;
-
-            contenedorCascada.innerHTML = htmlSelectores;
-
-            // Poblar el Nivel 1 inicial
-            const selectNivel1 = contenedorCascada.querySelector('#sel-territorio-nivel-1');
-            if (selectNivel1) {
-                const primerNivelItems = ubicacionesData.filter(u => u.nivel === nivelesDisponibles[0]);
-                selectNivel1.innerHTML = '<option value="">-- Seleccione --</option>' + 
-                    primerNivelItems.map(item => `<option value="${item.ubicacion_id || item.nombre}">${item.nombre}</option>`).join('');
-            }
-        }; // [FIN DE LLAVES]: Cierra la función interna actualizarEstructuraTerritorial
-
-        // Disparar carga inicial para el país por defecto
-        await actualizarEstructuraTerritorial(paisInicial);
-
-        // Actualizar al cambiar de país en el selector
-        selPais.onchange = async () => {
-            await actualizarEstructuraTerritorial(selPais.value);
-        };
-
-    } catch (errCascada) {
-        console.warn("Error al inicializar la cascada territorial:", errCascada);
-        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">Error cargando niveles territoriales.</p>';
-    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
-} // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCompleta
-    
-
-// [INICIO DE LLAVES]: Abre la inicialización del motor de geocodificación automática basado en ubicaciones territoriales
-            const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
-            const selPaisForm = formNode.querySelector('#sel-lov-pais');
-
-            if (typeof inicializarCascadaTerritorialCompleta === 'function') {
-                await inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, esEdicion ? datosFila : null);
-            }
-
-            // [INICIO DE LLAVES]: Configura el evento de clic para geocodificar automáticamente mediante Nominatim
-            if (btnGeo) {
-                btnGeo.onclick = async () => {
-                    const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
-                    const pais = selPaisForm?.value || 'Perú';
-                    
-                    const selectsTerritorio = formNode.querySelectorAll('.select-territorio-dinamico');
-                    let partesUbicacion = [];
-                    selectsTerritorio.forEach(sel => {
-                        if (sel.value) partesUbicacion.push(sel.value);
+                    const selNombre = document.createElement('select');
+                    selNombre.className = 'select-caract-nombre';
+                    selNombre.style.cssText = 'width: 60%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;';
+                    selNombre.appendChild(new Option('-- Seleccione Característica --', ''));
+                    const buscado = normalizarTextoSRE(nombreSeleccionado);
+                    const vistos = new Set();
+                    let hallado = false;
+                    state.catalogoCaracteristicas.forEach(r => {
+                        const t = String(r.caracteristica).trim();
+                        if (vistos.has(t)) return;
+                        vistos.add(t);
+                        const op = new Option(t, t);
+                        if (buscado && normalizarTextoSRE(t) === buscado) { op.selected = true; hallado = true; }
+                        selNombre.appendChild(op);
                     });
-
-                    if (!dir || partesUbicacion.length === 0) {
-                        alert("Por favor complete los niveles territoriales y la Dirección exacta antes de geocodificar.");
-                        return;
+                    if (nombreSeleccionado && !hallado) {
+                        selNombre.appendChild(new Option(nombreSeleccionado, nombreSeleccionado, true, true));
                     }
 
-                    const queryBusqueda = `${dir}, ${partesUbicacion.reverse().join(', ')}, ${pais}`;
-                    btnGeo.innerText = "Calculando ubicación exacta con la dirección...";
-                    
-                    try {
-                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
-                        const dataGeo = await res.json();
+                    const inputValor = document.createElement('input');
+                    inputValor.type = 'text';
+                    inputValor.className = 'input-caract-valor';
+                    inputValor.value = valorSeleccionado;
+                    inputValor.placeholder = 'Valor (ej: si / 50m2)';
+                    inputValor.style.cssText = 'width: 35%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px; outline: none;';
 
-                        if (dataGeo && dataGeo.length > 0) {
-                            const lat = String(dataGeo[0].lat).replace(',', '.');
-                            const lon = String(dataGeo[0].lon).replace(',', '.');
-                            const displayName = dataGeo[0].display_name;
+                    const btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.textContent = 'x';
+                    btnDel.style.cssText = 'background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;';
+                    btnDel.onclick = () => fila.remove();
 
-                            const inputLat = formNode.querySelector('#input-crud-latitud');
-                            const inputLng = formNode.querySelector('#input-crud-longitud');
-                            const inputPrec = formNode.querySelector('#input-crud-geocode_precision');
-                            const inputRef = formNode.querySelector('#input-crud-referencia_mapa');
-                            const inputEnlace = formNode.querySelector('#input-crud-enlace_mapa');
-
-                            if (inputLat) inputLat.value = lat;
-                            if (inputLng) inputLng.value = lon;
-                            
-                            const rawType = dataGeo[0].type ? String(dataGeo[0].type).trim() : "exacta";
-                            const rawClass = dataGeo[0].class ? String(dataGeo[0].class).trim() : "osm";
-                            if (inputPrec) inputPrec.value = `${rawClass.toUpperCase()} Type: ${rawType}`;
-                            
-                            if (inputRef) inputRef.value = displayName;
-                            if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
-
-                            alert("📍 ¡Coordenadas, precisión y mapa calculados con éxito basados en la dirección exacta!");
-                        } else {
-                            alert("No se hallaron coordenadas exactas para esta dirección específica en OpenStreetMap.");
-                        }
-                    } catch (errGeo) {
-                        console.error("Error en geocodificación:", errGeo);
-                        alert("Error de conexión al servicio de geocodificación.");
-                    } finally {
-                        btnGeo.innerText = "📍 Autocompletar Coordenadas y Mapa con la Dirección";
-                    }
+                    fila.append(indice, selNombre, inputValor, btnDel);
+                    contenedorCarac.appendChild(fila);
                 };
-            } // [FIN DE LLAVES]: Cierra el controlador del botón de geocodificación
-// [FIN DE LLAVES]: Cierra la inicialización del motor de geocodificación
-    
-    
 
+                if (btnAgregarCarac) btnAgregarCarac.onclick = () => agregarFilaCaracteristica();
+                if (caracteristicasObtenidas.length > 0) {
+                    caracteristicasObtenidas.forEach(c => agregarFilaCaracteristica(c.nombre_caracteristica, c.valor_caracteristica || 'si'));
+                } else {
+                    agregarFilaCaracteristica();
+                }
 
-        } catch (errInicializacionFormulario) {
-            console.warn("No se pudo inicializar los cat\u00e1logos del formulario CRUD:", errInicializacionFormulario);
-        }
+                // 3. Cascada territorial (con precarga en edición) y código postal dependiente
+                await inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, esEdicion ? datosFila : null);
+                await inicializarCodigoPostalDependiente(clienteSupabase, formNode, esEdicion ? datosFila : null);
+
+                // 4. Geocodificación con Nominatim
+                const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
+                if (btnGeo) {
+                    btnGeo.onclick = async () => {
+                        const dir = formNode.querySelector('#input-crud-direccion')?.value.trim() || '';
+                        const pais = formNode.querySelector('#sel-lov-pais')?.value || 'Perú';
+
+                        const partes = [];
+                        formNode.querySelectorAll('.select-territorio-dinamico').forEach(sel => {
+                            if (sel.value && sel.selectedIndex >= 0) partes.push(sel.options[sel.selectedIndex].text);
+                        });
+
+                        if (!dir || partes.length === 0) {
+                            alert('Complete los niveles territoriales y la Dirección exacta antes de geocodificar.');
+                            return;
+                        }
+
+                        const textoOriginal = btnGeo.innerText;
+                        btnGeo.innerText = 'Calculando ubicación exacta...';
+                        try {
+                            const q = `${dir}, ${partes.slice().reverse().join(', ')}, ${pais}`;
+                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+                            const dataGeo = await res.json();
+
+                            if (dataGeo && dataGeo.length > 0) {
+                                const lat = String(dataGeo[0].lat).replace(',', '.');
+                                const lon = String(dataGeo[0].lon).replace(',', '.');
+                                const asignar = (id, v) => { const n = formNode.querySelector(id); if (n) n.value = v; };
+                                asignar('#input-crud-latitud', lat);
+                                asignar('#input-crud-longitud', lon);
+                                asignar('#input-crud-geocode_precision', `${String(dataGeo[0].class || 'osm').toUpperCase()} Type: ${dataGeo[0].type || 'exacta'}`);
+                                asignar('#input-crud-referencia_mapa', dataGeo[0].display_name);
+                                asignar('#input-crud-enlace_mapa', `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`);
+                                alert('Coordenadas, precisión y mapa calculados con éxito.');
+                            } else {
+                                alert('No se hallaron coordenadas para esta dirección en OpenStreetMap.');
+                            }
+                        } catch (errGeo) {
+                            console.error('Error en geocodificación:', errGeo);
+                            alert('Error de conexión al servicio de geocodificación.');
+                        } finally {
+                            btnGeo.innerText = textoOriginal;
+                        }
+                    };
+                }
+
+            } catch (errInicializacionFormulario) {
+                console.warn('No se pudo inicializar los catálogos del formulario CRUD:', errInicializacionFormulario);
+            }
         })();
     }
 
@@ -1291,56 +1220,48 @@ async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, 
                 btnSubmit.disabled = true;
             }
 
-/**
- * Descripci n: Captura y procesa los datos del formulario del CRUD, asegurando la 
- * inclusi n expl cita de los campos de departamento y provincia seleccionados en los men s.
- */
-// [INICIO DE LLAVES]: Procesamiento y rescate de departamento, provincia y coordenadas
             const formData = new FormData(e.target);
             const payload = {};
-            formData.forEach((val, key) => { 
-                if ((key === 'latitud' || key === 'longitud') && val) {
-                    payload[key] = String(val).replace(',', '.');
-                } else {
-                    payload[key] = val; 
-                }
+            formData.forEach((val, key) => {
+                payload[key] = (key === 'latitud' || key === 'longitud') ? String(val).replace(',', '.').trim() : val;
             });
 
-            const selDepDOM = document.getElementById('sel-ubigeo-departamento');
-            const selProvDOM = document.getElementById('sel-ubigeo-provincia');
-            if (selDepDOM && selDepDOM.value) payload.departamento = selDepDOM.value;
-            if (selProvDOM && selProvDOM.value) payload.provincia = selProvDOM.value;
-            if (!payload.departamento) payload.departamento = 'Lima';
-            if (!payload.provincia) payload.provincia = 'Lima';
-// [FIN DE LLAVES]: Cierra el rescate de departamento y provincia
-            
-
-            // Validaci n preventiva de campos clave requeridos para mantener el estado del formulario
-            if (!payload.titulo || String(payload.titulo).trim() === "") {
-                alert("Falta ingresar el valor requerido: T tulo de Anuncio.");
+            const restaurarBoton = () => {
                 if (btnSubmit) {
                     btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
                     btnSubmit.disabled = false;
                 }
-                return; // Detiene el flujo sin cerrar el modal ni borrar los datos ingresados
-            }
+            };
+            const rechazar = (mensaje) => { alert(mensaje); restaurarBoton(); };
 
-            if (!payload.precio_base || isNaN(parseFloat(payload.precio_base))) {
-                alert("Falta ingresar un valor v lido para el Precio Base ($).");
-                if (btnSubmit) {
-                    btnSubmit.innerText = esEdicion ? "Guardar Cambios" : "Crear Registro";
-                    btnSubmit.disabled = false;
+            if (nombreTabla === 'propiedad') {
+                // Nombres por nivel -> departamento / provincia / distrito (columnas de propiedad)
+                const nombresNiveles = Array.from(document.querySelectorAll('#contenedor-cascada-territorial .select-territorio-dinamico'))
+                    .map(sel => (sel.value && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : '');
+
+                if (nombresNiveles.length === 0 || nombresNiveles.some(n => !n) || !payload.codigo_ubigeo_id_fk) {
+                    return rechazar("Complete todos los niveles territoriales hasta obtener el código de ubicación final.");
                 }
-                return; // Detiene el flujo sin cerrar el modal ni borrar los datos ingresados
+                payload.departamento = nombresNiveles[0] || '';
+                payload.provincia = nombresNiveles[1] || '';
+                payload.distrito = nombresNiveles[2] || nombresNiveles[nombresNiveles.length - 1];
+
+                if (!payload.titulo || String(payload.titulo).trim() === "") return rechazar("Falta ingresar el Título de Anuncio.");
+                if (!payload.tipo_propiedad) return rechazar("Seleccione el Tipo de Propiedad.");
+                if (!payload.direccion || String(payload.direccion).trim() === "") return rechazar("Falta ingresar la Dirección.");
+                if (!payload.precio_base || isNaN(parseFloat(payload.precio_base))) return rechazar("Falta ingresar un valor válido para el Precio Base.");
+                if (isNaN(parseFloat(payload.latitud)) || isNaN(parseFloat(payload.longitud))) {
+                    return rechazar("Faltan Latitud y Longitud. Use el botón de autocompletar coordenadas.");
+                }
+            } else {
+                // Tablas genéricas: los vacíos van como NULL (evita errores en columnas numéricas y de fecha)
+                Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
             }
 
-            if (btnSubmit) {
-                btnSubmit.innerText = "Guardando...";
-                btnSubmit.disabled = true;
-            }
+            if (btnSubmit) { btnSubmit.innerText = "Guardando..."; btnSubmit.disabled = true; }
 
-            await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
-            cerrarSubModal();
+            const guardado = await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
+            if (guardado) cerrarSubModal(); else restaurarBoton();   // si falla, el modal sigue abierto con los datos
 // [FIN DE LLAVES]: Cierra el bloque de procesamiento y env o del CRUD
         };
     }
@@ -1356,97 +1277,57 @@ async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, 
  */
 // [INICIO DE LLAVES]: Abre la funci n as ncrona principal guardarRegistroCrud basada en RPC
 async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, payload) {
-    // [INICIO DE LLAVES]: Bloque principal de control de errores y persistencia
     try {
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no disponible.");
 
-        // [INICIO DE LLAVES]: Validaci n espec fica para la tabla propiedad mediante procedimiento almacenado
         if (nombreTabla === 'propiedad') {
-            let payloadLimpio = { ...payload };
-            let arrayFotos = [];
-            let arrayCaracteristicas = [];
-            
-
-             /**
-             * Descripci n: Recopila de forma din mica los slots de fotos del formulario (hasta 30),
-             * capturando tanto la ruta de la izquierda como el tipo seleccionado de la derecha 
-             * para enviarlos como un objeto JSON estructurado al backend.
-             */
-            // [INICIO DE LLAVES]: Procesamiento y empaquetado din mico de la galer a dual para el payload
-            for (let i = 1; i <= 30; i++) {
-                if (payloadLimpio[`foto_slot_${i}`]) {
-                    const fotoVal = String(payloadLimpio[`foto_slot_${i}`]).trim();
-                    const tipoVal = String(payloadLimpio[`tipo_slot_${i}`] || 'interior').trim();
-                    
-                    if (fotoVal) {
-                        arrayFotos.push({
-                            ruta: fotoVal,
-                            tipo: tipoVal
-                        });
-                    }
-                    delete payloadLimpio[`foto_slot_${i}`];
-                    delete payloadLimpio[`tipo_slot_${i}`];
-                }
+            const uuidUsuarioAutenticado = window.usuarioLogueado?.id || state.usuarioActual?.id;
+            if (!uuidUsuarioAutenticado) {
+                alert("Error de Autenticación: Debe iniciar sesión para registrar o modificar propiedades.");
+                return false;
             }
-            // [FIN DE LLAVES]: Cierra el ciclo de recopilaci n de fotos y tipos
-            
-            
-            
-            if (payloadLimpio.galeria_fotos) delete payloadLimpio.galeria_fotos;
 
-            // Recopilar las caracter sticas especiales din micas desde el DOM del formulario
+            const payloadLimpio = { ...payload };
+
+            // Galería: { ruta, tipo } (los 30 slots se limpian siempre)
+            const arrayFotos = [];
+            for (let i = 1; i <= 30; i++) {
+                const ruta = String(payloadLimpio[`foto_slot_${i}`] || '').trim();
+                const tipo = String(payloadLimpio[`tipo_slot_${i}`] || 'interior').trim();
+                if (ruta) arrayFotos.push({ ruta, tipo });
+                delete payloadLimpio[`foto_slot_${i}`];
+                delete payloadLimpio[`tipo_slot_${i}`];
+            }
+            delete payloadLimpio.galeria_fotos;
+
+            // Características especiales (sin duplicados)
+            const arrayCaracteristicas = [];
+            const nombresVistos = new Set();
             document.querySelectorAll('#contenedor-dinamico-caracteristicas-especiales > div').forEach(fila => {
                 const nombre = fila.querySelector('.select-caract-nombre')?.value?.trim();
-                const valor = fila.querySelector('.input-caract-valor')?.value?.trim() || 's ';
-                if (nombre) arrayCaracteristicas.push({ nombre, valor });
+                const valor = fila.querySelector('.input-caract-valor')?.value?.trim() || 'si';
+                if (nombre && !nombresVistos.has(nombre.toLowerCase())) {
+                    nombresVistos.add(nombre.toLowerCase());
+                    arrayCaracteristicas.push({ nombre, valor });
+                }
             });
 
-/**
- * Descripci n: Adjunta las colecciones de fotos, caracter sticas y define 
- * autom ticamente la foto principal utilizando la primera ruta de la galer a.
- */
-// [INICIO DE LLAVES]: Inyecci n de foto_principal, fotos y caracter sticas al payload
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
-            
-            if (arrayFotos.length > 0) {
-                payloadLimpio.foto_principal = arrayFotos[0].ruta;
-            } else {
-                payloadLimpio.foto_principal = 'principal.jpg';
-            }
-// [FIN DE LLAVES]: Cierra la asignaci n de la foto principal y colecciones
-            
-/**
- * Descripci n: Obtiene din micamente el UUID real del usuario autenticado desde Supabase Auth 
- * o el estado global, evitando cualquier valor harcodeado y asegurando el soporte multiusuario.
- */
-// [INICIO DE LLAVES]: Extracci n din mica y estricta del UUID del usuario actual
-const uuidUsuarioAutenticado = window.usuarioLogueado?.id || state.usuarioActual?.id;
+            payloadLimpio.foto_principal = arrayFotos.length > 0
+                ? arrayFotos[0].ruta
+                : (String(payloadLimpio.foto_principal || '').trim() || 'principal.jpg');
+            payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
+            payloadLimpio.es_nuevo = !esEdicion;            // el RPC evita pisar un ID existente
+            if (esEdicion && pkValor) payloadLimpio.propiedad_id = pkValor;
 
-if (!uuidUsuarioAutenticado) {
-    alert("Error de Autenticaci n: Debe iniciar sesi n con su cuenta para registrar o modificar propiedades.");
-    if (btnSubmit) {
-        btnSubmit.innerText = "Guardar Cambios";
-        btnSubmit.disabled = false;
-    }
-    return;
-}
-
-payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
-// [FIN DE LLAVES]: Cierra la asignaci n din mica
-            
-            if (esEdicion && pkValor) {
-                payloadLimpio.propiedad_id = pkValor;
-            }
-
-            // Invocaci n at mica ultrarr pida a la funci n RPC alojada en Supabase
-            const { data, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
+            const { error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
             if (error) throw error;
 
-            alert(" Propiedad, anuncios, fotos y caracteristicas guardadas de forma atomica en la base de datos!");
+            alert("Propiedad, anuncio, fotos y características guardadas de forma atómica.");
+            if (typeof cargarDatosDesdeSupabase === "function") cargarDatosDesdeSupabase(); // refresca mapa y catálogo
         } else {
-            // Comportamiento est ndar directo para las dem s tablas del sistema CRUD
             if (esEdicion) {
                 const { error } = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
                 if (error) throw error;
@@ -1454,17 +1335,18 @@ payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
                 const { error } = await cliente.from(nombreTabla).insert([payload]);
                 if (error) throw error;
             }
-            alert(" Registro actualizado exitosamente!");
-        } // [FIN DE LLAVES]: Cierra el bloque condicional del tipo de tabla
+            alert("Registro guardado exitosamente.");
+        }
 
         await cargarDatosTablaCrud(nombreTabla);
+        return true;
 
     } catch (err) {
-        // [INICIO DE LLAVES]: Bloque de captura y manejo de excepciones en la persistencia
         alert("Error al procesar en la Base de Datos: " + err.message);
         console.error("XX [SRE RPC ERROR]:", err);
-    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
-} // [FIN DE LLAVES]: Cierra la funci n guardarRegistroCrud
+        return false;
+    }
+} // [FIN DE LLAVES]: Cierra la función guardarRegistroCrud
 
 
 
@@ -3094,7 +2976,6 @@ const ajustarLayoutMovilDinamico = () => {
             });
 
 
-<!-- [C DIGO NUEVO A INSERTAR / REEMPLAZAR] -->
 /**
  * Descripci n de la funci n: inicializarEventosPopups unifica y registra todos los 
  * escuchadores de eventos de la interfaz, incluyendo el bot n de inicio de sesi n superior, 
@@ -3552,8 +3433,8 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         }
                     }; // Fin de callback de intercepci n el stica
 
-                    cortina.addEventListener('click', manejarPulsacionFichaInmuebleSRE);
-                    cortina.addEventListener('touchend', manejarPulsacionFichaInmuebleSRE, { passive: false });
+                    cortina.onclick = manejarPulsacionFichaInmuebleSRE;
+                    cortina.ontouchend = manejarPulsacionFichaInmuebleSRE;
                     console.log("%c-> [SRE INFRAESTRUCTURA] Escuchas el sticas enlazadas directamente a la Cortina SPA.", "color: #10b981; font-weight: bold;");
 
 
@@ -3754,19 +3635,19 @@ if (formAgente) {
                                             data: datosAgente
                                         } = await cliente
                                             .from('agente_inmobiliario')
-                                            .select('telefono_agente')
-                                            .eq('id', anuncioFiltro.agente_id_fk)
+                                            .select('telefono')
+                                            .eq('agente_id', anuncioFiltro.agente_id_fk)
                                             .single();
-                                        if (datosAgente) telefonoObtenido = datosAgente.telefono_agente;
+                                        if (datosAgente) telefonoObtenido = datosAgente.telefono;
                                     } else {
                                         const {
                                             data: datosUsuario
                                         } = await cliente
                                             .from('usuario_autenticado')
-                                            .select('telefono_contacto')
-                                            .eq('id', anuncioFiltro.usuario_id_fk)
+                                            .select('telefono')
+                                            .eq('usuario_id', anuncioFiltro.usuario_id_fk)
                                             .single();
-                                        if (datosUsuario) telefonoObtenido = datosUsuario.telefono_contacto;
+                                        if (datosUsuario) telefonoObtenido = datosUsuario.telefono;
                                     }
                                 }
 
@@ -3911,7 +3792,7 @@ if (formTour) {
                 
                 const { data: agenteInfo, error: errorAgente } = await cliente
                     .from('agente_inmobiliario')
-                    .select('correo, nombre, apellido, telefono_agente')
+                    .select('correo, nombre, apellido, telefono')
                     .eq('agente_id', anuncioData.agente_id_fk)
                     .maybeSingle();
 
@@ -4096,7 +3977,7 @@ if (formTour) {
 
                 const precioActual = parseFloat(prop.precio_base) || 0;
                 const areaConstruida = parseFloat(prop.area_construida) || 100;
-                const ubigeoPropiedad = (prop.codigo_ubigeo || '150140').trim();
+                const ubigeoPropiedad = (prop.codigo_ubigeo_id_fk || '150140').trim();
                 const distritoNombre = prop.distrito || 'el distrito';
 
                 const periodosRequeridos = [
@@ -4405,7 +4286,7 @@ if (formTour) {
                                 cuota_base_mensual: calculosGlobales.cuotaBase,
                                 seguro_desgravamen_mes1: calculosGlobales.costoDesgravamen,
                                 seguro_inmueble_mes1: calculosGlobales.costoInmueble,
-                                pago_mensual_estimated: calculosGlobales.cuotaTotal,
+                                pago_mensual_estimado: calculosGlobales.cuotaTotal,
                                 ltv: calculosGlobales.ratioLtv
                             }]);
 
@@ -4424,80 +4305,68 @@ if (formTour) {
                     }
                 });
 
+                // --- Carga de LOVs hipotecarios con las columnas reales del esquema ---
+                const llenarCombo = (combo, filas, campo, formatoTexto, porDefecto, conComentario) => {
+                    const vistos = new Set();
+                    combo.innerHTML = '';
+                    (filas || []).forEach(fila => {
+                        const v = parseFloat(fila[campo]);
+                        if (isNaN(v) || vistos.has(v)) return;
+                        vistos.add(v);
+                        const op = new Option(formatoTexto(v), String(v));
+                        if (conComentario) op.setAttribute('data-comment', fila.comentarios_sbs_mercado || '');
+                        combo.appendChild(op);
+                    });
+                    if (!combo.options.length) combo.appendChild(new Option(porDefecto.texto, porDefecto.valor));
+                };
+
+                const aplicarValoresPorDefecto = () => {
+                    llenarCombo(cInicial, [], 'x', () => '', { texto: '20% Inicial', valor: '0.20' }, false);
+                    llenarCombo(cPlazo, [], 'x', () => '', { texto: '20 Años', valor: '20' }, false);
+                    llenarCombo(cTea, [], 'x', () => '', { texto: '8.50% TEA', valor: '0.085' }, false);
+                    llenarCombo(cDesg, [], 'x', () => '', { texto: '0.05% Mensual', valor: '0.0005' }, false);
+                    llenarCombo(cInm, [], 'x', () => '', { texto: '0.025% Mensual', valor: '0.00025' }, false);
+                };
+
                 try {
                     const cliente = obtenerClienteSupabase();
-                    if (cliente) {
-                        const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
-                            cliente.from('LOV_hipoteca_cuota_inicial').select('*').order('cuota_inicial', {
-                                ascending: true
-                            }),
-                            cliente.from('LOV_hipoteca_plazo').select('*'),
-                            cliente.from('LOV_hipoteca_TEA').select('*'),
-                            cliente.from('LOV_hipoteca_desgravamen').select('*'),
-                            cliente.from('LOV_hipoteca_seguro_inmueble').select('*')
-                        ]);
+                    if (!cliente) throw new Error('Cliente Supabase no disponible');
 
-                        if (rInicial.data && rInicial.data.length > 0) {
-                            cInicial.innerHTML = rInicial.data.map(opt => {
-                                const pctValor = parseFloat(opt.cuota_inicial) || 0;
-                                const textoPorcentaje = (pctValor * 100).toFixed(0) + '% Inicial';
-                                return `<option value="${pctValor}" data-comment="${opt.comentarios_sbs_mercado || ''}">${textoPorcentaje}</option>`;
-                            }).join('');
-                        } else {
-                            cInicial.innerHTML = '<option value="0.20" data-comment="M nimo regular">20% M nimo</option>';
+                    // Primero por tipo de propiedad; si no hay filas, cae a todas las vigentes
+                    const leerLov = async (tabla, columnaOrden) => {
+                        let { data, error } = await cliente.from(tabla).select('*')
+                            .eq('vigente', true).eq('tipo_propiedad', tipoProp)
+                            .order(columnaOrden, { ascending: true });
+                        if (error) throw error;
+                        if (!data || data.length === 0) {
+                            ({ data, error } = await cliente.from(tabla).select('*')
+                                .eq('vigente', true).order(columnaOrden, { ascending: true }));
+                            if (error) throw error;
                         }
+                        return data || [];
+                    };
 
-                        if (rPlazo.data && rPlazo.data.length > 0) {
-                            cPlazo.innerHTML = rPlazo.data.map(opt => {
-                                const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
-                                return `<option value="${valorAnos}">${valorAnos} Años</option>`;
-                            }).join('');
-                        } else {
-                            cPlazo.innerHTML = '<option value="20">20 Años</option>';
-                        }
+                    const [rInicial, rPlazo, rTea, rDesg, rInm] = await Promise.all([
+                        leerLov('LOV_hipoteca_cuota_inicial', 'cuota_inicial'),
+                        leerLov('LOV_hipoteca_plazo', 'plazo_anos'),
+                        leerLov('LOV_hipoteca_TEA', 'tasa_tea'),
+                        leerLov('LOV_hipoteca_desgravamen', 'seguro_desgravamen_mensual'),
+                        leerLov('LOV_hipoteca_seguro_inmueble', 'seguro_inmueble_mensual')
+                    ]);
 
-                        if (rTea.data && rTea.data.length > 0) {
-                            cTea.innerHTML = rTea.data.map(opt => {
-                                const valorTea = parseFloat(opt.tasa_tea || opt.tea || Object.values(opt)[1] || 0.085);
-                                return `<option value="${valorTea}">${(valorTea * 100).toFixed(2)}% TEA</option>`;
-                            }).join('');
-                        } else {
-                            cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
-                        }
+                    llenarCombo(cInicial, rInicial, 'cuota_inicial', v => (v * 100).toFixed(0) + '% Inicial', { texto: '20% Inicial', valor: '0.20' }, true);
+                    llenarCombo(cPlazo, rPlazo, 'plazo_anos', v => v + ' Años', { texto: '20 Años', valor: '20' }, false);
+                    llenarCombo(cTea, rTea, 'tasa_tea', v => (v * 100).toFixed(2) + '% TEA', { texto: '8.50% TEA', valor: '0.085' }, false);
+                    llenarCombo(cDesg, rDesg, 'seguro_desgravamen_mensual', v => (v * 100).toFixed(3) + '% Mensual', { texto: '0.05% Mensual', valor: '0.0005' }, false);
+                    llenarCombo(cInm, rInm, 'seguro_inmueble_mensual', v => (v * 100).toFixed(3) + '% Mensual', { texto: '0.025% Mensual', valor: '0.00025' }, false);
 
-                        if (rDesg.data && rDesg.data.length > 0) {
-                            cDesg.innerHTML = rDesg.data.map(opt => {
-                                const valorDesg = parseFloat(opt.tasa_mensual || opt.desgravamen || Object.values(opt)[1] || 0.0005);
-                                return `<option value="${valorDesg}">${(valorDesg * 100).toFixed(3)}% Mensual</option>`;
-                            }).join('');
-                        } else {
-                            cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
-                        }
+                    ejecutarRecalculoHipoteca();
 
-                        if (rInm.data && rInm.data.length > 0) {
-                            cInm.innerHTML = rInm.data.map(opt => {
-                                const valorInm = parseFloat(opt.tasa_mensual || opt.seguro_inmueble || Object.values(opt)[1] || 0.00025);
-                                return `<option value="${valorInm}">${(valorInm * 100).toFixed(3)}% Mensual</option>`;
-                            }).join('');
-                        } else {
-                            cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
-                        }
-
-                        ejecutarRecalculoHipoteca();
-                        
-
-                    }
-
-                //} catch (errLOV) {
-                    try {
+                } catch (errLOV) {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
-                    cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
-                    cPlazo.innerHTML = '<option value="20">20 Años</option>';
-                    cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
-                    cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
-                    cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
+                    aplicarValoresPorDefecto();
                     ejecutarRecalculoHipoteca();
                 }
-            }
-        });
+            } // Fin de inyectarCapacidadCompraZillow
 
+}); // Fin del DOMContentLoaded
