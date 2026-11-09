@@ -4447,7 +4447,7 @@ if (formTour) {
                             cInicial.innerHTML = '<option value="0.20" data-comment="M nimo regular">20% M nimo</option>';
                         }
 
-if (rPlazo.data && rPlazo.data.length > 0) {
+                        if (rPlazo.data && rPlazo.data.length > 0) {
                             cPlazo.innerHTML = rPlazo.data.map(opt => {
                                 const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
                                 return `<option value="${valorAnos}">${valorAnos} Años</option>`;
@@ -4484,6 +4484,7 @@ if (rPlazo.data && rPlazo.data.length > 0) {
                         }
 
                         ejecutarRecalculoHipoteca();
+                        
 
                     }
 
