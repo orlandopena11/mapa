@@ -1138,67 +1138,136 @@ async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, 
 } // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCompleta
     
 
-                const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
-                if (btnGeo) {
-                    btnGeo.onclick = async () => {
-                        const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
-                        const dist = selDist?.value || '';
-                        const prov = selProv?.value || '';
-                        const dep = selDep?.value || '';
-                        const pais = selPais?.value || 'Perú';
+// [INICIO DE LLAVES]: Abre el controlador lógico de la cascada territorial y geocodificación automática
+            const selDep = formNode.querySelector('#sel-ubigeo-departamento');
+            const selProv = formNode.querySelector('#sel-ubigeo-provincia');
+            const selDist = formNode.querySelector('#sel-ubigeo-distrito');
+            const selCodigoUbigeo = formNode.querySelector('#sel-ubigeo-codigo_ubigeo_id_fk');
+            const btnGeo = formNode.querySelector('#btn-auto-geocodificar');
 
-                        if (!dir) {
-                            alert("Por favor ingrese primero la Direcci n exacta antes de geocodificar.");
-                            return;
+            if (coleccionUbigeo && coleccionUbigeo.length > 0) {
+                // [INICIO DE LLAVES]: Extrae departamentos únicos ordenados alfabéticamente
+                const departamentosUnicos = [...new Set(coleccionUbigeo.map(u => u.departamento))].filter(Boolean).sort();
+                
+                selDep.innerHTML = '<option value="">-- Seleccione Departamento --</option>' + 
+                    departamentosUnicos.map(d => `<option value="${d}" ${d === depValPre ? 'selected' : ''}>${d}</option>`).join('');
+                // [FIN DE LLAVES]: Cierra la población del selector de departamentos
+
+                // [INICIO DE LLAVES]: Función para actualizar Provincias según el Departamento seleccionado
+                const actualizarProvincias = (depSeleccionado, provinciaASeleccionar = '') => {
+                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>';
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                    selCodigoUbigeo.innerHTML = '<option value="">-- Código Ubigeo Automático --</option>';
+
+                    if (!depSeleccionado) return;
+
+                    const provinciasUnicas = [...new Set(coleccionUbigeo.filter(u => u.departamento === depSeleccionado).map(u => u.provincia))].filter(Boolean).sort();
+                    
+                    selProv.innerHTML = '<option value="">-- Seleccione Provincia --</option>' + 
+                        provinciasUnicas.map(p => `<option value="${p}" ${p === provinciaASeleccionar ? 'selected' : ''}>${p}</option>`).join('');
+                };
+                // [FIN DE LLAVES]: Cierra la función actualizarProvincias
+
+                // [INICIO DE LLAVES]: Función para actualizar Distritos según la Provincia seleccionada
+                const actualizarDistritos = (depSeleccionado, provSeleccionada, distritoASeleccionar = '') => {
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>';
+                    selCodigoUbigeo.innerHTML = '<option value="">-- Código Ubigeo Automático --</option>';
+
+                    if (!depSeleccionado || !provSeleccionada) return;
+
+                    const distritosFiltrados = coleccionUbigeo.filter(u => u.departamento === depSeleccionado && u.provincia === provSeleccionada);
+                    
+                    selDist.innerHTML = '<option value="">-- Seleccione Distrito --</option>' + 
+                        distritosFiltrados.map(d => `<option value="${d.distrito}" ${d.distrito === distritoASeleccionar ? 'selected' : ''}>${d.distrito}</option>`).join('');
+                };
+                // [FIN DE LLAVES]: Cierra la función actualizarDistritos
+
+                // [INICIO DE LLAVES]: Eventos de cambio en cascada para los selectores
+                selDep.onchange = () => {
+                    actualizarProvincias(selDep.value);
+                };
+
+                selProv.onchange = () => {
+                    actualizarDistritos(selDep.value, selProv.value);
+                };
+
+                selDist.onchange = () => {
+                    const match = coleccionUbigeo.find(u => u.departamento === selDep.value && u.provincia === selProv.value && u.distrito === selDist.value);
+                    if (match && selCodigoUbigeo) {
+                        selCodigoUbigeo.innerHTML = `<option value="${match.codigo_ubigeo_id}" selected>${match.codigo_ubigeo_id} - ${match.distrito}</option>`;
+                    }
+                };
+                // [FIN DE LLAVES]: Cierra los eventos de cambio en cascada
+
+                // Si estamos editando, disparamos la carga inicial de la cascada con los valores existentes
+                if (depValPre) {
+                    actualizarProvincias(depValPre, provValPre);
+                    if (provValPre) {
+                        actualizarDistritos(depValPre, provValPre, distValPre);
+                        const matchEdicion = coleccionUbigeo.find(u => u.departamento === depValPre && u.provincia === provValPre && u.distrito === distValPre);
+                        if (matchEdicion && selCodigoUbigeo) {
+                            selCodigoUbigeo.innerHTML = `<option value="${matchEdicion.codigo_ubigeo_id}" selected>${matchEdicion.codigo_ubigeo_id} - ${matchEdicion.distrito}</option>`;
                         }
+                    }
+                }
+            }
 
-                        const matchUbigeo = coleccionUbigeo.find(u => u.departamento === dep && u.provincia === prov && u.distrito === dist);
-                        if (matchUbigeo && selCodigoUbigeo) {
-                            selCodigoUbigeo.value = matchUbigeo.codigo_ubigeo_id;
-                        }
+            // [INICIO DE LLAVES]: Configura el evento de clic para geocodificar automáticamente mediante Nominatim
+            if (btnGeo) {
+                btnGeo.onclick = async () => {
+                    const dir = formNode.querySelector('#input-crud-direccion')?.value || '';
+                    const dist = selDist?.value || '';
+                    const prov = selProv?.value || '';
+                    const dep = selDep?.value || '';
+                    const pais = formNode.querySelector('#sel-lov-pais')?.value || 'Perú';
 
-                        const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
-                        btnGeo.innerText = "Calculando ubicaci n exacta con la direcci n...";
-                        
-                        try {
-                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
-                            const dataGeo = await res.json();
+                    if (!dir || !dist || !prov || !dep) {
+                        alert("Por favor complete estrictamente la secuencia territorial (Departamento, Provincia, Distrito) y la Dirección exacta antes de geocodificar.");
+                        return;
+                    }
 
-                            if (dataGeo && dataGeo.length > 0) {
-                                const lat = String(dataGeo[0].lat).replace(',', '.');
-                                const lon = String(dataGeo[0].lon).replace(',', '.');
-                                const displayName = dataGeo[0].display_name;
+                    const queryBusqueda = `${dir}, ${dist}, ${prov}, ${dep}, ${pais}`;
+                    btnGeo.innerText = "Calculando ubicación exacta con la dirección...";
+                    
+                    try {
+                        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(queryBusqueda)}`);
+                        const dataGeo = await res.json();
 
-                                const inputLat = formNode.querySelector('#input-crud-latitud');
-                                const inputLng = formNode.querySelector('#input-crud-longitud');
-                                const inputPrec = formNode.querySelector('#input-crud-geocode_precision');
-                                const inputRef = formNode.querySelector('#input-crud-referencia_mapa');
-                                const inputEnlace = formNode.querySelector('#input-crud-enlace_mapa');
+                        if (dataGeo && dataGeo.length > 0) {
+                            const lat = String(dataGeo[0].lat).replace(',', '.');
+                            const lon = String(dataGeo[0].lon).replace(',', '.');
+                            const displayName = dataGeo[0].display_name;
 
-                                if (inputLat) inputLat.value = lat;
-                                if (inputLng) inputLng.value = lon;
-                                
-                            // [INICIO DE LLAVES]: Asignación limpia y formateada de la precisión geocodificada basada en texto descriptivo de Nominatim
+                            const inputLat = formNode.querySelector('#input-crud-latitud');
+                            const inputLng = formNode.querySelector('#input-crud-longitud');
+                            const inputPrec = formNode.querySelector('#input-crud-geocode_precision');
+                            const inputRef = formNode.querySelector('#input-crud-referencia_mapa');
+                            const inputEnlace = formNode.querySelector('#input-crud-enlace_mapa');
+
+                            if (inputLat) inputLat.value = lat;
+                            if (inputLng) inputLng.value = lon;
+                            
                             const rawType = dataGeo[0].type ? String(dataGeo[0].type).trim() : "exacta";
                             const rawClass = dataGeo[0].class ? String(dataGeo[0].class).trim() : "osm";
-                            const tipoPrecisionTexto = `${rawClass.toUpperCase()} Type: ${rawType}`;
-                            if (inputPrec) inputPrec.value = tipoPrecisionTexto;
-                            // [FIN DE LLAVES]: Cierra la asignación de la precisión basada en texto descriptivo
-                                
-                                if (inputRef) inputRef.value = displayName;
-                                if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+                            if (inputPrec) inputPrec.value = `${rawClass.toUpperCase()} Type: ${rawType}`;
+                            
+                            if (inputRef) inputRef.value = displayName;
+                            if (inputEnlace) inputEnlace.value = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
 
-                                alert(" Coordenadas y mapa calculados con exito basados en la direccion exacta!");
-                            } else {
-                                alert("No se hallaron coordenadas exactas para esta direccion especifica.");
-                            }
-                        } catch (errGeo) {
-                            console.error("Error en geocodificaci n:", errGeo);
-                        } finally {
-                            btnGeo.innerText = "?? 2. Autocompletar Coordenadas y Mapa con la Direcci n Exacta";
+                            alert("📍 ¡Coordenadas, precisión y mapa calculados con éxito basados en la dirección exacta!");
+                        } else {
+                            alert("No se hallaron coordenadas exactas para esta dirección específica en OpenStreetMap.");
                         }
-                    };
-                }
+                    } catch (errGeo) {
+                        console.error("Error en geocodificación:", errGeo);
+                        alert("Error de conexión al servicio de geocodificación.");
+                    } finally {
+                        btnGeo.innerText = "📍 Autocompletar Coordenadas y Mapa con la Dirección";
+                    }
+                };
+            } // [FIN DE LLAVES]: Cierra el controlador del botón de geocodificación
+           // [FIN DE LLAVES]: Cierra el controlador lógico global territorial y geocodificación
+    
 
 
         } catch (errInicializacionFormulario) {
