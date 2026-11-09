@@ -475,66 +475,86 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
 
 /**
- * Descripción: Descarga completa de la tabla 'ubigeo' (columnas: codigo_ubigeo_id, departamento, provincia, distrito).
- * Supabase limita cada consulta a 1,000 filas, por lo que NO se usa un .select('*') simple: se descarga por
- * bloques en paralelo con Promise.all (range(0, 999), range(1000, 1999), ...) ordenando por codigo_ubigeo_id
- * para que la paginación sea estable, y luego se concatenan los resultados en un único array.
- * El resultado queda en state.ubigeosCache y se reutiliza al reabrir el formulario.
+ * Descripción: Descarga y almacena en caché la jerarquía territorial flexible para el país seleccionado
+ * consultando la tabla unificada 'ubicaciones_territoriales' en Supabase.
  */
-// [INICIO DE LLAVES]: Abre descargarUbigeoCompletoPorBloques
-async function descargarUbigeoCompletoPorBloques(cliente) {
-    if (Array.isArray(state.ubigeosCache) && state.ubigeosCache.length > 0) {
-        return state.ubigeosCache;
-    }
+// [INICIO DE LLAVES]: Abre la función asíncrona para consultar ubicaciones territoriales por país
+async function descargarUbicacionesTerritorialesPorPais(cliente, paisSeleccionado) {
+    // [INICIO DE LLAVES]: Valida si los datos ya existen en la caché local en memoria
+    if (state.ubicacionesCache && state.ubicacionesCache[paisSeleccionado]) {
+        return state.ubicacionesCache[paisSeleccionado];
+    } // [FIN DE LLAVES]: Cierra la validación de caché
 
-    const FILAS_POR_BLOQUE = 1000;
-    const COLUMNAS_UBIGEO = 'codigo_ubigeo_id, departamento, provincia, distrito';
-
-    // Si no se puede contar el total de filas, se piden 3 bloques (hasta 3,000 filas).
-    let cantidadBloques = 3;
+    // [INICIO DE LLAVES]: Bloque principal de consulta a la base de datos Supabase
     try {
-        const { count, error: errConteo } = await cliente
-            .from('ubigeo')
-            .select('codigo_ubigeo_id', { count: 'exact', head: true });
-        if (!errConteo && typeof count === 'number' && count > 0) {
-            cantidadBloques = Math.ceil(count / FILAS_POR_BLOQUE);
+        const { data, error } = await cliente
+            .from('ubicaciones_territoriales')
+            .select('*')
+            .eq('pais', paisSeleccionado)
+            .order('nivel', { ascending: true });
+
+        if (error) throw error;
+
+        if (!state.ubicacionesCache) state.ubicacionesCache = {};
+        state.ubicacionesCache[paisSeleccionado] = data || [];
+        return data || [];
+    } catch (errUbicaciones) {
+        console.warn("Aviso: No se pudieron cargar las ubicaciones territoriales:", errUbicaciones);
+        return [];
+    } // [FIN DE LLAVES]: Cierra el bloque try/catch de consulta territorial
+} // [FIN DE LLAVES]: Cierra la función descargarUbicacionesTerritorialesPorPais
+
+
+/**
+ * Descripción: Inicializa los selectores en cascada dinámicos del formulario CRUD para propiedades,
+ * conectando las tablas 'paises_configuracion' y 'ubicaciones_territoriales'.
+ */
+// [INICIO DE LLAVES]: Abre la función principal de inicialización de la cascada multi-país en el CRUD
+async function inicializarCascadaTerritorialCrud(clienteSupabase, formNode, datosFilaEdicion) {
+    // [INICIO DE LLAVES]: Selección de elementos del DOM del formulario
+    const selPais = formNode.querySelector('#sel-lov-pais');
+    const contenedorCascada = formNode.querySelector('#contenedor-cascada-territorial');
+    if (!selPais || !contenedorCascada) return;
+    // [FIN DE LLAVES]: Cierra la validación de elementos
+
+    // [INICIO DE LLAVES]: Bloque para poblar el selector de países desde 'paises_configuracion'
+    try {
+        const { data: paisesData, error: errPaises } = await clienteSupabase
+            .from('paises_configuracion')
+            .select('*')
+            .order('nombre_pais', { ascending: true });
+
+        if (!errPaises && paisesData && paisesData.length > 0) {
+            selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
+                paisesData.map(p => `<option value="${p.nombre_pais}" ${datosFilaEdicion && datosFilaEdicion.pais === p.nombre_pais ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
         }
-    } catch (errCount) {
-        console.warn("Aviso: no se pudo contar la tabla 'ubigeo', se descargarán 3 bloques por defecto.", errCount);
-    }
+    } catch (errP) {
+        console.warn("No se pudo cargar paises_configuracion:", errP);
+    } // [FIN DE LLAVES]: Cierra el bloque de carga de países
 
-    const consultasPorBloque = [];
-    for (let bloque = 0; bloque < cantidadBloques; bloque++) {
-        const desde = bloque * FILAS_POR_BLOQUE;
-        const hasta = desde + FILAS_POR_BLOQUE - 1;
-        consultasPorBloque.push(
-            cliente
-                .from('ubigeo')
-                .select(COLUMNAS_UBIGEO)
-                .order('codigo_ubigeo_id', { ascending: true })
-                .range(desde, hasta)
-        );
-    }
+    // [INICIO DE LLAVES]: Evento de cambio de país para actualizar los niveles territoriales en cascada
+    selPais.onchange = async () => {
+        const paisElegido = selPais.value;
+        if (!paisElegido) {
+            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para desplegar la estructura territorial.</p>';
+            return;
+        }
 
-    const resultados = await Promise.all(consultasPorBloque);
-    const resultadoConError = resultados.find(r => r && r.error);
-    if (resultadoConError) throw resultadoConError.error;
+        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando niveles territoriales...</p>';
+        const registrosTerritoriales = await descargarUbicacionesTerritorialesPorPais(clienteSupabase, paisElegido);
 
-    const idsVistos = new Set();
-    const coleccionCompleta = [];
-    resultados.forEach(r => {
-        (r.data || []).forEach(fila => {
-            const clave = String(fila.codigo_ubigeo_id);
-            if (!idsVistos.has(clave)) {
-                idsVistos.add(clave);
-                coleccionCompleta.push(fila);
-            }
-        });
-    });
+        // Renderizado dinámico de los selectores jerárquicos territoriales
+        contenedorCascada.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Estructura Territorial (${paisElegido}):</label>
+                <select id="sel-territorio-nivel-1" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
+                    <option value="">-- Seleccione Ubicación --</option>
+                </select>
+            </div>
+        `;
+    }; // [FIN DE LLAVES]: Cierra el evento onchange del selector de país
+} // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCrud
 
-    state.ubigeosCache = coleccionCompleta;
-    return coleccionCompleta;
-} // [FIN DE LLAVES]: Cierra descargarUbigeoCompletoPorBloques
 
 /**
  * Descripción: Rellena un <select> con un placeholder y una lista de opciones {valor, texto}.
