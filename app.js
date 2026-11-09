@@ -4447,13 +4447,13 @@ if (formTour) {
                             cInicial.innerHTML = '<option value="0.20" data-comment="M nimo regular">20% M nimo</option>';
                         }
 
-                        if (rPlazo.data && rPlazo.data.length > 0) {
+if (rPlazo.data && rPlazo.data.length > 0) {
                             cPlazo.innerHTML = rPlazo.data.map(opt => {
                                 const valorAnos = parseFloat(opt.anos || opt.plazo_anos || Object.values(opt)[1] || 20);
-                                return `<option value="${valorAnos}">${valorAnos} A os</option>`;
+                                return `<option value="${valorAnos}">${valorAnos} Años</option>`;
                             }).join('');
                         } else {
-                            cPlazo.innerHTML = '<option value="20">20 A os</option>';
+                            cPlazo.innerHTML = '<option value="20">20 Años</option>';
                         }
 
                         if (rTea.data && rTea.data.length > 0) {
@@ -4484,19 +4484,18 @@ if (formTour) {
                         }
 
                         ejecutarRecalculoHipoteca();
-                    }
 
-            
+                    }
 
                 } catch (errLOV) {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                     cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
-                    cPlazo.innerHTML = '<option value="20">20 A os</option>';
+                    cPlazo.innerHTML = '<option value="20">20 Años</option>';
                     cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
                     cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
-               // }
-            //} // [CIERRE 1]: Cierra el bloque catch (errLOV) de la carga de LOV hipotecarios
-    } // [CIERRE 2]: Cierra la funcion inyectarCapacidadCompraZillow
-}); // [CIERRE 3]: Cierra el callback de document.addEventListener("DOMContentLoaded", ...) abierto en la Parte 12
+                }
+            }
+        });
+
