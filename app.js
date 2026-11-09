@@ -4464,22 +4464,9 @@ if (formTour) {
 
                         ejecutarRecalculoHipoteca();
                     }
-                //} catch (errLOV) {
-                //    console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
-                //    cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
-                //    cPlazo.innerHTML = '<option value="20">20 A os</option>';
-                //    cTea.innerHTML = '<option value="0.085">8.50% TEA</option>';
-                //    cDesg.innerHTML = '<option value="0.0005">0.05% Mensual</option>';
-                //    cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
-                //    ejecutarRecalculoHipoteca();
-                //}
+
             
-// }); // Cierra el DOMContentLoaded del archivo
 
-         //   }; // Cierra el DOMContentLoaded del archivo
-
-    //} 
- //)
                 } catch (errLOV) {
                     console.warn("Fallo cargando valores LOV desde Supabase, usando valores por defecto.", errLOV);
                     cInicial.innerHTML = '<option value="0.20">20% Inicial</option>';
