@@ -899,14 +899,24 @@ else {
             if (!formNode) return;
 
 try {
-    // 1. Descarga íntegra de 'ubigeo' por bloques en paralelo (Supabase devuelve como máximo 1,000 filas por consulta)
-    let coleccionUbigeo = [];
+// [INICIO DE LLAVES]: Abre la carga de la estructura territorial basada en la tabla unificada 'ubicaciones_territoriales' y 'paises_configuracion'
+    let coleccionUbicacionesTerritoriales = [];
     try {
-        coleccionUbigeo = await descargarUbigeoCompletoPorBloques(clienteSupabase);
-    } catch (errUbigeo) {
-        console.error("X [SRE UBIGEO] No se pudo descargar la tabla 'ubigeo' por bloques:", errUbigeo);
+        // Consultamos directamente la tabla unificada territorial adaptada a tu esquema multi-país actual
+        const { data: dataUbicaciones, error: errTerritorial } = await clienteSupabase
+            .from('ubicaciones_territoriales')
+            .select('*')
+            .order('nivel', { ascending: true });
+
+        if (!errTerritorial && dataUbicaciones) {
+            coleccionUbicacionesTerritoriales = dataUbicaciones;
+        }
+    } catch (errUbic) {
+        console.warn("Aviso: No se pudieron descargar las ubicaciones territoriales unificadas:", errUbic);
     }
-    state.ubigeosCache = coleccionUbigeo;
+    state.ubicacionesTerritorialesCache = coleccionUbicacionesTerritoriales;
+// [FIN DE LLAVES]: Cierra la carga de la estructura territorial unificada
+    
 
     // 2. Cat logos y LOVs originales intactos
     const [
