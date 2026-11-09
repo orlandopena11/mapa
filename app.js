@@ -675,8 +675,8 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
                 };
             });
 
-            // Carga inicial (y precarga si hay cadena guardada)
-            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : (paisInicial ? paisInicial.pais_iso : ''));
+        // Carga inicial (y precarga si hay cadena guardada)
+            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
             for (let i = 1; i < total; i++) {
                 if (!cadena[i - 1]) break;
                 await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
@@ -685,7 +685,15 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
         };
 
         selPais.onchange = async () => { await renderizarNiveles(buscarPais(selPais.value), []); };
-        await renderizarNiveles(paisInicial, cadenaInicial);
+        
+        poblarSelectCascadaCrud(
+            selPais, '-- Seleccione País --',
+            listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
+            paisInicial ? paisInicial.nombre_pais : (listaPaises[0] ? listaPaises[0].nombre_pais : '')
+        );
+        if (selPais.options.length > 1 && !selPais.value) selPais.selectedIndex = 1;
+        await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
+        
 
     } catch (errCascada) {
         console.warn('Error al inicializar la cascada territorial:', errCascada);
