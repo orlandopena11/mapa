@@ -596,8 +596,10 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
         poblarSelectCascadaCrud(
             selPais, '-- Seleccione País --',
             listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
-            paisInicial ? paisInicial.nombre_pais : ''
+            paisInicial ? paisInicial.nombre_pais : (listaPaises[0] ? listaPaises[0].nombre_pais : '')
         );
+        if (selPais.options.length > 1 && !selPais.value) selPais.selectedIndex = 1;
+        if (selPais.value) await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
 
         const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
 
