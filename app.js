@@ -674,7 +674,7 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
             });
 
             // Carga inicial (y precarga si hay cadena guardada)
-            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
+            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : (paisInicial ? paisInicial.pais_iso : ''));
             for (let i = 1; i < total; i++) {
                 if (!cadena[i - 1]) break;
                 await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
