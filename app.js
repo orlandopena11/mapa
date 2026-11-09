@@ -506,54 +506,101 @@ async function descargarUbicacionesTerritorialesPorPais(cliente, paisSeleccionad
 
 
 /**
- * Descripción: Inicializa los selectores en cascada dinámicos del formulario CRUD para propiedades,
- * conectando las tablas 'paises_configuracion' y 'ubicaciones_territoriales'.
+ * Descripción: Inicializa la cascada multi-nivel territorial basada en 'paises_configuracion' y 'ubicaciones_territoriales'.
  */
-// [INICIO DE LLAVES]: Abre la función principal de inicialización de la cascada multi-país en el CRUD
-async function inicializarCascadaTerritorialCrud(clienteSupabase, formNode, datosFilaEdicion) {
-    // [INICIO DE LLAVES]: Selección de elementos del DOM del formulario
+// [INICIO DE LLAVES]: Abre la función asíncrona principal de la nueva cascada territorial
+async function inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, datosFilaEdicion) {
+    // [INICIO DE LLAVES]: Validación y selección de nodos del DOM en el formulario
     const selPais = formNode.querySelector('#sel-lov-pais');
     const contenedorCascada = formNode.querySelector('#contenedor-cascada-territorial');
     if (!selPais || !contenedorCascada) return;
-    // [FIN DE LLAVES]: Cierra la validación de elementos
+    // [FIN DE LLAVES]: Cierra la validación de nodos
 
-    // [INICIO DE LLAVES]: Bloque para poblar el selector de países desde 'paises_configuracion'
+    // [INICIO DE LLAVES]: Bloque principal try/catch para la carga de catálogos territoriales
     try {
+        // 1. Cargar la lista oficial de países desde 'paises_configuracion'
         const { data: paisesData, error: errPaises } = await clienteSupabase
             .from('paises_configuracion')
-            .select('*')
+            .select('nombre_pais, codigo_iso')
             .order('nombre_pais', { ascending: true });
 
-        if (!errPaises && paisesData && paisesData.length > 0) {
-            selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
-                paisesData.map(p => `<option value="${p.nombre_pais}" ${datosFilaEdicion && datosFilaEdicion.pais === p.nombre_pais ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
-        }
-    } catch (errP) {
-        console.warn("No se pudo cargar paises_configuracion:", errP);
-    } // [FIN DE LLAVES]: Cierra el bloque de carga de países
+        if (errPaises) throw errPaises;
 
-    // [INICIO DE LLAVES]: Evento de cambio de país para actualizar los niveles territoriales en cascada
-    selPais.onchange = async () => {
-        const paisElegido = selPais.value;
-        if (!paisElegido) {
-            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para desplegar la estructura territorial.</p>';
-            return;
-        }
+        const paisInicial = (datosFilaEdicion && datosFilaEdicion.pais) || (paisesData && paisesData.length > 0 ? paisesData[0].nombre_pais : 'Perú');
 
-        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando niveles territoriales...</p>';
-        const registrosTerritoriales = await descargarUbicacionesTerritorialesPorPais(clienteSupabase, paisElegido);
+        selPais.innerHTML = '<option value="">-- Seleccione País --</option>' + 
+            (paisesData || []).map(p => `<option value="${p.nombre_pais}" ${p.nombre_pais === paisInicial ? 'selected' : ''}>${p.nombre_pais}</option>`).join('');
 
-        // Renderizado dinámico de los selectores jerárquicos territoriales
-        contenedorCascada.innerHTML = `
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Estructura Territorial (${paisElegido}):</label>
-                <select id="sel-territorio-nivel-1" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;">
-                    <option value="">-- Seleccione Ubicación --</option>
-                </select>
-            </div>
-        `;
-    }; // [FIN DE LLAVES]: Cierra el evento onchange del selector de país
-} // [FIN DE LLAVES]: Cierra la función inicializarCascadaTerritorialCrud
+        // 2. Función interna para renderizar y enlazar los niveles territoriales dinámicos
+        const actualizarEstructuraTerritorial = async (paisSeleccionado) => {
+            // [INICIO DE LLAVES]: Validación de selección de país
+            if (!paisSeleccionado) {
+                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #64748b;">Seleccione un país para ver los niveles territoriales.</p>';
+                return;
+            } // [FIN DE LLAVES]: Cierra validación
+
+            contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #006aff;">Cargando estructura territorial...</p>';
+
+            // Consultar ubicaciones desde la tabla unificada 'ubicaciones_territoriales'
+            const { data: ubicacionesData, error: errUbicaciones } = await clienteSupabase
+                .from('ubicaciones_territoriales')
+                .select('*')
+                .eq('pais', paisSeleccionado)
+                .order('nivel', { ascending: true });
+
+            if (errUbicaciones) throw errUbicaciones;
+
+            if (!ubicacionesData || ubicacionesData.length === 0) {
+                contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">No hay ubicaciones registradas para este país.</p>';
+                return;
+            }
+
+            // Obtener los niveles disponibles únicos ordenados de menor a mayor (ej. 1, 2, 3...)
+            const nivelesDisponibles = [...new Set(ubicacionesData.map(u => u.nivel))].sort((a, b) => a - b);
+
+            let htmlSelectores = `<div style="display: flex; flex-direction: column; gap: 8px;">`;
+            
+            nivelesDisponibles.forEach((nivel) => {
+                htmlSelectores += `
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; font-weight: bold; color: #002e50;">Nivel Territorial ${nivel}:</label>
+                        <select id="sel-territorio-nivel-${nivel}" class="select-territorio-dinamico" data-nivel="${nivel}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;">
+                            <option value="">-- Seleccione --</option>
+                        </select>
+                    </div>
+                `;
+            });
+
+            // Campo oculto final para almacenar el código de la ubicación seleccionada
+            htmlSelectores += `
+                <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${datosFilaEdicion ? (datosFilaEdicion.codigo_ubigeo_id_fk || '') : ''}">
+            </div>`;
+
+            contenedorCascada.innerHTML = htmlSelectores;
+
+            // Poblar el Nivel 1 inicial
+            const selectNivel1 = contenedorCascada.querySelector('#sel-territorio-nivel-1');
+            if (selectNivel1) {
+                const primerNivelItems = ubicacionesData.filter(u => u.nivel === nivelesDisponibles[0]);
+                selectNivel1.innerHTML = '<option value="">-- Seleccione --</option>' + 
+                    primerNivelItems.map(item => `<option value="${item.ubicacion_id || item.nombre}">${item.nombre}</option>`).join('');
+            }
+        }; // [FIN DE LLAVES]: Cierra la función interna actualizarEstructuraTerritorial
+
+        // Disparar carga inicial para el país por defecto
+        await actualizarEstructuraTerritorial(paisInicial);
+
+        // Actualizar al cambiar de país en el selector
+        selPais.onchange = async () => {
+            await actualizarEstructuraTerritorial(selPais.value);
+        };
+
+    } catch (errCascada) {
+        console.warn("Error al inicializar la cascada territorial:", errCascada);
+        contenedorCascada.innerHTML = '<p style="font-size: 12px; color: #ef4444;">Error cargando niveles territoriales.</p>';
+    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
+}
+
 
 
 /**
