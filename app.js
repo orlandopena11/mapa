@@ -925,31 +925,32 @@ try {
         clienteSupabase.from('lov_caracteristica').select('*')
     ]);
     
-                const poblarSelectDinamicoFlex = (selectorId, dataRegistros, posiblesColumnas) => {
-                    const selectNode = formNode.querySelector('#' + selectorId);
-                    if (!selectNode || !dataRegistros) return;
+// [INICIO DE LLAVES]: Abre la consulta asíncrona para obtener el catálogo independiente de códigos postales
+    let resCodigoPostal = { data: [] };
+    try {
+        resCodigoPostal = await clienteSupabase.from('lov_codigo_postal').select('*');
+    } catch (errPostal) {
+        console.warn("Aviso: No se pudo consultar lov_codigo_postal:", errPostal);
+    }
+// [FIN DE LLAVES]: Cierra la consulta del catálogo postal
 
-                    const valorActualPre = String(selectNode.getAttribute('data-actual') || '').trim();
-                    let optionsHtml = '<option value="">-- Seleccione --</option>';
-                    
-                    dataRegistros.forEach(row => {
-                        let valReal = '';
-                        for (let col of posiblesColumnas) {
-                            if (row[col] !== undefined && row[col] !== null) {
-                                valReal = row[col];
-                                break;
-                            }
-                        }
-                        if (!valReal) {
-                            const keys = Object.keys(row);
-                            valReal = row[keys[0]] || '';
-                        }
+// [INICIO DE LLAVES]: Abre el bloque de población de selectores y catálogos dinámicos
+    poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
+    poblarSelectDinamicoFlex('sel-lov-subtipo_propiedad', resSubtipo.data, ['subtipo_propiedad', 'nombre', 'valor']);
+    poblarSelectDinamicoFlex('sel-lov-estado_propiedad', resEstadoProp.data, ['estado_propiedad', 'nombre', 'valor']);
+    poblarSelectDinamicoFlex('sel-lov-moneda', resMoneda.data, ['moneda', 'nombre', 'simbolo']);
+    poblarSelectDinamicoFlex('sel-lov-estado_publicacion', resEstadoPub.data, ['estado_publicacion', 'nombre']);
+    poblarSelectDinamicoFlex('sel-lov-situacion_propiedad', resSituacion.data, ['situacion_propiedad', 'nombre', 'valor']);
+    poblarSelectDinamicoFlex('sel-lov-vista', resVista.data, ['vista', 'nombre', 'valor']);
+    poblarSelectDinamicoFlex('sel-lov-sotano', resSino.data, ['si_no', 'nombre']);
+    poblarSelectDinamicoFlex('sel-lov-almacen', resSino.data, ['si_no', 'nombre']);
+    poblarSelectDinamicoFlex('sel-lov-pais', resPais.data, ['pais', 'nombre', 'valor']);
 
-                        const coincide = String(valReal).trim().toLowerCase() === valorActualPre.toLowerCase();
-                        optionsHtml += `<option value="${valReal}" ${coincide ? 'selected' : ''}>${valReal}</option>`;
-                    });
-                    selectNode.innerHTML = optionsHtml;
-                };
+    // [INICIO DE LLAVES]: Población independiente del selector de código postal desde la tabla lov_codigo_postal
+    poblarSelectDinamicoFlex('sel-lov-codigo_postal', resCodigoPostal.data, ['codigo_postal', 'centro_poblado', 'nombre', 'valor']);
+    // [FIN DE LLAVES]: Cierra la población independiente del código postal
+// [FIN DE LLAVES]: Cierra el bloque de población de selectores
+    
 
 // [INICIO DE LLAVES]: Abre el bloque de poblaci n de selectores y cat logos din micos
                 poblarSelectDinamicoFlex('sel-lov-tipo_propiedad', resTipoProp.data, ['tipo_propiedad', 'nombre', 'valor']);
