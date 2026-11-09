@@ -695,23 +695,27 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         document.body.appendChild(subModal);
     }
 
+// [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento de campos para la tabla propiedad
     let camposAProcesar = [...conf.campos];
     if (nombreTabla === 'propiedad') {
+        // [INICIO DE LLAVES]: Define el array con la jerarquía estricta territorial y comercial deseada
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
-            'pais', 'direccion', 'codigo_ubigeo_id_fk', 'codigo_postal',
+            'pais', 'departamento', 'provincia', 'distrito', 'direccion', 'codigo_ubigeo_id_fk', 'codigo_postal',
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
+        // [FIN DE LLAVES]: Cierra la definición del array de ordenamiento
         
-const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol_id_fk) === 1;
-    camposAProcesar = camposAProcesar.filter(c => {
+        // [INICIO DE LLAVES]: Valida permisos estrictos mediante la tabla rol (Administrador rol_id = 1)
+        const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol_id_fk) === 1;
+        camposAProcesar = camposAProcesar.filter(c => {
+            if (['galeria_fotos', 'estado', 'ciudad'].includes(c.nombre)) return false;
+            if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
+            return true;
+        });
+        // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
-        if (['departamento', 'provincia', 'distrito', 'galeria_fotos', 'estado', 'ciudad'].includes(c.nombre)) return false;
-        if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
-        return true;
-    });
-
-        
+        // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
             let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
@@ -719,7 +723,9 @@ const esAdminSistema = state.usuarioPermisos && Number(state.usuarioPermisos.rol
             if (indexB === -1) indexB = 999;
             return indexA - indexB;
         });
-    }
+        // [FIN DE LLAVES]: Cierra la función de ordenamiento
+    } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
+    
 
 let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
@@ -817,22 +823,28 @@ let html30CajasFotos = '';
                             });
                         }
                         inputHtml += `</select>`;
-                    } else if (c.nombre === 'codigo_ubigeo_id_fk') {
+// [INICIO DE LLAVES]: Abre el bloque condicional para renderizar el panel interactivo territorial en cascada
+                    else if (c.nombre === 'codigo_ubigeo_id_fk') {
+                        // [INICIO DE LLAVES]: Recupera los valores previos en modo edición si existen
                         const depValPre = esEdicion ? (datosFila.departamento || ubigeoActualInfo.departamento || '') : '';
                         const provValPre = esEdicion ? (datosFila.provincia || ubigeoActualInfo.provincia || '') : '';
                         const distValPre = esEdicion ? (datosFila.distrito || ubigeoActualInfo.distrito || '') : '';
+                        // [FIN DE LLAVES]: Cierra la recuperación de valores previos
 
+                        // [INICIO DE LLAVES]: Inyecta el marcado HTML estructurado para la selección territorial en cascada
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">?? 1. Ingrese primero la Direcci n exacta arriba y luego seleccione el Ubigeo:</label>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50; margin-bottom: -2px;">🌐 Secuencia Obligatoria: 1. Departamento ➔ 2. Provincia ➔ 3. Distrito ➔ 4. Ubigeo</label>
                                 <select id="sel-ubigeo-departamento" data-actual="${depValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Departamento --</option></select>
                                 <select id="sel-ubigeo-provincia" data-actual="${provValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Provincia --</option></select>
                                 <select id="sel-ubigeo-distrito" data-actual="${distValPre}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px;"><option value="">-- Seleccione Distrito --</option></select>
-                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- C digo Ubigeo Autom tico --</option></select>
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">?? 2. Autocompletar Coordenadas y Mapa con la Direcci n Exacta</button>
+                                <select name="codigo_ubigeo_id_fk" id="sel-ubigeo-codigo_ubigeo_id_fk" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff;"><option value="">-- Código Ubigeo Automático --</option></select>
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">📍 Autocompletar Coordenadas y Mapa con la Dirección</button>
                             </div>
                         `;
-                    } 
+                        // [FIN DE LLAVES]: Cierra la asignación del HTML de selección territorial
+                    } // [FIN DE LLAVES]: Cierra el bloque condicional del campo codigo_ubigeo_id_fk
+                        
  /**
  * Descripci n: Genera de forma din mica los campos de entrada est ndar (texto, n mero, email, fecha) 
  * para el formulario CRUD, incorporando la propiedad 'step="any"' en los campos num ricos 
