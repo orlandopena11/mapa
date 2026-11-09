@@ -4497,6 +4497,6 @@ if (formTour) {
                     cInm.innerHTML = '<option value="0.00025">0.025% Mensual</option>';
                     ejecutarRecalculoHipoteca();
                // }
-            } // [CIERRE 1]: Cierra el bloque catch (errLOV) de la carga de LOV hipotecarios
+            //} // [CIERRE 1]: Cierra el bloque catch (errLOV) de la carga de LOV hipotecarios
     } // [CIERRE 2]: Cierra la funcion inyectarCapacidadCompraZillow
 }); // [CIERRE 3]: Cierra el callback de document.addEventListener("DOMContentLoaded", ...) abierto en la Parte 12
