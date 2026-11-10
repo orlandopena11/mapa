@@ -594,17 +594,101 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
         }
         if (!paisInicial) paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises[0] || null;
 
-        poblarSelectCascadaCrud(
-            selPais, '-- Seleccione País --',
-            listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
-            paisInicial ? paisInicial.nombre_pais : (listaPaises[0] ? listaPaises[0].nombre_pais : '')
-        );
-        if (selPais.options.length > 1 && !selPais.value) selPais.selectedIndex = 1;
-        if (selPais.value) await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
-
         const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
 
         async function renderizarNiveles(pais, cadena) {
+            hiddenFinal.value = '';
+            if (!pais) {
+                contenedor.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">Seleccione un país para ver los niveles territoriales.</p>';
+                hiddenFinal.dispatchEvent(new Event('change'));
+                return;
+            }
+
+            const total = Number(pais.niveles_totales) || 3;
+            contenedor.innerHTML = '';
+            const selects = [];
+
+            for (let n = 1; n <= total; n++) {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
+                const lbl = document.createElement('label');
+                lbl.style.cssText = 'font-size: 11px; font-weight: bold; color: #002e50;';
+                lbl.textContent = `${n}. ${etiquetaNivelTerritorial(pais, n)}`;
+                const sel = document.createElement('select');
+                sel.className = 'select-territorio-dinamico';   // sin atributo name: no entra al FormData
+                sel.id = `sel-territorio-nivel-${n}`;
+                sel.dataset.nivel = String(n);
+                sel.style.cssText = estiloSelect;
+                sel._items = [];
+                poblarSelectCascadaCrud(sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`, [], '');
+                sel.disabled = n > 1;
+                wrap.appendChild(lbl);
+                wrap.appendChild(sel);
+                contenedor.appendChild(wrap);
+                selects.push(sel);
+            }
+
+            const cargarNivel = async (n, parentId, valorPre) => {
+                const sel = selects[n - 1];
+                if (!sel) return;
+                sel.disabled = true;
+                const items = await consultarNivelTerritorial(cliente, pais.pais_iso, n, parentId);
+                sel._items = items;
+                poblarSelectCascadaCrud(
+                    sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`,
+                    items.map(it => ({ valor: String(it.id), texto: it.nombre })),
+                    valorPre
+                );
+                sel.disabled = items.length === 0;
+            };
+
+            const actualizarValorFinal = () => {
+                let ultimo = null;
+                selects.forEach(sel => {
+                    if (!sel.value) return;
+                    const it = sel._items.find(x => String(x.id) === sel.value);
+                    if (it) ultimo = it;
+                });
+                hiddenFinal.value = ultimo ? String(ultimo.codigo_oficial || ultimo.id) : '';
+                hiddenFinal.dispatchEvent(new Event('change'));
+            };
+
+            selects.forEach((sel, idx) => {
+                sel.onchange = async () => {
+                    // Limpiar y bloquear los niveles inferiores
+                    for (let j = idx + 1; j < selects.length; j++) {
+                        selects[j]._items = [];
+                        poblarSelectCascadaCrud(selects[j], `-- Seleccione ${etiquetaNivelTerritorial(pais, j + 1)} --`, [], '');
+                        selects[j].disabled = true;
+                    }
+                    if (sel.value && idx + 1 < selects.length) {
+                        await cargarNivel(idx + 2, Number(sel.value), '');
+                    }
+                    actualizarValorFinal();
+                };
+            });
+
+            // Carga inicial (y precarga si hay cadena guardada)
+            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
+            for (let i = 1; i < total; i++) {
+                if (!cadena[i - 1]) break;
+                await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
+            }
+            if (cadena.length > 0) actualizarValorFinal();
+        }
+
+        selPais.onchange = async () => { await renderizarNiveles(buscarPais(selPais.value), []); };
+
+        poblarSelectCascadaCrud(
+            selPais, '-- Seleccione País --',
+            listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
+            paisInicial ? paisInicial.nombre_pais : ''
+        );
+
+        if (selPais.options.length > 1 && !selPais.value) selPais.selectedIndex = 1;
+        await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
+        
+
             hiddenFinal.value = '';
             if (!pais) {
                 contenedor.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">Seleccione un país para ver los niveles territoriales.</p>';
