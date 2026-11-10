@@ -885,16 +885,40 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         document.body.appendChild(subModal);
     }
 
-// [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento de campos para la tabla propiedad
+// [INICIO DE LLAVES]: Abre el bloque de procesamiento y ordenamiento de campos para la tabla propiedad con secuencia lógica optimizada
     let camposAProcesar = [...conf.campos];
     if (nombreTabla === 'propiedad') {
-        // [INICIO DE LLAVES]: Define el array con la jerarqu a estricta territorial y comercial deseada
+        // [INICIO DE LLAVES]: Define el array con el orden estricto solicitado: País, Ubigeo (Dep/Prov/Dist), Código Postal y Dirección
         const nombresOrdenadosDeseados = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
-            'pais', 'codigo_ubigeo_id_fk', 'direccion', 'codigo_postal',
+            'pais', 'codigo_ubigeo_id_fk', 'codigo_postal', 'direccion',
             'latitud', 'longitud', 'geocode_precision', 'referencia_mapa', 'enlace_mapa'
         ];
-        // [FIN DE LLAVES]: Cierra la definici n del array de ordenamiento
+        // [FIN DE LLAVES]: Cierra la definición del array de ordenamiento territorial
+        
+        // [INICIO DE LLAVES]: Valida permisos estrictos mediante la rol de usuario logueado
+        const permisosForm = state.usuarioPermisos || {};
+        const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
+            || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
+        camposAProcesar = camposAProcesar.filter(c => {
+            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
+            if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
+            return true;
+        });
+        // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
+
+        // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
+        camposAProcesar.sort((a, b) => {
+            let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
+            let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
+            
+            if (indexA === -1) indexA = 999;
+            if (indexB === -1) indexB = 999;
+            return indexA - indexB;
+        });
+        // [FIN DE LLAVES]: Cierra la función de ordenamiento
+    } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
+    
         
         // [INICIO DE LLAVES]: Valida permisos estrictos mediante la tabla rol (Administrador rol_id = 1)
         const permisosForm = state.usuarioPermisos || {};
@@ -1127,19 +1151,31 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     let inputHtml = '';
                     const esSelectLov = (c.tipo === 'select' || ['tipo_propiedad', 'subtipo_propiedad', 'pais', 'situacion_propiedad', 'vista'].includes(c.nombre));
 
+                    // [INICIO DE LLAVES]: Abre la condición para renderizar el panel territorial limpio en codigo_ubigeo_id_fk
                     if (c.nombre === 'codigo_ubigeo_id_fk') {
-                        // Panel territorial: los selects se construyen en inicializarCascadaTerritorialCompleta
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia: Pais, niveles territoriales y Ubigeo final</label>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia Territorial: País, Departamento, Provincia y Distrito</label>
                                 <div id="contenedor-cascada-territorial" style="display: flex; flex-direction: column; gap: 8px;">
                                     <p style="font-size: 12px; color: #006aff; margin: 0;">Cargando estructura territorial...</p>
                                 </div>
                                 <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${valorActual}">
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 9px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; margin-top: 4px;">Autocompletar Coordenadas y Mapa con la Direccion</button>
                             </div>
                         `;
-                    } else if (esSelectLov) {
+                    } // [FIN DE LLAVES]: Cierra la condición de codigo_ubigeo_id_fk
+
+                    // [INICIO DE LLAVES]: Abre la condición para inyectar el botón azul de geocodificación automática después de la dirección
+                    if (c.nombre === 'direccion') {
+                        inputHtml += `
+                            <div style="margin-top: 8px;">
+                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%; box-shadow: 0 2px 4px rgba(0,106,255,0.2);">
+                                    Geocodificar Automáticamente (Lat, Long y Mapas)
+                                </button>
+                            </div>
+                        `;
+                    } // [FIN DE LLAVES]: Cierra la condición del botón de geocodificación
+                        
+                     else if (esSelectLov) {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
                             c.opciones.forEach(op => {
