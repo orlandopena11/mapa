@@ -925,6 +925,10 @@ let htmlPublicacionMultimedia = '';
     if (nombreTabla === 'propiedad') {
         const estiloCampo = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; background: #fff;';
 
+        const tipoAnuncioActual = (esEdicion && datosFila) ? (datosFila.tipo_anuncio || 'Venta') : 'Venta';
+        const recorridoActual = (esEdicion && datosFila) ? (datosFila.recorrido_3d || '') : '';
+        const promocionActual = (esEdicion && datosFila) ? (datosFila.promocion || '') : '';
+
         // Anuncio, recorrido 3D y promoción (alimentan anuncio, recorrido_3d y promocion en el RPC)
         htmlPublicacionMultimedia = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
@@ -932,17 +936,17 @@ let htmlPublicacionMultimedia = '';
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                     <label style="font-size: 12px; font-weight: bold; color: #334155;">Tipo de Anuncio</label>
                     <select name="tipo_anuncio" id="sel-lov-tipo_anuncio" style="${estiloCampo}">
-                        <option value="Venta" ${datosPublicacion.tipo_anuncio === 'Venta' ? 'selected' : ''}>Venta</option>
-                        <option value="Alquiler" ${datosPublicacion.tipo_anuncio === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
+                        <option value="Venta" ${tipoAnuncioActual === 'Venta' ? 'selected' : ''}>Venta</option>
+                        <option value="Alquiler" ${tipoAnuncioActual === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
                     </select>
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                     <label style="font-size: 12px; font-weight: bold; color: #334155;">Enlace de Recorrido 3D (opcional)</label>
-                    <input type="text" name="recorrido_3d" id="input-crud-recorrido_3d" value="${escaparHtmlSRE(datosPublicacion.recorrido_3d)}" placeholder="https://..." style="${estiloCampo}">
+                    <input type="text" name="recorrido_3d" id="input-crud-recorrido_3d" value="${recorridoActual}" placeholder="https://..." style="${estiloCampo}">
                 </div>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                     <label style="font-size: 12px; font-weight: bold; color: #334155;">Promoción (opcional)</label>
-                    <select name="promocion" id="sel-lov-promocion" data-actual="${escaparHtmlSRE(datosPublicacion.promocion)}" style="${estiloCampo}">
+                    <select name="promocion" id="sel-lov-promocion" data-actual="${promocionActual}" style="${estiloCampo}">
                         <option value="">-- Sin promoción --</option>
                     </select>
                 </div>
@@ -981,11 +985,11 @@ let htmlPublicacionMultimedia = '';
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
                     <div style="display: flex; align-items: center; gap: 6px; width: 48%;">
                         <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 20px;">#${i}</span>
-                        <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${escaparHtmlSRE(nombreFotoActual)}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; color: #1e293b;">
+                        <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; color: #1e293b;">
                     </div>
                     <div style="width: 48%;">
                         <select name="tipo_slot_${i}" id="select-crud-tipo-slot-${i}" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; background: #fff; color: #1e293b;">
-                            ${opcionesTipo.map(t => `<option value="${escaparHtmlSRE(t)}" ${t === tipoFotoActual ? 'selected' : ''}>${escaparHtmlSRE(t)}</option>`).join('')}
+                            ${opcionesTipo.map(t => `<option value="${t}" ${t === tipoFotoActual ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
                     </div>
                 </div>
@@ -1008,6 +1012,7 @@ let htmlPublicacionMultimedia = '';
             </div>
         `;
     }
+    
         
     
 
