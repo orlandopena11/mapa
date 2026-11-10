@@ -907,6 +907,18 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         });
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
+        // [INICIO DE LLAVES]: Valida permisos estrictos mediante la rol de usuario logueado
+        const permisosForm = state.usuarioPermisos || {};
+        const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
+            || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
+        
+        camposAProcesar = camposAProcesar.filter(c => {
+            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
+            if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
+            return true;
+        });
+        // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
+
         // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
         camposAProcesar.sort((a, b) => {
             let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
@@ -918,30 +930,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         });
         // [FIN DE LLAVES]: Cierra la función de ordenamiento
     } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
-    
-        
-        // [INICIO DE LLAVES]: Valida permisos estrictos mediante la tabla rol (Administrador rol_id = 1)
-        const permisosForm = state.usuarioPermisos || {};
-        const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
-            || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
-        camposAProcesar = camposAProcesar.filter(c => {
-            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
-            if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
-            return true;
-        });
-        // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
-        // [INICIO DE LLAVES]: Ordena los campos en base a la jerarqu a territorial definida
-        camposAProcesar.sort((a, b) => {
-            let indexA = nombresOrdenadosDeseados.indexOf(a.nombre);
-            let indexB = nombresOrdenadosDeseados.indexOf(b.nombre);
-            
-            if (indexA === -1) indexA = 999;
-            if (indexB === -1) indexB = 999;
-            return indexA - indexB;
-        });
-        // [FIN DE LLAVES]: Cierra la funci n de ordenamiento
-    } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
     
     let htmlPublicacionMultimedia = '';
     let html30CajasFotos = '';
