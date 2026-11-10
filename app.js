@@ -1178,25 +1178,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         }
                     }
 
-                        inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
-                        if (c.opciones) {
-                            c.opciones.forEach(op => {
-                                inputHtml += `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`;
-                            });
-                        }
-                        inputHtml += `</select>`;
-                    } else {
-                        const esPkCampo = (c.nombre === conf.pk);
-                        const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
-                        const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
-                        const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
-                        const atributoLectura = debeBloquearse ? 'readonly' : '';
-                        const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
-
-                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
-                    }
-
                     return `
+
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                             <label style="font-size: 12px; font-weight: bold; color: #334155;">${c.label} ${c.requerido ? '*' : ''}</label>
                             ${inputHtml}
