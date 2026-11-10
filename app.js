@@ -552,7 +552,7 @@ async function obtenerCadenaTerritorial(cliente, codigoOficialOId, paisIso) {
     }
 
     if (paisIso) consulta = consulta.eq('pais_iso', paisIso);
-    let { data: hojas, error } = await consulta.limit(1);
+    let { data: hojas, error } = await consulta.limit(1); 
     
     // Fallback de seguridad por ID primario si la búsqueda por texto falla
     if (error || !hojas || hojas.length === 0) {
@@ -563,7 +563,7 @@ async function obtenerCadenaTerritorial(cliente, codigoOficialOId, paisIso) {
         if (!porId) return [];
         hojas = [porId];
     }
-// [FIN DE LLAVES]: Cierra la sección modificada de obtenerCadenaTerritorial
+// [FIN DE LLAVES]: Cierra la sección modificada de obtenerCadenaTerritorial 
     
 
     const cadena = [];
