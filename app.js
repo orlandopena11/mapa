@@ -578,228 +578,344 @@ async function obtenerCadenaTerritorial(cliente, codigoOficialOId, paisIso) {
     return cadena;
 }
 
-/**
- * Cascada: País -> N niveles (según niveles_totales) -> codigo_oficial final en el input hidden.
- * En edición precarga y auto-selecciona todo a partir de datosFilaEdicion.codigo_ubigeo_id_fk.
- */
-async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFilaEdicion) {
-    const selPais = formNode.querySelector('#sel-lov-pais');
-    const contenedor = formNode.querySelector('#contenedor-cascada-territorial');
-    const hiddenFinal = formNode.querySelector('#input-hidden-ubicacion-final');
-    if (!selPais || !contenedor || !hiddenFinal) return;
-
-    try {
-        const { data: paises, error: errPaises } = await cliente
-            .from('paises_configuracion')
-            .select('pais_iso, nombre_pais, niveles_totales, etiquetas_niveles')
-            .order('nombre_pais', { ascending: true });
-        if (errPaises) throw errPaises;
-
-        const listaPaises = paises || [];
-        const buscarPais = (valor) => listaPaises.find(p =>
-            normalizarTextoSRE(p.nombre_pais) === normalizarTextoSRE(valor) ||
-            normalizarTextoSRE(p.pais_iso) === normalizarTextoSRE(valor)) || null;
-
-        // --- Precarga en modo edición ---
-        const codigoGuardado = datosFilaEdicion ? String(datosFilaEdicion.codigo_ubigeo_id_fk || '').trim() : '';
-        let paisInicial = datosFilaEdicion ? buscarPais(datosFilaEdicion.pais) : null;
-        let cadenaInicial = [];
-        if (codigoGuardado) {
-            cadenaInicial = await obtenerCadenaTerritorial(cliente, codigoGuardado, paisInicial ? paisInicial.pais_iso : null);
-            if (cadenaInicial.length > 0 && !paisInicial) {
-                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial[0].pais_iso) || null;
-            }
-        }
-        if (!paisInicial) paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises[0] || null;
-
+// ==========================================================================
+// MÓDULO TERRITORIAL: paises_configuracion + ubicaciones_territoriales
+// ==========================================================================
 
 /**
- * Descripción del nuevo código: 
- * Corrige el flujo de inicialización territorial eliminando la llamada duplicada y prematura. 
- * Declara primero la función 'renderizarNiveles', puebla el select de país una sola vez de forma limpia, 
- * asigna correctamente los eventos 'onchange' y ejecuta la precarga inicial sin colisionar en el DOM.
+ * Función: normalizarTextoSRE
+ * Qué hace: Normaliza cadenas de texto eliminando tildes y convirtiéndolas a minúsculas para comparaciones seguras.
  */
+const normalizarTextoSRE = (s) => { // INICIO: normalizarTextoSRE
+    return String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+}; // FIN: normalizarTextoSRE
 
-// [INICIO DE LLAVES]: Abre la función asíncrona inicializarCascadaTerritorialCompleta
-async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFilaEdicion) {
+const COLUMNAS_TERRITORIO = 'id, pais_iso, nivel_jerarquia, nombre, codigo_oficial, parent_id';
+
+/**
+ * Función: etiquetaNivelTerritorial
+ * Qué hace: Obtiene la etiqueta correspondiente al nivel jerárquico territorial según la configuración del país.
+ */
+function etiquetaNivelTerritorial(pais, nivel) { // INICIO: etiquetaNivelTerritorial
+    const e = pais ? pais.etiquetas_niveles : null;
+    let texto = '';
+    if (Array.isArray(e)) { // INICIO: if Array
+        texto = e[nivel - 1];
+    } // FIN: if Array
+    else if (e && typeof e === 'object') { // INICIO: else if Object
+        texto = e[nivel] ?? e[String(nivel)] ?? Object.values(e)[nivel - 1];
+    } // FIN: else if Object
+    return String(texto || `Nivel ${nivel}`);
+} // FIN: etiquetaNivelTerritorial
+
+/**
+ * Función: consultarNivelTerritorial
+ * Qué hace: Consulta de forma asíncrona los registros de una ubicación territorial en Supabase filtrando por país, nivel y padre.
+ */
+async function consultarNivelTerritorial(cliente, paisIso, nivel, parentId) { // INICIO: consultarNivelTerritorial
+    let consulta = cliente.from('ubicaciones_territoriales')
+        .select(COLUMNAS_TERRITORIO)
+        .eq('pais_iso', paisIso)
+        .eq('nivel_jerarquia', nivel);
+    
+    if (nivel > 1) { // INICIO: if nivel > 1
+        consulta = consulta.eq('parent_id', parentId);
+    } // FIN: if nivel > 1
+
+    const { data, error } = await consulta.order('nombre', { ascending: true }).limit(1000);
+    
+    if (error) { // INICIO: if error
+        console.warn('Error consultando nivel territorial:', error.message);
+        return [];
+    } // FIN: if error
+
+    return data || [];
+} // FIN: consultarNivelTerritorial
+
+/**
+ * Función: obtenerCadenaTerritorial
+ * Qué hace: Reconstruye la cadena completa de ancestros territoriales desde una hoja (ID o código oficial) hasta la raíz.
+ */
+async function obtenerCadenaTerritorial(cliente, codigoOficialOId, paisIso) { // INICIO: obtenerCadenaTerritorial
+    const busqueda = String(codigoOficialOId || '').trim();
+    if (!busqueda) { // INICIO: if !busqueda
+        return [];
+    } // FIN: if !busqueda
+
+    let consulta = cliente.from('ubicaciones_territoriales').select(COLUMNAS_TERRITORIO);
+    
+    if (isNaN(Number(busqueda))) { // INICIO: if isNaN
+        consulta = consulta.eq('codigo_oficial', busqueda);
+    } // FIN: if isNaN
+    else { // INICIO: else
+        consulta = consulta.eq('id', Number(busqueda));
+    } // FIN: else
+
+    if (paisIso) { // INICIO: if paisIso
+        consulta = consulta.eq('pais_iso', paisIso);
+    } // FIN: if paisIso
+
+    let { data: hojas, error } = await consulta.limit(1); 
+    
+    if (error || !hojas || hojas.length === 0) { // INICIO: if error or empty
+        const { data: porId } = await cliente.from('ubicaciones_territoriales')
+            .select(COLUMNAS_TERRITORIO)
+            .eq('id', Number(busqueda) || 0)
+            .maybeSingle();
+        if (!porId) { // INICIO: if !porId
+            return [];
+        } // FIN: if !porId
+        hojas = [porId];
+    } // FIN: if error or empty
+
+    const cadena = [];
+    let actual = hojas[0];
+
+    for (let seguridad = 0; actual && seguridad < 10; seguridad++) { // INICIO: for loop ascendente
+        cadena.unshift(actual);
+        if (actual.parent_id === null || actual.parent_id === undefined) { // INICIO: if root
+            break;
+        } // FIN: if root
+        const { data: padre } = await cliente.from('ubicaciones_territoriales')
+            .select(COLUMNAS_TERRITORIO).eq('id', actual.parent_id).maybeSingle();
+        actual = padre;
+    } // FIN: for loop ascendente
+
+    return cadena;
+} // FIN: obtenerCadenaTerritorial
+
+/**
+ * Función: inicializarCascadaTerritorialCompleta
+ * Qué hace: Inicializa y gestiona la interfaz gráfica en cascada de selects territoriales dependientes (País -> Niveles).
+ */
+async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFilaEdicion) { // INICIO: inicializarCascadaTerritorialCompleta
     const selPais = formNode.querySelector('#sel-lov-pais');
     const contenedor = formNode.querySelector('#contenedor-cascada-territorial');
     const hiddenFinal = formNode.querySelector('#input-hidden-ubicacion-final');
     
-    // [INICIO DE LLAVES]: Condicional de validación de elementos DOM críticos
-    if (!selPais || !contenedor || !hiddenFinal) {
+    if (!selPais || !contenedor || !hiddenFinal) { // INICIO: if missing elements
         return;
-    } // [FIN DE LLAVES]: Cierra validación de elementos DOM
+    } // FIN: if missing elements
 
-    // [INICIO DE LLAVES]: Bloque try/catch principal para consultar la configuración de países
-    try {
+    try { // INICIO: try block principal
         const { data: paises, error: errPaises } = await cliente
             .from('paises_configuracion')
             .select('pais_iso, nombre_pais, niveles_totales, etiquetas_niveles')
             .order('nombre_pais', { ascending: true });
             
-        // [INICIO DE LLAVES]: Control de errores en la consulta de países
-        if (errPaises) {
+        if (errPaises) { // INICIO: if errPaises
             throw errPaises;
-        } // [FIN DE LLAVES]: Cierra control de errores
+        } // FIN: if errPaises
 
         const listaPaises = paises || [];
-        const buscarPais = (valor) => listaPaises.find(p =>
-            normalizarTextoSRE(p.nombre_pais) === normalizarTextoSRE(valor) ||
-            normalizarTextoSRE(p.pais_iso) === normalizarTextoSRE(valor)) || null;
+        const buscarPais = (valor) => { // INICIO: buscarPais lambda
+            return listaPaises.find(p =>
+                normalizarTextoSRE(p.nombre_pais) === normalizarTextoSRE(valor) ||
+                normalizarTextoSRE(p.pais_iso) === normalizarTextoSRE(valor)) || null;
+        }; // FIN: buscarPais lambda
 
-        // --- Recuperación de datos en modo edición ---
         const codigoGuardado = datosFilaEdicion ? String(datosFilaEdicion.codigo_ubigeo_id_fk || '').trim() : '';
         let paisInicial = datosFilaEdicion ? buscarPais(datosFilaEdicion.pais) : null;
         let cadenaInicial = [];
-        
-        // [INICIO DE LLAVES]: Condicional de recuperación de cadena territorial si existe un ubigeo guardado
-        if (codigoGuardado) {
-            cadenaInicial = await obtenerCadenaTerritorial(cliente, codigoGuardado, paisInicial ? paisInicial.pais_iso : null);
-            // [INICIO DE LLAVES]: Asignación de país inicial si la cadena posee datos
-            if (cadenaInicial.length > 0 && !paisInicial) {
-                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial[0].pais_iso) || null;
-            } // [FIN DE LLAVES]: Cierra asignación
-        } // [FIN DE LLAVES]: Cierra bloque de código guardado
 
-        // [INICIO DE LLAVES]: Fallback para establecer Perú o el primer país disponible por defecto
-        if (!paisInicial) {
+        if (codigoGuardado) { // INICIO: if codigoGuardado
+            cadenaInicial = await obtenerCadenaTerritorial(cliente, codigoGuardado, paisInicial ? paisInicial.pais_iso : null);
+            if (cadenaInicial.length > 0 && !paisInicial) { // INICIO: if cadena found without country
+                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial[0].pais_iso) || null;
+            } // FIN: if cadena found without country
+        } // FIN: if codigoGuardado
+
+        if (!paisInicial) { // INICIO: if !paisInicial default
             paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises[0] || null;
-        } // [FIN DE LLAVES]: Cierra fallback
+        } // FIN: if !paisInicial default
 
         const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
 
-        // [INICIO DE LLAVES]: Abre la función interna renderizarNiveles declarada en orden correcto
-        const renderizarNiveles = async (pais, cadena) => {
+        const renderizarNiveles = async (pais, cadena) => { // INICIO: renderizarNiveles
             hiddenFinal.value = '';
-            // [INICIO DE LLAVES]: Condicional si no se ha seleccionado un país válido
-            if (!pais) {
+            if (!pais) { // INICIO: if !pais
                 contenedor.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">Seleccione un país para ver los niveles territoriales.</p>';
                 hiddenFinal.dispatchEvent(new Event('change'));
                 return;
-            } // [FIN DE LLAVES]: Cierra condición sin país
+            } // FIN: if !pais
 
             const total = Number(pais.niveles_totales) || 3;
             contenedor.innerHTML = '';
             const selects = [];
 
-            // [INICIO DE LLAVES]: Bucle para construir de forma dinámica los selectores de cada nivel jerárquico
-            for (let n = 1; n <= total; n++) {
+            for (let n = 1; n <= total; n++) { // INICIO: for loop crear selects
                 const wrap = document.createElement('div');
                 wrap.style.cssText = 'display: flex; flex-direction: column; gap: 4px;';
+                
                 const lbl = document.createElement('label');
                 lbl.style.cssText = 'font-size: 11px; font-weight: bold; color: #002e50;';
                 lbl.textContent = `${n}. ${etiquetaNivelTerritorial(pais, n)}`;
+                
                 const sel = document.createElement('select');
                 sel.className = 'select-territorio-dinamico';
                 sel.id = `sel-territorio-nivel-${n}`;
                 sel.dataset.nivel = String(n);
                 sel.style.cssText = estiloSelect;
                 sel._items = [];
+                
                 poblarSelectCascadaCrud(sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`, [], '');
                 sel.disabled = n > 1;
+                
                 wrap.appendChild(lbl);
                 wrap.appendChild(sel);
                 contenedor.appendChild(wrap);
                 selects.push(sel);
-            } // [FIN DE LLAVES]: Cierra bucle de creación de selectores
+            } // FIN: for loop crear selects
 
-            // [INICIO DE LLAVES]: Abre la función asíncrona cargarNivel
-            const cargarNivel = async (n, parentId, valorPre) => {
+            const cargarNivel = async (n, parentId, valorPre) => { // INICIO: cargarNivel
                 const sel = selects[n - 1];
-                // [INICIO DE LLAVES]: Validación de existencia del selector
-                if (!sel) {
+                if (!sel) { // INICIO: if !sel
                     return;
-                } // [FIN DE LLAVES]: Cierra validación
+                } // FIN: if !sel
+                
                 sel.disabled = true;
                 const items = await consultarNivelTerritorial(cliente, pais.pais_iso, n, parentId);
                 sel._items = items;
+                
                 poblarSelectCascadaCrud(
                     sel, `-- Seleccione ${etiquetaNivelTerritorial(pais, n)} --`,
                     items.map(it => ({ valor: String(it.id), texto: it.nombre })),
                     valorPre
                 );
                 sel.disabled = items.length === 0;
-            }; // [FIN DE LLAVES]: Cierra función cargarNivel
+            }; // FIN: cargarNivel
 
-            // [INICIO DE LLAVES]: Abre la función actualizarValorFinal
-            const actualizarValorFinal = () => {
+            const actualizarValorFinal = () => { // INICIO: actualizarValorFinal
                 let ultimo = null;
-                // [INICIO DE LLAVES]: Bucle para recorrer los selectores activos y hallar el último nivel seleccionado
-                selects.forEach(sel => {
-                    // [INICIO DE LLAVES]: Validación de valor presente
-                    if (!sel.value) {
+                selects.forEach(sel => { // INICIO: forEach select
+                    if (!sel.value) { // INICIO: if !sel.value
                         return;
-                    } // [FIN DE LLAVES]: Cierra validación
+                    } // FIN: if !sel.value
                     const it = sel._items.find(x => String(x.id) === sel.value);
-                    // [INICIO DE LLAVES]: Almacenamiento del ítem territorial hallado
-                    if (it) {
+                    if (it) { // INICIO: if it found
                         ultimo = it;
-                    } // [FIN DE LLAVES]: Cierra almacenamiento
-                }); // [FIN DE LLAVES]: Cierra bucle de recorrido
+                    } // FIN: if it found
+                }); // FIN: forEach select
+                
                 hiddenFinal.value = ultimo ? String(ultimo.codigo_oficial || ultimo.id) : '';
                 hiddenFinal.dispatchEvent(new Event('change'));
-            }; // [FIN DE LLAVES]: Cierra función actualizarValorFinal
+            }; // FIN: actualizarValorFinal
 
-            // [INICIO DE LLAVES]: Bucle para registrar los eventos onchange interactivos en cascada
-            selects.forEach((sel, idx) => {
-                sel.onchange = async () => {
-                    // [INICIO DE LLAVES]: Bucle para limpiar y bloquear los niveles inferiores dependientes
-                    for (let j = idx + 1; j < selects.length; j++) {
+            selects.forEach((sel, idx) => { // INICIO: forEach select event change
+                sel.onchange = async () => { // INICIO: onchange event
+                    for (let j = idx + 1; j < selects.length; j++) { // INICIO: for loop limpiar hijos
                         selects[j]._items = [];
                         poblarSelectCascadaCrud(selects[j], `-- Seleccione ${etiquetaNivelTerritorial(pais, j + 1)} --`, [], '');
                         selects[j].disabled = true;
-                    } // [FIN DE LLAVES]: Cierra bucle de limpieza
-                    // [INICIO DE LLAVES]: Condicional para cargar el siguiente nivel si el selector actual tiene valor
-                    if (sel.value && idx + 1 < selects.length) {
+                    } // FIN: for loop limpiar hijos
+                    
+                    if (sel.value && idx + 1 < selects.length) { // INICIO: if has value & next exists
                         await cargarNivel(idx + 2, Number(sel.value), '');
-                    } // [FIN DE LLAVES]: Cierra condición de carga siguiente
+                    } // FIN: if has value & next exists
+                    
                     actualizarValorFinal();
-                };
-            }); // [FIN DE LLAVES]: Cierra bucle de eventos
+                }; // FIN: onchange event
+            }); // FIN: forEach select event change
 
-            // Carga inicial y precarga por niveles de forma secuencial y limpia
             await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
-            // [INICIO DE LLAVES]: Bucle para iterar y precargar los niveles encadenados superiores
-            for (let i = 1; i < total; i++) {
-                // [INICIO DE LLAVES]: Interrupción si no existe elemento previo en la cadena
-                if (!cadena[i - 1]) {
-                    break;
-                } // [FIN DE LLAVES]: Cierra interrupción
-                await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
-            } // [FIN DE LLAVES]: Cierra bucle de precarga
             
-            // [INICIO DE LLAVES]: Condicional para actualizar el valor final si la cadena contiene elementos
-            if (cadena.length > 0) {
+            for (let i = 1; i < total; i++) { // INICIO: for loop precargar hijos en edición
+                if (!cadena[i - 1]) { // INICIO: if !cadena parent
+                    break;
+                } // FIN: if !cadena parent
+                await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
+            } // FIN: for loop precargar hijos en edición
+            
+            if (cadena.length > 0) { // INICIO: if cadena has items
                 actualizarValorFinal();
-            } // [FIN DE LLAVES]: Cierra actualización
-        }; // [FIN DE LLAVES]: Cierra la función renderizarNiveles
+            } // FIN: if cadena has items
+        }; // FIN: renderizarNiveles
 
-        // Configuración única del evento onchange para el select de país
-        selPais.onchange = async () => {
+        selPais.onchange = async () => { // INICIO: selPais onchange
             await renderizarNiveles(buscarPais(selPais.value), []);
-        };
+        }; // FIN: selPais onchange
 
-        // Población única y limpia del select de país (Sin duplicidad)
         poblarSelectCascadaCrud(
             selPais, '-- Seleccione País --',
             listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
             paisInicial ? paisInicial.nombre_pais : (listaPaises[0] ? listaPaises[0].nombre_pais : '')
         );
         
-        // [INICIO DE LLAVES]: Auto-selección predeterminada del índice de país si está vacía
-        if (selPais.options.length > 1 && !selPais.value) {
+        if (selPais.options.length > 1 && !selPais.value) { // INICIO: if selPais default select
             selPais.selectedIndex = 1;
-        } // [FIN DE LLAVES]: Cierra auto-selección
+        } // FIN: if selPais default select
 
-        // Ejecución única inicial del renderizado con los datos resueltos
         await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
 
-    } catch (errCascada) {
+    } // FIN: try block principal
+    catch (errCascada) { // INICIO: catch block principal
         console.warn('Error al inicializar la cascada territorial:', errCascada);
         contenedor.innerHTML = '<p style="font-size: 12px; color: #ef4444; margin: 0;">Error cargando niveles territoriales.</p>';
-    } // [FIN DE LLAVES]: Cierra el bloque try/catch principal
-} // [FIN DE LLAVES]: Cierra la función asíncrona inicializarCascadaTerritorialCompleta
+    } // FIN: catch block principal
+} // FIN: inicializarCascadaTerritorialCompleta
+
+/**
+ * Función: inicializarCodigoPostalDependiente
+ * Qué hace: Controla y carga los códigos postales dependientes del distrito u ubicación territorial seleccionada.
+ */
+async function inicializarCodigoPostalDependiente(cliente, formNode, datosFila) { // INICIO: inicializarCodigoPostalDependiente
+    const selPostal = formNode.querySelector('#sel-lov-codigo_postal');
+    const hiddenFinal = formNode.querySelector('#input-hidden-ubicacion-final');
+    
+    if (!selPostal || !hiddenFinal) { // INICIO: if missing postal elements
+        return;
+    } // FIN: if missing postal elements
+
+    const postalGuardado = datosFila && datosFila.codigo_postal ? String(datosFila.codigo_postal).trim() : '';
+    let ultimaConsulta = '';
+
+    const recargar = async (preseleccion) => { // INICIO: recargar postal
+        const codigo = hiddenFinal.value.trim();
+        if (!codigo) { // INICIO: if !codigo
+            poblarSelectCascadaCrud(selPostal, '-- Seleccione primero la ubicación --', [], '');
+            return;
+        } // FIN: if !codigo
+        
+        ultimaConsulta = codigo;
+        const { data, error } = await cliente.from('lov_codigo_postal')
+            .select('codigo_postal, centro_poblado')
+            .eq('codigo_ubigeo_id', codigo)
+            .order('centro_poblado', { ascending: true });
+            
+        if (ultimaConsulta !== codigo) { // INICIO: if race condition check
+            return; 
+        } // FIN: if race condition check
+        
+        if (error) { // INICIO: if error postal
+            console.warn('Error consultando lov_codigo_postal:', error.message);
+        } // FIN: if error postal
+
+        const vistos = new Set();
+        const opciones = [];
+        
+        (data || []).forEach(r => { // INICIO: forEach postal record
+            const clave = `${r.codigo_postal}|${r.centro_poblado}`;
+            if (vistos.has(clave)) { // INICIO: if duplicate
+                return;
+            } // FIN: if duplicate
+            vistos.add(clave);
+            opciones.push({ valor: r.codigo_postal, texto: `${r.codigo_postal} - ${r.centro_poblado}` });
+        }); // FIN: forEach postal record
+
+        if (preseleccion && !opciones.some(o => String(o.valor) === String(preseleccion))) { // INICIO: if preselected missing
+            opciones.unshift({ valor: preseleccion, texto: preseleccion });
+        } // FIN: if preselected missing
+
+        poblarSelectCascadaCrud(
+            selPostal,
+            opciones.length ? '-- Seleccione Código Postal --' : '-- Sin códigos postales para esta ubicación --',
+            opciones, preseleccion
+        );
+    }; // FIN: recargar postal
+
+    hiddenFinal.addEventListener('change', () => recargar(''));
+    await recargar(postalGuardado);
+} // FIN: inicializarCodigoPostalDependiente
         
 
 
