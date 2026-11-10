@@ -603,7 +603,7 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
 
         const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
 
-        const renderizarNiveles = async (pais, cadena) => {
+        async function renderizarNiveles(pais, cadena) {
             hiddenFinal.value = '';
             if (!pais) {
                 contenedor.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">Seleccione un país para ver los niveles territoriales.</p>';
