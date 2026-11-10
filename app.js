@@ -907,16 +907,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         });
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
-        // [INICIO DE LLAVES]: Valida permisos estrictos mediante la rol de usuario logueado
-        const permisosForm = state.usuarioPermisos || {};
-        const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
-            || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
-        
-        camposAProcesar = camposAProcesar.filter(c => {
-            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
-            if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
-            return true;
-        });
+        //});
+        }
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
         // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
