@@ -685,13 +685,16 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
             if (cadena.length > 0) actualizarValorFinal();
         };
 
+        // Establecemos el escucha de cambios de forma limpia
         selPais.onchange = async () => { await renderizarNiveles(buscarPais(selPais.value), []); };
         
+        // Poblamos una única vez mapeando el catálogo relacional
         poblarSelectCascadaCrud(
             selPais, '-- Seleccione País --',
             listaPaises.map(p => ({ valor: p.nombre_pais, texto: p.nombre_pais })),
-            paisInicial ? paisInicial.nombre_pais : (listaPaises[0] ? listaPaises[0].nombre_pais : '')
+            paisInicial ? paisInicial.nombre_pais : ''
         );
+        
         if (selPais.options.length > 1 && !selPais.value) selPais.selectedIndex = 1;
         await renderizarNiveles(buscarPais(selPais.value), cadenaInicial);
         
@@ -901,7 +904,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         const esAdminSistema = Number(permisosForm.rol_id_fk ?? permisosForm.rol_id) === 1
             || String(permisosForm.nombres_rol || '').toLowerCase().startsWith('admin');
         camposAProcesar = camposAProcesar.filter(c => {
-            if (['galeria_fotos', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
+            if (['galeria_fotos', 'pais', 'estado', 'ciudad', 'departamento', 'provincia', 'distrito'].includes(c.nombre)) return false;
             if (!esAdminSistema && c.nombre === 'estado_publicacion') return false;
             return true;
         });
@@ -1132,18 +1135,23 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     let inputHtml = '';
                     const esSelectLov = (c.tipo === 'select' || ['tipo_propiedad', 'subtipo_propiedad', 'pais', 'situacion_propiedad', 'vista'].includes(c.nombre));
 
-                    // [INICIO DE LLAVES]: Abre la condición para renderizar el panel territorial limpio en codigo_ubigeo_id_fk
                     if (c.nombre === 'codigo_ubigeo_id_fk') {
+                        // Inyectamos el select de país con su respectivo name para asegurar el transporte en el FormData
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
                                 <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia Territorial: País, Departamento, Provincia y Distrito</label>
+                                <div style="margin-bottom: 4px;">
+                                    <label style="font-size: 11px; font-weight: bold; color: #334155;">Selección de País</label>
+                                    <select name="pais" id="sel-lov-pais" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;"></select>
+                                </div>
                                 <div id="contenedor-cascada-territorial" style="display: flex; flex-direction: column; gap: 8px;">
                                     <p style="font-size: 12px; color: #006aff; margin: 0;">Cargando estructura territorial...</p>
                                 </div>
                                 <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${valorActual}">
                             </div>
                         `;
-                    } // [FIN DE LLAVES]: Cierra la condición de codigo_ubigeo_id_fk
+                    }
+
 
                     // [INICIO DE LLAVES]: Abre la condición para inyectar el botón azul de geocodificación automática después de la dirección
                     if (c.nombre === 'direccion') {
