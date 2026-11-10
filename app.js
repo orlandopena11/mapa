@@ -515,11 +515,12 @@ const normalizarTextoSRE = (s) => String(s ?? '').normalize('NFD').replace(/[?-?
 const COLUMNAS_TERRITORIO = 'id, pais_iso, nivel_jerarquia, nombre, codigo_oficial, parent_id';
 
 function etiquetaNivelTerritorial(pais, nivel) {
-    const e = pais ? pais.etiquetas_niveles : null;
-    let texto = '';
-    if (Array.isArray(e)) texto = e[nivel - 1];
-    else if (e && typeof e === 'object') texto = e[nivel] ?? e[String(nivel)] ?? Object.values(e)[nivel - 1];
-    return String(texto || `Nivel ${nivel}`);
+    if (!pais || !pais.etiquetas_niveles) return `Nivel ${nivel}`;
+    const e = pais.etiquetas_niveles;
+    
+    // Intenta buscar tanto por clave numérica, string, o por la posición ordinal del objeto JSON
+    const etiqueta = e[nivel] || e[String(nivel)] || (typeof e === 'object' ? Object.values(e)[nivel - 1] : null);
+    return String(etiqueta || `Nivel ${nivel}`);
 }
 
 // Hijos de un nodo (nivel 1 no necesita parent). Evita el tope de 1000 filas cargando por nivel.
