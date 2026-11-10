@@ -918,20 +918,41 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     } // [FIN DE LLAVES]: Cierra el bloque principal de la tabla propiedad
     
 
-let html30CajasFotos = '';
+let htmlPublicacionMultimedia = '';
+    let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
     if (nombreTabla === 'propiedad') {
-        /**
-         * Descripci n: Renderiza los slots de la galer a de fotos en dos columnas con sus respectivas 
-         * etiquetas de cabecera: "NOMBRE FOTO" a la izquierda y "FOTO DE:" a la derecha, vinculando 
-         * el selector desplegable con los valores permitidos de la tabla lov_tipo_imagen.
-         */
-        // [INICIO DE LLAVES]: Generaci n de la interfaz de galer a dual con etiquetas espec ficas
+        const estiloCampo = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; background: #fff;';
+
+        // Anuncio, recorrido 3D y promoción (alimentan anuncio, recorrido_3d y promocion en el RPC)
+        htmlPublicacionMultimedia = `
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                <label style="font-size: 14px; font-weight: 800; color: #002e50;">Publicación, recorrido virtual y promoción</label>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Tipo de Anuncio</label>
+                    <select name="tipo_anuncio" id="sel-lov-tipo_anuncio" style="${estiloCampo}">
+                        <option value="Venta" ${datosPublicacion.tipo_anuncio === 'Venta' ? 'selected' : ''}>Venta</option>
+                        <option value="Alquiler" ${datosPublicacion.tipo_anuncio === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
+                    </select>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Enlace de Recorrido 3D (opcional)</label>
+                    <input type="text" name="recorrido_3d" id="input-crud-recorrido_3d" value="${escaparHtmlSRE(datosPublicacion.recorrido_3d)}" placeholder="https://..." style="${estiloCampo}">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Promoción (opcional)</label>
+                    <select name="promocion" id="sel-lov-promocion" data-actual="${escaparHtmlSRE(datosPublicacion.promocion)}" style="${estiloCampo}">
+                        <option value="">-- Sin promoción --</option>
+                    </select>
+                </div>
+            </div>
+        `;
+
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 8px;">
-                    ?? Galer a de Fotos y Clasificaci n (Hasta 30 espacios flexibles):
+                    Galería de Fotos y Clasificación (hasta 30 espacios):
                 </label>
                 <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; color: #64748b; padding: 0 4px 4px 4px; border-bottom: 1px solid #cbd5e1; margin-bottom: 8px;">
                     <span style="width: 48%;">NOMBRE FOTO</span>
@@ -945,44 +966,41 @@ let html30CajasFotos = '';
         for (let i = 1; i <= 30; i++) {
             let nombreFotoActual = '';
             let tipoFotoActual = 'interior';
-            
-            if (esEdicion && fotosSecundariasObtenidas[i - 1] !== undefined) {
-                // Si tienes la estructura de objeto o array, se recupera aqu  de forma segura
-                const itemFoto = fotosSecundariasObtenidas[i - 1];
-                if (typeof itemFoto === 'object' && itemFoto !== null) {
+            const itemFoto = esEdicion ? fotosSecundariasObtenidas[i - 1] : undefined;
+            if (itemFoto !== undefined && itemFoto !== null) {
+                if (typeof itemFoto === 'object') {
                     nombreFotoActual = itemFoto.ruta || '';
                     tipoFotoActual = itemFoto.tipo || 'interior';
                 } else {
                     nombreFotoActual = String(itemFoto || '');
                 }
             }
+            const opcionesTipo = tiposImagenOpciones.includes(tipoFotoActual) ? tiposImagenOpciones : [tipoFotoActual, ...tiposImagenOpciones];
 
             html30CajasFotos += `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
                     <div style="display: flex; align-items: center; gap: 6px; width: 48%;">
                         <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 20px;">#${i}</span>
-                        <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; color: #1e293b;">
+                        <input type="text" name="foto_slot_${i}" id="input-crud-foto-slot-${i}" value="${escaparHtmlSRE(nombreFotoActual)}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; color: #1e293b;">
                     </div>
                     <div style="width: 48%;">
                         <select name="tipo_slot_${i}" id="select-crud-tipo-slot-${i}" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; outline: none; font-size: 12px; background: #fff; color: #1e293b;">
-                            ${tiposImagenOpciones.map(t => `<option value="${t}" ${t === tipoFotoActual ? 'selected' : ''}>${t}</option>`).join('')}
+                            ${opcionesTipo.map(t => `<option value="${escaparHtmlSRE(t)}" ${t === tipoFotoActual ? 'selected' : ''}>${escaparHtmlSRE(t)}</option>`).join('')}
                         </select>
                     </div>
                 </div>
             `;
         }
         html30CajasFotos += `</div></div>`;
-        // [FIN DE LLAVES]: Cierra la construcci n de la interfaz de galer a de fotos
-        
-    
+
         htmlSeccionCaracteristicasEspeciales = `
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <label style="font-size: 14px; font-weight: 800; color: #002e50;">
-                        ? Caracter sticas Especiales de la Propiedad (lov_caracteristica):
+                        Características Especiales de la Propiedad (lov_caracteristica):
                     </label>
                     <button type="button" id="btn-agregar-caracteristica-extra" style="background: #006aff; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                        + A adir Caracter stica
+                        + Añadir Característica
                     </button>
                 </div>
                 <div id="contenedor-dinamico-caracteristicas-especiales" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
@@ -990,6 +1008,8 @@ let html30CajasFotos = '';
             </div>
         `;
     }
+        
+    
 
     subModal.innerHTML = `
         <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 92%; max-width: 680px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
