@@ -908,7 +908,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
         //});
-        }
+        //}
         // [FIN DE LLAVES]: Cierra el filtrado condicional por roles de usuario
 
         // [INICIO DE LLAVES]: Ordena los campos en base a la jerarquía territorial definida
