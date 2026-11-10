@@ -1167,7 +1167,8 @@ let htmlPublicacionMultimedia = '';
                         </div>
                     `;
                 }).join('')}
-
+                <!-- FALTABA INYECTAR ESTAS LÍNEAS AQUÍ -->
+                ${htmlPublicacionMultimedia}
                 ${html30CajasFotos}
                 ${htmlSeccionCaracteristicasEspeciales}
 
