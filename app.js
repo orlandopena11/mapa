@@ -1136,12 +1136,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     const esSelectLov = (c.tipo === 'select' || ['tipo_propiedad', 'subtipo_propiedad', 'pais', 'situacion_propiedad', 'vista'].includes(c.nombre));
 
                     if (c.nombre === 'codigo_ubigeo_id_fk') {
-                        // Inyectamos el select de país con su respectivo name para asegurar el transporte en el FormData
                         inputHtml = `
                             <div style="display: flex; flex-direction: column; gap: 8px; background: #f8fafc; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-                                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia Territorial: País, Departamento, Provincia y Distrito</label>
+                                <label style="font-size: 11px; font-weight: bold; color: #002e50;">Secuencia Territorial: País y Niveles Administrativos</label>
                                 <div style="margin-bottom: 4px;">
-                                    <label style="font-size: 11px; font-weight: bold; color: #334155;">Selección de País</label>
+                                    <label style="font-size: 11px; font-weight: bold; color: #334155;">País *</label>
                                     <select name="pais" id="sel-lov-pais" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;"></select>
                                 </div>
                                 <div id="contenedor-cascada-territorial" style="display: flex; flex-direction: column; gap: 8px;">
@@ -1150,21 +1149,35 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 <input type="hidden" name="codigo_ubigeo_id_fk" id="input-hidden-ubicacion-final" value="${valorActual}">
                             </div>
                         `;
+                    } else if (esSelectLov) {
+                        inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
+                        if (c.opciones) {
+                            c.opciones.forEach(op => {
+                                inputHtml += `<option value="${op}" ${String(valorActual) === String(op) ? 'selected' : ''}>${op}</option>`;
+                            });
+                        }
+                        inputHtml += `</select>`;
+                    } else {
+                        const esPkCampo = (c.nombre === conf.pk);
+                        const esUsuarioCampo = (c.nombre === 'usuario_id_fk');
+                        const debeBloquearse = (esPkCampo && esEdicion) || esUsuarioCampo;
+                        const estilosAdicionales = debeBloquearse ? 'background: #f1f5f9; color: #64748b; cursor: not-allowed;' : '';
+                        const atributoLectura = debeBloquearse ? 'readonly' : '';
+                        const atributoStep = c.tipo === 'number' ? 'step="any"' : '';
+
+                        inputHtml = `<input type="${c.tipo || 'text'}" name="${c.nombre}" id="input-crud-${c.nombre}" value="${valorActual}" ${c.requerido ? 'required' : ''} ${atributoLectura} ${atributoStep} style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; ${estilosAdicionales}">`;
+
+                        if (c.nombre === 'direccion') {
+                            inputHtml += `
+                                <div style="margin-top: 8px;">
+                                    <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%; box-shadow: 0 2px 4px rgba(0,106,255,0.2);">
+                                        Geocodificar Automáticamente (Lat, Long y Mapas)
+                                    </button>
+                                </div>
+                            `;
+                        }
                     }
 
-
-                    // [INICIO DE LLAVES]: Abre la condición para inyectar el botón azul de geocodificación automática después de la dirección
-                    if (c.nombre === 'direccion') {
-                        inputHtml += `
-                            <div style="margin-top: 8px;">
-                                <button type="button" id="btn-auto-geocodificar" style="background: #006aff; color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; width: 100%; box-shadow: 0 2px 4px rgba(0,106,255,0.2);">
-                                    Geocodificar Automáticamente (Lat, Long y Mapas)
-                                </button>
-                            </div>
-                        `;
-                    } // [FIN DE LLAVES]: Cierra la condición del botón de geocodificación
-                        
-                     else if (esSelectLov) {
                         inputHtml = `<select name="${c.nombre}" id="sel-lov-${c.nombre}" data-actual="${valorActual}" style="padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%;"><option value="">-- Seleccione --</option>`;
                         if (c.opciones) {
                             c.opciones.forEach(op => {
