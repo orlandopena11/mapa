@@ -1014,9 +1014,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     }
     
 
-let htmlPublicacionMultimedia = '';
-    let html30CajasFotos = '';
-    let htmlSeccionCaracteristicasEspeciales = '';
 
     if (nombreTabla === 'propiedad') {
         const estiloCampo = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; background: #fff;';
