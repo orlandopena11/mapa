@@ -537,15 +537,34 @@ async function consultarNivelTerritorial(cliente, paisIso, nivel, parentId) {
     return data || [];
 }
 
-// Dado un codigo_oficial devuelve la cadena [nivel1, nivel2, ..., hoja] subiendo por parent_id
-async function obtenerCadenaTerritorial(cliente, codigoOficial, paisIso) {
-    const codigo = String(codigoOficial || '').trim();
-    if (!codigo) return [];
+// [INICIO DE LLAVES]: Abre la función asíncrona corregida obtenerCadenaTerritorial
+async function obtenerCadenaTerritorial(cliente, codigoOficialOId, paisIso) {
+    const busqueda = String(codigoOficialOId || '').trim();
+    if (!busqueda) return [];
 
-    let consulta = cliente.from('ubicaciones_territoriales').select(COLUMNAS_TERRITORIO).eq('codigo_oficial', codigo);
+    let consulta = cliente.from('ubicaciones_territoriales').select(COLUMNAS_TERRITORIO);
+    
+    // Búsqueda inteligente: discrimina si es ID numérico o código oficial de texto
+    if (isNaN(Number(busqueda))) {
+        consulta = consulta.eq('codigo_oficial', busqueda);
+    } else {
+        consulta = consulta.eq('id', Number(busqueda));
+    }
+
     if (paisIso) consulta = consulta.eq('pais_iso', paisIso);
-    const { data: hojas, error } = await consulta.order('nivel_jerarquia', { ascending: false }).limit(1);
-    if (error || !hojas || hojas.length === 0) return [];
+    let { data: hojas, error } = await consulta.limit(1);
+    
+    // Fallback de seguridad por ID primario si la búsqueda por texto falla
+    if (error || !hojas || hojas.length === 0) {
+        const { data: porId } = await cliente.from('ubicaciones_territoriales')
+            .select(COLUMNAS_TERRITORIO)
+            .eq('id', Number(busqueda) || 0)
+            .maybeSingle();
+        if (!porId) return [];
+        hojas = [porId];
+    }
+// [FIN DE LLAVES]: Cierra la sección modificada de obtenerCadenaTerritorial
+    
 
     const cadena = [];
     let actual = hojas[0];
@@ -649,6 +668,7 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
                 sel.disabled = items.length === 0;
             };
 
+            // [INICIO DE LLAVES]: Abre la función corregida actualizarValorFinal dentro de la cascada
             const actualizarValorFinal = () => {
                 let ultimo = null;
                 selects.forEach(sel => {
@@ -656,9 +676,12 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
                     const it = sel._items.find(x => String(x.id) === sel.value);
                     if (it) ultimo = it;
                 });
+                // Asignación segura garantizando que devuelva el código oficial o el ID primario del nivel seleccionado
                 hiddenFinal.value = ultimo ? String(ultimo.codigo_oficial || ultimo.id) : '';
                 hiddenFinal.dispatchEvent(new Event('change'));
             };
+            // [FIN DE LLAVES]: Cierra la sección modificada de actualización final
+            
 
             selects.forEach((sel, idx) => {
                 sel.onchange = async () => {
