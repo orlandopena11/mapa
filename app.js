@@ -1413,7 +1413,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         };
     }
 }
-}
+
 
 
 /**
