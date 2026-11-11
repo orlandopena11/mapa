@@ -1310,11 +1310,31 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         const textoOriginal = btnGeo.innerText;
                         btnGeo.innerText = 'Calculando ubicación exacta...';
                         try {
-                            const q = `${dir}, ${partes.slice().reverse().join(', ')}, ${pais}`;
-                            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
-                            const dataGeo = await res.json();
+                            // Limpia referencias internas (Condominio, Dpto, Torre, Mz, Lt) que bloquean a OpenStreetMap
+                            const dirLimpia = dir
+                                .replace(/\b(condominio|edificio|torre|dpto|departamento|int|interior|piso|mz|manzana|lt|lote|urb|urbanizacion)\b.*$/i, '')
+                                .replace(/[,#-]+$/, '')
+                                .trim();
+
+                            const zonaTerritorial = `${partes.slice().reverse().join(', ')}, ${pais}`;
+                            const consultasEscaladas = [
+                                `${dir}, ${zonaTerritorial}`,
+                                dirLimpia ? `${dirLimpia}, ${zonaTerritorial}` : null,
+                                zonaTerritorial
+                            ].filter((v, idx, arr) => v && arr.indexOf(v) === idx);
+
+                            let dataGeo = [];
+                            for (const consulta of consultasEscaladas) {
+                                const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
+                                const json = await res.json();
+                                if (json && json.length > 0) {
+                                    dataGeo = json;
+                                    break;
+                                }
+                            }
 
                             if (dataGeo && dataGeo.length > 0) {
+
                                 const lat = String(dataGeo[0].lat).replace(',', '.');
                                 const lon = String(dataGeo[0].lon).replace(',', '.');
                                 const asignar = (id, v) => { const n = formNode.querySelector(id); if (n) n.value = v; };
