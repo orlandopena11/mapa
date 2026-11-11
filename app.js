@@ -2754,16 +2754,17 @@ const ajustarLayoutMovilDinamico = () => {
                             state.usuarioActual = {
                                 id: user.id,
                                 correo,
-                                estado_cuenta: estadoActual === 'pendiente' ? 'activo' : estadoActual
+                                estado_cuenta: estadoActual
                             };
 
                             if (estadoActual === 'pendiente') {
-                                alert(" Cuenta verificada exitosamente! Su correo electronico ha sido confirmado. Ya puede usar todas las funciones premium.");
-                                console.log(">> [SRE AUTH] Cuenta tradicional enlazada. Cambiado de PENDIENTE a ACTIVO.");
+                                alert("¡Correo verificado! Su cuenta está en revisión por nuestro equipo comercial. Le contactaremos pronto para activarla.");
+                                console.log(">> [SRE AUTH] Correo verificado. Cuenta se mantiene en PENDIENTE hasta aprobación manual.");
                             } else {
-                                console.log(`> [SRE AUTH] Sesi n tradicional restaurada con  xito. Estado: ${estadoActual.toUpperCase()}`);
+                                console.log(`> [SRE AUTH] Sesión tradicional restaurada con éxito. Estado: ${estadoActual.toUpperCase()}`);
                             }
 
+                            
                         } catch (err) {
                             console.error('X [SRE AUTH CR TICO] Excepci n capturada en la tuber a de sincronizaci n:', err);
                             state.usuarioActual = null;
