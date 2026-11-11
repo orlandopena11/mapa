@@ -1219,12 +1219,22 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     agregarFilaCaracteristica();
                 }
 
+                // [INICIO DE LLAVES]: Consulta paralela de lov_tipo_promocion y lov_estado_recorrido desde Supabase
+                const [resCatPromos, resCatEstRec] = await Promise.all([
+                    clienteSupabase.from('lov_tipo_promocion').select('tipo_promocion_id').order('tipo_promocion_id', { ascending: true }),
+                    clienteSupabase.from('lov_estado_recorrido').select('estado_recorrido').order('estado_recorrido', { ascending: true })
+                ]);
+
+                const listaTiposPromo = (resCatPromos.data || []).map(r => String(r.tipo_promocion_id || '').trim()).filter(Boolean);
+                const listaEstadosRec = (resCatEstRec.data || []).map(r => String(r.estado_recorrido || '').trim()).filter(Boolean);
+                const estadosRecOpciones = listaEstadosRec.length > 0 ? listaEstadosRec : ['activo', 'inactivo'];
+                // [FIN DE LLAVES]: Cierra consulta de catálogos LOV de promoción y recorrido 3D
+
                 // [INICIO DE LLAVES]: Constructor dinámico de Promociones (lov_tipo_promocion -> promocion)
-                const { data: catPromos } = await clienteSupabase.from('lov_tipo_promocion').select('*');
-                const listaTiposPromo = catPromos || [];
                 const btnAgregarPromo = formNode.querySelector('#btn-agregar-promocion-extra');
                 const contPromos = formNode.querySelector('#contenedor-dinamico-promociones');
 
+                // [INICIO DE LLAVES]: Abre función agregarFilaPromocion
                 const agregarFilaPromocion = (promoObj = null) => {
                     if (!contPromos) return;
                     const fila = document.createElement('div');
@@ -1234,12 +1244,11 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     selTipo.className = 'select-promo-tipo';
                     selTipo.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
                     selTipo.appendChild(new Option('-- Tipo Promoción --', ''));
-                    const valActual = promoObj ? String(promoObj.tipo_promocion_id_fk || '') : '';
-                    listaTiposPromo.forEach(tp => {
-                        const clave = tp.tipo_promocion_id || tp.tipo_promocion || tp.nombre || Object.values(tp);
-                        const texto = tp.descripcion || tp.nombre || clave;
-                        const op = new Option(texto, clave);
-                        if (valActual && String(clave).toLowerCase() === valActual.toLowerCase()) op.selected = true;
+                    const valActual = promoObj ? String(promoObj.tipo_promocion_id_fk || '').trim() : '';
+
+                    listaTiposPromo.forEach(tipoStr => {
+                        const op = new Option(tipoStr, tipoStr);
+                        if (valActual && tipoStr.toLowerCase() === valActual.toLowerCase()) op.selected = true;
                         selTipo.appendChild(op);
                     });
                     if (valActual && !selTipo.value) selTipo.appendChild(new Option(valActual, valActual, true, true));
@@ -1272,15 +1281,17 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                     fila.append(selTipo, inpIni, inpFin, inpCosto, btnDel);
                     contPromos.appendChild(fila);
-                }; // [FIN DE LLAVES]: Cierra agregarFilaPromocion
+                }; // [FIN DE LLAVES]: Cierra función agregarFilaPromocion
 
                 if (btnAgregarPromo) btnAgregarPromo.onclick = () => agregarFilaPromocion();
                 promocionesObtenidas.forEach(p => agregarFilaPromocion(p));
+                // [FIN DE LLAVES]: Cierra inicialización de promociones
 
-                // [INICIO DE LLAVES]: Constructor dinámico de Recorridos 3D (recorrido_3d)
+                // [INICIO DE LLAVES]: Constructor dinámico de Recorridos 3D (lov_estado_recorrido -> recorrido_3d)
                 const btnAgregarRec = formNode.querySelector('#btn-agregar-recorrido3d-extra');
                 const contRecs = formNode.querySelector('#contenedor-dinamico-recorridos3d');
 
+                // [INICIO DE LLAVES]: Abre función agregarFilaRecorrido3D
                 const agregarFilaRecorrido3D = (recObj = null) => {
                     if (!contRecs) return;
                     const fila = document.createElement('div');
@@ -1305,11 +1316,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     const selEst = document.createElement('select');
                     selEst.className = 'select-rec3d-estado';
                     selEst.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
-                    ['activo', 'inactivo'].forEach(est => {
+                    const estActual = recObj ? String(recObj.estado_recorrido || '').trim() : '';
+
+                    estadosRecOpciones.forEach(est => {
                         const op = new Option(est, est);
-                        if (recObj?.estado_recorrido === est) op.selected = true;
+                        if (estActual && est.toLowerCase() === estActual.toLowerCase()) op.selected = true;
                         selEst.appendChild(op);
                     });
+                    if (estActual && !selEst.value) selEst.appendChild(new Option(estActual, estActual, true, true));
 
                     const btnDel = document.createElement('button');
                     btnDel.type = 'button';
@@ -1319,10 +1333,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                     fila.append(inpUrl, selProv, selEst, btnDel);
                     contRecs.appendChild(fila);
-                }; // [FIN DE LLAVES]: Cierra agregarFilaRecorrido3D
+                }; // [FIN DE LLAVES]: Cierra función agregarFilaRecorrido3D
 
                 if (btnAgregarRec) btnAgregarRec.onclick = () => agregarFilaRecorrido3D();
                 recorridos3dObtenidos.forEach(r => agregarFilaRecorrido3D(r));
+                // [FIN DE LLAVES]: Cierra inicialización de recorridos 3D
+
 
                 
 
