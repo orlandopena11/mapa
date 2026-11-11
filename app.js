@@ -810,16 +810,18 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     caracteristicasObtenidas = caracBD;
                 }
 
-                    // CONSULTA HACIA ANUNCIO, PROMOCION Y RECORRIDO_3D
-                    const { data: anuncioRel } = await cliente
+                // [INICIO DE LLAVES]: Consulta anuncio vinculado junto con su estado_anuncio
+                const { data: anuncioRel } = await cliente
                     .from('anuncio')
-                    .select('anuncio_id, tipo_anuncio')
+                    .select('anuncio_id, tipo_anuncio, estado_anuncio')
                     .eq('propiedad_id_fk', datosFila[conf.pk])
                     .maybeSingle();
 
                 if (anuncioRel && anuncioRel.anuncio_id) {
                     datosFila.tipo_anuncio = anuncioRel.tipo_anuncio || datosFila.tipo_anuncio;
-                    const [resPromos, resRecs] = await Promise.all([
+                    datosFila.estado_anuncio = anuncioRel.estado_anuncio || 'pausado';
+
+                const [resPromos, resRecs] = await Promise.all([
                         cliente.from('promocion').select('*').eq('anuncio_id_fk', anuncioRel.anuncio_id),
                         cliente.from('recorrido_3d').select('*').eq('anuncio_id', anuncioRel.anuncio_id)
                     ]);
@@ -942,21 +944,42 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
-    // [INICIO DE LLAVES]: Abre bloque para tipo de anuncio, promociones y recorridos 3D
+    // [INICIO DE LLAVES]: Abre bloque para tipo de anuncio, estado (pausado por defecto), promociones y recorridos 3D
     if (nombreTabla === 'propiedad') {
         const estiloCampo = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; background: #fff;';
+        const permisosAnuncio = state.usuarioPermisos || {};
+        const esAdminAnuncio = Number(permisosAnuncio.rol_id_fk ?? permisosAnuncio.rol_id) === 1
+            || String(permisosAnuncio.nombres_rol || '').toLowerCase().startsWith('admin');
         const tipoAnuncioActual = (esEdicion && datosFila) ? (datosFila.tipo_anuncio || 'Venta') : 'Venta';
+        const estadoAnuncioActual = (esEdicion && datosFila && datosFila.estado_anuncio) ? datosFila.estado_anuncio : 'pausado';
 
         htmlPublicacionMultimedia = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 12px;">
                 <label style="font-size: 14px; font-weight: 800; color: #002e50;">Publicación, Promociones y Recorridos Virtuales 3D</label>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Tipo de Anuncio</label>
-                    <select name="tipo_anuncio" id="sel-lov-tipo_anuncio" style="${estiloCampo}">
-                        <option value="Venta" ${tipoAnuncioActual === 'Venta' ? 'selected' : ''}>Venta</option>
-                        <option value="Alquiler" ${tipoAnuncioActual === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
-                    </select>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: bold; color: #334155;">Tipo de Anuncio</label>
+                        <select name="tipo_anuncio" id="sel-lov-tipo_anuncio" style="${estiloCampo}">
+                            <option value="Venta" ${tipoAnuncioActual === 'Venta' ? 'selected' : ''}>Venta</option>
+                            <option value="Alquiler" ${tipoAnuncioActual === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 12px; font-weight: bold; color: #334155;">Estado del Anuncio</label>
+                        ${esAdminAnuncio
+                            ? `<select name="estado_anuncio" id="sel-lov-estado_anuncio" data-actual="${estadoAnuncioActual}" style="${estiloCampo}">
+                                   <option value="pausado" ${estadoAnuncioActual === 'pausado' ? 'selected' : ''}>pausado</option>
+                                   <option value="activo" ${estadoAnuncioActual === 'activo' ? 'selected' : ''}>activo</option>
+                                   <option value="cerrado" ${estadoAnuncioActual === 'cerrado' ? 'selected' : ''}>cerrado</option>
+                                   <option value="expirado" ${estadoAnuncioActual === 'expirado' ? 'selected' : ''}>expirado</option>
+                               </select>`
+                            : `<input type="text" name="estado_anuncio" value="pausado" readonly style="${estiloCampo} background: #f1f5f9; color: #64748b; cursor: not-allowed;">`
+                        }
+                    </div>
                 </div>
+
+                
+
                 <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                         <label style="font-size: 12px; font-weight: 800; color: #002e50;">Promociones / Descuentos del Anuncio (Opcional)</label>
@@ -1575,12 +1598,28 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             payloadLimpio.es_nuevo = !esEdicion;            // el RPC evita pisar un ID existente
             if (esEdicion && pkValor) payloadLimpio.propiedad_id = pkValor;
 
-            const { error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
+            const { data: resRpc, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
             if (error) throw error;
 
-            alert("Propiedad, anuncio, fotos y características guardadas de forma atómica.");
+            const codigoAnuncioGenerado = resRpc?.anuncio_id || 'ANUN-001';
+            const estadoAnuncioGuardado = resRpc?.estado_anuncio || 'pausado';
+            const mensajeConfirmacion = esEdicion
+                ? `Se actualizó la propiedad y su anuncio ${codigoAnuncioGenerado} (Estado: ${estadoAnuncioGuardado.toUpperCase()}).`
+                : `Se creó el anuncio ${codigoAnuncioGenerado} en estado "${estadoAnuncioGuardado.toUpperCase()}" con sus características, fotos, promociones y recorridos 3D.`;
+
+            alert(mensajeConfirmacion);
             if (typeof cargarDatosDesdeSupabase === "function") cargarDatosDesdeSupabase(); // refresca mapa y catálogo
         } else {
+            // [INICIO DE LLAVES]: Impide que usuarios no administradores activen anuncios desde la pestaña Anuncios
+            if (nombreTabla === 'anuncio') {
+                const perms = state.usuarioPermisos || {};
+                const esAdmin = Number(perms.rol_id_fk ?? perms.rol_id) === 1
+                    || String(perms.nombres_rol || '').toLowerCase().startsWith('admin');
+                if (!esAdmin) {
+                    payload.estado_anuncio = 'pausado';
+                }
+            } // [FIN DE LLAVES]: Cierra validación de rol en tabla anuncio
+
             if (esEdicion) {
                 const { error } = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
                 if (error) throw error;
@@ -1590,6 +1629,8 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             }
             alert("Registro guardado exitosamente.");
         }
+
+        
 
         await cargarDatosTablaCrud(nombreTabla);
         return true;
