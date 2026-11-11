@@ -781,7 +781,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
     let fotosSecundariasObtenidas = [];
     let caracteristicasObtenidas = [];
+    let promocionesObtenidas = [];
+    let recorridos3dObtenidos = [];
     let ubigeoActualInfo = { departamento: '', provincia: '', distrito: '' };
+
 
     // [INICIO DE LLAVES]: Bloque condicional para recuperar fotos, caracter sticas e info de ubigeo si es edici n de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
@@ -807,6 +810,24 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     caracteristicasObtenidas = caracBD;
                 }
 
+                    // CONSULTA HACIA ANUNCIO, PROMOCION Y RECORRIDO_3D
+                    const { data: anuncioRel } = await cliente
+                    .from('anuncio')
+                    .select('anuncio_id, tipo_anuncio')
+                    .eq('propiedad_id_fk', datosFila[conf.pk])
+                    .maybeSingle();
+
+                if (anuncioRel && anuncioRel.anuncio_id) {
+                    datosFila.tipo_anuncio = anuncioRel.tipo_anuncio || datosFila.tipo_anuncio;
+                    const [resPromos, resRecs] = await Promise.all([
+                        cliente.from('promocion').select('*').eq('anuncio_id_fk', anuncioRel.anuncio_id),
+                        cliente.from('recorrido_3d').select('*').eq('anuncio_id', anuncioRel.anuncio_id)
+                    ]);
+                    promocionesObtenidas = resPromos.data || [];
+                    recorridos3dObtenidos = resRecs.data || [];
+                }
+
+                
                 // MEJORA SRE: Resolver departamento, provincia y distrito a partir del codigo_ubigeo_id_fk
                 const codUbigeoFk = datosFila.codigo_ubigeo_id_fk;
                 if (codUbigeoFk) {
