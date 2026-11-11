@@ -1307,10 +1307,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             return;
                         }
 
-                        const textoOriginal = btnGeo.innerText;
+                                                const textoOriginal = btnGeo.innerText;
                         btnGeo.innerText = 'Calculando ubicación exacta...';
                         try {
-                            // Limpia referencias internas (Condominio, Dpto, Torre, Mz, Lt) que bloquean a OpenStreetMap
                             const dirLimpia = dir
                                 .replace(/\b(condominio|edificio|torre|dpto|departamento|int|interior|piso|mz|manzana|lt|lote|urb|urbanizacion)\b.*$/i, '')
                                 .replace(/[,#-]+$/, '')
@@ -1323,30 +1322,43 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 zonaTerritorial
                             ].filter((v, idx, arr) => v && arr.indexOf(v) === idx);
 
-                            let dataGeo = [];
+                            let resultadoGeo = null;
+
                             for (const consulta of consultasEscaladas) {
-                                const res = await fetch(`https://openstreetmap.org{encodeURIComponent(consulta)}`);
+                                const res = await fetch(`https://komoot.io{encodeURIComponent(consulta)}&limit=1`);
+                                if (!res.ok) continue;
                                 const json = await res.json();
-                                if (json && json.length > 0) {
-                                    dataGeo = json;
-                                    break;
+                                if (json && Array.isArray(json.features) && json.features.length > 0) {
+                                    const feat = json.features[0];
+                                    const coords = feat.geometry?.coordinates || [];
+                                    const props = feat.properties || {};
+                                    if (coords.length >= 2) {
+                                        const refTexto = [props.name, props.street, props.housenumber, props.district, props.city, props.state, props.country]
+                                            .filter(Boolean)
+                                            .join(', ');
+                                        resultadoGeo = {
+                                            lat: String(coords[1]).replace(',', '.'),
+                                            lon: String(coords[0]).replace(',', '.'),
+                                            precision: `${String(props.osm_key || 'OSM').toUpperCase()} Type: ${props.osm_value || 'exacta'}`,
+                                            referencia: refTexto || consulta
+                                        };
+                                        break;
+                                    }
                                 }
                             }
 
-                            if (dataGeo && dataGeo.length > 0) {
-
-                                const lat = String(dataGeo[0].lat).replace(',', '.');
-                                const lon = String(dataGeo[0].lon).replace(',', '.');
+                            if (resultadoGeo) {
                                 const asignar = (id, v) => { const n = formNode.querySelector(id); if (n) n.value = v; };
-                                asignar('#input-crud-latitud', lat);
-                                asignar('#input-crud-longitud', lon);
-                                asignar('#input-crud-geocode_precision', `${String(dataGeo[0].class || 'osm').toUpperCase()} Type: ${dataGeo[0].type || 'exacta'}`);
-                                asignar('#input-crud-referencia_mapa', dataGeo[0].display_name);
-                                asignar('#input-crud-enlace_mapa', `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`);
+                                asignar('#input-crud-latitud', resultadoGeo.lat);
+                                asignar('#input-crud-longitud', resultadoGeo.lon);
+                                asignar('#input-crud-geocode_precision', resultadoGeo.precision);
+                                asignar('#input-crud-referencia_mapa', resultadoGeo.referencia);
+                                asignar('#input-crud-enlace_mapa', `https://openstreetmap.org{resultadoGeo.lat}&mlon=${resultadoGeo.lon}#map=16/${resultadoGeo.lat}/${resultadoGeo.lon}`);
                                 alert('Coordenadas, precisión y mapa calculados con éxito.');
                             } else {
-                                alert('No se hallaron coordenadas para esta dirección en OpenStreetMap.');
+                                alert('No se hallaron coordenadas para esta dirección.');
                             }
+
                         } catch (errGeo) {
                             console.error('Error en geocodificación:', errGeo);
                             alert('Error de conexión al servicio de geocodificación.');
