@@ -942,17 +942,14 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     let html30CajasFotos = '';
     let htmlSeccionCaracteristicasEspeciales = '';
 
+    // [INICIO DE LLAVES]: Abre bloque para tipo de anuncio, promociones y recorridos 3D
     if (nombreTabla === 'propiedad') {
         const estiloCampo = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; width: 100%; box-sizing: border-box; background: #fff;';
-
         const tipoAnuncioActual = (esEdicion && datosFila) ? (datosFila.tipo_anuncio || 'Venta') : 'Venta';
-        const recorridoActual = (esEdicion && datosFila) ? (datosFila.recorrido_3d || '') : '';
-        const promocionActual = (esEdicion && datosFila) ? (datosFila.promocion || '') : '';
 
-        // Anuncio, recorrido 3D y promoción
         htmlPublicacionMultimedia = `
-            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
-                <label style="font-size: 14px; font-weight: 800; color: #002e50;">Publicación, recorrido virtual y promoción</label>
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 14px; margin-bottom: 12px;">
+                <label style="font-size: 14px; font-weight: 800; color: #002e50;">Publicación, Promociones y Recorridos Virtuales 3D</label>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                     <label style="font-size: 12px; font-weight: bold; color: #334155;">Tipo de Anuncio</label>
                     <select name="tipo_anuncio" id="sel-lov-tipo_anuncio" style="${estiloCampo}">
@@ -960,18 +957,23 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         <option value="Alquiler" ${tipoAnuncioActual === 'Alquiler' ? 'selected' : ''}>Alquiler</option>
                     </select>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Enlace de Recorrido 3D (opcional)</label>
-                    <input type="text" name="recorrido_3d" id="input-crud-recorrido_3d" value="${recorridoActual}" placeholder="https://..." style="${estiloCampo}">
+                <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-size: 12px; font-weight: 800; color: #002e50;">Promociones / Descuentos del Anuncio (Opcional)</label>
+                        <button type="button" id="btn-agregar-promocion-extra" style="background: #006aff; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">+ Añadir Promoción</button>
+                    </div>
+                    <div id="contenedor-dinamico-promociones" style="display: flex; flex-direction: column; gap: 8px;"></div>
                 </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                    <label style="font-size: 12px; font-weight: bold; color: #334155;">Promoción (opcional)</label>
-                    <select name="promocion" id="sel-lov-promocion" data-actual="${promocionActual}" style="${estiloCampo}">
-                        <option value="">-- Sin promoción --</option>
-                    </select>
+                <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-size: 12px; font-weight: 800; color: #002e50;">Recorridos Virtuales 3D (Opcional)</label>
+                        <button type="button" id="btn-agregar-recorrido3d-extra" style="background: #006aff; color: #fff; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; cursor: pointer;">+ Añadir Recorrido 3D</button>
+                    </div>
+                    <div id="contenedor-dinamico-recorridos3d" style="display: flex; flex-direction: column; gap: 8px;"></div>
                 </div>
             </div>
         `;
+
 
         html30CajasFotos = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
@@ -1307,6 +1309,113 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     agregarFilaCaracteristica();
                 }
 
+                // [INICIO DE LLAVES]: Constructor dinámico de Promociones (lov_tipo_promocion -> promocion)
+                const { data: catPromos } = await clienteSupabase.from('lov_tipo_promocion').select('*');
+                const listaTiposPromo = catPromos || [];
+                const btnAgregarPromo = formNode.querySelector('#btn-agregar-promocion-extra');
+                const contPromos = formNode.querySelector('#contenedor-dinamico-promociones');
+
+                const agregarFilaPromocion = (promoObj = null) => {
+                    if (!contPromos) return;
+                    const fila = document.createElement('div');
+                    fila.style.cssText = 'display: grid; grid-template-columns: 1.4fr 1fr 1fr 0.8fr auto; gap: 6px; align-items: center; background: #f8fafc; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;';
+
+                    const selTipo = document.createElement('select');
+                    selTipo.className = 'select-promo-tipo';
+                    selTipo.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+                    selTipo.appendChild(new Option('-- Tipo Promoción --', ''));
+                    const valActual = promoObj ? String(promoObj.tipo_promocion_id_fk || '') : '';
+                    listaTiposPromo.forEach(tp => {
+                        const clave = tp.tipo_promocion_id || tp.tipo_promocion || tp.nombre || Object.values(tp);
+                        const texto = tp.descripcion || tp.nombre || clave;
+                        const op = new Option(texto, clave);
+                        if (valActual && String(clave).toLowerCase() === valActual.toLowerCase()) op.selected = true;
+                        selTipo.appendChild(op);
+                    });
+                    if (valActual && !selTipo.value) selTipo.appendChild(new Option(valActual, valActual, true, true));
+
+                    const inpIni = document.createElement('input');
+                    inpIni.type = 'date';
+                    inpIni.className = 'input-promo-inicio';
+                    inpIni.value = promoObj?.fecha_inicio || '';
+                    inpIni.style.cssText = 'padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+
+                    const inpFin = document.createElement('input');
+                    inpFin.type = 'date';
+                    inpFin.className = 'input-promo-fin';
+                    inpFin.value = promoObj?.fecha_fin || '';
+                    inpFin.style.cssText = 'padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+
+                    const inpCosto = document.createElement('input');
+                    inpCosto.type = 'number';
+                    inpCosto.step = 'any';
+                    inpCosto.className = 'input-promo-costo';
+                    inpCosto.placeholder = 'Descuento $';
+                    inpCosto.value = promoObj?.costo ?? '';
+                    inpCosto.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+
+                    const btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.textContent = 'x';
+                    btnDel.style.cssText = 'background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;';
+                    btnDel.onclick = () => fila.remove();
+
+                    fila.append(selTipo, inpIni, inpFin, inpCosto, btnDel);
+                    contPromos.appendChild(fila);
+                }; // [FIN DE LLAVES]: Cierra agregarFilaPromocion
+
+                if (btnAgregarPromo) btnAgregarPromo.onclick = () => agregarFilaPromocion();
+                promocionesObtenidas.forEach(p => agregarFilaPromocion(p));
+
+                // [INICIO DE LLAVES]: Constructor dinámico de Recorridos 3D (recorrido_3d)
+                const btnAgregarRec = formNode.querySelector('#btn-agregar-recorrido3d-extra');
+                const contRecs = formNode.querySelector('#contenedor-dinamico-recorridos3d');
+
+                const agregarFilaRecorrido3D = (recObj = null) => {
+                    if (!contRecs) return;
+                    const fila = document.createElement('div');
+                    fila.style.cssText = 'display: grid; grid-template-columns: 2fr 1fr 0.9fr auto; gap: 6px; align-items: center; background: #f8fafc; padding: 6px; border: 1px solid #cbd5e1; border-radius: 6px;';
+
+                    const inpUrl = document.createElement('input');
+                    inpUrl.type = 'text';
+                    inpUrl.className = 'input-rec3d-url';
+                    inpUrl.placeholder = 'https://kuula.co... o matterport';
+                    inpUrl.value = recObj?.url_recorrido || '';
+                    inpUrl.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+
+                    const selProv = document.createElement('select');
+                    selProv.className = 'select-rec3d-proveedor';
+                    selProv.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+                    ['Matterport', 'Kuula', 'Google Sites', 'Otro'].forEach(pv => {
+                        const op = new Option(pv, pv);
+                        if (recObj?.proveedor && recObj.proveedor.toLowerCase() === pv.toLowerCase()) op.selected = true;
+                        selProv.appendChild(op);
+                    });
+
+                    const selEst = document.createElement('select');
+                    selEst.className = 'select-rec3d-estado';
+                    selEst.style.cssText = 'padding: 5px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px;';
+                    ['activo', 'inactivo'].forEach(est => {
+                        const op = new Option(est, est);
+                        if (recObj?.estado_recorrido === est) op.selected = true;
+                        selEst.appendChild(op);
+                    });
+
+                    const btnDel = document.createElement('button');
+                    btnDel.type = 'button';
+                    btnDel.textContent = 'x';
+                    btnDel.style.cssText = 'background: #ef4444; color: #fff; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;';
+                    btnDel.onclick = () => fila.remove();
+
+                    fila.append(inpUrl, selProv, selEst, btnDel);
+                    contRecs.appendChild(fila);
+                }; // [FIN DE LLAVES]: Cierra agregarFilaRecorrido3D
+
+                if (btnAgregarRec) btnAgregarRec.onclick = () => agregarFilaRecorrido3D();
+                recorridos3dObtenidos.forEach(r => agregarFilaRecorrido3D(r));
+
+                
+
                 // 3. Cascada territorial (con precarga en edición) y código postal dependiente
                 await inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, esEdicion ? datosFila : null);
                 await inicializarCodigoPostalDependiente(clienteSupabase, formNode, esEdicion ? datosFila : null);
@@ -1508,8 +1617,31 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
                 }
             });
 
+            // [INICIO DE LLAVES]: Recolecta promociones dinámicas del formulario
+            const arrayPromociones = [];
+            document.querySelectorAll('#contenedor-dinamico-promociones > div').forEach(fila => {
+                const tipo = fila.querySelector('.select-promo-tipo')?.value?.trim();
+                const inicio = fila.querySelector('.input-promo-inicio')?.value || '';
+                const fin = fila.querySelector('.input-promo-fin')?.value || '';
+                const costo = fila.querySelector('.input-promo-costo')?.value || '0';
+                if (tipo) arrayPromociones.push({ tipo_promocion_id_fk: tipo, fecha_inicio: inicio, fecha_fin: fin, costo });
+            }); // [FIN DE LLAVES]: Cierra recolección de promociones
+
+            // [INICIO DE LLAVES]: Recolecta recorridos virtuales 3D del formulario
+            const arrayRecorridos3D = [];
+            document.querySelectorAll('#contenedor-dinamico-recorridos3d > div').forEach(fila => {
+                const url = fila.querySelector('.input-rec3d-url')?.value?.trim();
+                const proveedor = fila.querySelector('.select-rec3d-proveedor')?.value || 'Matterport';
+                const estado = fila.querySelector('.select-rec3d-estado')?.value || 'activo';
+                if (url) arrayRecorridos3D.push({ url_recorrido: url, proveedor, estado_recorrido: estado });
+            }); // [FIN DE LLAVES]: Cierra recolección de recorridos 3D
+
+            payloadLimpio.promociones = arrayPromociones;
+            payloadLimpio.recorridos_3d = arrayRecorridos3D;
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
+
+            
             payloadLimpio.foto_principal = arrayFotos.length > 0
                 ? arrayFotos[0].ruta
                 : (String(payloadLimpio.foto_principal || '').trim() || 'principal.jpg');
