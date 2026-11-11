@@ -2736,11 +2736,11 @@ const ajustarLayoutMovilDinamico = () => {
                                 ultimo_acceso: hoyFormatoIso,
                                 fecha_actualizacion: hoyFormatoIso
                             };
-
+                            
                             if (estadoActual === 'pendiente') {
-                                cambiosSincronizacion.estado_cuenta = 'activo';
                                 cambiosSincronizacion.verificado = true;
                             }
+
 
                             const {
                                 error: updateTradicionalError
