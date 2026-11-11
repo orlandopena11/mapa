@@ -1325,7 +1325,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             let resultadoGeo = null;
 
                             for (const consulta of consultasEscaladas) {
-                                const res = await fetch(`https://komoot.io{encodeURIComponent(consulta)}&limit=1`);
+                                const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(consulta)}&limit=1`);
                                 if (!res.ok) continue;
                                 const json = await res.json();
                                 if (json && Array.isArray(json.features) && json.features.length > 0) {
