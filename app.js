@@ -45,6 +45,36 @@ async function actualizarBotonCuenta() {
     let indicador = document.getElementById('user-session-badge');
     const btnOpenLogin = document.getElementById('btn-open-login');
 
+        // [INICIO DE LLAVES]: Crea o recupera el enlace comercial "Anunciar" en la barra superior
+    let linkAnunciar = document.getElementById('link-portal-socios');
+    if (!linkAnunciar) {
+        linkAnunciar = document.createElement('a');
+        linkAnunciar.id = 'link-portal-socios';
+        linkAnunciar.href = 'socios/index.html';
+        linkAnunciar.textContent = 'Anunciar';
+        linkAnunciar.style.cssText = `
+            margin-left: auto;
+            margin-right: 12px;
+            color: #002e50;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            white-space: nowrap;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            transition: background 0.2s;
+        `;
+        // Inserta el enlace justo antes del botón de login para mantener el orden derecho
+        if (btnOpenLogin && btnOpenLogin.parentNode === navbar) {
+            navbar.insertBefore(linkAnunciar, btnOpenLogin);
+        } else {
+            navbar.appendChild(linkAnunciar);
+        }
+    } // [FIN DE LLAVES]: Cierra la creación del enlace "Anunciar"
+
+
     // [INICIO DE LLAVES]: Control condicional de visibilidad seg n estado de autenticaci n
     if (window.usuarioLogueado) {
         if (btnOpenLogin) btnOpenLogin.style.display = 'none';
