@@ -13,7 +13,7 @@ const PERFILES_SOCIOS = [
         id: 'agente',
         titulo: 'Soy un agente o corredor',
         descripcion: 'Recibe prospectos calificados y gestiona tu cartera de propiedades en venta y alquiler.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453428/agenteInmobiliario_zqqnbq.jpg',
         camposExtra: [
             { name: 'licencia', label: 'Código de Agente Inmobiliario (MVCS)', type: 'text', required: true, placeholder: 'Ej. PN-12345' },
             { name: 'especialidad', label: 'Especialidad', type: 'select', options: ['Residencial', 'Comercial', 'Terrenos', 'Lujo'], required: true },
@@ -24,21 +24,21 @@ const PERFILES_SOCIOS = [
         id: 'propietario_venta',
         titulo: 'Propietario que quiere vender',
         descripcion: 'Publica tu inmueble directamente y conéctate con compradores interesados en la zona.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453427/propietario_ebgh3z.jpg',
         camposExtra: []
     },
     {
         id: 'propietario_alquiler',
         titulo: 'Propietario que quiere alquilar',
         descripcion: 'Oferta tus propiedades en alquiler y gestiona tus solicitudes de visita.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453427/quieroAlquilar_xfcizn.jpg',
         camposExtra: []
     },
     {
         id: 'constructor',
         titulo: 'Soy un constructor / Inmobiliaria',
         descripcion: 'Promociona tus proyectos inmobiliarios en planos, construcción o entrega inmediata.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453427/soyConstructor_hsvg8e.jpg',
         camposExtra: [
             { name: 'nombre_empresa', label: 'Razón Social / Constructora', type: 'text', required: true, placeholder: 'Ej. Constructora Surco S.A.C.' },
             { name: 'ciudad', label: 'Ciudad principal', type: 'text', required: true, placeholder: 'Lima' },
@@ -49,7 +49,7 @@ const PERFILES_SOCIOS = [
         id: 'prestamista',
         titulo: 'Soy prestamista o entidad financiera',
         descripcion: 'Ofrece alternativas de crédito hipotecario a clientes que simulan su compra en el portal.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453426/entidadFinanciera_m583tr.jpg',
         camposExtra: [
             { name: 'nombre_empresa', label: 'Nombre de la Entidad Financiera', type: 'text', required: true, placeholder: 'Ej. Banco / Financiera' },
             { name: 'ciudad', label: 'Ciudad / Sede', type: 'text', required: true, placeholder: 'Lima' },
@@ -60,7 +60,7 @@ const PERFILES_SOCIOS = [
         id: 'anunciante',
         titulo: 'Soy una marca o anunciante local',
         descripcion: 'Posiciona tus servicios de mudanza, arquitectura, diseño interior o seguros.',
-        imagen: 'https://unsplash.com',
+        imagen: 'https://res.cloudinary.com/obw6ciov/image/upload/v1794453425/anunciante_h7cidv.jpg',
         camposExtra: [
             { name: 'nombre_empresa', label: 'Nombre Comercial de la Marca', type: 'text', required: true, placeholder: 'Ej. Mudanzas Express Perú' },
             { name: 'ciudad', label: 'Ciudad', type: 'text', required: true, placeholder: 'Lima' },
