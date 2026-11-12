@@ -30,12 +30,25 @@ window.inicializarSesionCompartida = async function (opciones = {}) {
     if (!cliente) return window.APP_AUTH;
 
     try {
-        const { data: sessionData, error: sessionError } = await cliente.auth.getSession();
-        if (sessionError) throw sessionError;
+        // [INICIO DE LLAVES]: Espera la restauración real de sesión desde localStorage
+        const user = await new Promise((resolve) => {
+            cliente.auth.getSession().then(({ data }) => {
+                if (data?.session?.user) {
+                    resolve(data.session.user);
+                } else {
+                    const { data: listener } = cliente.auth.onAuthStateChange((_event, session) => {
+                        listener?.subscription?.unsubscribe();
+                        resolve(session?.user || null);
+                    });
+                    setTimeout(() => {
+                        listener?.subscription?.unsubscribe();
+                        resolve(null);
+                    }, 1500);
+                }
+            });
+        }); // [FIN DE LLAVES]: Cierra espera segura de sesión
 
-        const user = sessionData?.session?.user;
-
-        // [INICIO DE LLAVES]: Manejo cuando no existe sesión activa
+        // [INICIO DE LLAVES]: Manejo cuando definitivamente no existe sesión activa
         if (!user) {
             window.APP_AUTH.usuarioActual = null;
             if (opciones.exigirAccesoCrud && opciones.urlRedireccion) {
@@ -44,6 +57,7 @@ window.inicializarSesionCompartida = async function (opciones = {}) {
             return window.APP_AUTH;
         } // [FIN DE LLAVES]: Cierra validación sin sesión
 
+        
         const correo = String(user.email || '').trim().toLowerCase();
 
         // Consultar perfil maestro en usuario_autenticado
