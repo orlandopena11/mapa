@@ -6,10 +6,10 @@
 
 // [INICIO DE LLAVES]: Objeto global de configuración compartido por toda la aplicación
 window.APP_CONFIG = {
-    SUPABASE_URL: 'https://supabase.co',
+    SUPABASE_URL: 'https://aohizylvnnrjhgplsods.supabase.co',
     SUPABASE_ANON_KEY: 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1',
-    CLOUDINARY_BASE_URL: 'https://cloudinary.com',
-    CORREO_ADMIN_ALERTAS: 'orlandopena11@yahoo.com',
+    CLOUDINARY_BASE_URL: 'https://res.cloudinary.com/obw6ciov/image/upload/f_auto,q_auto/',
+
     ROL_ID_ADMIN: 8
 }; // [FIN DE LLAVES]: Cierra objeto global APP_CONFIG
 
