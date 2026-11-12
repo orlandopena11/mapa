@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Mantenimiento CRUD | Inmobiliaria en Surco</title>
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://unpkg.com"></script>
+</head>
+<body>
+
+    <div class="admin-layout">
+        <!-- Barra Superior Institucional -->
+        <header class="admin-navbar">
+            <div class="admin-brand">
+                <a href="../index.html" class="btn-volver-mapa">← Volver al Mapa</a>
+                <div class="admin-titulos">
+                    <h1>Panel de Mantenimiento CRUD</h1>
+                    <span id="badge-rol-admin" class="badge-rol">Verificando permisos...</span>
+                </div>
+            </div>
+            <div class="admin-usuario-info">
+                <span id="lbl-correo-admin"></span>
+            </div>
+        </header>
+
+        <!-- Pestañas de las 7 Tablas -->
+        <nav id="barra-tabs-crud" class="admin-tabs-bar"></nav>
+
+        <!-- Barra de Acciones de la Tabla Activa -->
+        <section class="admin-toolbar">
+            <h2 id="titulo-tabla-crud">Cargando...</h2>
+            <button type="button" id="btn-nuevo-registro-crud" class="btn-nuevo-crud" style="display: none;">
+                + Nuevo Registro
+            </button>
+        </section>
+
+        <!-- Contenedor Principal de la Rejilla de Datos -->
+        <main id="contenedor-tabla-datos-crud" class="admin-table-wrapper">
+            <p class="mensaje-carga">Validando credenciales de acceso...</p>
+        </main>
+    </div>
+
+    <!-- Submodal Dinámico de Creación / Edición -->
+    <div id="submodal-formulario-crud" class="submodal-overlay" aria-hidden="true"></div>
+
+    <!-- Scripts Compartidos y del Módulo Admin -->
+    <script src="../shared/config.js"></script>
+    <script src="../shared/auth-session.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
 
