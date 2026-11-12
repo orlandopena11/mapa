@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programa de Socios | Inmobiliaria en Surco</title>
+    <link rel="stylesheet" href="socios.css">
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <header class="socios-navbar">
+        <a href="../index.html" class="btn-volver">← Volver al Buscador de Propiedades</a>
+        <span class="marca-titulo">Programa de Socios</span>
+    </header>
+
+    <main class="socios-container">
+        <section class="socios-hero">
+            <h1>Impulsa tu negocio inmobiliario con nosotros</h1>
+            <p>Selecciona tu perfil para postular como socio comercial. Nuestro equipo validará tus datos para habilitar tu cuenta.</p>
+        </section>
+
+        <!-- Cuadrícula donde socios.js inyecta las 6 tarjetas -->
+        <section id="grid-tarjetas-socios" class="socios-grid"></section>
+    </main>
+
+    <!-- Modal de Registro Dinámico -->
+    <div id="modal-registro-socio" class="modal-overlay" aria-hidden="true">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modal-socio-titulo">Registro de Socio</h2>
+                    <p id="modal-socio-subtitulo" class="modal-subtitulo"></p>
+                </div>
+                <button type="button" id="btn-cerrar-modal-socio" class="btn-close" aria-label="Cerrar">&times;</button>
+            </div>
+
+            <form id="form-registro-socio" class="socio-form">
+                <input type="hidden" id="input-socio-tipo" name="tipo_socio">
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="socio-nombre">Nombre *</label>
+                        <input type="text" id="socio-nombre" name="nombre" required placeholder="Ej. Carlos">
+                    </div>
+                    <div class="form-group">
+                        <label for="socio-apellido">Apellido *</label>
+                        <input type="text" id="socio-apellido" name="apellido" required placeholder="Ej. Mendoza">
+                    </div>
+                </div>
+
+                <div class="form-row-2">
+                    <div class="form-group">
+                        <label for="socio-correo">Correo Electrónico *</label>
+                        <input type="email" id="socio-correo" name="correo" required placeholder="correo@empresa.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="socio-telefono">Teléfono / WhatsApp *</label>
+                        <input type="tel" id="socio-telefono" name="telefono" required placeholder="999 888 777">
+                    </div>
+                </div>
+
+                <!-- Aquí se inyectan los campos específicos según el perfil elegido -->
+                <div id="contenedor-campos-dinamicos" class="campos-dinamicos"></div>
+
+                <button type="submit" id="btn-submit-socio" class="btn-submit">
+                    Enviar solicitud de registro
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="socios.js"></script>
+</body>
+</html>
 
