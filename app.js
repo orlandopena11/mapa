@@ -83,7 +83,7 @@ async function actualizarBotonCuenta() {
             indicador = document.createElement('div');
             indicador.id = 'user-session-badge';
             indicador.style.cssText = `
-                margin-left: auto; 
+                margin-left: 0; 
                 display: flex; 
                 align-items: center; 
                 gap: 10px; 
