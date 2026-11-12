@@ -1,1 +1,245 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.socios-navbar {
+    background-color: #002e50;
+    color: #ffffff;
+    padding: 16px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-volver {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.btn-volver:hover {
+    text-decoration: underline;
+}
+
+.marca-titulo {
+    color: #ffb91d;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.socios-container {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 48px 20px;
+}
+
+.socios-hero {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 48px auto;
+}
+
+.socios-hero h1 {
+    font-size: 32px;
+    color: #002e50;
+    margin-bottom: 12px;
+}
+
+.socios-hero p {
+    font-size: 16px;
+    color: #475569;
+}
+
+.socios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 28px;
+}
+
+.partner-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.partner-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -5px rgba(0, 46, 80, 0.12);
+}
+
+.partner-card-img {
+    height: 190px;
+    width: 100%;
+    object-fit: cover;
+    background-color: #e2e8f0;
+}
+
+.partner-card-body {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.partner-card-body h3 {
+    font-size: 20px;
+    color: #002e50;
+    margin-bottom: 10px;
+}
+
+.partner-card-body p {
+    font-size: 14px;
+    color: #475569;
+    margin-bottom: 24px;
+}
+
+.btn-empezar-socio {
+    background-color: #006aff;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.2s;
+}
+
+.btn-empezar-socio:hover {
+    background-color: #0053c7;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-overlay.activo {
+    display: flex;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    font-size: 19px;
+    color: #002e50;
+}
+
+.modal-subtitulo {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.socio-form, .campos-dinamicos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+@media (max-width: 540px) {
+    .form-row-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.form-group input, .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: #006aff;
+}
+
+.btn-submit {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
 
