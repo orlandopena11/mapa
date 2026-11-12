@@ -137,26 +137,40 @@ async function actualizarBotonCuenta() {
             </span>
         `;
 
-        // [INICIO DE LLAVES]: Condici n para inyectar acceso al panel de mantenimiento si tiene permisos
+
+        // [INICIO DE LLAVES]: Inyecta enlace directo al módulo independiente /admin/index.html
         if (puedeCrud) {
             htmlContenido += `
-                <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
-                    ?? Mantenimiento
+                <a href="admin/index.html" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 10px; border-radius: 12px; text-decoration: none; font-size: 11px; font-weight: 700; white-space: nowrap;">
+                    Mantenimiento
                 </a>
             `;
-        } // [FIN DE LLAVES]: Cierra la condici n de inyecci n del enlace CRUD
+        } // [FIN DE LLAVES]: Cierra la inyección del enlace a /admin/
 
         indicador.innerHTML = htmlContenido;
         indicador.style.display = 'flex';
 
-        const btnCrud = document.getElementById('link-crud-propiedades');
+        
+        // [INICIO DE LLAVES]: Condici n para inyectar acceso al panel de mantenimiento si tiene permisos
+ //       if (puedeCrud) {
+ //           htmlContenido += `
+ //               <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
+ //                   ?? Mantenimiento
+ //               </a>
+ //           `;
+ //       } // [FIN DE LLAVES]: Cierra la condici n de inyecci n del enlace CRUD
+
+ //       indicador.innerHTML = htmlContenido;
+ //       indicador.style.display = 'flex';
+
+ //       const btnCrud = document.getElementById('link-crud-propiedades');
         // [INICIO DE LLAVES]: Asignaci n de evento de clic al bot n de mantenimiento CRUD
-        if (btnCrud) {
-            btnCrud.onclick = (e) => {
-                e.preventDefault();
-                ejecutarPanelMantenimientoCrud(rolTexto);
-            };
-        } // [FIN DE LLAVES]: Cierra la asignaci n del evento onclick
+ //       if (btnCrud) {
+ //           btnCrud.onclick = (e) => {
+ //               e.preventDefault();
+ //               ejecutarPanelMantenimientoCrud(rolTexto);
+ //           };
+ //       } // [FIN DE LLAVES]: Cierra la asignaci n del evento onclick
     } // [FIN DE LLAVES]: Cierra la condici n principal de indicador con usuario activo
 } // [FIN DE LLAVES]: Cierra la funci n as ncrona actualizarBotonCuenta
 
