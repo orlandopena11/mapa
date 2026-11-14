@@ -151,26 +151,6 @@ async function actualizarBotonCuenta() {
         indicador.style.display = 'flex';
 
         
-        // [INICIO DE LLAVES]: Condici n para inyectar acceso al panel de mantenimiento si tiene permisos
- //       if (puedeCrud) {
- //           htmlContenido += `
- //               <a href="#" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 8px; border-radius: 12px; text-decoration: none; font-size: 11px; white-space: nowrap;">
- //                   ?? Mantenimiento
- //               </a>
- //           `;
- //       } // [FIN DE LLAVES]: Cierra la condici n de inyecci n del enlace CRUD
-
- //       indicador.innerHTML = htmlContenido;
- //       indicador.style.display = 'flex';
-
- //       const btnCrud = document.getElementById('link-crud-propiedades');
-        // [INICIO DE LLAVES]: Asignaci n de evento de clic al bot n de mantenimiento CRUD
- //       if (btnCrud) {
- //           btnCrud.onclick = (e) => {
- //               e.preventDefault();
- //               ejecutarPanelMantenimientoCrud(rolTexto);
- //           };
- //       } // [FIN DE LLAVES]: Cierra la asignaci n del evento onclick
     } // [FIN DE LLAVES]: Cierra la condici n principal de indicador con usuario activo
 } // [FIN DE LLAVES]: Cierra la funci n as ncrona actualizarBotonCuenta
 
