@@ -652,9 +652,7 @@ div.leaflet-marker-icon.map-price-pill {
     box-sizing: border-box;
 }
 
-/* ==========================================================================
-   ESTRUCTURA CONTENEDORA DE LAS VENTANAS FLOTANTES DE REGISTRO (SRE FIJADO)
-   ========================================================================== */
+
 /* ==========================================================================
    ESTRUCTURA CONTENEDORA DE LAS VENTANAS FLOTANTES DE REGISTRO (SRE FIJADO)
    ========================================================================== */
@@ -805,17 +803,6 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 
-.mosaico-zillow-galeria .contenedor-foto-animada,
-.foto-secundarias-grid .contenedor-foto-animada { overflow: hidden; position: relative; border-radius: 6px; background-color: var(--gris-borde); }
-.contenedor-foto-animada .animacion-zoom-lento { animation: kenBurnsZoom 24s ease-in-out infinite alternate; transform-origin: center center; will-change: transform; }
-.contenedor-foto-animada .animacion-paneo-lento { animation: kenBurnsPaneo 28s ease-in-out infinite alternate; transform-origin: left center; will-change: transform; }
-.contenedor-foto-animada .animacion-paneo-reverso { animation: kenBurnsPaneoReverso 30s ease-in-out infinite alternate; transform-origin: right center; will-change: transform; }
-.contenedor-foto-animada .animacion-zoom-atras { animation: kenBurnsZoomAtras 26s ease-in-out infinite alternate; transform-origin: center center; will-change: transform; }
-
-@keyframes kenBurnsZoom { 0% { transform: scale(1.0); } 100% { transform: scale(1.14) translate(1%, -1%); } }
-@keyframes kenBurnsPaneo { 0% { transform: scale(1.1) translateX(0%); } 100% { transform: scale(1.1) translateX(-6%); } }
-@keyframes kenBurnsPaneoReverso { 0% { transform: scale(1.1) translateX(-6%); } 100% { transform: scale(1.1) translateX(0%); } }
-@keyframes kenBurnsZoomAtras { 0% { transform: scale(1.16) translate(-1%, 1%); } 100% { transform: scale(1.0); } }
 
 
 /* ==========================================================================
