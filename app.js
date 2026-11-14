@@ -4,16 +4,16 @@
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
 // ==========================================================================
 
-let usuarioAutenticado = false;
-let correoUsuarioLogueado = "";
+//let usuarioAutenticado = false;
+//let correoUsuarioLogueado = "";
 
-if (typeof window.usuarioAutenticado === "undefined") {
-    window.usuarioAutenticado = false;
-}
+//if (typeof window.usuarioAutenticado === "undefined") {
+//    window.usuarioAutenticado = false;
+//}
 
-if (typeof window.correoUsuarioLogueado === "undefined") {
-    window.correoUsuarioLogueado = "";
-}
+//if (typeof window.correoUsuarioLogueado === "undefined") {
+//    window.correoUsuarioLogueado = "";
+//}
 
 const state = {
     propiedades: [],
