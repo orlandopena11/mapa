@@ -15,7 +15,7 @@ const state = {
         precioMin: 0,
         precioMax: Infinity,
         habitaciones: 0,
-        camasExactas: false,
+        
         banos: 0,
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
@@ -109,7 +109,7 @@ async function actualizarBotonCuenta() {
                 if (!error && data && data.length > 0) {
                     rolTexto = data[0].nombres_rol || "Usuario";
                     puedeCrud = data[0].permiso_insertar || data[0].permiso_modificar;
-                    state.usuarioPermisos = data[0];
+                    
                 }
             }
         } catch (errRol) {
@@ -1661,22 +1661,9 @@ const ajustarLayoutMovilDinamico = () => {
 
 
 
-
-
-            function ejecutarCuandoDOMEsteListo(callback) {
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', callback, {
-                        once: true
-                    });
-                } else {
-                    callback();
-                }
-            }
-
-            ejecutarCuandoDOMEsteListo(() => {
                 inicializarAutenticacionTresCanalesSupabase();
                 inicializarEventosPopups();
-            });
+
 
 
 /**
@@ -2565,7 +2552,7 @@ if (formTour) {
 
                 cortina.classList.add('cortina-activa');
 
-            } // FIN DEFINITIVO DE LA FUNCI N gestionarCortinaSPA RESTABLECIDA
+            }; // FIN DEFINITIVO DE LA FUNCI N gestionarCortinaSPA RESTABLECIDA
 
 
 
