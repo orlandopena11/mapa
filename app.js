@@ -2547,6 +2547,76 @@ if (formTour) {
 } 
 // [FIN DE LLAVES]: Cierra el bloque del formulario de tour
 
+                    const btnGuardarFicha = document.getElementById('btn-ficha-guardar');
+                    if (btnGuardarFicha) {
+                        btnGuardarFicha.onclick = async (e) => {
+                            e.stopPropagation();
+                            if (!(await validarAccesoFuncionalidadPremium())) return;
+                            const idProp = String(prop.id);
+                            if (state.favoritos.has(idProp)) {
+                                state.favoritos.delete(idProp);
+                                btnGuardarFicha.textContent = '♡ Guardar';
+                                btnGuardarFicha.style.color = '#1a1a1a';
+                            } else {
+                                state.favoritos.add(idProp);
+                                btnGuardarFicha.textContent = '♥ Guardado';
+                                btnGuardarFicha.style.color = '#d92323';
+                            }
+                            renderizarCatalogoTarjetas();
+                        };
+                    }
+
+                    const btnCompartirFicha = document.getElementById('btn-ficha-compartir');
+                    if (btnCompartirFicha) {
+                        btnCompartirFicha.onclick = async (e) => {
+                            e.stopPropagation();
+                            const urlCompartir = window.location.href;
+                            const tituloCompartir = `${prop.titulo || 'Propiedad'} - $${Number(prop.precio_base).toLocaleString('en-US')}`;
+                            if (navigator.share) {
+                                try {
+                                    await navigator.share({ title: tituloCompartir, text: prop.direccion || '', url: urlCompartir });
+                                } catch (errShare) {}
+                            } else if (navigator.clipboard) {
+                                await navigator.clipboard.writeText(urlCompartir);
+                                alert('¡Enlace de la propiedad copiado al portapapeles!');
+                            }
+                        };
+                    }
+
+                    const btnMasFicha = document.getElementById('btn-ficha-mas');
+                    if (btnMasFicha) {
+                        btnMasFicha.onclick = (e) => {
+                            e.stopPropagation();
+                            const seccionDatos = document.getElementById('zillow-next-sections-slot');
+                            if (seccionDatos) seccionDatos.scrollIntoView({ behavior: 'smooth' });
+                        };
+                    }
+
+                    const btnFichaPrev = document.getElementById('btn-ficha-prev');
+                    const btnFichaNext = document.getElementById('btn-ficha-next');
+                    if (btnFichaPrev && fotosArregloSeguro.length > 0) {
+                        btnFichaPrev.onclick = (e) => {
+                            e.stopPropagation();
+                            indiceFotoSecuencia = (indiceFotoSecuencia - 1 + fotosArregloSeguro.length) % fotosArregloSeguro.length;
+                            if (imgAnimar) imgAnimar.src = fotosArregloSeguro[indiceFotoSecuencia];
+                        };
+                    }
+                    if (btnFichaNext && fotosArregloSeguro.length > 0) {
+                        btnFichaNext.onclick = (e) => {
+                            e.stopPropagation();
+                            indiceFotoSecuencia = (indiceFotoSecuencia + 1) % fotosArregloSeguro.length;
+                            if (imgAnimar) imgAnimar.src = fotosArregloSeguro[indiceFotoSecuencia];
+                        };
+                    }
+
+                    const btnVerTodas = document.getElementById('btn-ver-todas-fotos');
+                    if (btnVerTodas) {
+                        btnVerTodas.onclick = (e) => {
+                            e.stopPropagation();
+                            abrirTerceraPantallaTodasLasFotos(prop);
+                        };
+                    }
+
                     if (prop && prop.propiedad_id) {
                         inyectarSeccionesAdicionalesZillow(prop);
                     }
