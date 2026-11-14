@@ -30,7 +30,7 @@ const state = {
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
-    limpiadoresDOM: new Map()
+   // limpiadoresDOM: new Map()
 }; // Fin de asignaci n del objeto global state
 
 
@@ -1717,32 +1717,32 @@ const ajustarLayoutMovilDinamico = () => {
 
 
 
-            function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
+//            function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
                 // Act a como un escudo de paso vac o exigido por el motor de renderizado de la Parte 12
-            } // Fin interceptarFirewallSeguridadUsuario
+//            } // Fin interceptarFirewallSeguridadUsuario
 
-            async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
+//            async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
 
-                try {
-                    const cliente = obtenerClienteSupabase();
-                    await cliente.auth.signInWithOAuth({
-                        provider: 'google'
-                    });
-                } catch (e) {
-                    console.error("Fallo OAuth Google", e);
-                }
-            } // Fin autenticarConGoogleSupabase
+//                try {
+//                    const cliente = obtenerClienteSupabase();
+//                    await cliente.auth.signInWithOAuth({
+//                        provider: 'google'
+//                    });
+//                } catch (e) {
+//                    console.error("Fallo OAuth Google", e);
+//                }
+//            } // Fin autenticarConGoogleSupabase
 
-            async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebookSupabase
-                try {
-                    const cliente = obtenerClienteSupabase();
-                    await cliente.auth.signInWithOAuth({
-                        provider: 'facebook'
-                    });
-                } catch (e) {
-                    console.error("Fallo OAuth Facebook", e);
-                }
-            } // Fin autenticarConFacebookSupabase
+//            async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebookSupabase
+//                try {
+//                    const cliente = obtenerClienteSupabase();
+//                    await cliente.auth.signInWithOAuth({
+//                        provider: 'facebook'
+//                    });
+//                } catch (e) {
+//                    console.error("Fallo OAuth Facebook", e);
+//                }
+//            } // Fin autenticarConFacebookSupabase
 
             function ejecutarCuandoDOMEsteListo(callback) {
                 if (document.readyState === 'loading') {
