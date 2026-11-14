@@ -4,16 +4,6 @@
 // PARTE 1 DE 15: ARQUITECTURA DE CONTROL DE ESTADO GLOBAL INMUTABLE
 // ==========================================================================
 
-//let usuarioAutenticado = false;
-//let correoUsuarioLogueado = "";
-
-//if (typeof window.usuarioAutenticado === "undefined") {
-//    window.usuarioAutenticado = false;
-//}
-
-//if (typeof window.correoUsuarioLogueado === "undefined") {
-//    window.correoUsuarioLogueado = "";
-//}
 
 const state = {
     propiedades: [],
@@ -1717,32 +1707,6 @@ const ajustarLayoutMovilDinamico = () => {
 
 
 
-//            function interceptarFirewallSeguridadUsuario(usuarios, email) { // Inicia interceptarFirewallSeguridadUsuario
-                // Act a como un escudo de paso vac o exigido por el motor de renderizado de la Parte 12
-//            } // Fin interceptarFirewallSeguridadUsuario
-
-//            async function autenticarConGoogleSupabase() { // Inicia autenticarConGoogleSupabase
-
-//                try {
-//                    const cliente = obtenerClienteSupabase();
-//                    await cliente.auth.signInWithOAuth({
-//                        provider: 'google'
-//                    });
-//                } catch (e) {
-//                    console.error("Fallo OAuth Google", e);
-//                }
-//            } // Fin autenticarConGoogleSupabase
-
-//            async function autenticarConFacebookSupabase() { // Inicia autenticarConFacebookSupabase
-//                try {
-//                    const cliente = obtenerClienteSupabase();
-//                    await cliente.auth.signInWithOAuth({
-//                        provider: 'facebook'
-//                    });
-//                } catch (e) {
-//                    console.error("Fallo OAuth Facebook", e);
-//                }
-//            } // Fin autenticarConFacebookSupabase
 
             function ejecutarCuandoDOMEsteListo(callback) {
                 if (document.readyState === 'loading') {
