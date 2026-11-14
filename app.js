@@ -1937,20 +1937,26 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
 
                     <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 22px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">X</button>
 
-                    <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 10;">
-                        <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Guardar</button>
-                        <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
-                        <button style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">... Mas</button>
+                         <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 10;">
+                        <button type="button" id="btn-ficha-guardar" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: ${state.favoritos.has(String(prop.id)) ? '#d92323' : '#1a1a1a'};">${state.favoritos.has(String(prop.id)) ? '♥ Guardado' : '♡ Guardar'}</button>
+                        <button type="button" id="btn-ficha-compartir" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
+                        <button type="button" id="btn-ficha-mas" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">... Mas</button>
                     </div>
 
-                    <button style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u2039</button>
-                    <button style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.3); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u203a</button>
+                    <button type="button" id="btn-ficha-prev" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.45); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u2039</button>
+                    <button type="button" id="btn-ficha-next" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.45); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u203a</button>
 
                     <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">
                         ${miniaturasHtml}
                     </div>
 
-                    <div style="position: absolute; bottom: 20px; right: 24px; color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6); z-index: 10;">SHOWCASE</div>
+                    <div style="position: absolute; bottom: 20px; right: 24px; display: flex; align-items: center; gap: 14px; z-index: 10;">
+                        <span style="color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">SHOWCASE</span>
+                        <button type="button" id="btn-ver-todas-fotos" style="background: rgba(255, 255, 255, 0.95); color: #111827; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+                            Ver todas las fotos (${listaFotos.length})
+                        </button>
+                    </div>
+
                 </div>
 
                 <div style="padding: 24px; max-width: 1200px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 32px; box-sizing: border-box; align-items: start;">
