@@ -174,35 +174,6 @@ function obtenerClienteSupabase() {
 obtenerClienteSupabase();
 
 
-// ==========================================================================
-// PARTE 3 DE 15: FIREWALLS DE ACCESO ACL Y TRANSPORTE JSONP APPS SCRIPT
-// ==========================================================================
-
-function verificarAutorizacionAcceso() { // Inicia Function verificarAutorizacionAcceso
-    console.group(">>> [SRE ESP A ACL] Verificando credenciales de interacci n");
-    console.log("Usuario actual en estado:", state.usuarioActual);
-
-    if (!state.usuarioActual || !state.usuarioActual.id) {
-        console.warn("!! ACL BLOQUEADO: Sesi n inexistente.");
-        console.groupEnd();
-        alert("Acceso Restringido: Debe iniciar sesi n con su cuenta para realizar esta acci n.");
-        if (typeof mostrarPopupAccion === "function") {
-            mostrarPopupAccion("modal-autenticacion-supabase");
-        }
-        return false;
-    }
-
-    if (state.usuarioActual && state.usuarioActual.estado_cuenta === "suspendido") {
-        console.error("XX ACL BLOQUEADO: El usuario se encuentra SUSPENDIDO.");
-        console.groupEnd();
-        alert("Cuenta Suspendida: No tiene autorizaci n para realizar esta acci n.");
-        return false;
-    }
-
-    console.log(">> ACL PERMITIDO: Cuenta activa y autorizada.");
-    console.groupEnd();
-    return true;
-} // Fin de Function verificarAutorizacionAcceso
 
 
 // ==========================================================================
