@@ -1370,7 +1370,7 @@ const ajustarLayoutMovilDinamico = () => {
                         clearTimeout(timerBusqueda);
 
                         if (consulta === "") {
-                            ejecutarTuberiaSincronizada();
+                            
                             return;
                         }
 
@@ -2814,9 +2814,9 @@ if (formTour) {
         <div id="zillow-buyability-and-neighborhood-slot"></div>
     `;
 
-                if (typeof inyectarCapacidadCompraZillow === "function") {
+               
                     inyectarCapacidadCompraZillow(prop);
-                }
+               
             }
             // ====================================================================================
             // FIN DE FUNCTION: inyectarHistorialesYImpuestosZillow
