@@ -429,36 +429,6 @@ main.split-view .properties-panel {
     display: block !important;
 }
 
-.flecha-carrusel {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.55);
-    color: #ffffff;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-    z-index: 15;
-    opacity: 0.85;
-    transition: opacity 0.2s, background-color 0.2s;
-    user-select: none;
-}
-
-.flecha-carrusel:hover {
-    opacity: 1;
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-.flecha-izq { left: 8px; }
-.flecha-der { right: 8px; }
-
 .indicadores-carrusel {
     position: absolute;
     bottom: 8px;
