@@ -874,3 +874,25 @@ div.app-container .contenedor-foto .flecha-carrusel:hover {
 #tarjeta-flotante-movil-sre .popup-carrusel-context .flecha-der {
     right: 10px;
 }
+
+/* ==========================================================================
+   TERCERA PANTALLA: GALERÍA COMPLETA SHOWCASE (TODAS LAS FOTOS)
+   ========================================================================== */
+.galeria-tercera-pantalla.oculta {
+    display: none !important;
+}
+
+.galeria-tercera-pantalla {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #000000;
+    z-index: 250000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+}
+
