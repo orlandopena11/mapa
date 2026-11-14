@@ -20,7 +20,7 @@ const state = {
         tiposPropiedad: new Set(['Casa', 'Departamento', 'Terreno', 'Local', 'Oficina', 'Edificio', 'Lote']),
         tiposListado: new Set(['propietario', 'agente', 'nueva construccion', 'ejecucion hipoteca', 'subasta', 'embargo', 'pre ejecucion hipoteca'])
     },
-   // limpiadoresDOM: new Map()
+  
 }; // Fin de asignaci n del objeto global state
 
 
@@ -461,15 +461,6 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
 // PARTE 5 DE 15: FORMATEADORES MONETARIOS COMPACTOS Y RECONSTRUCCI N DE RIEL MULTIMEDIA
 // ==========================================================================
 
-function formatearPrecioCompleto(precio) { // Inicia Function formatearPrecioCompleto
-    const num = parseFloat(precio);
-    if (isNaN(num) || num === 0) return 'Consultar';
-    return num.toLocaleString('en-US', {
-        style: 'currency',
-        currency: 'USD',
-        maximumFractionDigits: 0
-    });
-} // Fin de Function formatearPrecioCompleto
 
 function formatearPrecioCompacto(precio) { // Inicia Function formatearPrecioCompacto
     if (precio >= 1000000) return `$. ${(precio / 1000000).toFixed(2)}M`;
@@ -972,16 +963,9 @@ function procesarDatosDelMotor(data) { // Inicia Function procesarDatosDelMotor
     renderizarMapaZillow();
     renderizarCatalogoTarjetas();
 
-    if (typeof interceptarFirewallSeguridadUsuario === "function") {
-        interceptarFirewallSeguridadUsuario(data.usuarios, window.usuarioLogueado ? window.usuarioLogueado.email : "");
-    } else {
-        console.log("> [SRE] Escudo pasivo interceptor operando en modo seguro.");
-    }
+
 } // Fin de la Function procesarDatosDelMotor
 
-function interceptarFirewallSeguridadUsuario(usuarios, email) {
-    return true;
-} // Fin de la Function interceptarFirewallSeguridadUsuario
 
 document.addEventListener("DOMContentLoaded", () => {
     // --- CONTROLADOR DIN MICO DE LAYOUT M VIL (INYECTADO DESDE APP.JS) ---
@@ -1745,21 +1729,6 @@ function inicializarEventosPopups() {
         btnSiguienteTour.addEventListener('touchend', avanzarFaseTour, { passive: false });
     } // [FIN DE LLAVES]: Cierra la condici n del bot n siguiente tour
 
-    // 4. Vinculaci n directa y limpia al Guardia de Seguridad unificado para solicitar tour
-    const btnSolicitarTourSelector = document.getElementById('btn-solicitar-tour-galeria');
-    // [INICIO DE LLAVES]: Valida existencia del bot n para solicitar tour en la galer a
-    if (btnSolicitarTourSelector) {
-        btnSolicitarTourSelector.onclick = async function(e) {
-            // [INICIO DE LLAVES]: Callback as ncrono protegido por el cortafuegos premium
-            if (e) e.stopPropagation();
-            const tieneAccesoValido = await validarAccesoFuncionalidadPremium();
-            if (!tieneAccesoValido) return;
-
-            mostrarPopupAccion("modal-tour-comercial");
-            calcularCalendarioTresCajas();
-            gestionarPasosModalTour(1);
-        }; // [FIN DE LLAVES]: Cierra el callback as ncrono
-    } // [FIN DE LLAVES]: Cierra la condici n del bot n de tour en galer a
 
 } // [FIN DE LLAVES]: Cierra la funci n principal unificada inicializarEventosPopups
 
