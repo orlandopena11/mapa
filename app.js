@@ -2943,8 +2943,9 @@ if (formTour) {
                 [cInicial, cPlazo, cTea, cDesg, cInm].forEach(combo => combo.addEventListener('change', ejecutarRecalculoHipoteca));
 
                 btnGuardar.addEventListener('click', async () => {
-                    if (typeof verificarAutorizacionAcceso === "function" && !verificarAutorizacionAcceso()) return;
+                    if (!(await validarAccesoFuncionalidadPremium())) return;
                     if (!calculosGlobales) return;
+
 
                     btnGuardar.innerText = "Generando cronograma PDF y enviando correo...";
                     btnGuardar.disabled = true;
