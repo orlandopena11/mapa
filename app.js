@@ -753,22 +753,25 @@ function construirContenedorPopupLeaflet(prop) {
 
     const datosPopup = document.createElement('div');
     datosPopup.className = 'datos-popup-info';
+    datosPopup.style.fontFamily = "'Inter', sans-serif";
     datosPopup.innerHTML = `
-        <div class="precio" style="color: #000000; font-size: 18px; font-weight: 800; margin-bottom: 2px;">
+        <div class="precio" style="font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; font-size: 20px; font-weight: 800; letter-spacing: 0.01em; margin-bottom: 4px;">
             $${prop.precio_base ? Number(prop.precio_base).toLocaleString('en-US') : 'Precio no disponible'}
         </div>
-        <div class="caracteristicas-inmueble" style="font-size: 11px; color: #4a5568; margin-bottom: 2px;">
-            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba os | ${prop.estacionamientos || 0} Estacionamiento
+        <div class="caracteristicas-inmueble" style="font-size: 13px; color: #1f2937; font-weight: 600; margin-bottom: 4px;">
+            ${prop.habitaciones || 0} Dorm. | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estac.
         </div>
-        <div class="detalles-adicionales" style="font-size: 11px; color: #718096; line-height: 1.3;">
-            <div style="font-weight: bold; color: #1a202c;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
-            <div>Construido: ${prop.area_construida || 0} m  | Terreno: ${prop.area_terreno || 0} m </div>
-            <div>A o: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+        <div class="detalles-adicionales" style="font-size: 12.5px; color: #4b5563; line-height: 1.4;">
+            <div style="font-weight: 700; color: #111827;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
+            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
+            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
         </div>
-        <div class="ubicacion-direccion-directa" style="font-size: 11px; color: #2d3748; font-weight: 500; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+        <div class="ubicacion-direccion-directa" style="font-size: 12.5px; color: #374151; font-weight: 500; margin-top: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${prop.direccion ? prop.direccion + (prop.distrito ? ', ' + prop.distrito : '') : String(prop.titulo || '')}
         </div>
     `;
+
+    
 
     contenedorPopupMaster.appendChild(datosPopup);
 
