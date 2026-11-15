@@ -2768,68 +2768,68 @@ if (formTour) {
                 const fMoneda = (val) => val > 0 ? '$' + Math.round(val).toLocaleString('en-US') : 'No disponible';
 
                 slotDinamico.innerHTML = `
-        <!-- SECCI N 1: DATOS Y CARACTER STICAS -->
-        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px;">Datos y caracter sticas del inmueble</h4>
+        <!-- SECCIÓN 1: DATOS Y CARACTERÍSTICAS -->
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 28px; font-family: 'Inter', sans-serif;">
+            <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 18px;">Datos y características del inmueble</h4>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 8px;">
-                    <h5 style="font-size: 15px; font-weight: 700; color: #006aff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Interior</h5>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 22px; border-radius: 10px;">
+                    <h5 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; color: #006aff; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px;">Interior</h5>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px;">
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Habitaciones y ba os:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba os completos</strong>
+                            <span style="font-size: 14px; color: #64748b; display: block; margin-bottom: 3px;">Habitaciones y baños:</span>
+                            <strong style="font-size: 16px; color: #111827;">${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños completos</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Calefacci n y Enfriamiento:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">Centralizado / Aire Acondicionado independiente</strong>
+                            <span style="font-size: 14px; color: #64748b; display: block; margin-bottom: 3px;">Calefacción y Enfriamiento:</span>
+                            <strong style="font-size: 16px; color: #111827;">Centralizado / Aire Acondicionado independiente</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">Electrodom sticos incluidos:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">Cocina empotrada, Horno, Extractor de grasa</strong>
+                            <span style="font-size: 14px; color: #64748b; display: block; margin-bottom: 3px;">Electrodomésticos incluidos:</span>
+                            <strong style="font-size: 16px; color: #111827;">Cocina empotrada, Horno, Extractor de grasa</strong>
                         </div>
                         <div>
-                            <span style="font-size: 13px; color: #64748b; display: block;">S tanos y Almacenes:</span>
-                            <strong style="font-size: 14px; color: #1e293b;">S tano: ${prop.sotano || 'No'} | Dep sito/Almac n: ${prop.almacen || 'No'}</strong>
+                            <span style="font-size: 14px; color: #64748b; display: block; margin-bottom: 3px;">Sótanos y Almacenes:</span>
+                            <strong style="font-size: 16px; color: #111827;">Sótano: ${prop.sotano || 'No'} | Depósito/Almacén: ${prop.almacen || 'No'}</strong>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- SECCI N 2: VALOR DE MERCADO ESTIMADO -->
-        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <h4 style="font-size: 20px; font-weight: 700; color: #1a1a1a;">Valor de mercado estimado</h4>
-                <span style="background: #006aff; color: #ffffff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">ZESTIMATE</span>
+        <!-- SECCIÓN 2: VALOR DE MERCADO ESTIMADO -->
+        <div style="margin-top: 38px; border-top: 1px solid #e2e8f0; padding-top: 28px; font-family: 'Inter', sans-serif;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+                <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #111827;">Valor de mercado estimado</h4>
+                <span style="background: #006aff; color: #ffffff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px; letter-spacing: 0.04em;">ZESTIMATE</span>
             </div>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 16px;"> ndice de valoraci n automatizado calculado en tiempo real con la data de la zona.</p>
+            <p style="font-size: 15px; color: #475569; margin-bottom: 20px;">Índice de valoración automatizado calculado en tiempo real con la data de la zona.</p>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-
-                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Precio de lista</span>
-                    <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(precioBase)}</strong>
-                    <span style="font-size: 11px; color: #10b981; font-weight: 600;">Valor base de tasaci n</span>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; margin-bottom: 24px;">
+                <div style="border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <span style="font-size: 14px; color: #64748b; display: block; font-weight: 600;">Precio de lista</span>
+                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; color: #111827; display: block; margin: 6px 0;">${fMoneda(precioBase)}</strong>
+                    <span style="font-size: 13px; color: #10b981; font-weight: 600;">Valor base de tasación</span>
                 </div>
 
-                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border-left: 4px solid #006aff;">
-                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Zestimate Actual</span>
-                    <strong style="font-size: 20px; color: #006aff; display: block; margin: 4px 0;">${fMoneda(zestimateVenta)}</strong>
-                    <span style="font-size: 11px; color: #475569;">Rango: ${fMoneda(rangoMin)} - ${fMoneda(rangoMax)}</span>
+                <div style="border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border-left: 4px solid #006aff;">
+                    <span style="font-size: 14px; color: #64748b; display: block; font-weight: 600;">Zestimate Actual</span>
+                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; color: #006aff; display: block; margin: 6px 0;">${fMoneda(zestimateVenta)}</strong>
+                    <span style="font-size: 13px; color: #475569;">Rango: ${fMoneda(rangoMin)} - ${fMoneda(rangoMax)}</span>
                 </div>
 
-                <div style="border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                    <span style="font-size: 12px; color: #64748b; display: block; font-weight: 600;">Alquiler estimado</span>
-                    <strong style="font-size: 20px; color: #1a1a1a; display: block; margin: 4px 0;">${fMoneda(zestimateAlquiler)}/mes</strong>
-                    <span style="font-size: 11px; color: #475569;">Retorno anual calc. 5.5%</span>
+                <div style="border: 1px solid #e2e8f0; padding: 18px; border-radius: 10px; background: #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                    <span style="font-size: 14px; color: #64748b; display: block; font-weight: 600;">Alquiler estimado</span>
+                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; color: #111827; display: block; margin: 6px 0;">${fMoneda(zestimateAlquiler)}/mes</strong>
+                    <span style="font-size: 13px; color: #475569;">Retorno anual calc. 5.5%</span>
                 </div>
-
             </div>
         </div>
 
         <div id="zillow-graphs-and-history-slot"></div>
     `;
+
+                
 
                 inyectarHistorialesYImpuestosZillow(prop);
             }
@@ -2927,14 +2927,14 @@ if (formTour) {
                 const impuestoAnual = precioActual * 0.0042;
 
                 slotHistorial.innerHTML = `
-        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 0;">Historia de Zestimate ( ltimos 3 a os)</h4>
-                <span style="font-size: 12px; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">Ubigeo: ${ubigeoPropiedad}</span>
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 28px; font-family: 'Inter', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+                <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; color: #111827; margin: 0;">Historia de Zestimate (Últimos 3 años)</h4>
+                <span style="font-size: 13px; color: #475569; font-weight: 600; background: #f1f5f9; padding: 5px 12px; border-radius: 20px;">Ubigeo: ${ubigeoPropiedad}</span>
             </div>
 
-            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.01);">
-                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed #f1f5f9; padding-bottom: 6px;">
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; padding: 22px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; font-weight: 700; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px;">
                     <span>Techo: ${fM(maxValor)}</span>
                     <span>Piso: ${fM(minValor)}</span>
                 </div>
@@ -2946,51 +2946,53 @@ if (formTour) {
                         <line x1="0" y1="${altoGrafico * 0.75}" x2="${anchoGrafico}" y2="${altoGrafico * 0.75}" stroke="#f1f5f9" stroke-width="1" stroke-dasharray="4"/>
 
                         <path d="${pathString}" fill="none" stroke="#006aff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="${anchoGrafico}" cy="${coordenadasPuntos[coordenadasPuntos.length - 1].split(',')[1]}" r="5" fill="#006aff" stroke="#ffffff" stroke-width="2" />
+                        <circle cx="${anchoGrafico}" cy="${coordenadasPuntos[coordenadasPuntos.length - 1].split(',')}" r="5" fill="#006aff" stroke="#ffffff" stroke-width="2" />
                     </svg>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #64748b; font-weight: bold; margin-top: 12px; padding: 0 10px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13.5px; color: #475569; font-weight: 700; margin-top: 14px; padding: 0 10px;">
                     <span>2023 (Inicio)</span>
-                    <span>2024 (Evoluci n)</span>
+                    <span>2024 (Evolución)</span>
                     <span>2025 (Crecimiento)</span>
                     <span style="color: #006aff;">2026 (Actual)</span>
                 </div>
             </div>
-            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin-top: 10px;">Curva de tasaci n automatizada para el  rea construida de <strong>${areaConstruida} m </strong> en ${distritoNombre}.</p>
+            <p style="font-size: 13px; color: #64748b; text-align: center; margin-top: 12px;">Curva de tasación automatizada para el área construida de <strong>${areaConstruida} m²</strong> en ${distritoNombre}.</p>
         </div>
 
-        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Vista de la tabla anal tica completa</h4>
-            <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #ffffff; max-height: 280px; overflow-y: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 28px; font-family: 'Inter', sans-serif;">
+            <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 14px;">Vista de la tabla analítica completa</h4>
+            <div style="width: 100%; overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 10px; background: #ffffff; max-height: 300px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14.5px;">
                     <thead style="position: sticky; top: 0; background: #f8fafc; box-shadow: 0 1px 0 #e2e8f0;">
-                        <tr style="color: #475569; font-weight: 600;">
-                            <th style="padding: 12px 16px;">Trimestre</th>
-                            <th style="padding: 12px 16px;">Valor m  (USD)</th>
-                            <th style="padding: 12px 16px;">Valor Comercial Estimado</th>
+                        <tr style="color: #334155; font-weight: 700;">
+                            <th style="padding: 14px 16px;">Trimestre</th>
+                            <th style="padding: 14px 16px;">Valor m² (USD)</th>
+                            <th style="padding: 14px 16px;">Valor Comercial Estimado</th>
                         </tr>
                     </thead>
-                    <tbody style="color: #1e293b;">
+                    <tbody style="color: #111827;">
                         ${tablaHtmlRows}
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <div style="margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 24px; margin-bottom: 12px;">
-            <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Impuestos p blicos estimados</h4>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="margin-top: 36px; border-top: 1px solid #e2e8f0; padding-top: 28px; margin-bottom: 12px; font-family: 'Inter', sans-serif;">
+            <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 14px;">Impuestos públicos estimados</h4>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 18px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
                 <div>
-                    <strong style="font-size: 13px; color: #1e293b; display: block;">Autoval o predial estimado:</strong>
-                    <span style="font-size: 12px; color: #64748b;">Monto tributario anual proyectado de acuerdo a los aranceles vigentes de la zona.</span>
+                    <strong style="font-size: 15.5px; color: #111827; display: block; margin-bottom: 3px;">Autovalúo predial estimado:</strong>
+                    <span style="font-size: 14px; color: #475569;">Monto tributario anual proyectado de acuerdo a los aranceles vigentes de la zona.</span>
                 </div>
-                <strong style="font-size: 18px; color: #1e293b; white-space: nowrap;">${fM(impuestoAnual)} / a o</strong>
+                <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 21px; color: #111827; white-space: nowrap;">${fM(impuestoAnual)} / año</strong>
             </div>
         </div>
 
         <div id="zillow-buyability-and-neighborhood-slot"></div>
     `;
+
+                
 
                
                     inyectarCapacidadCompraZillow(prop);
@@ -3016,51 +3018,53 @@ if (formTour) {
                 const tipoProp = String(prop.tipo_propiedad || 'Casa').trim();
 
                 slotBuyability.innerHTML = `
-        <div style="margin-top: 36px; border-top: 2px solid #002E50; padding-top: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <h4 style="font-size: 18px; font-weight: 700; color: #002E50;">Simulador Hipotecario Inteligente</h4>
-                <span style="background: #002E50; color: #FFB91D; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">CONEXI N DIRECTA</span>
+        <div style="margin-top: 38px; border-top: 2px solid #002E50; padding-top: 28px; font-family: 'Inter', sans-serif;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; color: #002E50;">Simulador Hipotecario Inteligente</h4>
+                <span style="background: #002E50; color: #FFB91D; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px;">CONEXIÓN DIRECTA</span>
             </div>
-            <p style="font-size: 13px; color: #475569; margin-bottom: 20px;">Evaluaci n en base a las pol ticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
-            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,46,80,0.04); display: flex; flex-direction: column; gap: 20px;">
-                <div style="text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
-                    <span style="font-size: 14px; color: #002E50; font-weight: 600;">Cuota Mensual Total Estimada</span>
-                    <h3 id="display-pago-total-hipoteca" style="font-size: 21px; font-weight: 700; color: #002E50; margin: 10px 0 0 0;">Selecciona tus datos y simula tu hipoteca</h3>
-                    <p id="lov-comentario-dinamico" style="font-size: 11px; color: #475569; margin: 6px 0 0 0; font-style: italic;"></p>
+            <p style="font-size: 15px; color: #475569; margin-bottom: 22px;">Evaluación en base a las políticas SBS y BCRP vigentes para <strong>${tipoProp}</strong>.</p>
+            <div style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 12px; padding: 26px; box-shadow: 0 4px 14px rgba(0,46,80,0.05); display: flex; flex-direction: column; gap: 22px;">
+                <div style="text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 18px;">
+                    <span style="font-size: 15px; color: #002E50; font-weight: 600;">Cuota Mensual Total Estimada</span>
+                    <h3 id="display-pago-total-hipoteca" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 800; color: #002E50; margin: 10px 0 0 0;">Selecciona tus datos y simula tu hipoteca</h3>
+                    <p id="lov-comentario-dinamico" style="font-size: 13px; color: #475569; margin: 8px 0 0 0; font-style: italic;"></p>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px;">
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Cuota Inicial (%):</label>
-                        <select id="combo-lov-inicial" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
+                        <label style="font-size: 14px; font-weight: 700; color: #002E50; display: block; margin-bottom: 6px;">Cuota Inicial (%):</label>
+                        <select id="combo-lov-inicial" style="width: 100%; height: 42px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #94a3b8; background: #fff; color: #111827; font-size: 15px; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Plazo de Financiamiento:</label>
-                        <select id="combo-lov-plazo" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
+                        <label style="font-size: 14px; font-weight: 700; color: #002E50; display: block; margin-bottom: 6px;">Plazo de Financiamiento:</label>
+                        <select id="combo-lov-plazo" style="width: 100%; height: 42px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #94a3b8; background: #fff; color: #111827; font-size: 15px; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Tasa de Inter s Anual (TEA):</label>
-                        <select id="combo-lov-tea" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
+                        <label style="font-size: 14px; font-weight: 700; color: #002E50; display: block; margin-bottom: 6px;">Tasa de Interés Anual (TEA):</label>
+                        <select id="combo-lov-tea" style="width: 100%; height: 42px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #94a3b8; background: #fff; color: #111827; font-size: 15px; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Seguro Desgravamen Mensual:</label>
-                        <select id="combo-lov-desgravamen" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
+                        <label style="font-size: 14px; font-weight: 700; color: #002E50; display: block; margin-bottom: 6px;">Seguro Desgravamen Mensual:</label>
+                        <select id="combo-lov-desgravamen" style="width: 100%; height: 42px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #94a3b8; background: #fff; color: #111827; font-size: 15px; font-weight: 500;"></select>
                     </div>
                     <div>
-                        <label style="font-size: 12px; font-weight: bold; color: #002E50; display: block; margin-bottom: 4px;">Seguro de Inmueble Mensual:</label>
-                        <select id="combo-lov-inmueble" style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; background: #fff; color: #002E50; font-weight: 500;"></select>
+                        <label style="font-size: 14px; font-weight: 700; color: #002E50; display: block; margin-bottom: 6px;">Seguro de Inmueble Mensual:</label>
+                        <select id="combo-lov-inmueble" style="width: 100%; height: 42px; padding: 0 12px; border-radius: 8px; border: 1.5px solid #94a3b8; background: #fff; color: #111827; font-size: 15px; font-weight: 500;"></select>
                     </div>
                 </div>
-                <div style="border-top: 1px solid #e2e8f0; padding-top: 14px; font-size: 13px; color: #475569; display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px;">
-                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #002E50;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortizaci n + Inter s):</span><strong id="txt-calc-cuotabase" style="color: #002E50;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #002E50;">-</strong></div>
-                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #002E50;">-</strong></div>
+                <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; font-size: 15px; color: #475569; display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px;">
+                    <div style="display: flex; justify-content: space-between;"><span>Monto Neto Financiado:</span><strong id="txt-calc-prestamo" style="color: #111827;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Cuota Base (Amortización + Interés):</span><strong id="txt-calc-cuotabase" style="color: #111827;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Desgravamen:</span><strong id="txt-calc-segdesg" style="color: #111827;">-</strong></div>
+                    <div style="display: flex; justify-content: space-between;"><span>Costo Seguro Inmueble Todo Riesgo:</span><strong id="txt-calc-seginm" style="color: #111827;">-</strong></div>
                 </div>
-                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 14px; font-size: 14px; font-weight: 800; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 4px rgba(255,185,29,0.2); transition: background 0.2s;">Enviar mi cronograma de hipoteca a mi correo</button>
+                <button type="button" id="btn-guardar-simulacion-supabase" style="width: 100%; background: #FFB91D; color: #002E50; border: none; padding: 16px; font-size: 16px; font-weight: 800; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 6px rgba(255,185,29,0.25); transition: background 0.2s;">Enviar mi cronograma de hipoteca a mi correo</button>
             </div>
         </div>
         <div id="zillow-neighborhood-slot"></div>
     `;
+
+                
 
                 const cInicial = document.getElementById('combo-lov-inicial');
                 const cPlazo = document.getElementById('combo-lov-plazo');
