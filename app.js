@@ -44,34 +44,30 @@ async function actualizarBotonCuenta() {
         linkAnunciar.textContent = 'Anunciar';
         linkAnunciar.style.cssText = `
             margin-left: auto;
-            margin-right: 8px;
+            margin-right: 4px;
             height: 44px;
             display: inline-flex;
             align-items: center;
             color: #111827;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14.5px;
             text-decoration: none;
             white-space: nowrap;
-            padding: 0 18px;
+            padding: 0 12px;
             border-radius: 8px;
             border: 1.5px solid #94a3b8;
             background: #ffffff;
             transition: all 0.15s ease;
         `;
 
-        
-        // Inserta el enlace justo antes del botón de login para mantener el orden derecho
         if (btnOpenLogin && btnOpenLogin.parentNode === navbar) {
             navbar.insertBefore(linkAnunciar, btnOpenLogin);
         } else {
             navbar.appendChild(linkAnunciar);
         }
-    } // [FIN DE LLAVES]: Cierra la creación del enlace "Anunciar"
+    }
 
-
-    // [INICIO DE LLAVES]: Control condicional de visibilidad seg n estado de autenticaci n
     if (window.usuarioLogueado) {
         if (btnOpenLogin) btnOpenLogin.style.display = 'none';
 
@@ -80,28 +76,28 @@ async function actualizarBotonCuenta() {
             indicador.id = 'user-session-badge';
             indicador.style.cssText = `
                 margin-left: 0; 
+                height: 44px;
                 display: flex; 
                 align-items: center; 
-                gap: 10px; 
-                padding: 6px 12px; 
+                gap: 8px; 
+                padding: 0 12px; 
                 background: #002e50; 
                 color: #ffffff; 
-                border-radius: 20px; 
-                font-size: 12px; 
+                border-radius: 8px; 
+                font-family: 'Inter', sans-serif;
+                font-size: 13px; 
                 font-weight: 600; 
-                border: 1px solid #ffffff;
                 box-sizing: border-box;
-                max-width: 100%;
+                flex-shrink: 0;
             `;
             navbar.appendChild(indicador);
         }
     } else {
         if (indicador) indicador.style.display = 'none';
         if (btnOpenLogin) btnOpenLogin.style.display = 'block';
-    } // [FIN DE LLAVES]: Cierra el bloque condicional de autenticaci n visual
+    }
 
     if (indicador && window.usuarioLogueado) {
-        // [INICIO DE LLAVES]: Bloque de procesamiento de datos y llamada RPC de permisos
         let rolTexto = "Usuario";
         let puedeCrud = false;
 
@@ -115,36 +111,32 @@ async function actualizarBotonCuenta() {
                 if (!error && data && data.length > 0) {
                     rolTexto = data[0].nombres_rol || "Usuario";
                     puedeCrud = data[0].permiso_insertar || data[0].permiso_modificar;
-                    
                 }
             }
         } catch (errRol) {
             console.warn("Error al consultar permisos de rol:", errRol);
         }
 
-        const esMovil = window.innerWidth <= 768;
-        const correoCorto = window.usuarioLogueado.email.length > 18 && esMovil 
-            ? window.usuarioLogueado.email.substring(0, 15) + '...' 
-            : window.usuarioLogueado.email;
+        const aliasUsuario = window.usuarioLogueado.email.split('@')[0];
+        const nombreVisible = aliasUsuario.length > 14 ? aliasUsuario.substring(0, 14) + '...' : aliasUsuario;
 
         let htmlContenido = `
-            <span title="${window.usuarioLogueado.email}" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                ?? ${correoCorto} <span style="background: #FFB91D; color: #002e50; padding: 2px 6px; border-radius: 10px; font-size: 10px; text-transform: uppercase;">${rolTexto}</span>
+            <span title="${window.usuarioLogueado.email}" style="display: flex; align-items: center; gap: 6px; white-space: nowrap;">
+                ${nombreVisible} <span style="background: #FFB91D; color: #002e50; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${rolTexto}</span>
             </span>
         `;
 
-
-        // [INICIO DE LLAVES]: Inyecta enlace directo al módulo independiente /admin/index.html
         if (puedeCrud) {
             htmlContenido += `
-                <a href="admin/index.html" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 4px 10px; border-radius: 12px; text-decoration: none; font-size: 11px; font-weight: 700; white-space: nowrap;">
+                <a href="admin/index.html" id="link-crud-propiedades" style="background: #006aff; color: #ffffff; padding: 6px 10px; border-radius: 6px; text-decoration: none; font-size: 12px; font-weight: 700; white-space: nowrap;">
                     Mantenimiento
                 </a>
             `;
-        } // [FIN DE LLAVES]: Cierra la inyección del enlace a /admin/
+        }
 
         indicador.innerHTML = htmlContenido;
         indicador.style.display = 'flex';
+
 
         
     } // [FIN DE LLAVES]: Cierra la condici n principal de indicador con usuario activo
