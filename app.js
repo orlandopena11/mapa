@@ -1896,7 +1896,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                 const campoMensaje = document.getElementById('agente-mensaje');
                 const propActual = state.propiedades.find(p => p.id === state.propiedadSeleccionadaId);
                 if (campoMensaje && propActual) {
-                    campoMensaje.value = `I am interested in ${propActual.direccion || propActual.titulo}.`;
+                    campoMensaje.value = `Yo estoy interesado en ${propActual.direccion || propActual.titulo}.`;
                 }
             } // Fin inyectarDatosPropiedadAlMensaje
 
