@@ -482,7 +482,7 @@ function construirRielCarruselComponente(prop, esPopup = false) {
         position: 'relative',
         overflow: 'hidden',
         width: '100%',
-        height: esPopup ? '140px' : '180px'
+        height: esPopup ? '140px' : '215px'
     });
 
     const rielCarrusel = document.createElement('div');
@@ -668,27 +668,26 @@ function crearComponenteTarjetaZillow(prop) { // Inicia Function crearComponente
 
     const datosCasa = document.createElement('div');
     datosCasa.className = 'datos-casa';
-    datosCasa.style.padding = '12px';
-    datosCasa.style.cursor = 'pointer';
     datosCasa.addEventListener('click', clickSPAHandler);
 
     datosCasa.innerHTML = `
-        <div class="precio" style="color: #000000; font-size: 28px; font-weight: 800; margin-bottom: 4px;">
+        <div class="precio">
             ${prop.precio_base ? `$${Number(prop.precio_base).toLocaleString('en-US')}` : 'Precio no disponible'}
         </div>
         <div class="caracteristicas-inmueble">
-            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Ba os | ${prop.estacionamientos || 0} Estacionamiento
+            ${prop.habitaciones || 0} Dormitorios | ${prop.banos || 0} Baños | ${prop.estacionamientos || 0} Estacionamiento
         </div>
         <div class="detalles-adicionales">
-            <div style="font-weight: bold;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
-            <div>Construido: ${prop.area_construida || 0} m  | Terreno: ${prop.area_terreno || 0} m </div>
-            <div>A o: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
+            <div style="font-weight: 700; color: #111827;">${prop.tipo_propiedad || ''}${prop.subtipo_propiedad ? ' - ' + prop.subtipo_propiedad : ''}</div>
+            <div>Construido: ${prop.area_construida || 0} m² | Terreno: ${prop.area_terreno || 0} m²</div>
+            <div>Año: ${prop.ano_construccion || 'N/A'} | Estado: ${prop.estado_propiedad || 'N/A'}</div>
         </div>
         <div class="ubicacion-direccion-directa">
             ${prop.direccion ? `${prop.direccion}, ${prop.distrito || ''}` : (prop.titulo || "")}
         </div>
     `;
 
+    
     tarjeta.appendChild(datosCasa);
     return tarjeta;
 } // Fin de Function crearComponenteTarjetaZillow
