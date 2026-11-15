@@ -5,22 +5,30 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    font-size: 15.5px;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 15.5px !important;
     letter-spacing: -0.01em;
-    background-color: #f1f5f9;
+    background-color: #f1f5f9 !important;
     color: #111827;
+    width: 100vw;
     height: 100vh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
 }
 
 .admin-layout {
+    position: fixed;
+    top: 0;
+    left: 0;
     display: flex;
     flex-direction: column;
     height: 100vh;
     width: 100vw;
 }
+
 
 .admin-navbar {
     background-color: #002e50;
