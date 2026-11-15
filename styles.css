@@ -48,8 +48,8 @@ header.navbar-global {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 14px;
-    padding: 10px 24px;
+    gap: 8px;
+    padding: 10px 14px;
     background-color: var(--blanco);
     border-bottom: 1px solid #cbd5e1;
     box-shadow: var(--shadow-soft);
@@ -57,6 +57,8 @@ header.navbar-global {
     box-sizing: border-box;
     white-space: nowrap;
 }
+
+
 
 header.navbar-global .navbar-brand-logo {
     height: 50px;
@@ -77,16 +79,17 @@ header.navbar-global .navbar-brand-logo {
 
 .search-input {
     height: 44px;
-    padding: 0 16px;
+    padding: 0 12px;
     border: 1.5px solid #94a3b8;
     border-radius: 8px;
     font-family: 'Inter', sans-serif;
-    font-size: 15.5px;
+    font-size: 14.5px;
     font-weight: 500;
     color: #111827;
-    width: 260px;
+    width: 215px;
     transition: border-color 0.2s;
 }
+
 
 .search-input:focus {
     outline: none;
@@ -161,9 +164,9 @@ main.split-view .properties-panel {
     height: 44px;
     background-color: var(--blanco);
     border: 1.5px solid #94a3b8;
-    padding: 0 18px;
+    padding: 0 12px;
     font-family: 'Inter', sans-serif;
-    font-size: 15px;
+    font-size: 14.5px;
     font-weight: 600;
     letter-spacing: 0.01em;
     color: #111827;
@@ -171,9 +174,10 @@ main.split-view .properties-panel {
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.15s ease;
 }
+
 
 .filter-btn:hover, .filter-btn.active {
     border-color: var(--azul-zillow);
