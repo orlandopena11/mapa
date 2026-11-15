@@ -1,6 +1,6 @@
 /* jshint esversion: 11 */
 
-const SUPABASE_URL = 'https://supabase.co';
+const SUPABASE_URL = 'https://aohizylvnnrjhgplsods.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 
 // Correo de tu equipo comercial que recibirá alerta cada vez que postule un nuevo socio
