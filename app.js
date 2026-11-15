@@ -1935,28 +1935,29 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                         <img id="foto-zillow-showcase-activa" src="${fotoPrincipal}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
                     </div>
 
-                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 22px; font-weight: bold; color: #1a1a1a; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">X</button>
+                    <button id="btn-cerrar-cortina" style="position: absolute; top: 20px; left: 24px; background: #ffffff; border: 1.5px solid #94a3b8; width: 44px; height: 44px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 700; color: #111827; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 10;">✕</button>
 
-                         <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 10;">
-                        <button type="button" id="btn-ficha-guardar" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: ${state.favoritos.has(String(prop.id)) ? '#d92323' : '#1a1a1a'};">${state.favoritos.has(String(prop.id)) ? '♥ Guardado' : '♡ Guardar'}</button>
+                    <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 10px; z-index: 10;">
+                        <button type="button" id="btn-ficha-guardar" style="height: 44px; background: #ffffff; border: 1.5px solid #94a3b8; padding: 0 18px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); color: ${state.favoritos.has(String(prop.id)) ? '#d92323' : '#111827'};">${state.favoritos.has(String(prop.id)) ? '♥ Guardado' : '♡ Guardar'}</button>
                         
-                        <button type="button" id="btn-ficha-compartir" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
-                        <button type="button" id="btn-ficha-mas" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">... Mas</button>
+                        <button type="button" id="btn-ficha-compartir" style="height: 44px; background: #ffffff; border: 1.5px solid #94a3b8; padding: 0 18px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); color: #111827;">Compartir</button>
+                        <button type="button" id="btn-ficha-mas" style="height: 44px; background: #ffffff; border: 1.5px solid #94a3b8; padding: 0 18px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15); color: #111827;">... Más</button>
                     </div>
 
-                    <button type="button" id="btn-ficha-prev" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.45); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u2039</button>
-                    <button type="button" id="btn-ficha-next" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.45); border: none; width: 40px; height: 40px; border-radius: 50%; color: white; font-size: 20px; cursor: pointer; z-index: 10;">\u203a</button>
+                    <button type="button" id="btn-ficha-prev" style="position: absolute; top: 50%; left: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.4); width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 22px; cursor: pointer; z-index: 10;">\u2039</button>
+                    <button type="button" id="btn-ficha-next" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.4); width: 44px; height: 44px; border-radius: 50%; color: white; font-size: 22px; cursor: pointer; z-index: 10;">\u203a</button>
 
                     <div style="position: absolute; bottom: 20px; left: 24px; display: flex; gap: 10px; z-index: 10;">
                         ${miniaturasHtml}
                     </div>
 
                     <div style="position: absolute; bottom: 20px; right: 24px; display: flex; align-items: center; gap: 14px; z-index: 10;">
-                        <span style="color: white; font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.6);">SHOWCASE</span>
-                        <button type="button" id="btn-ver-todas-fotos" style="background: rgba(255, 255, 255, 0.95); color: #111827; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+                        <span style="color: white; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-shadow: 0 2px 4px rgba(0,0,0,0.7);">SHOWCASE</span>
+                        <button type="button" id="btn-ver-todas-fotos" style="height: 44px; background: #ffffff; color: #111827; border: 1.5px solid #94a3b8; padding: 0 18px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; letter-spacing: 0.01em; cursor: pointer; display: flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
                             Ver todas las fotos (${listaFotos.length})
                         </button>
                     </div>
+
 
                 </div>
 
