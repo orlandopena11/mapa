@@ -607,6 +607,19 @@ div.leaflet-marker-icon.map-price-pill {
     width: 260px !important;
 }
 
+.tarjeta-casa.popup-card {
+    height: auto !important;
+    min-height: unset !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.popup-card .datos-popup-info {
+    padding: 12px 14px 14px 14px !important;
+}
+
+
+
 .popup-card .contenedor-foto.popup-carrusel-context {
     width: 100% !important;
     height: 140px !important;
