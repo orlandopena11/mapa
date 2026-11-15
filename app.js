@@ -1939,6 +1939,7 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
 
                          <div style="position: absolute; top: 20px; right: 24px; display: flex; gap: 12px; z-index: 10;">
                         <button type="button" id="btn-ficha-guardar" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: ${state.favoritos.has(String(prop.id)) ? '#d92323' : '#1a1a1a'};">${state.favoritos.has(String(prop.id)) ? '♥ Guardado' : '♡ Guardar'}</button>
+                        
                         <button type="button" id="btn-ficha-compartir" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">Compartir</button>
                         <button type="button" id="btn-ficha-mas" style="background: #ffffff; border: none; padding: 10px 18px; border-radius: 24px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); color: #1a1a1a;">... Mas</button>
                     </div>
@@ -2630,6 +2631,105 @@ if (formTour) {
 
             }; // FIN DEFINITIVO DE LA FUNCI N gestionarCortinaSPA RESTABLECIDA
 
+            // ==========================================================================
+            // TERCERA PANTALLA: GALERÍA COMPLETA CON EFECTO CINEMATOGRÁFICO SHOWCASE
+            // ==========================================================================
+            function abrirTerceraPantallaTodasLasFotos(prop) {
+                const galeriaModal = document.getElementById('vista-galeria-expandida');
+                if (!galeriaModal) return;
+
+                const todasLasFotos = prop.fotos || [];
+                if (todasLasFotos.length === 0) return;
+
+                let indiceGaleria = 0;
+
+                let tiraMiniaturasTodas = todasLasFotos.map((url, idx) => `
+                    <div class="miniatura-galeria-item" data-idx="${idx}" style="width: 64px; height: 48px; flex-shrink: 0; border-radius: 6px; overflow: hidden; border: ${idx === 0 ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.35)'}; cursor: pointer; opacity: ${idx === 0 ? '1' : '0.65'}; transition: all 0.2s;">
+                        <img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                `).join('');
+
+                galeriaModal.innerHTML = `
+                    <div style="width: 100%; height: 100%; position: relative; background: #000000; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden;">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.75), transparent); z-index: 20;">
+                            <button type="button" id="btn-cerrar-tercera-pantalla" style="background: #ffffff; color: #111827; border: none; padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+                                ‹ Volver al detalle
+                            </button>
+                            <div id="contador-fotos-tercera" style="color: #ffffff; font-size: 14px; font-weight: 700; background: rgba(0,0,0,0.5); padding: 6px 14px; border-radius: 16px;">
+                                Foto 1 de ${todasLasFotos.length}
+                            </div>
+                            <div style="color: #ffffff; font-size: 15px; font-weight: 700;">
+                                $${Number(prop.precio_base).toLocaleString('en-US')}
+                            </div>
+                        </div>
+
+                        <div style="width: 100%; height: 100%; overflow: hidden; position: relative;">
+                            <img id="img-tercera-pantalla-activa" src="${todasLasFotos}" style="width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: center center;">
+                        </div>
+
+                        <button type="button" id="btn-tercera-prev" style="position: absolute; top: 50%; left: 24px; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.3); width: 46px; height: 46px; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; z-index: 20;">\u2039</button>
+                        <button type="button" id="btn-tercera-next" style="position: absolute; top: 50%; right: 24px; transform: translateY(-50%); background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.3); width: 46px; height: 46px; border-radius: 50%; color: white; font-size: 24px; cursor: pointer; z-index: 20;">\u203a</button>
+
+                        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 16px 24px; background: linear-gradient(to top, rgba(0,0,0,0.85), transparent); display: flex; gap: 10px; overflow-x: auto; justify-content: flex-start; z-index: 20;">
+                            ${tiraMiniaturasTodas}
+                        </div>
+                    </div>
+                `;
+
+                galeriaModal.classList.remove('oculta');
+
+                const imgVisor = document.getElementById('img-tercera-pantalla-activa');
+                const txtContador = document.getElementById('contador-fotos-tercera');
+                const miniaturasNodos = galeriaModal.querySelectorAll('.miniatura-galeria-item');
+                let animacionActualTercera = null;
+
+                function actualizarVistaTerceraPantalla(nuevoIndice) {
+                    if (!imgVisor || galeriaModal.classList.contains('oculta')) return;
+                    indiceGaleria = (nuevoIndice + todasLasFotos.length) % todasLasFotos.length;
+                    imgVisor.src = todasLasFotos[indiceGaleria];
+
+                    if (txtContador) txtContador.textContent = `Foto ${indiceGaleria + 1} de ${todasLasFotos.length}`;
+
+                    miniaturasNodos.forEach((nodo, i) => {
+                        nodo.style.border = i === indiceGaleria ? '2px solid #ffffff' : '1px solid rgba(255,255,255,0.35)';
+                        nodo.style.opacity = i === indiceGaleria ? '1' : '0.65';
+                    });
+
+                    if (animacionActualTercera) animacionActualTercera.cancel();
+
+                    animacionActualTercera = imgVisor.animate([
+                        { transform: 'scale(1.0) translate(0%, 0%)' },
+                        { transform: 'scale(1.18) translate(2%, -1.5%)' }
+                    ], {
+                        duration: 8000,
+                        iterations: 1,
+                        easing: 'ease-in-out'
+                    });
+
+                    animacionActualTercera.onfinish = () => {
+                        if (!galeriaModal.classList.contains('oculta')) {
+                            actualizarVistaTerceraPantalla(indiceGaleria + 1);
+                        }
+                    };
+                }
+
+                document.getElementById('btn-cerrar-tercera-pantalla').onclick = () => {
+                    if (animacionActualTercera) animacionActualTercera.cancel();
+                    galeriaModal.classList.add('oculta');
+                };
+
+                document.getElementById('btn-tercera-prev').onclick = () => actualizarVistaTerceraPantalla(indiceGaleria - 1);
+                document.getElementById('btn-tercera-next').onclick = () => actualizarVistaTerceraPantalla(indiceGaleria + 1);
+
+                miniaturasNodos.forEach(nodo => {
+                    nodo.onclick = () => {
+                        const idx = parseInt(nodo.getAttribute('data-idx'), 10);
+                        actualizarVistaTerceraPantalla(idx);
+                    };
+                });
+
+                actualizarVistaTerceraPantalla(0);
+            }
 
 
 
