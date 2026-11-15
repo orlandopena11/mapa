@@ -1,1 +1,69 @@
+/* ==========================================================================
+   ARCHIVO MAESTRO DE TEMA Y TIPOGRAFÍA GLOBAL (shared/theme.css)
+   Gestiona colores, fuentes y tamaños de toda la aplicación desde un solo lugar
+   ========================================================================== */
+:root {
+    /* 1. PALETA DE COLORES INSTITUCIONALES */
+    --azul-zillow: #006aff;
+    --azul-zillow-hover: #0052c4;
+    --azul-oscuro: #002e50;
+    --dorado-acento: #ffb91d;
+    --rojo-alerta: #d92323;
+    --verde-exito: #10b981;
+    
+    /* 2. NEUTROS Y FONDOS */
+    --blanco: #ffffff;
+    --gris-fondo: #f6f6f9;
+    --gris-suave: #f8fafc;
+    --gris-borde: #e2e8f0;
+    --gris-borde-input: #cbd5e1;
+    --gris-neutro: #718096;
+    --texto-principal: #111827;
+    --texto-secundario: #475569;
+
+    /* 3. FAMILIAS TIPOGRÁFICAS (Cambia aquí para actualizar toda la app) */
+    --font-titulo: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    --font-subtitulo: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    --font-contenido: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+
+    /* 4. ESCALA DE TAMAÑOS DE LETRA ESTÁNDAR (ALTA LEGIBILIDAD) */
+    --size-precio-ficha: 42px;      /* Precio grande en detalle de propiedad */
+    --size-precio-tarjeta: 32px;    /* Precio en tarjetas del catálogo ($360,000) */
+    --size-titulo-pagina: 24px;     /* Título del panel lateral ("Cargando propiedades...") */
+    --size-titulo-modal: 24px;      /* Títulos de ventanas emergentes */
+    --size-subtitulo: 20px;         /* Subtítulos de secciones */
+    --size-subtitulo-panel: 17px;   /* Títulos de filtros desplegables */
+    --size-contenido: 16px;         /* Texto general, inputs y botones principales */
+    --size-filtro-btn: 15px;        /* Botones de la barra de navegación (En venta, Precio...) */
+    --size-detalle: 14px;           /* Especificaciones de tarjetas (Dormitorios, Baños, Dirección) */
+    --size-etiqueta: 12px;          /* Badges, etiquetas de mapa y notas al pie */
+
+
+    /* 5. SOMBRAS ESTÁNDAR */
+    --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 10px 20px rgba(0, 0, 0, 0.08);
+    --shadow-modal: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* ==========================================================================
+   REGLAS BASE APLICADAS AUTOMÁTICAMENTE A TODAS LAS PANTALLAS
+   ========================================================================== */
+body, html {
+    font-family: var(--font-contenido);
+    font-size: var(--size-contenido);
+    color: var(--texto-principal);
+}
+
+h1, h2, h3 {
+    font-family: var(--font-titulo);
+}
+
+h4, h5, h6 {
+    font-family: var(--font-subtitulo);
+}
+
+input, select, textarea, button {
+    font-family: var(--font-contenido);
+}
+
 
