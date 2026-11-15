@@ -44,18 +44,24 @@ async function actualizarBotonCuenta() {
         linkAnunciar.textContent = 'Anunciar';
         linkAnunciar.style.cssText = `
             margin-left: auto;
-            margin-right: 12px;
-            color: #002e50;
-            font-weight: 700;
-            font-size: 13px;
+            margin-right: 8px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            color: #111827;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
             text-decoration: none;
             white-space: nowrap;
-            padding: 6px 14px;
-            border-radius: 20px;
-            border: 1px solid #cbd5e1;
-            background: #f8fafc;
-            transition: background 0.2s;
+            padding: 0 18px;
+            border-radius: 8px;
+            border: 1.5px solid #94a3b8;
+            background: #ffffff;
+            transition: all 0.15s ease;
         `;
+
+        
         // Inserta el enlace justo antes del botón de login para mantener el orden derecho
         if (btnOpenLogin && btnOpenLogin.parentNode === navbar) {
             navbar.insertBefore(linkAnunciar, btnOpenLogin);
