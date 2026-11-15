@@ -23,10 +23,13 @@
 
 body, html {
     height: 100%;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    letter-spacing: -0.01em;
     background-color: var(--gris-fondo);
     color: var(--texto-principal);
     overflow: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 .app-container {
@@ -40,13 +43,13 @@ header.navbar-global {
     position: fixed;
     top: 0;
     left: 0;
-    height: 60px;
+    height: 68px;
     width: 100vw;
     display: flex;
     align-items: center;
     justify-content: flex-start;
     gap: 16px;
-    padding: 10px 24px;
+    padding: 12px 24px;
     background-color: var(--blanco);
     border-bottom: 1px solid var(--gris-borde);
     box-shadow: var(--shadow-soft);
@@ -56,10 +59,10 @@ header.navbar-global {
 }
 
 header.navbar-global .navbar-brand-logo {
-    height: 32px;
-    width: 120px;
-    max-height: 32px;
-    max-width: 120px;
+    height: 36px;
+    width: 130px;
+    max-height: 36px;
+    max-width: 130px;
     object-fit: contain;
     flex-shrink: 0;
     display: inline-block;
@@ -73,23 +76,25 @@ header.navbar-global .navbar-brand-logo {
 }
 
 .search-input {
-    padding: 8px 14px;
+    padding: 10px 16px;
     border: 1px solid var(--gris-borde);
     border-radius: 8px;
-    font-size: 14px;
-    width: 220px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    width: 250px;
 }
 
 main.split-view {
     display: flex;
     position: absolute;
-    top: 60px;
+    top: 68px;
     left: 0;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 68px);
     width: 100vw;
     z-index: 1000;
     box-sizing: border-box;
 }
+
 
 main.split-view .map-wrapper {
     width: 45%;
@@ -118,11 +123,19 @@ main.split-view .properties-panel {
 /* ==========================================================================
    LÍNEA 96: CONFIGURACIÓN FIJA DE 2 COLUMNAS PARA LAPTOP
    ========================================================================== */
+.panel-header h1, #results-counter {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #111827;
+    margin-bottom: 18px;
+}
+
 .properties-grid {
     display: grid;
-    /* Cambiado para forzar estrictamente dos propiedades por fila */
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 22px;
 }
 
 
@@ -137,9 +150,11 @@ main.split-view .properties-panel {
 .filter-btn {
     background-color: var(--blanco);
     border: 1px solid var(--gris-borde);
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 9px 18px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
     font-weight: 600;
+    letter-spacing: 0.01em;
     color: var(--texto-principal);
     border-radius: 20px;
     cursor: pointer;
@@ -147,6 +162,8 @@ main.split-view .properties-panel {
     align-items: center;
     gap: 6px;
 }
+
+
 
 .filter-btn:hover, .filter-btn.active {
     border-color: var(--azul-zillow);
@@ -391,7 +408,8 @@ main.split-view .properties-panel {
     transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    height: 340px;
+    height: auto;
+    min-height: 410px;
     position: relative;
 }
 
@@ -402,12 +420,13 @@ main.split-view .properties-panel {
 
 .contenedor-foto {
     width: 100%;
-    height: 180px;
+    height: 215px;
     background-color: #1e293b;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
 }
+
 
 .carrusel-imagenes {
     display: flex !important;
@@ -478,37 +497,53 @@ main.split-view .properties-panel {
 .carrusel-imagenes[data-foto-activa="4"] { transform: translateX(-400%); }
 
 .datos-casa {
-    padding: 12px;
+    padding: 16px 18px;
     cursor: pointer;
-    font-size: 13px;
-    line-height: 1.4;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
 }
 
 .tarjeta-casa .datos-casa .precio {
-    color: #000000;
-    font-size: 28px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #111827;
+    font-size: 25px;
     font-weight: 800;
-    margin-bottom: 4px;
-}
-
-.datos-casa .caracteristicas-inmueble {
-    color: #252525;
-    font-weight: 600;
-    margin-bottom: 4px;
-}
-
-.datos-casa .detalles-adicionales {
-    color: #252525;
-    font-size: 12px;
+    letter-spacing: 0.02em;
     margin-bottom: 6px;
 }
 
+.datos-casa .caracteristicas-inmueble {
+    color: #1f2937;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.015em;
+    margin-bottom: 6px;
+}
+
+.datos-casa .detalles-adicionales {
+    color: #4b5563;
+    font-size: 13.5px;
+    letter-spacing: 0.01em;
+    line-height: 1.45;
+    margin-bottom: 8px;
+}
+
 .datos-casa .ubicacion-direccion-directa {
-    color: #252525;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+
 
 /* ==========================================================================
    PARTE 4 DE 5: BURBUJAS FINANCIERAS LEAFLET Y POPUPS RECUPERADOS
@@ -532,15 +567,18 @@ main.split-view .properties-panel {
 }
 
 div.leaflet-marker-icon.map-price-pill {
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: bold;
-    border-radius: 12px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
 }
+
+
 
 .zillow-custom-popup-wrapper .leaflet-popup-content-wrapper {
     padding: 0 !important;
