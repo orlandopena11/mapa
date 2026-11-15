@@ -1964,51 +1964,71 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
                     <div style="flex: 1; min-width: 320px; overflow: hidden; display: block;">
 
 
-                        <div style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 16px;">
-                            <h2 style="font-size: 36px; font-weight: 800; margin: 0 0 6px 0; color: #1a1a1a;">$${Number(prop.precio_base).toLocaleString('en-US')}</h2>
-                            <p style="font-size: 16px; color: #4a5568; margin: 0 0 14px 0; font-weight: 600;">
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.habitaciones}</span> bd |
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.banos}</span> ba |
-                                <span style="color:#1a1a1a; font-weight:bold;">${prop.area_construida}</span> m  AC
-                            </p>
-                            <p style="font-size: 15px; margin: 0 0 8px 0; color: #2d3748; font-weight: bold; letter-spacing: -0.2px;">${prop.direccion} (${prop.distrito})</p>
+                          <div style="margin-bottom: 24px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 20px;">
+                            <div>
+                                <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #111827; margin-bottom: 6px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background-color: #d92323; display: inline-block;"></span>
+                                    ${prop.tipo_anuncio === 'Alquiler' ? 'En alquiler' : 'En venta'}
+                                </div>
+                                <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 40px; font-weight: 800; letter-spacing: 0.01em; margin: 0 0 6px 0; color: #111827; line-height: 1.1;">
+                                    $${Number(prop.precio_base).toLocaleString('en-US')}
+                                </h2>
+                                <p style="font-size: 17px; margin: 0; color: #374151; font-weight: 500; letter-spacing: 0.01em;">
+                                    ${prop.direccion} (${prop.distrito})
+                                </p>
+                            </div>
+
+                            <div style="display: flex; gap: 32px; align-items: center; padding-top: 18px;">
+                                <div>
+                                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 800; color: #111827; display: block; line-height: 1.1;">${prop.habitaciones || 0}</strong>
+                                    <span style="font-size: 16px; color: #4b5563;">dorm.</span>
+                                </div>
+                                <div>
+                                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 800; color: #111827; display: block; line-height: 1.1;">${prop.banos || 0}</strong>
+                                    <span style="font-size: 16px; color: #4b5563;">baños</span>
+                                </div>
+                                <div>
+                                    <strong style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 32px; font-weight: 800; color: #111827; display: block; line-height: 1.1;">${Number(prop.area_construida || 0).toLocaleString('en-US')}</strong>
+                                    <span style="font-size: 16px; color: #4b5563;">m² AC</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div style="display: flex; gap: 24px; margin-bottom: 24px; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <div style="font-size: 14px; color: #475569;">
-                                <strong style="color: #1e293b; font-size: 16px; display: block;">14</strong> D as en el portal
+                        <div style="display: flex; gap: 28px; margin-bottom: 28px; background: #f8fafc; padding: 14px 20px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 15px; color: #475569;">
+                                <strong style="font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; font-size: 18px; display: block;">14</strong> Días en el portal
                             </div>
-                            <div style="font-size: 14px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 24px;">
-                                <strong style="color: #1e293b; font-size: 16px; display: block;">1,248</strong> Vistas totales
-                            </div>
-                        </div>
-
-                        <div style="margin-bottom: 28px;">
-                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px;">Caracter sticas esenciales</h4>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; background: #ffffff; border: 1px solid #e2e8f0; padding: 16px; border-radius: 8px;">
-                                <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">Tipo</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.tipo_propiedad || 'Casa'}</strong>
-                                </div>
-                                <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;"> rea Terreno</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_terreno || 0} m </strong>
-                                </div>
-                                <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;"> rea Const.</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.area_construida || 0} m </strong>
-                                </div>
-                                <div>
-                                    <span style="font-size: 12px; color: #718096; display: block; text-transform: uppercase;">A o Const.</span>
-                                    <strong style="font-size: 14px; color: #1a1a1a;">${prop.ano_construccion || 'N/A'}</strong>
-                                </div>
+                            <div style="font-size: 15px; color: #475569; border-left: 1px solid #cbd5e1; padding-left: 28px;">
+                                <strong style="font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; font-size: 18px; display: block;">1,248</strong> Vistas totales
                             </div>
                         </div>
 
                         <div style="margin-bottom: 32px;">
-                            <h4 style="font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px;"> Qu  es especial de este hogar?</h4>
-                            <p style="font-size: 14px; color: #4a5568; line-height: 1.6; background: #ffffff; padding: 0; margin: 0;">
-                                ${prop.descripcion || 'Sin descripci n comercial registrada actualmente.'}
+                            <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 14px;">Características esenciales</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px;">
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px;">
+                                    <span style="font-size: 13px; color: #64748b; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Tipo</span>
+                                    <strong style="font-size: 16px; color: #111827;">${prop.tipo_propiedad || 'Casa'}</strong>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px;">
+                                    <span style="font-size: 13px; color: #64748b; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Área Terreno</span>
+                                    <strong style="font-size: 16px; color: #111827;">${prop.area_terreno || 0} m²</strong>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px;">
+                                    <span style="font-size: 13px; color: #64748b; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Área Const.</span>
+                                    <strong style="font-size: 16px; color: #111827;">${prop.area_construida || 0} m²</strong>
+                                </div>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 16px; border-radius: 8px;">
+                                    <span style="font-size: 13px; color: #64748b; display: block; text-transform: uppercase; font-weight: 600; margin-bottom: 4px;">Año Const.</span>
+                                    <strong style="font-size: 16px; color: #111827;">${prop.ano_construccion || 'N/A'}</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 36px;">
+                            <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 24px; font-weight: 700; color: #111827; margin-bottom: 12px;">¿Qué es especial de este hogar?</h4>
+                            <p style="font-size: 16px; color: #374151; line-height: 1.65; letter-spacing: 0.01em; background: #ffffff; padding: 0; margin: 0;">
+                                ${prop.descripcion || 'Sin descripción comercial registrada actualmente.'}
                             </p>
                         </div>
 
