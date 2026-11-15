@@ -608,21 +608,15 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 .tarjeta-casa.popup-card {
-    height: auto !important;
-    min-height: unset !important;
-    border: none !important;
-    box-shadow: none !important;
+    height: auto;
+    min-height: unset;
+    border: none;
+    box-shadow: none;
 }
-
-.popup-card .datos-popup-info {
-    padding: 12px 14px 14px 14px !important;
-}
-
-
 
 .popup-card .contenedor-foto.popup-carrusel-context {
-    width: 100% !important;
-    height: 140px !important;
+    width: 100%;
+    height: 140px;
     position: relative;
     overflow: hidden;
 }
@@ -634,8 +628,8 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 .popup-card .carrusel-imagenes img {
-    width: 260px !important;
-    height: 140px !important;
+    width: 260px;
+    height: 140px;
     object-fit: cover;
 }
 
@@ -644,10 +638,11 @@ div.leaflet-marker-icon.map-price-pill {
 }
 
 .popup-card .datos-popup-info {
-    padding: 10px 12px;
-    font-family: sans-serif;
+    padding: 12px 14px 14px 14px;
+    font-family: 'Inter', sans-serif;
     background-color: #ffffff;
 }
+
 
 .cortina-escondida {
     position: fixed;
