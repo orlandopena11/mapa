@@ -6,7 +6,8 @@ const SUPABASE_ANON_KEY = 'sb_publishable_uNtOayIxxDaxozSL4uA7Qw_j8adfYS1';
 // Correo de tu equipo comercial que recibirá alerta cada vez que postule un nuevo socio
 const CORREO_ALERTA_ADMIN = 'orlandopena11@yahoo.com';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 
 const PERFILES_SOCIOS = [
     {
