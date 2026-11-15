@@ -2036,12 +2036,10 @@ async function dispararCorreoNotificacionSRE(destinatario, asunto, cuerpoMensaje
 
                     </div>
 
-                      <div style="width: 340px; min-width: 340px; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: -webkit-sticky; position: sticky; top: 20px; z-index: 200000; box-sizing: border-box;">
-
-
-                        <h4 style="font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; text-align: center;">Contactar con la inmobiliaria</h4>
-                        <button type="button" id="btn-solicitar-tour-galeria" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-bottom: 10px;">Solicitar un Tour</button>
-                        <button type="button" id="btn-contactar-agente-galeria" style="width: 100%; background: #ffffff; color: #006aff; border: 1px solid #006aff; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 6px; cursor: pointer;">Contactar Agente</button>
+                      <div style="width: 360px; min-width: 340px; height: fit-content; background: #ffffff; border: 1px solid #e2e8f0; padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); position: -webkit-sticky; position: sticky; top: 20px; z-index: 200000; box-sizing: border-box;">
+                        <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 19px; font-weight: 700; color: #111827; margin-bottom: 18px; text-align: center;">Contactar con la inmobiliaria</h4>
+                        <button type="button" id="btn-solicitar-tour-galeria" style="width: 100%; background: #006aff; color: #ffffff; border: none; padding: 15px; font-size: 16px; font-weight: 700; border-radius: 8px; cursor: pointer; margin-bottom: 12px;">Solicitar un Tour</button>
+                        <button type="button" id="btn-contactar-agente-galeria" style="width: 100%; background: #ffffff; color: #006aff; border: 1.5px solid #006aff; padding: 14px; font-size: 16px; font-weight: 700; border-radius: 8px; cursor: pointer;">Contactar Agente</button>
                     </div>
 
                 </div>
