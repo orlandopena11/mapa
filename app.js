@@ -333,7 +333,8 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
             error
         } = await cliente
             .from('vista_catalogo_mapa')
-            .select('*');
+            .select('*')
+            .order('destacado', { ascending: false, nullsFirst: false });
 
         if (error) throw error;
 
@@ -417,7 +418,7 @@ function normalizarPropiedad(prop) { // Inicia Function normalizarPropiedad
         precio_base: parseFloat(prop.precio_base || 0),
         estado_publicacion: String(prop.estado_publicacion || "disponible").trim(),
         tipo_anuncio: String(prop.tipo_anuncio || "Venta").trim(),
-        destacado: String(prop.destacado || "no").trim(),
+        destacado: prop.destacado ? String(prop.destacado).toLowerCase().trim() : "no",
         tipo_propiedad: String(prop.tipo_propiedad || 'Casa').trim(),
 
         subtipo_propiedad: String(prop.subtipo_propiedad || "").trim(),
@@ -704,15 +705,13 @@ function renderizarCatalogoTarjetas() { // Inicia Function renderizarCatalogoTar
     const filtradas = state.propiedades.filter(evaluarCriteriosDeFiltrado);
 
     filtradas.sort((a, b) => {
-        const destA = String(a.destacado || "no").toLowerCase().trim();
-        const destB = String(b.destacado || "no").toLowerCase().trim();
-        if (destA === "si" && destB !== "si") {
-            return -1;
-        }
-        if (destA !== "si" && destB === "si") {
-            return 1;
-        }
-        return 0;
+        const obtenerPeso = (valor) => {
+            const v = String(valor || "").toLowerCase().trim();
+            if (v === "si") return 1;
+            if (v === "no") return 2;
+            return 3;
+        };
+        return obtenerPeso(a.destacado) - obtenerPeso(b.destacado);
     });
 
     const contador = document.getElementById('results-counter');
