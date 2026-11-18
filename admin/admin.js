@@ -81,13 +81,6 @@ const CONFIGURACION_TABLAS_CRUD = {
         ]
     }, // [FIN DE LLAVES]: Cierra configuración de anuncio
 
-                            
-                            <td style="padding: 10px; white-space: nowrap;">
-                                ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
-                                ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
-                                ${permisos.permiso_eliminar ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
-                            </td>
-                            <!-- [FIN DE LLAVES]: Cierra celda de acciones -->
 
                                 
     // [INICIO DE LLAVES]: Nueva pestaña exclusiva para liquidar comisiones y RHE de colaboradores
