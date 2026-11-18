@@ -119,6 +119,29 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'leads_recibidos', label: 'Leads Recibidos', tipo: 'number' }
         ]
     },
+    // [INICIO DE LLAVES]: Pestaña exclusiva del Administrador para gestionar Colaboradores (Rol 12)
+    colaboradores: {
+        titulo: 'Colaboradores',
+        tablaOrigen: 'vw_colaboradores_detalle',
+        tablaDestino: 'usuario_autenticado',
+        pk: 'usuario_id',
+        soloAdmin: true,
+        campos: [
+            { nombre: 'nombre', label: 'Nombre', tipo: 'text', requerido: true },
+            { nombre: 'apellido', label: 'Apellido', tipo: 'text', requerido: true },
+            { nombre: 'correo', label: 'Correo Electrónico', tipo: 'email', requerido: true },
+            { nombre: 'telefono', label: 'Teléfono / WhatsApp', tipo: 'text', requerido: true },
+            { nombre: 'pais', label: 'País', tipo: 'text', soloTabla: true },
+            { nombre: 'departamento', label: 'Departamento', tipo: 'text', soloTabla: true },
+            { nombre: 'provincia', label: 'Provincia', tipo: 'text', soloTabla: true },
+            { nombre: 'distrito', label: 'Distrito', tipo: 'text', soloTabla: true },
+            { nombre: 'codigo_ubigeo_id_fk', label: 'Ubicación Territorial (País y Distrito)', tipo: 'text', soloFormulario: true, requerido: true },
+            { nombre: 'direccion', label: 'Dirección', tipo: 'text', requerido: true },
+            { nombre: 'referencia', label: 'Referencia', tipo: 'text', requerido: true },
+            { nombre: 'estado_cuenta', label: 'Estado Cuenta', tipo: 'select', opciones: ['activo', 'pendiente', 'suspendido'], requerido: true }
+        ]
+    }, // [FIN DE LLAVES]: Cierra configuración de colaboradores
+    // [INICIO DE LLAVES]: Configuración general de Usuarios y Socios
     usuario_autenticado: {
         titulo: 'Usuarios y Socios',
         pk: 'usuario_id',
@@ -127,10 +150,12 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'apellido', label: 'Apellido', tipo: 'text', requerido: true },
             { nombre: 'correo', label: 'Correo Electrónico', tipo: 'email', requerido: true },
             { nombre: 'telefono', label: 'Teléfono', tipo: 'text' },
-            { nombre: 'rol_id_fk', label: 'Rol ID (3:Prop, 4:Agente, 5:Cerr, 6:Arrend, 8:Admin, 9:Financ, 10:Anunc)', tipo: 'number', requerido: true },
+            { nombre: 'rol_id_fk', label: 'Rol ID (3:Prop, 4:Agente, 5:Cerr, 6:Arrend, 8:Admin, 9:Financ, 10:Anunc, 12:Colab)', tipo: 'number', requerido: true },
             { nombre: 'estado_cuenta', label: 'Estado Cuenta', tipo: 'select', opciones: ['activo', 'pendiente', 'suspendido'] }
         ]
-    },
+    }, // [FIN DE LLAVES]: Cierra configuración de usuario_autenticado
+
+    
     visita: {
         titulo: 'Solicitudes de Tours / Visitas',
         pk: 'visita_id',
@@ -253,8 +278,9 @@ async function cargarDatosTablaCrud(nombreTabla) {
         const cliente = window.getSupabaseShared();
         if (!cliente) throw new Error('Cliente Supabase inaccesible.');
 
-        // [INICIO DE LLAVES]: Filtra registros por dueño y oculta columnas financieras a no administradores
-        let consulta = cliente.from(nombreTabla).select('*').limit(150);
+        // [INICIO DE LLAVES]: Lee desde vista si existe, aísla por dueño y filtra columnas de grilla
+        const tablaConsulta = conf.tablaOrigen || nombreTabla;
+        let consulta = cliente.from(tablaConsulta).select('*').limit(150);
         const esAdmin = esUsuarioAdministrador();
 
         if (conf.soloAdmin && !esAdmin) {
@@ -266,11 +292,9 @@ async function cargarDatosTablaCrud(nombreTabla) {
             consulta = consulta.eq('usuario_id_fk', window.APP_AUTH.usuarioActual.id);
         }
 
-        // Filtra las columnas visibles de la tabla según el rol del usuario
-        conf.camposVisiblesActuales = conf.campos.filter(c => !(c.soloAdmin && !esAdmin));
-        // [FIN DE LLAVES]: Cierra aislamiento de datos por usuario
+        const columnasGrilla = conf.campos.filter(c => !(c.soloAdmin && !esAdmin) && !c.soloFormulario);
+        // [FIN DE LLAVES]: Cierra aislamiento y filtrado de columnas
 
-        
         const { data, error } = await consulta;
         if (error) throw error;
 
@@ -281,30 +305,30 @@ async function cargarDatosTablaCrud(nombreTabla) {
 
         const permisos = window.APP_AUTH?.permisosActuales || {};
 
+        // [INICIO DE LLAVES]: Pinta tabla HTML con columnas visibles y botones CRUD
         contenedor.innerHTML = `
             <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                 <thead>
                     <tr style="background: #002e50; color: #ffffff;">
                         <th style="padding: 12px 10px; font-weight: bold; width: 130px;">Acciones</th>
-                        ${conf.campos.map(c => `<th style="padding: 12px 10px; font-weight: bold; white-space: nowrap;">${c.label}</th>`).join('')}
+                        ${columnasGrilla.map(c => `<th style="padding: 12px 10px; font-weight: bold; white-space: nowrap;">${c.label}</th>`).join('')}
                     </tr>
                 </thead>
                 <tbody>
                     ${data.map(fila => `
-        <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
+                        <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
                             <td style="padding: 10px; white-space: nowrap;">
                                 ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
                                 ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
                                 ${permisos.permiso_eliminar ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
                             </td>
-
-
-                            ${conf.campos.map(c => `<td style="padding: 10px; color: #334155; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
+                            ${columnasGrilla.map(c => `<td style="padding: 10px; color: #334155; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
-        `;
+        `; // [FIN DE LLAVES]: Cierra renderizado de tabla HTML
+
 
         // [INICIO DE LLAVES]: Enlaza botones Editar
         contenedor.querySelectorAll('.btn-edit-crud').forEach(btn => {
@@ -720,8 +744,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     const subModal = document.getElementById('submodal-formulario-crud');
     if (!subModal) return;
 
-    // [INICIO DE LLAVES]: Ordena y filtra campos visibles para la tabla propiedad
-    let camposAProcesar = [...conf.campos];
+    // [INICIO DE LLAVES]: Filtra campos exclusivos de grilla (soloTabla) y ordena campos del formulario
+    let camposAProcesar = conf.campos.filter(c => !c.soloTabla);
+
     if (nombreTabla === 'propiedad') {
         const ordenDeseado = [
             'propiedad_id', 'usuario_id_fk', 'tipo_propiedad', 'subtipo_propiedad', 'titulo',
@@ -1224,9 +1249,21 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
         })();
     } // [FIN DE LLAVES]: Cierra bloque asíncrono de propiedad
 
+    // [INICIO DE LLAVES]: Carga selectores en cascada (País -> Distrito) en el modal de Colaboradores
+    if (nombreTabla === 'colaboradores') {
+        (async () => {
+            const clienteSupabase = window.getSupabaseShared();
+            const formNode = document.getElementById('form-generico-crud');
+            if (!clienteSupabase || !formNode) return;
+            await inicializarCascadaTerritorialCompleta(clienteSupabase, formNode, esEdicion ? datosFila : null);
+        })();
+    } // [FIN DE LLAVES]: Cierra inicialización territorial de colaboradores
+
     // [INICIO DE LLAVES]: Carga dinámica de planes (lov_planes) y valores por defecto para Anuncios y Vouchers
     if (nombreTabla === 'anuncio' || nombreTabla === 'vouchers_pago' || nombreTabla === 'liquidacion_colaborador') {
-        (async () => {
+
+        
+    (async () => {
             const clienteSupabase = window.getSupabaseShared();
             const formNode = document.getElementById('form-generico-crud');
             if (!clienteSupabase || !formNode) return;
@@ -1336,9 +1373,24 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 if (isNaN(parseFloat(payload.latitud)) || isNaN(parseFloat(payload.longitud))) {
                     return rechazar('Faltan Latitud y Longitud. Use el botón de autocompletar coordenadas.');
                 }
+            } else if (nombreTabla === 'colaboradores') {
+                // [INICIO DE LLAVES]: Valida ubicación completa y fuerza rol_id_fk = 12
+                if (!esUsuarioAdministrador()) {
+                    return rechazar('Acceso restringido: solo el Administrador puede gestionar colaboradores.');
+                }
+                const nombresNiveles = Array.from(document.querySelectorAll('#contenedor-cascada-territorial .select-territorio-dinamico'))
+                    .map(sel => (sel.value && sel.selectedIndex >= 0) ? sel.options[sel.selectedIndex].text : '');
+
+                if (nombresNiveles.length === 0 || nombresNiveles.some(n => !n) || !payload.codigo_ubigeo_id_fk) {
+                    return rechazar('Seleccione País, Departamento, Provincia y Distrito donde operará el colaborador.');
+                }
+                payload.rol_id_fk = 12;
+                Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
+                // [FIN DE LLAVES]: Cierra validación de colaborador
             } else {
                 Object.keys(payload).forEach(k => { if (payload[k] === '') payload[k] = null; });
             }
+
 
             const guardado = await guardarRegistroCrud(nombreTabla, conf.pk, esEdicion, esEdicion ? datosFila[conf.pk] : null, payload);
             if (guardado) cerrarSubModal(); else restaurarBoton();
@@ -1505,9 +1557,19 @@ async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
         const cliente = window.getSupabaseShared();
         if (!cliente) throw new Error('Cliente Supabase no disponible.');
 
-        const { error } = await cliente.from(nombreTabla).delete().eq(pkColumna, pkValor);
-        if (error) throw error;
+        // [INICIO DE LLAVES]: Resuelve la tabla destino real para eliminación segura
+        const confTabla = CONFIGURACION_TABLAS_CRUD[nombreTabla] || {};
+        const tablaEscritura = confTabla.tablaDestino || nombreTabla;
 
+        if (confTabla.soloAdmin && !esUsuarioAdministrador()) {
+            throw new Error('Solo el Administrador puede eliminar registros de este módulo.');
+        }
+
+        const { error } = await cliente.from(tablaEscritura).delete().eq(pkColumna, pkValor);
+        if (error) throw error;
+        // [FIN DE LLAVES]: Cierra eliminación en tabla destino
+
+        
         alert(`¡Registro eliminado exitosamente de la tabla ${nombreTabla}!`);
         await cargarDatosTablaCrud(nombreTabla);
 
