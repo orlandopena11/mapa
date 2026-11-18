@@ -324,6 +324,20 @@ async function cargarDatosTablaCrud(nombreTabla) {
                 }
             };
         }); // [FIN DE LLAVES]: Cierra botones Eliminar
+        
+     // [INICIO DE LLAVES]: Enlaza botón Pagos / Comis. en cada fila de Anuncios
+     contenedor.querySelectorAll('.btn-vouchers-anuncio').forEach(btn => {
+         btn.onclick = () => {
+             const idAnun = btn.getAttribute('data-id');
+             const anuncioObj = data.find(item => String(item[conf.pk]) === String(idAnun));
+             if (anuncioObj && typeof abrirModalPagosYComisionesAnuncio === 'function') {
+                 abrirModalPagosYComisionesAnuncio(anuncioObj);
+             } else {
+                 alert('Verifique que la función abrirModalPagosYComisionesAnuncio esté al final de admin.js');
+             }
+         };
+     }); // [FIN DE LLAVES]: Cierra enlace de botón Pagos / Comis.
+
 
     } catch (err) {
         contenedor.innerHTML = `<p style="color: #ef4444; text-align: center; padding: 30px;">Error cargando datos: ${err.message}</p>`;
