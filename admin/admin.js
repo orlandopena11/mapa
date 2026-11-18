@@ -81,7 +81,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         ]
     }, // [FIN DE LLAVES]: Cierra configuración de anuncio
 
-                            <!-- [INICIO DE LLAVES]: Celda de acciones con botón Pagos/Comisiones exclusivo de Admin en Anuncios -->
+                            
                             <td style="padding: 10px; white-space: nowrap;">
                                 ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
                                 ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
