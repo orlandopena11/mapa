@@ -81,24 +81,15 @@ const CONFIGURACION_TABLAS_CRUD = {
         ]
     }, // [FIN DE LLAVES]: Cierra configuración de anuncio
 
-    // [INICIO DE LLAVES]: Nueva pestaña exclusiva para que el Administrador registre vouchers de clientes
-    vouchers_pago: {
-        titulo: 'Vouchers y Pagos',
-        pk: 'id',
-        soloAdmin: true,
-        campos: [
-            { nombre: 'anuncio_id_fk', label: 'ID Anuncio FK', tipo: 'text', requerido: true },
-            { nombre: 'plan_id_fk', label: 'Plan Pagado (LOV)', tipo: 'select', requerido: true },
-            { nombre: 'mes_pago', label: 'Mes / Ciclo Pagado (Ej: Mes 4)', tipo: 'text', requerido: true },
-            { nombre: 'monto_pago', label: 'Monto Depositado (S/)', tipo: 'number', requerido: true },
-            { nombre: 'medio_pago', label: 'Medio de Pago', tipo: 'select', opciones: ['Yape', 'Plin', 'Transferencia BCP', 'Transferencia BBVA', 'Transferencia Interbank', 'Transferencia Scotiabank'], requerido: true },
-            { nombre: 'numero_operacion', label: 'N.° Operación Bancaria', tipo: 'text' },
-            { nombre: 'voucher_url', label: 'Enlace Voucher / Comprobante', tipo: 'text', requerido: true },
-            { nombre: 'registrado_por', label: 'Registrado Por', tipo: 'text', requerido: true },
-            { nombre: 'correo_registrador', label: 'Correo Registrador', tipo: 'email', requerido: true }
-        ]
-    }, // [FIN DE LLAVES]: Cierra configuración de vouchers_pago
+                            <!-- [INICIO DE LLAVES]: Celda de acciones con botón Pagos/Comisiones exclusivo de Admin en Anuncios -->
+                            <td style="padding: 10px; white-space: nowrap;">
+                                ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
+                                ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
+                                ${permisos.permiso_eliminar ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
+                            </td>
+                            <!-- [FIN DE LLAVES]: Cierra celda de acciones -->
 
+                                
     // [INICIO DE LLAVES]: Nueva pestaña exclusiva para liquidar comisiones y RHE de colaboradores
     liquidacion_colaborador: {
         titulo: 'Liquidación Colaboradores',
@@ -307,11 +298,14 @@ async function cargarDatosTablaCrud(nombreTabla) {
                 </thead>
                 <tbody>
                     ${data.map(fila => `
-                        <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
+        <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
                             <td style="padding: 10px; white-space: nowrap;">
                                 ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
+                                ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
                                 ${permisos.permiso_eliminar ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
                             </td>
+
+
                             ${conf.campos.map(c => `<td style="padding: 10px; color: #334155; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
                         </tr>
                     `).join('')}
@@ -1474,5 +1468,186 @@ async function eliminarRegistroCrud(nombreTabla, pkColumna, pkValor) {
         alert('Error al eliminar registro: ' + err.message);
     }
 } // [FIN DE LLAVES]: Cierra eliminarRegistroCrud
+
+// [INICIO DE LLAVES]: Abre abrirModalPagosYComisionesAnuncio
+async function abrirModalPagosYComisionesAnuncio(anuncioObj) {
+    const subModal = document.getElementById('submodal-formulario-crud');
+    const cliente = window.getSupabaseShared();
+    if (!subModal || !cliente) return;
+
+    subModal.innerHTML = `<div style="background:#fff;padding:30px;border-radius:12px;text-align:center;">Cargando historial financiero de ${anuncioObj.anuncio_id}...</div>`;
+    subModal.classList.add('activo');
+    subModal.setAttribute('aria-hidden', 'false');
+
+    const [resVouchers, resComisiones, resPlanes] = await Promise.all([
+        cliente.from('vouchers_pago').select('*').eq('anuncio_id_fk', anuncioObj.anuncio_id).order('fecha_pago', { ascending: false }),
+        cliente.from('liquidacion_colaborador').select('*').eq('anuncio_id_fk', anuncioObj.anuncio_id).order('creado_en', { ascending: false }),
+        cliente.from('lov_planes').select('plan_id, nombre_plan, precio_mensual').eq('vigente', 'si').order('precio_mensual', { ascending: true })
+    ]);
+
+    const vouchers = resVouchers.data || [];
+    const comisiones = resComisiones.data || [];
+    const planes = resPlanes.data || [];
+    const uActual = window.APP_AUTH?.usuarioActual || {};
+
+        subModal.innerHTML = `
+        <div style="background: #ffffff; padding: 24px; border-radius: 12px; width: 95%; max-width: 820px; max-height: 88vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.35);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+                <div>
+                    <h4 style="margin: 0; color: #002e50; font-size: 19px; font-weight: 800;">Control Financiero: ${anuncioObj.anuncio_id}</h4>
+                    <span style="font-size: 12.5px; color: #475569;">Plan: <b>${anuncioObj.plan_id_fk}</b> | Vence: <b>${anuncioObj.fecha_vencimiento || 'Sin fecha'}</b> | Estado: <b>${(anuncioObj.estado_pago || '').toUpperCase()}</b></span>
+                </div>
+                <button type="button" id="btn-cerrar-finanzas-x" style="background: none; border: none; font-size: 24px; font-weight: bold; color: #64748b; cursor: pointer;">&times;</button>
+            </div>
+
+            <form id="form-nuevo-voucher-anuncio" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 18px;">
+                <div style="font-size: 14px; font-weight: 800; color: #002e50; margin-bottom: 10px;">+ Registrar Nuevo Pago del Cliente (Renueva 30 días automáticamente)</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">Plan Pagado *</label>
+                        <select name="plan_id_fk" id="sel-plan-voucher-rapido" required style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                            <option value="">-- Seleccione Plan --</option>
+                            ${planes.map(p => `<option value="${p.plan_id}" data-precio="${p.precio_mensual}">${p.nombre_plan} (S/ ${Number(p.precio_mensual).toFixed(2)})</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">Monto Depositado (S/) *</label>
+                        <input type="number" step="0.01" name="monto_pago" id="inp-monto-voucher-rapido" required placeholder="Ej: 69.00" style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">Mes / Ciclo Pagado *</label>
+                        <input type="text" name="mes_pago" required placeholder="Ej: Mes 4 (Nov 2026)" style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 10px; margin-bottom: 10px;">
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">Medio de Pago *</label>
+                        <select name="medio_pago" required style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                            <option value="Yape">Yape</option>
+                            <option value="Plin">Plin</option>
+                            <option value="Transferencia BCP">Transferencia BCP</option>
+                            <option value="Transferencia BBVA">Transferencia BBVA</option>
+                            <option value="Transferencia Interbank">Transferencia Interbank</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">N.° Operación</label>
+                        <input type="text" name="numero_operacion" placeholder="Ej: 00482910" style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; font-weight: bold; color: #334155;">URL Comprobante / Voucher *</label>
+                        <input type="text" name="voucher_url" required placeholder="https://..." style="width: 100%; padding: 7px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 12.5px;">
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <button type="submit" style="background: #10b981; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer;">Guardar Voucher y Renovar Anuncio</button>
+                </div>
+            </form>
+
+            <div style="margin-bottom: 18px;">
+                <h5 style="margin: 0 0 8px 0; color: #002e50; font-size: 14px; font-weight: 800;">1. Historial de Pagos del Cliente (${vouchers.length})</h5>
+                ${vouchers.length === 0 ? '<p style="font-size: 12.5px; color: #64748b;">Aún no hay pagos registrados para este anuncio.</p>' : `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; border: 1px solid #e2e8f0;">
+                        <thead>
+                            <tr style="background: #002e50; color: #fff;">
+                                <th style="padding: 8px;">Fecha</th>
+                                <th style="padding: 8px;">Ciclo</th>
+                                <th style="padding: 8px;">Plan</th>
+                                <th style="padding: 8px;">Monto</th>
+                                <th style="padding: 8px;">Medio / Op.</th>
+                                <th style="padding: 8px;">Voucher</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${vouchers.map(v => `
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px;">${String(v.fecha_pago).substring(0, 10)}</td>
+                                    <td style="padding: 7px;">${v.mes_pago}</td>
+                                    <td style="padding: 7px;">${v.plan_id_fk}</td>
+                                    <td style="padding: 7px; font-weight: bold; color: #059669;">S/ ${Number(v.monto_pago).toFixed(2)}</td>
+                                    <td style="padding: 7px;">${v.medio_pago} (${v.numero_operacion || '-'})</td>
+                                    <td style="padding: 7px;"><a href="${v.voucher_url}" target="_blank" style="color: #006aff; font-weight: bold;">Ver Comprobante</a></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `}
+            </div>
+
+            <div>
+                <h5 style="margin: 0 0 8px 0; color: #002e50; font-size: 14px; font-weight: 800;">2. Comisiones del Colaborador Asociadas (${comisiones.length})</h5>
+                ${comisiones.length === 0 ? '<p style="font-size: 12.5px; color: #64748b;">No hay comisiones de colaborador generadas para este anuncio.</p>' : `
+                    <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; border: 1px solid #e2e8f0;">
+                        <thead>
+                            <tr style="background: #1e293b; color: #fff;">
+                                <th style="padding: 8px;">Colaborador</th>
+                                <th style="padding: 8px;">Concepto</th>
+                                <th style="padding: 8px;">%</th>
+                                <th style="padding: 8px;">A Pagar</th>
+                                <th style="padding: 8px;">Estado</th>
+                                <th style="padding: 8px;">RHE / Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${comisiones.map(c => `
+                                <tr style="border-bottom: 1px solid #e2e8f0;">
+                                    <td style="padding: 7px; font-weight: bold;">${c.nombre_colaborador || 'Colaborador'}</td>
+                                    <td style="padding: 7px;">${c.concepto_comision}</td>
+                                    <td style="padding: 7px;">${c.porcentaje_aplicado}%</td>
+                                    <td style="padding: 7px; font-weight: bold; color: #d97706;">S/ ${Number(c.monto_a_pagar).toFixed(2)}</td>
+                                    <td style="padding: 7px;">${c.estado_liquidacion.toUpperCase()}</td>
+                                    <td style="padding: 7px;">${c.numero_rhe ? `RHE: ${c.numero_rhe}` : 'Pendiente RHE'} ${c.voucher_pago_url ? `| <a href="${c.voucher_pago_url}" target="_blank">Voucher</a>` : ''}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `}
+            </div>
+        </div>
+    `;
+
+        document.getElementById('btn-cerrar-finanzas-x').onclick = () => {
+        subModal.classList.remove('activo');
+        subModal.setAttribute('aria-hidden', 'true');
+    };
+
+    const selPlanRapido = document.getElementById('sel-plan-voucher-rapido');
+    if (selPlanRapido) {
+        selPlanRapido.onchange = () => {
+            const opt = selPlanRapido.options[selPlanRapido.selectedIndex];
+            const precio = opt?.getAttribute('data-precio');
+            if (precio) document.getElementById('inp-monto-voucher-rapido').value = Number(precio).toFixed(2);
+        };
+    }
+
+    document.getElementById('form-nuevo-voucher-anuncio').onsubmit = async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const nuevoVoucher = {
+            anuncio_id_fk: anuncioObj.anuncio_id,
+            plan_id_fk: fd.get('plan_id_fk'),
+            monto_pago: Number(fd.get('monto_pago')),
+            mes_pago: fd.get('mes_pago'),
+            medio_pago: fd.get('medio_pago'),
+            numero_operacion: fd.get('numero_operacion') || null,
+            voucher_url: fd.get('voucher_url'),
+            registrado_por: `${uActual.nombre || ''} ${uActual.apellido || ''}`.trim() || 'Administrador',
+            correo_registrador: uActual.correo || 'orlandopena11@gmail.com'
+        };
+
+        const { error } = await cliente.from('vouchers_pago').insert([nuevoVoucher]);
+        if (error) {
+            alert('Error registrando voucher: ' + error.message);
+            return;
+        }
+
+        alert('¡Voucher registrado! El anuncio se renovó por 30 días y se calculó la comisión si corresponde.');
+        await cargarDatosTablaCrud('anuncio');
+        const { data: anuncioActualizado } = await cliente.from('anuncio').select('*').eq('anuncio_id', anuncioObj.anuncio_id).single();
+        if (anuncioActualizado) abrirModalPagosYComisionesAnuncio(anuncioActualizado);
+    };
+} // [FIN DE LLAVES]: Cierra abrirModalPagosYComisionesAnuncio
+
+
 
 
