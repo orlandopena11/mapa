@@ -61,6 +61,9 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'tipo_data', label: 'Tipo de Dato', tipo: 'text' }
         ]
     },
+
+    
+    // [INICIO DE LLAVES]: Configuración enriquecida de Anuncios con control de planes y vencimientos
     anuncio: {
         titulo: 'Anuncios',
         pk: 'anuncio_id',
@@ -69,10 +72,54 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'tipo_anuncio', label: 'Tipo de Anuncio', tipo: 'select', opciones: ['Venta', 'Alquiler'], requerido: true },
             { nombre: 'usuario_id_fk', label: 'ID Usuario FK', tipo: 'text' },
             { nombre: 'agente_id_fk', label: 'ID Agente FK', tipo: 'text' },
+            { nombre: 'plan_id_fk', label: 'Plan Asignado (LOV)', tipo: 'select', soloAdmin: true },
+            { nombre: 'monto_plan', label: 'Monto Plan (S/)', tipo: 'number', soloAdmin: true },
             { nombre: 'fecha_publicacion', label: 'Fecha Publicación', tipo: 'date' },
+            { nombre: 'fecha_vencimiento', label: 'Fecha Vencimiento', tipo: 'date', soloAdmin: true },
+            { nombre: 'estado_pago', label: 'Estado Pago', tipo: 'select', opciones: ['periodo_gratis', 'por_vencer', 'pagado', 'vencido'], soloAdmin: true },
             { nombre: 'estado_anuncio', label: 'Estado Anuncio', tipo: 'select', opciones: ['activo', 'pausado', 'cerrado', 'expirado'] }
         ]
-    },
+    }, // [FIN DE LLAVES]: Cierra configuración de anuncio
+
+    // [INICIO DE LLAVES]: Nueva pestaña exclusiva para que el Administrador registre vouchers de clientes
+    vouchers_pago: {
+        titulo: 'Vouchers y Pagos',
+        pk: 'id',
+        soloAdmin: true,
+        campos: [
+            { nombre: 'anuncio_id_fk', label: 'ID Anuncio FK', tipo: 'text', requerido: true },
+            { nombre: 'plan_id_fk', label: 'Plan Pagado (LOV)', tipo: 'select', requerido: true },
+            { nombre: 'mes_pago', label: 'Mes / Ciclo Pagado (Ej: Mes 4)', tipo: 'text', requerido: true },
+            { nombre: 'monto_pago', label: 'Monto Depositado (S/)', tipo: 'number', requerido: true },
+            { nombre: 'medio_pago', label: 'Medio de Pago', tipo: 'select', opciones: ['Yape', 'Plin', 'Transferencia BCP', 'Transferencia BBVA', 'Transferencia Interbank', 'Transferencia Scotiabank'], requerido: true },
+            { nombre: 'numero_operacion', label: 'N.° Operación Bancaria', tipo: 'text' },
+            { nombre: 'voucher_url', label: 'Enlace Voucher / Comprobante', tipo: 'text', requerido: true },
+            { nombre: 'registrado_por', label: 'Registrado Por', tipo: 'text', requerido: true },
+            { nombre: 'correo_registrador', label: 'Correo Registrador', tipo: 'email', requerido: true }
+        ]
+    }, // [FIN DE LLAVES]: Cierra configuración de vouchers_pago
+
+    // [INICIO DE LLAVES]: Nueva pestaña exclusiva para liquidar comisiones y RHE de colaboradores
+    liquidacion_colaborador: {
+        titulo: 'Liquidación Colaboradores',
+        pk: 'liquidacion_id',
+        soloAdmin: true,
+        campos: [
+            { nombre: 'nombre_colaborador', label: 'Colaborador', tipo: 'text' },
+            { nombre: 'anuncio_id_fk', label: 'ID Anuncio', tipo: 'text' },
+            { nombre: 'plan_id_fk', label: 'Plan Origen', tipo: 'text' },
+            { nombre: 'concepto_comision', label: 'Concepto de Comisión', tipo: 'text' },
+            { nombre: 'monto_base_operacion', label: 'Monto Cobrado (S/)', tipo: 'number' },
+            { nombre: 'porcentaje_aplicado', label: '% Comisión', tipo: 'number' },
+            { nombre: 'monto_a_pagar', label: 'Comisión a Pagar (S/)', tipo: 'number' },
+            { nombre: 'estado_liquidacion', label: 'Estado Liquidación', tipo: 'select', opciones: ['pendiente_rhe', 'programado', 'pagado', 'anulado'] },
+            { nombre: 'numero_rhe', label: 'N.° Recibo por Honorarios (RHE)', tipo: 'text' },
+            { nombre: 'medio_pago', label: 'Medio de Pago al Colaborador', tipo: 'select', opciones: ['Yape', 'Plin', 'Transferencia Bancaria'] },
+            { nombre: 'voucher_pago_url', label: 'Enlace Voucher de Transferencia', tipo: 'text' }
+        ]
+    }, // [FIN DE LLAVES]: Cierra configuración de liquidacion_colaborador
+    
+
     agente_inmobiliario: {
         titulo: 'Agentes Inmobiliarios',
         pk: 'agente_id',
@@ -173,12 +220,21 @@ function renderizarBarraPestanasCrud() {
     const barra = document.getElementById('barra-tabs-crud');
     if (!barra) return;
 
-    barra.innerHTML = Object.keys(CONFIGURACION_TABLAS_CRUD).map(keyTab => `
+    
+    // [INICIO DE LLAVES]: Filtra pestañas visibles según si el usuario es Administrador
+    const esAdmin = esUsuarioAdministrador();
+    const llavesVisibles = Object.keys(CONFIGURACION_TABLAS_CRUD).filter(keyTab => {
+        if (CONFIGURACION_TABLAS_CRUD[keyTab].soloAdmin && !esAdmin) return false;
+        return true;
+    });
+
+    barra.innerHTML = llavesVisibles.map(keyTab => `
         <button type="button" class="btn-tab-crud ${keyTab === tablaCrudActiva ? 'activo' : ''}" data-tabla="${keyTab}">
             ${CONFIGURACION_TABLAS_CRUD[keyTab].titulo}
         </button>
-    `).join('');
+    `).join(''); // [FIN DE LLAVES]: Cierra renderizado condicional de pestañas
 
+    
     // [INICIO DE LLAVES]: Delegación de clic para cambiar de pestaña activa
     barra.addEventListener('click', (e) => {
         const btn = e.target.closest('.btn-tab-crud');
@@ -213,12 +269,24 @@ async function cargarDatosTablaCrud(nombreTabla) {
         const cliente = window.getSupabaseShared();
         if (!cliente) throw new Error('Cliente Supabase inaccesible.');
 
+        // [INICIO DE LLAVES]: Filtra registros por dueño y oculta columnas financieras a no administradores
         let consulta = cliente.from(nombreTabla).select('*').limit(150);
+        const esAdmin = esUsuarioAdministrador();
 
-        if (nombreTabla === 'propiedad' && !esUsuarioAdministrador() && window.APP_AUTH?.usuarioActual?.id) {
+        if (conf.soloAdmin && !esAdmin) {
+            contenedor.innerHTML = `<p class="mensaje-carga" style="color: #ef4444;">Acceso restringido: módulo exclusivo para el Administrador.</p>`;
+            return;
+        }
+
+        if ((nombreTabla === 'propiedad' || nombreTabla === 'anuncio') && !esAdmin && window.APP_AUTH?.usuarioActual?.id) {
             consulta = consulta.eq('usuario_id_fk', window.APP_AUTH.usuarioActual.id);
         }
 
+        // Filtra las columnas visibles de la tabla según el rol del usuario
+        conf.camposVisiblesActuales = conf.campos.filter(c => !(c.soloAdmin && !esAdmin));
+        // [FIN DE LLAVES]: Cierra aislamiento de datos por usuario
+
+        
         const { data, error } = await consulta;
         if (error) throw error;
 
@@ -1154,6 +1222,65 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             }
         })();
     } // [FIN DE LLAVES]: Cierra bloque asíncrono de propiedad
+
+    // [INICIO DE LLAVES]: Carga dinámica de planes (lov_planes) y valores por defecto para Anuncios y Vouchers
+    if (nombreTabla === 'anuncio' || nombreTabla === 'vouchers_pago' || nombreTabla === 'liquidacion_colaborador') {
+        (async () => {
+            const clienteSupabase = window.getSupabaseShared();
+            const formNode = document.getElementById('form-generico-crud');
+            if (!clienteSupabase || !formNode) return;
+
+            const esAdmin = esUsuarioAdministrador();
+
+            // Oculta visualmente los campos marcados como soloAdmin si el usuario no es Administrador
+            if (!esAdmin) {
+                conf.campos.forEach(c => {
+                    if (c.soloAdmin) {
+                        const inputNode = formNode.querySelector(`[name="${c.nombre}"]`);
+                        if (inputNode && inputNode.parentElement) inputNode.parentElement.style.display = 'none';
+                    }
+                });
+            }
+
+            // Autorrellena datos del registrador en vouchers_pago
+            if (nombreTabla === 'vouchers_pago' && !esEdicion) {
+                const uActual = window.APP_AUTH?.usuarioActual || {};
+                const inpReg = formNode.querySelector('[name="registrado_por"]');
+                const inpCorreo = formNode.querySelector('[name="correo_registrador"]');
+                if (inpReg) inpReg.value = `${uActual.nombre || ''} ${uActual.apellido || ''}`.trim() || 'Administrador';
+                if (inpCorreo) inpCorreo.value = uActual.correo || '';
+            }
+
+            // Consulta lov_planes para poblar el selector desplegable de planes vigentes
+            const selPlan = formNode.querySelector('#sel-lov-plan_id_fk');
+            if (selPlan) {
+                const { data: planesBD } = await clienteSupabase
+                    .from('lov_planes')
+                    .select('plan_id, nombre_plan, precio_mensual, vigente')
+                    .eq('vigente', 'si')
+                    .order('precio_mensual', { ascending: true });
+
+                if (planesBD && planesBD.length > 0) {
+                    const opcionesPlanes = planesBD.map(p => ({
+                        valor: p.plan_id,
+                        texto: `${p.nombre_plan} (S/ ${Number(p.precio_mensual).toFixed(2)})`
+                    }));
+                    const actualPlan = selPlan.getAttribute('data-actual') || (nombreTabla === 'anuncio' ? 'GRATIS_90D' : '');
+                    poblarSelectCascadaCrud(selPlan, '-- Seleccione Plan Comercial --', opcionesPlanes, actualPlan);
+
+                    // Al cambiar el plan en el desplegable, actualiza solo el monto correspondiente
+                    selPlan.addEventListener('change', () => {
+                        const planElegido = planesBD.find(x => x.plan_id === selPlan.value);
+                        if (!planElegido) return;
+                        const inpMonto = formNode.querySelector('[name="monto_plan"], [name="monto_pago"]');
+                        if (inpMonto) inpMonto.value = Number(planElegido.precio_mensual).toFixed(2);
+                    });
+                }
+            }
+        })();
+    } // [FIN DE LLAVES]: Cierra carga dinámica de planes y control de campos soloAdmin
+
+    
 
     const cerrarSubModal = () => {
         subModal.classList.remove('activo');
