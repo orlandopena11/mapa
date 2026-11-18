@@ -1431,20 +1431,60 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             alert(mensajeConfirmacion);
 
         } else {
-            // [INICIO DE LLAVES]: Bloqueo para que usuarios no admin no activen anuncios manualmente
+            // [INICIO DE LLAVES]: Determina tabla destino real y aplica reglas de seguridad e integridad
+            const confTabla = CONFIGURACION_TABLAS_CRUD[nombreTabla] || {};
+            const tablaEscritura = confTabla.tablaDestino || nombreTabla;
+
             if (nombreTabla === 'anuncio' && !esUsuarioAdministrador()) {
                 payload.estado_anuncio = 'pausado';
-            } // [FIN DE LLAVES]: Cierra validación de anuncio
+            }
+
+            if (nombreTabla === 'colaboradores') {
+                if (!esUsuarioAdministrador()) {
+                    throw new Error('Operación no autorizada: módulo exclusivo del Administrador.');
+                }
+                payload.rol_id_fk = 12;
+            }
 
             if (esEdicion) {
-                const { error } = await cliente.from(nombreTabla).update(payload).eq(pkColumna, pkValor);
+                // [INICIO DE LLAVES]: Actualización de colaborador o registro existente
+                payload.fecha_actualizacion = new Date().toISOString().split('T')[0];
+                const { error } = await cliente.from(tablaEscritura).update(payload).eq(pkColumna, pkValor);
                 if (error) throw error;
+                // [FIN DE LLAVES]: Cierra actualización
             } else {
-                const { error } = await cliente.from(nombreTabla).insert([payload]);
+                // [INICIO DE LLAVES]: Creación de nuevo colaborador cumpliendo columnas NOT NULL de usuario_autenticado
+                if (nombreTabla === 'colaboradores') {
+                    const correoNormalizado = String(payload.correo || '').trim().toLowerCase();
+                    const urlPortal = window.location.origin + window.location.pathname.replace(/\/admin\/.*$/, '/index.html');
+
+                    // 1. Envía enlace mágico OTP para registrar el correo en auth.users
+                    const { error: errOtp } = await cliente.auth.signInWithOtp({
+                        email: correoNormalizado,
+                        options: { emailRedirectTo: urlPortal }
+                    });
+                    if (errOtp) throw new Error('Error enviando invitación OTP: ' + errOtp.message);
+
+                    // 2. Completa los campos NOT NULL requeridos por public.usuario_autenticado
+                    payload.usuario_id = crypto.randomUUID();
+                    payload.correo = correoNormalizado;
+                    payload.password_hash = 'OTP_SUPABASE_AUTH';
+                    payload.verificado = false;
+                    payload.creado_por = window.APP_AUTH?.usuarioActual?.correo || 'admin';
+                    payload.fecha_creacion = new Date().toISOString().split('T')[0];
+                }
+
+                const { error } = await cliente.from(tablaEscritura).insert([payload]);
                 if (error) throw error;
+                // [FIN DE LLAVES]: Cierra inserción de nuevo registro
             }
-            alert('Registro guardado exitosamente.');
+
+            alert(nombreTabla === 'colaboradores' && !esEdicion
+                ? 'Colaborador registrado con Rol 12 y enlace de acceso enviado a su correo.'
+                : 'Registro guardado exitosamente.');
+            // [FIN DE LLAVES]: Cierra bifurcación de escritura segura
         } // [FIN DE LLAVES]: Cierra bifurcación propiedad vs otras tablas
+
 
         await cargarDatosTablaCrud(nombreTabla);
         return true;
