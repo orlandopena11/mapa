@@ -314,12 +314,14 @@
         <div style="background-color: #ffffff; width: 100%; max-width: 440px; padding: 40px; border-radius: 12px; box-sizing: border-box; position: relative; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15); text-align: left;">
             <button type="button" style="position: absolute; top: 16px; right: 20px; background: none; border: none; font-size: 28px; cursor: pointer; color: #718096; line-height: 1;" onclick="document.getElementById('modal-autenticacion-supabase').style.display='none'">&times;</button>
             
-            <!-- Logotipo del Cliente Inyectado Directamente -->
-            <div style="margin-bottom: 24px; text-align: left;">
-                <img src="logo.jpg" alt="Logo Inmobiliaria" style="height: 40px; object-fit: contain; display: block; margin: 0;">
+            <!-- [INICIO DE BLOQUE]: Logotipo centrado y ampliado en la cabecera del modal de inicio de sesión -->
+            <div style="margin-bottom: 22px; display: flex; justify-content: center; align-items: center;">
+                <img src="logo.jpg" alt="Logo Inmobiliaria en Surco" style="height: 82px; width: auto; max-width: 240px; object-fit: contain; display: block; margin: 0 auto;">
             </div>
 
-            <h3 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 24px 0;">Inicia sesión</h3>
+            <h3 style="font-size: 24px; font-weight: 700; color: #111827; margin: 0 0 24px 0; text-align: center;">Inicia sesión</h3>
+            <!-- [FIN DE BLOQUE]: Cierra cabecera centrada del modal de autenticación -->
+
             
             <form id="form-login-email-supabase" style="margin: 0; padding: 0;" onsubmit="return false;">
                 <!-- Titulo Dinamico Interno del Formulario -->
