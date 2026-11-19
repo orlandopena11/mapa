@@ -87,7 +87,7 @@ const CONFIGURACION_TABLAS_CRUD = {
     liquidacion_colaborador: {
         titulo: 'Liquidación Colaboradores',
         pk: 'liquidacion_id',
-        rolesPermitidos:,
+        rolesPermitidos:[8, 12],
         soloLecturaNoAdmin: true,
 
         campos: [
