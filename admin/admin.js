@@ -1324,7 +1324,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 asignar('#input-crud-longitud', resultadoGeo.lon);
                                 asignar('#input-crud-geocode_precision', resultadoGeo.precision);
                                 asignar('#input-crud-referencia_mapa', resultadoGeo.referencia);
-                                asignar('#input-crud-enlace_mapa', `https://openstreetmap.org{resultadoGeo.lat}&mlon=${resultadoGeo.lon}#map=16/${resultadoGeo.lat}/${resultadoGeo.lon}`);
+                                asignar('#input-crud-enlace_mapa', `https://openstreetmap.org/?mlat=${resultadoGeo.lat}&mlon=${resultadoGeo.lon}#map=16/${resultadoGeo.lat}/${resultadoGeo.lon}`);
                                 btnGeo.style.background = '#059669';
                                 btnGeo.innerText = 'OK - Coordenadas calculadas. Continúe completando los datos';
                                 alert('Coordenadas calculadas con éxito. Continúe completando los demás campos.');
