@@ -89,6 +89,7 @@ const CONFIGURACION_TABLAS_CRUD = {
         pk: 'liquidacion_id',
         rolesPermitidos:,
         soloLecturaNoAdmin: true,
+
         campos: [
             { nombre: 'nombre_colaborador', label: 'Colaborador', tipo: 'text', soloAdmin: true },
             { nombre: 'anuncio_id_fk', label: 'ID Anuncio', tipo: 'text' },
