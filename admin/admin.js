@@ -1264,34 +1264,56 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
 
                             let resultadoGeo = null;
 
+                            // [INICIO DE LLAVES]: Consulta Photon (photon.komoot.io/api/?q=) con respaldo en Nominatim OSM
                             for (const consulta of consultasEscaladas) {
-                                const res = await fetch(`https://komoot.io{encodeURIComponent(consulta)}&limit=1`);
-                                if (!res.ok) continue;
-                                const json = await res.json();
+                                try {
+                                    const res = await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(consulta)}&limit=1`);
+                                    if (res.ok) {
+                                        const json = await res.json();
+                                        if (json && Array.isArray(json.features) && json.features.length > 0) {
+                                            const feat = json.features[0];
+                                            const coords = feat.geometry?.coordinates || [];
+                                            const props = feat.properties || {};
 
-                                if (json && Array.isArray(json.features) && json.features.length > 0) {
-                                    const feat = json.features[0];
-                                    const coords = feat.geometry?.coordinates || [];
-                                    const props = feat.properties || {};
+                                            if (coords.length >= 2) {
+                                                const refTexto = [props.name, props.street, props.housenumber, props.district, props.city, props.state, props.country]
+                                                    .filter(Boolean)
+                                                    .join(', ');
 
-                                    if (coords.length >= 2) {
-                                        const refTexto = [props.name, props.street, props.housenumber, props.district, props.city, props.state, props.country]
-                                            .filter(Boolean)
-                                            .join(', ');
+                                                resultadoGeo = {
+                                                    lat: String(coords[1]).replace(',', '.'),
+                                                    lon: String(coords[0]).replace(',', '.'),
+                                                    precision: `${String(props.osm_key || 'OSM').toUpperCase()} Type: ${props.osm_value || 'exacta'}`,
+                                                    referencia: refTexto || consulta
+                                                };
+                                                break;
+                                            }
+                                        }
+                                    }
+                                } catch (ePhoton) {
+                                    console.warn('Photon no disponible, intentando respaldo Nominatim...', ePhoton);
+                                }
 
-                                        resultadoGeo = {
-                                            lat: String(coords[1]).replace(',', '.'),
-                                            lon: String(coords[0]).replace(',', '.'),
-                                            precision: `${String(props.osm_key || 'OSM').toUpperCase()} Type: ${props.osm_value || 'exacta'}`,
-                                            referencia: refTexto || consulta
-                                        };
-                                        break;
+                                // Respaldo automático en Nominatim OpenStreetMap si Photon no devuelve resultados
+                                if (!resultadoGeo) {
+                                    const resNom = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(consulta)}&limit=1`);
+                                    if (resNom.ok) {
+                                        const arrNom = await resNom.json();
+                                        if (Array.isArray(arrNom) && arrNom.length > 0) {
+                                            const itemNom = arrNom[0];
+                                            resultadoGeo = {
+                                                lat: String(itemNom.lat).replace(',', '.'),
+                                                lon: String(itemNom.lon).replace(',', '.'),
+                                                precision: `NOMINATIM Type: ${itemNom.type || 'exacta'}`,
+                                                referencia: itemNom.display_name || consulta
+                                            };
+                                            break;
+                                        }
                                     }
                                 }
-                            }
+                            } // [FIN DE LLAVES]: Cierra ciclo de búsqueda geocodificada
 
-                             // [INICIO DE LLAVES]: Asigna coordenadas y cambia botón a verde con aviso "Continúe"
-                            let geoExitosa = false;
+                            // [INICIO DE LLAVES]: Asigna coordenadas y cambia botón a verde con aviso "Continúe"
                             if (resultadoGeo) {
                                 const asignar = (id, v) => { const n = formNode.querySelector(id); if (n) n.value = v; };
                                 asignar('#input-crud-latitud', resultadoGeo.lat);
@@ -1299,13 +1321,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 asignar('#input-crud-geocode_precision', resultadoGeo.precision);
                                 asignar('#input-crud-referencia_mapa', resultadoGeo.referencia);
                                 asignar('#input-crud-enlace_mapa', `https://openstreetmap.org{resultadoGeo.lat}&mlon=${resultadoGeo.lon}#map=16/${resultadoGeo.lat}/${resultadoGeo.lon}`);
-                                geoExitosa = true;
                                 btnGeo.style.background = '#059669';
-                                btnGeo.innerText = '✓ Coordenadas calculadas — Continúe completando los datos';
-                                alert('✓ Coordenadas calculadas con éxito. Continúe completando los demás campos.');
+                                btnGeo.innerText = 'OK - Coordenadas calculadas. Continúe completando los datos';
+                                alert('Coordenadas calculadas con éxito. Continúe completando los demás campos.');
                             } else {
                                 alert('No se hallaron coordenadas para esta dirección.');
-                            }
+                            } // [FIN DE LLAVES]: Cierra asignación de coordenadas
+
 
                         } catch (errGeo) {
                             console.error('Error en geocodificación:', errGeo);
