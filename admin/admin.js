@@ -743,9 +743,31 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
     let caracteristicasObtenidas = [];
     let promocionesObtenidas = [];
     let recorridos3dObtenidos = [];
+    let catalogoTiposImagenBD = [];
+
+    // [INICIO DE LLAVES]: Consulta catálogo dinámico lov_tipo_imagen (tanto en creación como en edición)
+    if (nombreTabla === 'propiedad') {
+        try {
+            const clienteLovImg = window.getSupabaseShared();
+            if (clienteLovImg) {
+                const { data: tiposImgData } = await clienteLovImg
+                    .from('lov_tipo_imagen')
+                    .select('tipo_imagen')
+                    .order('tipo_imagen', { ascending: true });
+
+                catalogoTiposImagenBD = (tiposImgData || [])
+                    .map(r => String(r.tipo_imagen || '').trim())
+                    .filter(Boolean);
+            }
+        } catch (errLovImg) {
+            console.warn('Error cargando lov_tipo_imagen:', errLovImg);
+        }
+    } // [FIN DE LLAVES]: Cierra carga dinámica de lov_tipo_imagen
 
     // [INICIO DE LLAVES]: Recupera relaciones secundarias en modo edición de propiedad
     if (esEdicion && nombreTabla === 'propiedad' && datosFila[conf.pk]) {
+
+        
         try {
             const cliente = window.getSupabaseShared();
             if (cliente) {
@@ -871,7 +893,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
         `;
 
-        // [INICIO DE LLAVES]: Muestra guía de estándares fotográficos para Google Drive al Colaborador y 30 cajas al Administrador
+        // [INICIO DE LLAVES]: Muestra guía dinámica al Colaborador y 30 cajas con catálogo lov_tipo_imagen al Administrador
+        const tiposImagenOpciones = catalogoTiposImagenBD.length > 0 ? catalogoTiposImagenBD : ['interior'];
+        const listaAmbientesTexto = tiposImagenOpciones.join(', ');
+
         if (!esAdminAnuncio) {
             html30CajasFotos = `
                 <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
@@ -885,7 +910,7 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                         <li><b>Orientación 100% Horizontal:</b> Toma todas las fotos con el celular echado (formato paisaje 16:9 o 4:3). No se aceptan fotos verticales.</li>
                         <li><b>Resolución y Tamaño:</b> Mínimo <b>1920 x 1080 píxeles (Full HD)</b> y peso entre <b>500 KB y 5 MB</b> por archivo (sin filtros ni marcas de agua).</li>
                         <li><b>Horario e Iluminación:</b> Toma las fotos <b>de día (9:00 a.m. a 4:00 p.m.)</b>, con cortinas abiertas, luces encendidas y <b>siempre dando la espalda a las ventanas</b> (nunca a contraluz).</li>
-                        <li><b>Nombres por Ambiente:</b> Renombra cada foto antes de subirla a Drive: <i>fachada, sala, comedor, cocina, dormitorio_1, bano, cochera</i>.</li>
+                        <li><b>Nombres Oficiales por Ambiente:</b> Renombra cada foto antes de subirla a Drive usando únicamente estos nombres: <i>${listaAmbientesTexto}</i> (si hay varias del mismo ambiente, agrega número: ej. <i>dormitorio_1, dormitorio_2</i>).</li>
                     </ul>
                 </div>
             `;
@@ -898,8 +923,9 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                     <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
             `;
 
-            const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
             for (let i = 1; i <= 30; i++) {
+
+                
                 const itemFoto = esEdicion ? fotosSecundariasObtenidas[i - 1] : undefined;
                 const nombreFotoActual = itemFoto ? (itemFoto.ruta || '') : '';
                 const tipoFotoActual = itemFoto ? (itemFoto.tipo || 'interior') : 'interior';
