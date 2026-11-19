@@ -328,13 +328,19 @@ async function cargarDatosDesdeSupabase() { // Inicia Function cargarDatosDesdeS
         const cliente = obtenerClienteSupabase();
         if (!cliente) throw new Error("Cliente Supabase no inicializado en ventana.");
 
+        
+        // [INICIO DE LLAVES]: Consulta únicamente anuncios en estado 'activo' (oculta pausados, cerrados y expirados)
         const {
             data,
             error
         } = await cliente
             .from('vista_catalogo_mapa')
             .select('*')
+            .eq('estado_anuncio', 'activo')
             .order('destacado', { ascending: false, nullsFirst: false });
+        // [FIN DE LLAVES]: Cierra consulta filtrada por estado_anuncio activo
+
+        
 
         if (error) throw error;
 
