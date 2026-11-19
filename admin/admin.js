@@ -279,22 +279,58 @@ async function cargarDatosTablaCrud(nombreTabla) {
         const cliente = window.getSupabaseShared();
         if (!cliente) throw new Error('Cliente Supabase inaccesible.');
 
-        // [INICIO DE LLAVES]: Lee desde vista si existe, aísla por dueño y filtra columnas de grilla
-        const tablaConsulta = conf.tablaOrigen || nombreTabla;
-        let consulta = cliente.from(tablaConsulta).select('*').limit(150);
+        // [INICIO DE LLAVES]: Valida acceso por rol, proyecta solo columnas permitidas en SELECT y aísla filas por dueño
         const esAdmin = esUsuarioAdministrador();
+        const rolActual = Number(window.APP_AUTH?.permisosActuales?.rol_id || window.APP_AUTH?.usuarioActual?.rol_id_fk || 0);
+        const tablaConsulta = conf.tablaOrigen || nombreTabla;
 
-        if (conf.soloAdmin && !esAdmin) {
-            contenedor.innerHTML = `<p class="mensaje-carga" style="color: #ef4444;">Acceso restringido: módulo exclusivo para el Administrador.</p>`;
+        // Bloquea acceso si la pestaña es soloAdmin o si el rol no está en rolesPermitidos
+        if ((conf.soloAdmin && !esAdmin) || (Array.isArray(conf.rolesPermitidos) && !conf.rolesPermitidos.includes(rolActual))) {
+            contenedor.innerHTML = `<p class="mensaje-carga" style="color: #ef4444;">Acceso restringido: no tienes permisos para visualizar esta sección.</p>`;
             return;
         }
 
-        if ((nombreTabla === 'propiedad' || nombreTabla === 'anuncio') && !esAdmin && window.APP_AUTH?.usuarioActual?.id) {
-            consulta = consulta.eq('usuario_id_fk', window.APP_AUTH.usuarioActual.id);
+        // Controla visibilidad del botón superior "+ Nuevo Registro" en pestañas de solo lectura para no-administradores
+        const btnNuevo = document.getElementById('btn-nuevo-registro-crud');
+        const permisos = window.APP_AUTH?.permisosActuales || {};
+        const bloquearEdicionNoAdmin = Boolean(conf.soloLecturaNoAdmin && !esAdmin);
+        if (btnNuevo) {
+            btnNuevo.style.display = (!bloquearEdicionNoAdmin && permisos.permiso_insertar) ? 'inline-block' : 'none';
         }
 
+        // Proyecta únicamente las columnas permitidas (oculta planes, cobros al cliente y porcentajes al colaborador)
         const columnasGrilla = conf.campos.filter(c => !(c.soloAdmin && !esAdmin) && !c.soloFormulario);
-        // [FIN DE LLAVES]: Cierra aislamiento y filtrado de columnas
+        const selectColumnas = esAdmin
+            ? '*'
+            : [conf.pk, ...columnasGrilla.map(c => c.nombre)].filter((v, i, a) => v && a.indexOf(v) === i).join(', ');
+
+        let consulta = cliente.from(tablaConsulta).select(selectColumnas).limit(150);
+
+        // Aislamiento estricto: cada usuario no-admin ve solo sus propiedades, anuncios, liquidaciones y registros hijos
+        if (!esAdmin && window.APP_AUTH?.usuarioActual?.id) {
+            const uidActual = window.APP_AUTH.usuarioActual.id;
+
+            if (nombreTabla === 'propiedad' || nombreTabla === 'anuncio') {
+                consulta = consulta.eq('usuario_id_fk', uidActual);
+            } else if (nombreTabla === 'liquidacion_colaborador') {
+                consulta = consulta.eq('colaborador_id_fk', uidActual);
+            } else if (['caracteristica_propiedad', 'visita', 'simulacion_hipotecaria'].includes(nombreTabla)) {
+                const { data: misProps, error: errProps } = await cliente
+                    .from('propiedad')
+                    .select('propiedad_id')
+                    .eq('usuario_id_fk', uidActual);
+
+                if (errProps) throw errProps;
+                const idsMisPropiedades = (misProps || []).map(p => p.propiedad_id);
+
+                if (idsMisPropiedades.length === 0) {
+                    contenedor.innerHTML = `<p class="mensaje-carga">Aún no existen registros asociados a tus propiedades.</p>`;
+                    return;
+                }
+                consulta = consulta.in('propiedad_id_fk', idsMisPropiedades);
+            }
+        }
+        // [FIN DE LLAVES]: Cierra proyección segura de columnas y aislamiento de filas por rol
 
         const { data, error } = await consulta;
         if (error) throw error;
@@ -304,9 +340,7 @@ async function cargarDatosTablaCrud(nombreTabla) {
             return;
         }
 
-        const permisos = window.APP_AUTH?.permisosActuales || {};
-
-        // [INICIO DE LLAVES]: Pinta tabla HTML con columnas visibles y botones CRUD
+        // [INICIO DE LLAVES]: Renderiza tabla HTML con columnas filtradas y botones según permisos de edición
         contenedor.innerHTML = `
             <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                 <thead>
@@ -319,18 +353,19 @@ async function cargarDatosTablaCrud(nombreTabla) {
                     ${data.map(fila => `
                         <tr style="border-bottom: 1px solid #e2e8f0;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#ffffff'">
                             <td style="padding: 10px; white-space: nowrap;">
-                                ${permisos.permiso_modificar ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
+                                ${(!bloquearEdicionNoAdmin && permisos.permiso_modificar) ? `<button class="btn-edit-crud" data-id="${fila[conf.pk]}" style="background: #006aff; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Editar</button>` : ''}
                                 ${nombreTabla === 'anuncio' && esAdmin ? `<button class="btn-vouchers-anuncio" data-id="${fila[conf.pk]}" style="background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer; margin-right: 4px;">Pagos / Comis.</button>` : ''}
-                                ${permisos.permiso_eliminar ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
+                                ${(!bloquearEdicionNoAdmin && permisos.permiso_eliminar) ? `<button class="btn-delete-crud" data-id="${fila[conf.pk]}" style="background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Eliminar</button>` : ''}
+                                ${bloquearEdicionNoAdmin ? `<span style="font-size: 11px; color: #64748b; font-weight: 600;">Solo lectura</span>` : ''}
                             </td>
                             ${columnasGrilla.map(c => `<td style="padding: 10px; color: #334155; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${fila[c.nombre] !== null && fila[c.nombre] !== undefined ? fila[c.nombre] : '-'}</td>`).join('')}
                         </tr>
                     `).join('')}
                 </tbody>
             </table>
-        `; // [FIN DE LLAVES]: Cierra renderizado de tabla HTML
+        `; // [FIN DE LLAVES]: Cierra renderizado seguro de tabla HTML
 
-
+        
         // [INICIO DE LLAVES]: Enlaza botones Editar
         contenedor.querySelectorAll('.btn-edit-crud').forEach(btn => {
             btn.onclick = () => {
