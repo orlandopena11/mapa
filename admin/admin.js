@@ -867,31 +867,12 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
         `;
 
-        // [INICIO DE LLAVES]: Muestra guía de carga en Google Drive al Colaborador y las 30 cajas Cloudinary al Administrador
+        // [INICIO DE LLAVES]: Muestra guía de estándares fotográficos para Google Drive al Colaborador y 30 cajas al Administrador
         if (!esAdminAnuncio) {
             html30CajasFotos = `
                 <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
                     <div style="font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">
-                        📸 Estándar Obligatorio de Fotografía y Entrega en Google Drive
-                    </div>
-                    <p style="margin: 0 0 8px 0; font-size: 12.5px; color: #1e40af; line-height: 1.45;">
-                        Para aprobar y activar tu anuncio, sube las fotos de esta propiedad a la carpeta compartida de <b>Google Drive</b> (creando una subcarpeta con el <b>ID de esta Propiedad</b>) y cumple estrictamente estas reglas:
-                    </p>
-                    <ul style="margin: 0 0 4px 18px; padding: 0; font-size: 12.5px; color: #1e3a8a; line-height: 1.5;">
-                        <li><b>Orientación 100% Horizontal:</b> Toma todas las fotos con el celular echado (formato paisaje 16:9 o 4:3). No se aceptan fotos verticales.</li>
-                        <li><b>Resolución y Peso:</b> Mínimo <b>1920 x 1080 píxeles (Full HD)</b> y peso entre <b>500 KB y 5 MB</b> por archivo (sin filtros ni marcas de agua).</li>
-                        <li><b>Horario e Iluminación:</b> Toma las fotos <b>de día (9:00 a.m. a 4:00 p.m.)</b>, con cortinas abiertas, luces encendidas y <b>siempre dando la espalda a las ventanas</b> (nunca a contraluz).</li>
-                        <li><b>Nombres por Ambiente:</b> Nombra cada archivo antes de subirlo a Drive según el ambiente: <i>fachada, sala, comedor, cocina, dormitorio_1, bano, cochera</i>.</li>
-                    </ul>
-                </div>
-            `;
-        } else {
-                    // [INICIO DE LLAVES]: Muestra guía de estándares fotográficos para Google Drive al Colaborador y 30 cajas al Administrador
-        if (!esAdminAnuncio) {
-            html30CajasFotos = `
-                <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
-                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">
-                        📸 Estándar Obligatorio de Fotografía (Subida a tu carpeta de Google Drive)
+                        Estándar Obligatorio de Fotografía (Subida a tu carpeta de Google Drive)
                     </div>
                     <p style="margin: 0 0 8px 0; font-size: 12.5px; color: #1e40af; line-height: 1.45;">
                         Para aprobar y activar tu anuncio, sube las fotos de esta propiedad a <b>tu carpeta personal de Google Drive</b> (enviada a tu WhatsApp) creando una subcarpeta con el <b>título o dirección de la propiedad</b>, y cumple estrictamente estas reglas:
@@ -935,8 +916,6 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                 `;
             }
             html30CajasFotos += `</div></div>`;
-        } // [FIN DE LLAVES]: Cierra bifurcación de galería por rol
-
         } // [FIN DE LLAVES]: Cierra bifurcación de galería por rol
 
 
