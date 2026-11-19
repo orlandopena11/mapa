@@ -539,15 +539,16 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
         let paisInicial = datosFilaEdicion ? buscarPais(datosFilaEdicion.pais) : null;
         let cadenaInicial = [];
 
-        // [INICIO DE LLAVES]: Precarga cadena si estamos editando un registro existente
+        // [INICIO DE LLAVES]: Precarga cadena territorial completa al editar un registro existente
         if (codigoGuardado) {
             cadenaInicial = await obtenerCadenaTerritorial(cliente, codigoGuardado, paisInicial ? paisInicial.pais_iso : null);
             if (cadenaInicial.length > 0 && !paisInicial) {
-                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial.pais_iso) || null;
+                paisInicial = listaPaises.find(p => p.pais_iso === cadenaInicial[0].pais_iso) || null;
             }
         } // [FIN DE LLAVES]: Cierra precarga de cadena
 
-        if (!paisInicial) paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises || null;
+        if (!paisInicial) paisInicial = buscarPais('Perú') || buscarPais('PE') || listaPaises[0] || null;
+
 
         const estiloSelect = 'padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; width: 100%;';
 
@@ -622,11 +623,14 @@ async function inicializarCascadaTerritorialCompleta(cliente, formNode, datosFil
                 };
             });
 
-            await cargarNivel(1, null, cadena ? String(cadena.id) : '');
+            // [INICIO DE LLAVES]: Carga secuencialmente los N niveles guardados al editar
+            await cargarNivel(1, null, cadena[0] ? String(cadena[0].id) : '');
             for (let i = 1; i < total; i++) {
                 if (!cadena[i - 1]) break;
                 await cargarNivel(i + 1, cadena[i - 1].id, cadena[i] ? String(cadena[i].id) : '');
-            }
+            } // [FIN DE LLAVES]: Cierra carga secuencial de niveles
+
+            
             if (cadena.length > 0) actualizarValorFinal();
         } // [FIN DE LLAVES]: Cierra subfunción renderizarNiveles
 
@@ -1563,12 +1567,18 @@ async function guardarRegistroCrud(nombreTabla, pkColumna, esEdicion, pkValor, p
             payloadLimpio.fotos = arrayFotos;
             payloadLimpio.caracteristicas = arrayCaracteristicas;
 
+            // [INICIO DE LLAVES]: Asigna foto principal y preserva el usuario_id_fk original del colaborador al editar
             payloadLimpio.foto_principal = arrayFotos.length > 0
-                ? arrayFotos.ruta
+                ? arrayFotos[0].ruta
                 : (String(payloadLimpio.foto_principal || '').trim() || 'principal.jpg');
-            payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
+
+            if (!esEdicion || !payloadLimpio.usuario_id_fk) {
+                payloadLimpio.usuario_id_fk = uuidUsuarioAutenticado;
+            }
             payloadLimpio.es_nuevo = !esEdicion;
             if (esEdicion && pkValor) payloadLimpio.propiedad_id = pkValor;
+            // [FIN DE LLAVES]: Cierra preparación de metadatos de propiedad
+
 
             const { data: resRpc, error } = await cliente.rpc('guardar_propiedad_completa', { p_payload: payloadLimpio });
             if (error) throw error;
