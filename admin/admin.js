@@ -83,7 +83,7 @@ const CONFIGURACION_TABLAS_CRUD = {
 
 
                                 
-    // [INICIO DE LLAVES]: Liquidación Colaboradores (Admin ve todo y edita; Colaborador Rol 12 ve solo su pago sin planes ni montos del cliente)
+    // [INICIO DE LLAVES]: Liquidación Colaboradores (Admin ve todo y edita; Colaborador Rol 12 ve solo su liquidación sin planes ni pagos del cliente)
     liquidacion_colaborador: {
         titulo: 'Liquidación Colaboradores',
         pk: 'liquidacion_id',
@@ -103,12 +103,14 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'voucher_pago_url', label: 'Enlace Voucher de Transferencia', tipo: 'text' }
         ]
     }, // [FIN DE LLAVES]: Cierra configuración de liquidacion_colaborador
-    
 
+    // [INICIO DE LLAVES]: Pestaña exclusiva del Administrador para gestionar Agentes Inmobiliarios
     agente_inmobiliario: {
         titulo: 'Agentes Inmobiliarios',
         pk: 'agente_id',
+        soloAdmin: true,
         campos: [
+
             { nombre: 'nombre', label: 'Nombre', tipo: 'text', requerido: true },
             { nombre: 'apellido', label: 'Apellido', tipo: 'text', requerido: true },
             { nombre: 'correo', label: 'Correo Electrónico', tipo: 'email', requerido: true },
@@ -142,11 +144,14 @@ const CONFIGURACION_TABLAS_CRUD = {
             { nombre: 'estado_cuenta', label: 'Estado Cuenta', tipo: 'select', opciones: ['activo', 'pendiente', 'suspendido'], requerido: true }
         ]
     }, // [FIN DE LLAVES]: Cierra configuración de colaboradores
-    // [INICIO DE LLAVES]: Configuración general de Usuarios y Socios
+    
+    // [INICIO DE LLAVES]: Pestaña exclusiva del Administrador para gestionar Usuarios y Socios
     usuario_autenticado: {
         titulo: 'Usuarios y Socios',
         pk: 'usuario_id',
+        soloAdmin: true,
         campos: [
+
             { nombre: 'nombre', label: 'Nombre', tipo: 'text', requerido: true },
             { nombre: 'apellido', label: 'Apellido', tipo: 'text', requerido: true },
             { nombre: 'correo', label: 'Correo Electrónico', tipo: 'email', requerido: true },
@@ -231,12 +236,17 @@ function renderizarBarraPestanasCrud() {
     if (!barra) return;
 
     
-    // [INICIO DE LLAVES]: Filtra pestañas visibles según si el usuario es Administrador
+    // [INICIO DE LLAVES]: Filtra pestañas visibles según si es Administrador o si el rol está en rolesPermitidos
     const esAdmin = esUsuarioAdministrador();
+    const rolActual = Number(window.APP_AUTH?.permisosActuales?.rol_id || window.APP_AUTH?.usuarioActual?.rol_id_fk || 0);
+
     const llavesVisibles = Object.keys(CONFIGURACION_TABLAS_CRUD).filter(keyTab => {
-        if (CONFIGURACION_TABLAS_CRUD[keyTab].soloAdmin && !esAdmin) return false;
+        const cfg = CONFIGURACION_TABLAS_CRUD[keyTab];
+        if (cfg.soloAdmin && !esAdmin) return false;
+        if (Array.isArray(cfg.rolesPermitidos) && !cfg.rolesPermitidos.includes(rolActual)) return false;
         return true;
-    });
+    }); // [FIN DE LLAVES]: Cierra filtrado de pestañas por rol
+
 
     barra.innerHTML = llavesVisibles.map(keyTab => `
         <button type="button" class="btn-tab-crud ${keyTab === tablaCrudActiva ? 'activo' : ''}" data-tabla="${keyTab}">
@@ -856,36 +866,57 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
             </div>
         `;
 
-              html30CajasFotos = `
-            <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
-                <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 8px;">
-                    Galería de Fotos y Clasificación (hasta 30 espacios):
-                </label>
-                <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
-        `;
-
-        const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
-        for (let i = 1; i <= 30; i++) {
-            const itemFoto = esEdicion ? fotosSecundariasObtenidas[i - 1] : undefined;
-            const nombreFotoActual = itemFoto ? (itemFoto.ruta || '') : '';
-            const tipoFotoActual = itemFoto ? (itemFoto.tipo || 'interior') : 'interior';
-            const opcionesTipo = tiposImagenOpciones.includes(tipoFotoActual) ? tiposImagenOpciones : [tipoFotoActual, ...tiposImagenOpciones];
-
-            html30CajasFotos += `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
-                    <div style="display: flex; align-items: center; gap: 6px; width: 48%;">
-                        <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 20px;">#${i}</span>
-                        <input type="text" name="foto_slot_${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 12px;">
+        // [INICIO DE LLAVES]: Muestra guía de carga en Google Drive al Colaborador y las 30 cajas Cloudinary al Administrador
+        if (!esAdminAnuncio) {
+            html30CajasFotos = `
+                <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">
+                        📸 Estándar Obligatorio de Fotografía y Entrega en Google Drive
                     </div>
-                    <div style="width: 48%;">
-                        <select name="tipo_slot_${i}" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 12px; background: #fff;">
-                            ${opcionesTipo.map(t => `<option value="${t}" ${t === tipoFotoActual ? 'selected' : ''}>${t}</option>`).join('')}
-                        </select>
-                    </div>
+                    <p style="margin: 0 0 8px 0; font-size: 12.5px; color: #1e40af; line-height: 1.45;">
+                        Para aprobar y activar tu anuncio, sube las fotos de esta propiedad a la carpeta compartida de <b>Google Drive</b> (creando una subcarpeta con el <b>ID de esta Propiedad</b>) y cumple estrictamente estas reglas:
+                    </p>
+                    <ul style="margin: 0 0 4px 18px; padding: 0; font-size: 12.5px; color: #1e3a8a; line-height: 1.5;">
+                        <li><b>Orientación 100% Horizontal:</b> Toma todas las fotos con el celular echado (formato paisaje 16:9 o 4:3). No se aceptan fotos verticales.</li>
+                        <li><b>Resolución y Peso:</b> Mínimo <b>1920 x 1080 píxeles (Full HD)</b> y peso entre <b>500 KB y 5 MB</b> por archivo (sin filtros ni marcas de agua).</li>
+                        <li><b>Horario e Iluminación:</b> Toma las fotos <b>de día (9:00 a.m. a 4:00 p.m.)</b>, con cortinas abiertas, luces encendidas y <b>siempre dando la espalda a las ventanas</b> (nunca a contraluz).</li>
+                        <li><b>Nombres por Ambiente:</b> Nombra cada archivo antes de subirlo a Drive según el ambiente: <i>fachada, sala, comedor, cocina, dormitorio_1, bano, cochera</i>.</li>
+                    </ul>
                 </div>
             `;
-        }
-        html30CajasFotos += `</div></div>`;
+        } else {
+            html30CajasFotos = `
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 12px; margin-bottom: 12px;">
+                    <label style="font-size: 14px; font-weight: 800; color: #002e50; display: block; margin-bottom: 8px;">
+                        Galería de Fotos Cloudinary y Clasificación (hasta 30 espacios):
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; padding-right: 6px;">
+            `;
+
+            const tiposImagenOpciones = ['interior', 'fachada', 'cocina', 'baño', 'patio', 'plano'];
+            for (let i = 1; i <= 30; i++) {
+                const itemFoto = esEdicion ? fotosSecundariasObtenidas[i - 1] : undefined;
+                const nombreFotoActual = itemFoto ? (itemFoto.ruta || '') : '';
+                const tipoFotoActual = itemFoto ? (itemFoto.tipo || 'interior') : 'interior';
+                const opcionesTipo = tiposImagenOpciones.includes(tipoFotoActual) ? tiposImagenOpciones : [tipoFotoActual, ...tiposImagenOpciones];
+
+                html30CajasFotos += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px; width: 48%;">
+                            <span style="font-size: 11px; font-weight: bold; color: #006aff; min-width: 20px;">#${i}</span>
+                            <input type="text" name="foto_slot_${i}" value="${nombreFotoActual}" placeholder="Ej. foto_fachada.jpg" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 12px;">
+                        </div>
+                        <div style="width: 48%;">
+                            <select name="tipo_slot_${i}" style="width: 100%; border: 1px solid #cbd5e1; padding: 4px 6px; border-radius: 4px; font-size: 12px; background: #fff;">
+                                ${opcionesTipo.map(t => `<option value="${t}" ${t === tipoFotoActual ? 'selected' : ''}>${t}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                `;
+            }
+            html30CajasFotos += `</div></div>`;
+        } // [FIN DE LLAVES]: Cierra bifurcación de galería por rol
+
 
         htmlSeccionCaracteristicasEspeciales = `
             <div style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px;">
@@ -1258,6 +1289,8 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 }
                             }
 
+                             // [INICIO DE LLAVES]: Asigna coordenadas y cambia botón a verde con aviso "Continúe"
+                            let geoExitosa = false;
                             if (resultadoGeo) {
                                 const asignar = (id, v) => { const n = formNode.querySelector(id); if (n) n.value = v; };
                                 asignar('#input-crud-latitud', resultadoGeo.lat);
@@ -1265,7 +1298,10 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                                 asignar('#input-crud-geocode_precision', resultadoGeo.precision);
                                 asignar('#input-crud-referencia_mapa', resultadoGeo.referencia);
                                 asignar('#input-crud-enlace_mapa', `https://openstreetmap.org{resultadoGeo.lat}&mlon=${resultadoGeo.lon}#map=16/${resultadoGeo.lat}/${resultadoGeo.lon}`);
-                                alert('Coordenadas, precisión y mapa calculados con éxito.');
+                                geoExitosa = true;
+                                btnGeo.style.background = '#059669';
+                                btnGeo.innerText = '✓ Coordenadas calculadas — Continúe completando los datos';
+                                alert('✓ Coordenadas calculadas con éxito. Continúe completando los demás campos.');
                             } else {
                                 alert('No se hallaron coordenadas para esta dirección.');
                             }
@@ -1274,9 +1310,13 @@ async function abrirFormularioEdicionCrud(nombreTabla, datosFila) {
                             console.error('Error en geocodificación:', errGeo);
                             alert('Error de conexión al servicio de geocodificación.');
                         } finally {
-                            btnGeo.innerText = textoOriginal;
-                        }
-                    };
+                            if (btnGeo.style.background !== 'rgb(5, 150, 105)') {
+                                btnGeo.innerText = textoOriginal;
+                            }
+                        } // [FIN DE LLAVES]: Cierra actualización visual de geocodificación
+
+                        
+                        };
                 } // [FIN DE LLAVES]: Cierra geocodificación
 
             } catch (errInit) {
