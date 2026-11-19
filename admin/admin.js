@@ -83,18 +83,19 @@ const CONFIGURACION_TABLAS_CRUD = {
 
 
                                 
-    // [INICIO DE LLAVES]: Nueva pestaña exclusiva para liquidar comisiones y RHE de colaboradores
+    // [INICIO DE LLAVES]: Liquidación Colaboradores (Admin ve todo y edita; Colaborador Rol 12 ve solo su pago sin planes ni montos del cliente)
     liquidacion_colaborador: {
         titulo: 'Liquidación Colaboradores',
         pk: 'liquidacion_id',
-        soloAdmin: true,
+        rolesPermitidos:,
+        soloLecturaNoAdmin: true,
         campos: [
-            { nombre: 'nombre_colaborador', label: 'Colaborador', tipo: 'text' },
+            { nombre: 'nombre_colaborador', label: 'Colaborador', tipo: 'text', soloAdmin: true },
             { nombre: 'anuncio_id_fk', label: 'ID Anuncio', tipo: 'text' },
-            { nombre: 'plan_id_fk', label: 'Plan Origen', tipo: 'text' },
+            { nombre: 'plan_id_fk', label: 'Plan Origen', tipo: 'text', soloAdmin: true },
             { nombre: 'concepto_comision', label: 'Concepto de Comisión', tipo: 'text' },
-            { nombre: 'monto_base_operacion', label: 'Monto Cobrado (S/)', tipo: 'number' },
-            { nombre: 'porcentaje_aplicado', label: '% Comisión', tipo: 'number' },
+            { nombre: 'monto_base_operacion', label: 'Monto Cobrado (S/)', tipo: 'number', soloAdmin: true },
+            { nombre: 'porcentaje_aplicado', label: '% Comisión', tipo: 'number', soloAdmin: true },
             { nombre: 'monto_a_pagar', label: 'Comisión a Pagar (S/)', tipo: 'number' },
             { nombre: 'estado_liquidacion', label: 'Estado Liquidación', tipo: 'select', opciones: ['pendiente_rhe', 'programado', 'pagado', 'anulado'] },
             { nombre: 'numero_rhe', label: 'N.° Recibo por Honorarios (RHE)', tipo: 'text' },
